@@ -11,9 +11,12 @@ from app import __version__
 from app.config import Settings, get_settings
 from app.demo import load_demo_scenarios
 from app.demo.fixtures import Variant
+from app.explorer import BuildError, ExplorerConfig, build, build_draft
 from app.schemas import (
     DemoScenariosResponse,
+    DraftRequest,
     ErrorDetail,
+    ExplorerResponse,
     HealthResponse,
     LiveModelResponse,
     SimulateRequest,
@@ -111,7 +114,63 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             return Response(content=live.mjcf, media_type="application/xml")
         return LiveModelResponse.model_validate(live, from_attributes=True)
 
+    @app.get(
+        "/explorer",
+        response_model=ExplorerResponse,
+        tags=["explorer"],
+        responses={422: {"description": "A configuration that cannot be loaded."}},
+    )
+    def explorer(request: Request, response: Response) -> ExplorerResponse:
+        """The load of an explorer configuration, given as the page's query string.
+
+        Returns the load draft (what the editor edits), the scenario and trip event built
+        from it, and the live model the browser steps. Nothing is simulated here, and the
+        answer depends only on the query, so it may be cached.
+        """
+        try:
+            config = ExplorerConfig.from_query(dict(request.query_params))
+            built = build(config)
+        except BuildError as error:
+            raise _unprocessable(error.code, str(error)) from error
+        except ValueError as error:
+            raise _unprocessable("invalid_config", str(error)) from error
+        response.headers["Cache-Control"] = "public, max-age=86400"
+        return ExplorerResponse(
+            query=config.to_query(),
+            config=config,
+            draft=built.draft,
+            scenario=built.scenario,
+            event=built.event,
+            live=build_live_model(built.scenario, built.event),
+        )
+
+    @app.post(
+        "/explorer/draft",
+        response_model=ExplorerResponse,
+        tags=["explorer"],
+        responses={422: {"description": "A draft that cannot be loaded."}},
+    )
+    def explorer_draft(body: DraftRequest) -> ExplorerResponse:
+        """The scenario and live model of a load draft: an edited load, or a photo's."""
+        try:
+            scenario, event = build_draft(body.draft)
+        except BuildError as error:
+            raise _unprocessable(error.code, str(error)) from error
+        return ExplorerResponse(
+            query=None,
+            config=None,
+            draft=body.draft,
+            scenario=scenario,
+            event=event,
+            live=build_live_model(scenario, event),
+        )
+
     return app
+
+
+def _unprocessable(code: str, message: str) -> HTTPException:
+    detail = ErrorDetail(code=code, message=message)
+    return HTTPException(status_code=422, detail=detail.model_dump())
 
 
 app = create_app()

@@ -5,6 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.demo import DemoScenario
+from app.explorer import ExplorerConfig, LoadDraft
 from app.scenario import Scenario, TripEvent
 from physics.live import LiveModel
 from physics.results import SimulationResult
@@ -43,3 +44,22 @@ class ErrorDetail(BaseModel):
 
     code: str
     message: str
+
+
+class DraftRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    draft: LoadDraft
+
+
+class ExplorerResponse(BaseModel):
+    """A load for the explorer: the draft the editor edits, and what the physics simulates."""
+
+    query: str | None = Field(
+        description="Canonical query string of the configuration; None for a free draft."
+    )
+    config: ExplorerConfig | None
+    draft: LoadDraft
+    scenario: Scenario
+    event: TripEvent
+    live: LiveModel
