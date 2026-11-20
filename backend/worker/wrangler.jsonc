@@ -1,0 +1,39 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "securecargo-api",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-11-18",
+	"upload_source_maps": true,
+	"observability": {
+		"enabled": true
+	},
+	"vars": {
+		// Browser origins allowed to call the API (comma-separated). Passed to the container.
+		"CORS_ORIGINS": "https://securecargo.app,https://www.securecargo.app"
+	},
+	"containers": [
+		{
+			"class_name": "ApiContainer",
+			"scheduling_policy": "durable_object",
+			"images": {
+				"api": {
+					"dockerfile": "../Dockerfile"
+				}
+			}
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "API_CONTAINER",
+				"class_name": "ApiContainer"
+			}
+		]
+	},
+	"exports": {
+		"ApiContainer": {
+			"type": "durable-object",
+			"storage": "sqlite"
+		}
+	}
+}

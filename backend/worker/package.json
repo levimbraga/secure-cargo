@@ -1,0 +1,19 @@
+{
+  "name": "securecargo-api-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Thin Cloudflare Worker that routes api.securecargo.app to the FastAPI container.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types",
+    "typecheck": "wrangler types && tsc --noEmit",
+    "check": "wrangler deploy --dry-run"
+  },
+  "packageManager": "pnpm@12.3.4",
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "wrangler": "^4.165.0"
+  }
+}

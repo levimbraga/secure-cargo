@@ -10,3 +10,4 @@ data/
 tests/
 Dockerfile
 .dockerignore
+worker/
