@@ -4,7 +4,9 @@ The site replays these files, so the demo works even when the API is cold or dow
 
     uv run python -m scripts.precompute_demo
 
-Output: ``frontend/public/demo/index.json`` and one ``<id>.<variant>.json`` per run.
+Output: ``frontend/public/demo/index.json``, one ``<id>.<variant>.json`` per run, and one
+``live/<id>.<variant>.json`` per run with the live model (MJCF and run plan) the browser steps
+with MuJoCo WebAssembly.
 """
 
 import json
@@ -12,6 +14,7 @@ from pathlib import Path
 
 from app.demo import load_demo_scenarios
 from app.demo.fixtures import VARIANTS
+from physics.live import build_live_model
 from physics.run import run_event, scenario_hash
 
 OUTPUT_DIR = Path(__file__).resolve().parents[2] / "frontend" / "public" / "demo"
@@ -42,6 +45,8 @@ def build() -> dict[str, str]:
                 "result": result.model_dump(mode="json"),
             }
             files[name] = json.dumps(document, separators=(",", ":")) + "\n"
+            live = build_live_model(scenario, demo.event)
+            files[f"live/{name}"] = live.model_dump_json() + "\n"
             entry["variants"][variant] = {  # type: ignore[index]
                 "file": name,
                 "scenario_hash": document["scenario_hash"],
@@ -55,6 +60,7 @@ def build() -> dict[str, str]:
 def main() -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     for name, content in build().items():
+        (OUTPUT_DIR / name).parent.mkdir(parents=True, exist_ok=True)
         (OUTPUT_DIR / name).write_text(content)
         print(f"wrote frontend/public/demo/{name} ({len(content) / 1024:.0f} kB)")
 
