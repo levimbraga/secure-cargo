@@ -50,7 +50,7 @@ describe("explorer configuration", () => {
 
   it("drops the editor's edits when the layout changes, not when the trip does", () => {
     const edited = { ...DEFAULT_CONFIG, straps: [1, 1, 1], moves: [{ index: 0, x_m: 1, y_m: 0 }] };
-    expect(choose(edited, "speed_kmh", 60).moves).toHaveLength(1);
+    expect(choose(edited, "road", "curvy").moves).toHaveLength(1);
     expect(choose(edited, "weather", "wet").straps).toEqual([1, 1, 1]);
     expect(choose(edited, "cargo", "crate")).toMatchObject({ moves: [], straps: null });
   });

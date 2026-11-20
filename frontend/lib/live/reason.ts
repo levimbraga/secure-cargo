@@ -225,7 +225,9 @@ export function explain(result: ResultLike, doc: KeyframesDoc): Reason {
   const slide = worstBalance(doc, unitIndex);
   const tip = tippingBalance(doc, unitIndex);
   const moments = { overturning: kN(tip.overturning), restoring: kN(tip.restoring) };
-  const forces = { inertia: kN(slide.inertia), friction: kN(slide.friction) };
+  // Whether lashings, or only walls and blocks, take what friction cannot (1 or 0).
+  const lashed = doc.straps.some((strap) => strap.unit_id === subject) ? 1 : 0;
+  const forces = { inertia: kN(slide.inertia), friction: kN(slide.friction), lashed };
   if (governing.mode === "tip") {
     return { key: barely ? "holdsUprightBarely" : "holdsUpright", subject, values: { ...moments, ...forces } };
   }

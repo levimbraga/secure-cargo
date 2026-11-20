@@ -16,6 +16,9 @@ import { PUSH_MAX_WEIGHTS, type UnitPush } from "@/components/scene/push";
 import type { Vec3 } from "@/lib/keyframes";
 import type { LiveRun } from "@/lib/live/engine";
 import type { LabRun } from "@/lib/live/use-live-lab";
+
+/** What the clock needs of a run: where it was simulated, its engine settings and keyframes. */
+type ClockRun = Pick<LabRun, "source" | "summary" | "doc">;
 import { GRAVITY, playbackRate, type Speed } from "@/lib/replay";
 
 /** How often the read-outs update while playing; the 3D scene itself runs every frame. */
@@ -83,7 +86,7 @@ export function useLabClock({
   autoplay,
   videoRef,
 }: {
-  run: LabRun | null;
+  run: ClockRun | null;
   /** The engine of the latest browser run; read fresh on every frame. */
   engine: RefObject<LiveRun | null>;
   speed: Speed;
@@ -121,7 +124,7 @@ export function useLabClock({
   const laggingSince = useRef(0);
 
   // A new run starts from its beginning.
-  const [shownRun, setShownRun] = useState<LabRun | null>(null);
+  const [shownRun, setShownRun] = useState<ClockRun | null>(null);
   if (run !== shownRun) {
     setShownRun(run);
     setShownTime(0);

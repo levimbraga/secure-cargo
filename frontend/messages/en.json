@@ -418,7 +418,10 @@
       "holdsUpright": "Overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} stays upright, and nothing slides.",
       "holdsUprightBarely": "Overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} stays upright, with little margin.",
       "holdsTall": "Friction {friction} kN ≥ inertia {inertia} kN, and overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} neither slides nor tips.",
-      "holdsTallLashed": "Inertia {inertia} kN > friction {friction} kN, and the lashings take the difference; overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} neither slides nor tips."
+      "holdsTallLashed": "Inertia {inertia} kN > friction {friction} kN, and the lashings take the difference; overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} neither slides nor tips.",
+      "holdsBlocked": "Inertia {inertia} kN > friction {friction} kN, and the walls and blocks take the difference: nothing moves.",
+      "holdsBarelyBlocked": "Inertia {inertia} kN > friction {friction} kN: the walls and blocks hold the load, with little margin.",
+      "holdsTallBlocked": "Inertia {inertia} kN > friction {friction} kN, and the walls and blocks take the difference; overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} neither slides nor tips."
     },
     "live": {
       "badge": "Live, not certified",
@@ -513,5 +516,138 @@
     "github": "GitHub",
     "language": "Language",
     "disclaimer": "SecureCargo is a decision-support tool, not an engineering certification."
+  },
+  "Explorer": {
+    "label": "Explorer",
+    "metaTitle": "Explorer · SecureCargo",
+    "description": "Choose a truck, a load, how it is secured and a trip: MuJoCo simulates it live in your browser.",
+    "title": "Any load, any trip, simulated live.",
+    "intro": "Choose the truck, the cargo and the trip. Drag the units on the bed and tap one to add a strap: every change is simulated again.",
+    "state": {
+      "loading": "Loading the explorer…"
+    },
+    "dims": {
+      "body": "Body",
+      "size": "Truck",
+      "cargo": "Cargo",
+      "position": "Position",
+      "restraint": "Securing",
+      "speed": "Speed",
+      "road": "Road",
+      "weather": "Surface and weather",
+      "event": "Event",
+      "count": "Units",
+      "mass": "Mass per unit"
+    },
+    "options": {
+      "body": {
+        "flatbed": "Flatbed",
+        "box": "Box truck",
+        "curtain_sider": "Curtain-sider"
+      },
+      "size": {
+        "vuc": "VUC (urban, 2 axles)",
+        "toco": "Toco (2 axles)",
+        "truck": "Truck (3 axles)",
+        "semi": "Semi-trailer"
+      },
+      "cargo": {
+        "wood_pallet": "Wood pallets",
+        "plastic_pallet": "Plastic pallets",
+        "crate": "Crates",
+        "drum": "Drums",
+        "steel_coil": "Steel coil",
+        "machine": "Machine",
+        "tall_cabinet": "Tall cabinets",
+        "sacks": "Sacks on pallets",
+        "long_pipes": "Long pipes",
+        "stacked_boxes": "Cartons"
+      },
+      "position": {
+        "headboard": "Against the headboard",
+        "gap": "With a gap",
+        "rear": "At the rear",
+        "side": "To one side",
+        "stacked": "Stacked"
+      },
+      "restraint": {
+        "none": "None",
+        "top_over": "Straps over the load",
+        "direct": "Diagonal straps",
+        "chain": "Chains",
+        "rope": "Rope",
+        "blocking": "Blocking",
+        "mat": "Anti-slip mat and straps",
+        "cradle": "Coil cradle"
+      },
+      "road": {
+        "straight": "Straight highway",
+        "curvy": "Curvy highway",
+        "mountain": "Mountain descent",
+        "dirt": "Dirt or gravel",
+        "potholed": "Potholed asphalt",
+        "urban": "City, speed bumps"
+      },
+      "weather": {
+        "dry": "Dry",
+        "wet": "Wet",
+        "heavy_rain": "Heavy rain",
+        "mud": "Mud",
+        "fog": "Fog"
+      },
+      "event": {
+        "emergency_braking": "Emergency braking",
+        "lane_change": "Sudden lane change",
+        "sharp_curve": "Sharp curve",
+        "pothole": "Pothole",
+        "speed_bump": "Speed bump",
+        "mountain_descent": "Long descent",
+        "long_vibration": "Long vibration",
+        "full_trip": "Full trip"
+      }
+    },
+    "selectors": {
+      "load": "Truck and load",
+      "trip": "Trip",
+      "speedValue": "{value} km/h",
+      "massValue": "{value} kg",
+      "fewerUnits": "One unit fewer",
+      "moreUnits": "One unit more",
+      "fromOutside": "This load came from outside the explorer: the selectors change the truck, the securing and the trip; the editor changes the units."
+    },
+    "editor": {
+      "title": "Load editor",
+      "hint": "Top view, front to the right. Drag a unit to move it; tap it to add a strap (after the last one that fits, back to none).",
+      "label": "Top view of the truck bed, front to the right. Each unit is a button: arrow keys move it, Enter adds a strap.",
+      "front": "Cab",
+      "unit": "{unit}{stack, plural, =1 {} other { (stack of #)}}, {straps, plural, =0 {no strap} one {# strap} other {# straps}}",
+      "legendFront": "Thick line: headboard. Dots: lashing points. Dashes: axles.",
+      "legendStrap": "strap",
+      "legendCentre": "+ centre of mass",
+      "refused": "That place is taken by another unit.",
+      "axles": "Axle loads, legal limit (CONTRAN 882/2021)",
+      "axle": "{axle, select, front {Front axle} rear {Rear axles} tractor {Tractor axles} trailer {Trailer axles} other {Axle {axle}}}",
+      "axleValue": "{load} t of {limit} t · {percent}",
+      "units": "Units",
+      "straps": "{count, plural, =0 {no strap} one {# strap} other {# straps}}",
+      "fewer": "One strap fewer on {unit}",
+      "more": "One strap more on {unit}",
+      "reset": "Undo the edits"
+    },
+    "errors": {
+      "api_unreachable": "This load needs the simulation server, and it is not answering. What you see is the previous run.",
+      "unstable": "The simulation became unstable with this load. What you see is the previous run.",
+      "does_not_fit": "This cargo does not fit on this truck in that position.",
+      "cannot_stack": "Round cargo cannot be stacked.",
+      "units_overlap": "Two units overlap.",
+      "off_the_bed": "A unit hangs over the edge of the bed.",
+      "not_enough_anchors": "There are not enough lashing points along a unit for that many straps.",
+      "unit_unsupported": "A unit is neither on the floor nor on another unit.",
+      "invalid_unit": "A unit's size or mass is out of range.",
+      "invalid_load": "This load cannot be simulated.",
+      "invalid_config": "This link describes a load the explorer does not know.",
+      "straps_mismatch": "The straps in this link do not match its units."
+    },
+    "open": "Open in the explorer"
   }
 }

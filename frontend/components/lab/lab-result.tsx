@@ -87,7 +87,7 @@ export function useReasonSentence(): (reason: Reason) => string {
         return t(reason.key, { overturning, restoring, unit });
       case "holdsTall":
         return value("inertia") > value("friction")
-          ? t("holdsTallLashed", { inertia, friction, overturning, restoring, unit })
+          ? t(value("lashed") > 0 ? "holdsTallLashed" : "holdsTallBlocked", { inertia, friction, overturning, restoring, unit })
           : t("holdsTall", { inertia, friction, overturning, restoring, unit });
       case "leavesBed":
         // A unit that fell without sliding first (it tipped over the edge) has no force balance.
@@ -112,9 +112,11 @@ export function useReasonSentence(): (reason: Reason) => string {
       case "holds":
       case "holdsBarely":
         // Friction alone does not hold a unit under direct lashings: say what does.
-        return value("inertia") > value("friction")
+        if (value("inertia") <= value("friction")) return t(reason.key, { inertia, friction });
+        // Friction alone does not hold it: lashings do, or walls and blocks when there are none.
+        return value("lashed") > 0 || reason.values.lashed === undefined
           ? t(`${reason.key}Lashed`, { inertia, friction })
-          : t(reason.key, { inertia, friction });
+          : t(`${reason.key}Blocked`, { inertia, friction });
     }
   };
 }

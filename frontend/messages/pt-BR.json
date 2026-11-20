@@ -418,7 +418,10 @@
       "holdsUpright": "Momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} fica em pé, e nada desliza.",
       "holdsUprightBarely": "Momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} fica em pé, com pouca folga.",
       "holdsTall": "Atrito {friction} kN ≥ inércia {inertia} kN, e momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} não desliza nem tomba.",
-      "holdsTallLashed": "Inércia {inertia} kN > atrito {friction} kN, e as amarrações seguram a diferença; momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} não desliza nem tomba."
+      "holdsTallLashed": "Inércia {inertia} kN > atrito {friction} kN, e as amarrações seguram a diferença; momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} não desliza nem tomba.",
+      "holdsBlocked": "Inércia {inertia} kN > atrito {friction} kN, e as paredes e travas seguram a diferença: nada se move.",
+      "holdsBarelyBlocked": "Inércia {inertia} kN > atrito {friction} kN: as paredes e travas seguram a carga, com pouca folga.",
+      "holdsTallBlocked": "Inércia {inertia} kN > atrito {friction} kN, e as paredes e travas seguram a diferença; momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} não desliza nem tomba."
     },
     "live": {
       "badge": "Ao vivo, não certificado",
@@ -513,5 +516,138 @@
     "github": "GitHub",
     "language": "Idioma",
     "disclaimer": "O Carga Segura é uma ferramenta de apoio à decisão, não uma certificação de engenharia."
+  },
+  "Explorer": {
+    "label": "Explorador",
+    "metaTitle": "Explorador · Carga Segura",
+    "description": "Escolha um caminhão, uma carga, como ela está presa e uma viagem: o MuJoCo simula ao vivo no seu navegador.",
+    "title": "Qualquer carga, qualquer viagem, simulada ao vivo.",
+    "intro": "Escolha o caminhão, a carga e a viagem. Arraste os volumes na carroceria e toque num deles para pôr uma cinta: cada mudança é simulada de novo.",
+    "state": {
+      "loading": "Carregando o explorador…"
+    },
+    "dims": {
+      "body": "Carroceria",
+      "size": "Caminhão",
+      "cargo": "Carga",
+      "position": "Posição",
+      "restraint": "Amarração",
+      "speed": "Velocidade",
+      "road": "Estrada",
+      "weather": "Pista e clima",
+      "event": "Evento",
+      "count": "Volumes",
+      "mass": "Massa por volume"
+    },
+    "options": {
+      "body": {
+        "flatbed": "Carroceria aberta",
+        "box": "Baú",
+        "curtain_sider": "Sider"
+      },
+      "size": {
+        "vuc": "VUC (urbano, 2 eixos)",
+        "toco": "Toco (2 eixos)",
+        "truck": "Truck (3 eixos)",
+        "semi": "Carreta"
+      },
+      "cargo": {
+        "wood_pallet": "Paletes de madeira",
+        "plastic_pallet": "Paletes plásticos",
+        "crate": "Caixotes",
+        "drum": "Tambores",
+        "steel_coil": "Bobina de aço",
+        "machine": "Máquina",
+        "tall_cabinet": "Armários altos",
+        "sacks": "Sacaria em paletes",
+        "long_pipes": "Tubos longos",
+        "stacked_boxes": "Caixas de papelão"
+      },
+      "position": {
+        "headboard": "Encostada no painel",
+        "gap": "Com folga",
+        "rear": "Na traseira",
+        "side": "Para um lado",
+        "stacked": "Empilhada"
+      },
+      "restraint": {
+        "none": "Nenhuma",
+        "top_over": "Cintas por cima",
+        "direct": "Cintas diagonais",
+        "chain": "Correntes",
+        "rope": "Corda",
+        "blocking": "Travamento",
+        "mat": "Tapete antiderrapante e cintas",
+        "cradle": "Berço para bobina"
+      },
+      "road": {
+        "straight": "Rodovia reta",
+        "curvy": "Rodovia sinuosa",
+        "mountain": "Descida de serra",
+        "dirt": "Terra ou cascalho",
+        "potholed": "Asfalto esburacado",
+        "urban": "Cidade, lombadas"
+      },
+      "weather": {
+        "dry": "Seca",
+        "wet": "Molhada",
+        "heavy_rain": "Chuva forte",
+        "mud": "Lama",
+        "fog": "Neblina"
+      },
+      "event": {
+        "emergency_braking": "Freada de emergência",
+        "lane_change": "Troca brusca de faixa",
+        "sharp_curve": "Curva fechada",
+        "pothole": "Buraco",
+        "speed_bump": "Lombada",
+        "mountain_descent": "Descida longa",
+        "long_vibration": "Vibração prolongada",
+        "full_trip": "Viagem completa"
+      }
+    },
+    "selectors": {
+      "load": "Caminhão e carga",
+      "trip": "Viagem",
+      "speedValue": "{value} km/h",
+      "massValue": "{value} kg",
+      "fewerUnits": "Um volume a menos",
+      "moreUnits": "Um volume a mais",
+      "fromOutside": "Esta carga veio de fora do explorador: os seletores mudam o caminhão, a amarração e a viagem; o editor muda os volumes."
+    },
+    "editor": {
+      "title": "Editor de carga",
+      "hint": "Vista de cima, frente à direita. Arraste um volume para mudá-lo de lugar; toque nele para pôr uma cinta (depois da última que cabe, volta a nenhuma).",
+      "label": "Vista de cima da carroceria, frente à direita. Cada volume é um botão: as setas o movem, Enter põe uma cinta.",
+      "front": "Cabine",
+      "unit": "{unit}{stack, plural, =1 {} other { (pilha de #)}}, {straps, plural, =0 {sem cinta} one {# cinta} other {# cintas}}",
+      "legendFront": "Linha grossa: painel frontal. Pontos: pontos de amarração. Tracejado: eixos.",
+      "legendStrap": "cinta",
+      "legendCentre": "+ centro de massa",
+      "refused": "Esse lugar já está ocupado por outro volume.",
+      "axles": "Carga por eixo, limite legal (CONTRAN 882/2021)",
+      "axle": "{axle, select, front {Eixo dianteiro} rear {Eixos traseiros} tractor {Eixos do cavalo} trailer {Eixos da carreta} other {Eixo {axle}}}",
+      "axleValue": "{load} t de {limit} t · {percent}",
+      "units": "Volumes",
+      "straps": "{count, plural, =0 {sem cinta} one {# cinta} other {# cintas}}",
+      "fewer": "Uma cinta a menos em {unit}",
+      "more": "Uma cinta a mais em {unit}",
+      "reset": "Desfazer as edições"
+    },
+    "errors": {
+      "api_unreachable": "Esta carga precisa do servidor de simulação, e ele não está respondendo. O que você vê é a simulação anterior.",
+      "unstable": "A simulação ficou instável com esta carga. O que você vê é a simulação anterior.",
+      "does_not_fit": "Esta carga não cabe neste caminhão nessa posição.",
+      "cannot_stack": "Carga redonda não pode ser empilhada.",
+      "units_overlap": "Dois volumes se sobrepõem.",
+      "off_the_bed": "Um volume ficou para fora da carroceria.",
+      "not_enough_anchors": "Não há pontos de amarração suficientes ao longo de um volume para tantas cintas.",
+      "unit_unsupported": "Um volume não está nem no assoalho nem sobre outro volume.",
+      "invalid_unit": "O tamanho ou a massa de um volume está fora do intervalo.",
+      "invalid_load": "Esta carga não pode ser simulada.",
+      "invalid_config": "Este link descreve uma carga que o explorador não conhece.",
+      "straps_mismatch": "As cintas deste link não batem com os volumes."
+    },
+    "open": "Abrir no explorador"
   }
 }
