@@ -95,4 +95,13 @@ describe("explain", () => {
     expect(reason.values.friction).toBeGreaterThan(5.5);
     expect(reason.values.friction).toBeLessThan(7.5);
   });
+
+  it("reads friction when braking peaks, not when a sliding pallet hits the next one", () => {
+    const result = run("emergency-braking", "as_loaded");
+    const reason = explain(result, result.keyframes);
+    // 900 kg on plywood (0.45) pressed down by its weight and one 300 daN strap: about 6.3 kN of
+    // friction, short of the 6.7 kN braking asks for. Bouncing instants read far lower.
+    expect(reason.values.friction).toBeGreaterThan(5.8);
+    expect(reason.values.friction).toBeLessThan(reason.values.inertia ?? 0);
+  });
 });

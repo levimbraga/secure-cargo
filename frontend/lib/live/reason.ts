@@ -66,10 +66,10 @@ export function worstBalance(
       pose.n ?? 0,
       frame.bed_accel_mps2 ?? [0, 0, 0],
     );
-    // The instant of the largest ask; between instants that ask the same, the one with the
-    // least friction to answer it.
-    const gap = forces.inertiaMagnitude - forces.frictionLimit * 1e-6;
-    if (forces.inertiaMagnitude > 1 && gap > margin) {
+    // The first instant of the largest ask (by more than 1 N): when braking peaks, before the
+    // load has hit anything and bounced.
+    const gap = forces.inertiaMagnitude;
+    if (forces.inertiaMagnitude > 1 && gap > margin + 1) {
       margin = gap;
       worst = { inertia: forces.inertiaMagnitude, friction: forces.frictionLimit, frame: index };
     }
