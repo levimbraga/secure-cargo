@@ -7,8 +7,11 @@ import {
   distanceAt,
   type KeyframesDoc,
   KeyframesError,
+  largestSlide,
   parseKeyframes,
+  rotate,
   sampleFrame,
+  strapPath,
   toThreePosition,
   toThreeQuaternion,
 } from "./keyframes";
@@ -39,7 +42,7 @@ describe("parseKeyframes", () => {
 
   it.each([
     ["not an object", null],
-    ["another version", { ...makeDoc(), version: 2 }],
+    ["an unknown version", { ...makeDoc(), version: 3 }],
     ["no frames", { ...makeDoc(), frames: [] }],
     ["a non-positive fps", { ...makeDoc(), fps: 0 }],
     [
@@ -143,5 +146,154 @@ describe("placeholder keyframes", () => {
     }
     expect(secured.straps.length).toBeGreaterThan(0);
     expect(secured.result.status).toBe("pass");
+  });
+});
+
+function makeSimulationDoc(): KeyframesDoc {
+  return {
+    version: 2,
+    source: "simulation",
+    fps: 1,
+    duration_s: 1,
+    bed: {
+      length_m: 6,
+      width_m: 2.4,
+      floor_height_m: 1.2,
+      headboard_height_m: 1.2,
+      side_rail_height_m: 0,
+    },
+    units: [{ id: "box", size_m: [1, 1, 1] }],
+    straps: [
+      {
+        id: "over",
+        unit_id: "box",
+        kind: "strap",
+        routing: "top_over",
+        lashing_capacity_n: 25000,
+        anchor_points_m: [
+          [0, 1.2, 0],
+          [0, -1.2, 0],
+        ],
+        unit_points_m: [
+          [0, 0.5, 0.5],
+          [0, -0.5, 0.5],
+        ],
+        path_m: [
+          [0, 1.2, 0],
+          [0, 0.5, 1],
+          [0, -0.5, 1],
+          [0, -1.2, 0],
+        ],
+      },
+      {
+        id: "chain",
+        unit_id: "box",
+        kind: "chain",
+        routing: "direct",
+        lashing_capacity_n: 40000,
+        anchor_points_m: [[-1.5, 1.2, 0]],
+        unit_points_m: [[-0.5, 0.5, 0]],
+        path_m: [
+          [-1.5, 1.2, 0],
+          [-0.5, 0.5, 0.5],
+        ],
+      },
+    ],
+    events: [{ t: 0.3, kind: "braking_start" }],
+    frames: [
+      {
+        t: 0,
+        truck_speed_mps: 20,
+        bed_accel_mps2: [0, 0, 0],
+        units: [{ p: [0, 0, 0.5], q: [1, 0, 0, 0] }],
+        straps: [
+          { tension_n: 3000, slide_m: 0 },
+          { tension_n: 500, slide_m: 0 },
+        ],
+      },
+      {
+        t: 1,
+        truck_speed_mps: 12,
+        bed_accel_mps2: [-8, 0, 0],
+        // Moved 2 m forward and turned a quarter turn about the vertical axis.
+        units: [{ p: [2, 0, 0.5], q: [Math.SQRT1_2, 0, 0, Math.SQRT1_2] }],
+        straps: [
+          { tension_n: 5000, slide_m: -0.4 },
+          { tension_n: 9000, slide_m: 0 },
+        ],
+      },
+    ],
+    result: { status: "fail", unit_ids: ["box"] },
+  };
+}
+
+describe("version 2 documents (physics engine)", () => {
+  it("are accepted, and unknown versions are not", () => {
+    expect(parseKeyframes(makeSimulationDoc()).version).toBe(2);
+    expect(() => parseKeyframes({ ...makeSimulationDoc(), version: 3 })).toThrow(KeyframesError);
+  });
+
+  it("interpolate strap tension, strap slide and bed acceleration", () => {
+    const sample = sampleFrame(makeSimulationDoc(), 0.5);
+
+    expect(sample.straps[0]).toEqual({ tension: 4000, slide: -0.2 });
+    expect(sample.bedAccel).toEqual([-4, 0, 0]);
+    expect(sample.truckSpeed).toBe(16);
+  });
+
+  it("report zero acceleration and slide for version 1 documents", () => {
+    const sample = sampleFrame(makeDoc(), 0);
+
+    expect(sample.bedAccel).toEqual([0, 0, 0]);
+    expect(sample.straps).toEqual([]);
+  });
+
+  it("rotate a vector by a quaternion", () => {
+    const quarterTurnAboutZ: [number, number, number, number] = [Math.SQRT1_2, 0, 0, Math.SQRT1_2];
+    const [x, y, z] = rotate(quarterTurnAboutZ, [1, 0, 0]);
+
+    expect(x).toBeCloseTo(0);
+    expect(y).toBeCloseTo(1);
+    expect(z).toBeCloseTo(0);
+  });
+
+  it("draw a strap as installed at the first frame", () => {
+    const doc = makeSimulationDoc();
+    const start = sampleFrame(doc, 0);
+
+    expect(strapPath(doc, start, 0)).toEqual(doc.straps[0]?.path_m);
+    expect(strapPath(doc, start, 1)).toEqual(doc.straps[1]?.path_m);
+  });
+
+  it("move the points on the unit with the unit, and keep the anchors on the bed", () => {
+    const doc = makeSimulationDoc();
+    const end = sampleFrame(doc, 1);
+    const chain = strapPath(doc, end, 1);
+
+    // The anchor stays; the lashing point [-0.5, 0.5, 0] turns to [-0.5, -0.5, 0] and moves with the unit.
+    expect(chain[0]).toEqual([-1.5, 1.2, 0]);
+    expect(chain[1]?.[0]).toBeCloseTo(1.5);
+    expect(chain[1]?.[1]).toBeCloseTo(-0.5);
+    expect(chain[1]?.[2]).toBeCloseTo(0.5);
+  });
+
+  it("let a top-over strap slide along its unit", () => {
+    const doc = makeSimulationDoc();
+    const end = sampleFrame(doc, 1);
+    const [anchor, first, , last] = strapPath(doc, end, 0);
+
+    expect(anchor).toEqual([0, 1.2, 0]);
+    expect(last).toEqual([0, -1.2, 0]);
+    // Local point [0 - 0.4, 0.5, 0.5], turned a quarter turn, plus the unit position [2, 0, 0.5].
+    expect(first?.[0]).toBeCloseTo(1.5);
+    expect(first?.[1]).toBeCloseTo(-0.4);
+    expect(first?.[2]).toBeCloseTo(1);
+  });
+
+  it("measure the largest horizontal slide of any unit", () => {
+    const doc = makeSimulationDoc();
+
+    expect(largestSlide(doc, sampleFrame(doc, 0))).toBe(0);
+    expect(largestSlide(doc, sampleFrame(doc, 1))).toBeCloseTo(2);
   });
 });

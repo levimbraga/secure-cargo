@@ -11,17 +11,35 @@ export type Vec3 = [number, number, number];
 export type Quat = [number, number, number, number];
 
 export type KeyframeUnit = { id: string; size_m: Vec3 };
-export type KeyframeStrap = { id: string; unit_id: string; path_m: Vec3[] };
+/**
+ * A lashing. Version 2 documents (from the physics engine) add what is needed to draw it as
+ * the unit moves: `anchor_points_m` are fixed on the bed, `unit_points_m` are relative to the
+ * unit's center and move with it. `path_m` is the path as installed.
+ */
+export type KeyframeStrap = {
+  id: string;
+  unit_id: string;
+  path_m: Vec3[];
+  kind?: "strap" | "chain" | "rope";
+  routing?: "top_over" | "direct";
+  lashing_capacity_n?: number;
+  anchor_points_m?: Vec3[];
+  unit_points_m?: Vec3[];
+};
 export type KeyframeFrame = {
   t: number;
   /** Forward speed of the truck; only used to move the road under it. */
   truck_speed_mps?: number;
+  /** Acceleration of the bed (braking is negative X). Version 2 only. */
+  bed_accel_mps2?: Vec3;
   units: { p: Vec3; q: Quat }[];
-  straps: { tension_n: number }[];
+  /** `slide_m`: how far a top-over strap has moved along its unit. Version 2 only. */
+  straps: { tension_n: number; slide_m?: number }[];
 };
 
 export type KeyframesDoc = {
-  version: 1;
+  /** 1: hand-made placeholders. 2: output of the physics engine (docs/design.md). */
+  version: 1 | 2;
   /** "placeholder" is hand-made animation; "simulation" comes from the physics engine. */
   source: "placeholder" | "simulation";
   fps: number;
@@ -31,6 +49,7 @@ export type KeyframesDoc = {
     width_m: number;
     floor_height_m: number;
     headboard_height_m: number;
+    side_rail_height_m?: number;
   };
   units: KeyframeUnit[];
   straps: KeyframeStrap[];
@@ -41,7 +60,10 @@ export type KeyframesDoc = {
 
 export type Sample = {
   truckSpeed: number;
+  /** Acceleration of the bed in m/s²; zero for version 1 documents. */
+  bedAccel: Vec3;
   units: { p: Vec3; q: Quat }[];
+  straps: { tension: number; slide: number }[];
 };
 
 export class KeyframesError extends Error {
@@ -57,7 +79,7 @@ export function parseKeyframes(raw: unknown): KeyframesDoc {
   if (typeof doc !== "object" || doc === null) {
     throw new KeyframesError("Keyframes must be an object");
   }
-  if (doc.version !== 1) {
+  if (doc.version !== 1 && doc.version !== 2) {
     throw new KeyframesError(`Unsupported keyframes version: ${String(doc.version)}`);
   }
   if (!(typeof doc.fps === "number" && doc.fps > 0)) {
@@ -111,11 +133,65 @@ export function sampleFrame(doc: KeyframesDoc, t: number): Sample {
 
   return {
     truckSpeed: lerp(a.truck_speed_mps ?? 0, b.truck_speed_mps ?? 0, k),
+    bedAccel: lerpVec3(a.bed_accel_mps2 ?? ZERO, b.bed_accel_mps2 ?? ZERO, k),
     units: a.units.map((unit, i) => {
       const other = b.units[i] ?? unit;
       return { p: lerpVec3(unit.p, other.p, k), q: nlerpQuat(unit.q, other.q, k) };
     }),
+    straps: a.straps.map((strap, i) => {
+      const other = b.straps[i] ?? strap;
+      return {
+        tension: lerp(strap.tension_n, other.tension_n, k),
+        slide: lerp(strap.slide_m ?? 0, other.slide_m ?? 0, k),
+      };
+    }),
   };
+}
+
+const ZERO: Vec3 = [0, 0, 0];
+
+/** Rotates a vector by a unit quaternion [w, x, y, z]. */
+export function rotate([w, x, y, z]: Quat, [vx, vy, vz]: Vec3): Vec3 {
+  // v + 2 q_vec × (q_vec × v + w v)
+  const cx = y * vz - z * vy + w * vx;
+  const cy = z * vx - x * vz + w * vy;
+  const cz = x * vy - y * vx + w * vz;
+  return [vx + 2 * (y * cz - z * cy), vy + 2 * (z * cx - x * cz), vz + 2 * (x * cy - y * cx)];
+}
+
+/**
+ * Path of a lashing at a sampled state, in the simulation frame: anchor, the points on the
+ * unit (which move with it), anchor. A top-over strap may have slid along its unit. Version 1
+ * documents only have the installed path.
+ */
+export function strapPath(doc: KeyframesDoc, sample: Sample, strapIndex: number): Vec3[] {
+  const strap = doc.straps[strapIndex];
+  if (!strap) return [];
+  const { anchor_points_m: anchors, unit_points_m: unitPoints } = strap;
+  const unitIndex = doc.units.findIndex((unit) => unit.id === strap.unit_id);
+  const pose = sample.units[unitIndex];
+  const first = anchors?.[0];
+  if (!anchors || !unitPoints || !pose || !first) return strap.path_m;
+
+  const slide = strap.routing === "top_over" ? (sample.straps[strapIndex]?.slide ?? 0) : 0;
+  const onUnit = unitPoints.map(([x, y, z]): Vec3 => {
+    const [rx, ry, rz] = rotate(pose.q, [x + slide, y, z]);
+    return [pose.p[0] + rx, pose.p[1] + ry, pose.p[2] + rz];
+  });
+  const last = anchors[1];
+  return last ? [first, ...onUnit, last] : [first, ...onUnit];
+}
+
+/** Largest horizontal distance any unit is from where it started, at a sampled state. */
+export function largestSlide(doc: KeyframesDoc, sample: Sample): number {
+  const start = doc.frames[0]?.units ?? [];
+  let largest = 0;
+  for (const [index, unit] of sample.units.entries()) {
+    const origin = start[index]?.p;
+    if (!origin) continue;
+    largest = Math.max(largest, Math.hypot(unit.p[0] - origin[0], unit.p[1] - origin[1]));
+  }
+  return largest;
 }
 
 const distanceCache = new WeakMap<KeyframesDoc, number[]>();
