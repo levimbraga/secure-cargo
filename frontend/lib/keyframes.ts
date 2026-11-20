@@ -10,7 +10,17 @@ export type Vec3 = [number, number, number];
 /** [w, x, y, z] */
 export type Quat = [number, number, number, number];
 
-export type KeyframeUnit = { id: string; size_m: Vec3 };
+export type KeyframeUnit = {
+  id: string;
+  size_m: Vec3;
+  /** Version 2 only. */
+  mass_kg?: number;
+  /** Friction factor against the bed floor. Version 2 only. */
+  friction_coefficient?: number;
+};
+export type ContactKind = "floor" | "headboard" | "rail" | "unit" | "road";
+/** A contact point of the physics engine: x, y, z in the bed frame [m], normal force [N], what is touched. */
+export type KeyframeContact = [number, number, number, number, ContactKind];
 /**
  * A lashing. Version 2 documents (from the physics engine) add what is needed to draw it as
  * the unit moves: `anchor_points_m` are fixed on the bed, `unit_points_m` are relative to the
@@ -32,9 +42,12 @@ export type KeyframeFrame = {
   truck_speed_mps?: number;
   /** Acceleration of the bed (braking is negative X). Version 2 only. */
   bed_accel_mps2?: Vec3;
-  units: { p: Vec3; q: Quat }[];
+  /** `n`: force with which the floor holds the unit up [N]. Version 2 only. */
+  units: { p: Vec3; q: Quat; n?: number }[];
   /** `slide_m`: how far a top-over strap has moved along its unit. Version 2 only. */
   straps: { tension_n: number; slide_m?: number }[];
+  /** Contact points the solver found at this instant. Version 2 only. */
+  contacts?: KeyframeContact[];
 };
 
 export type KeyframesDoc = {
@@ -62,8 +75,11 @@ export type Sample = {
   truckSpeed: number;
   /** Acceleration of the bed in m/s²; zero for version 1 documents. */
   bedAccel: Vec3;
-  units: { p: Vec3; q: Quat }[];
+  /** `normal`: force with which the floor holds the unit up [N]; zero for version 1 documents. */
+  units: { p: Vec3; q: Quat; normal: number }[];
   straps: { tension: number; slide: number }[];
+  /** Contact points of the nearest earlier frame (they are not interpolated). */
+  contacts: KeyframeContact[];
 };
 
 export class KeyframesError extends Error {
@@ -136,8 +152,13 @@ export function sampleFrame(doc: KeyframesDoc, t: number): Sample {
     bedAccel: lerpVec3(a.bed_accel_mps2 ?? ZERO, b.bed_accel_mps2 ?? ZERO, k),
     units: a.units.map((unit, i) => {
       const other = b.units[i] ?? unit;
-      return { p: lerpVec3(unit.p, other.p, k), q: nlerpQuat(unit.q, other.q, k) };
+      return {
+        p: lerpVec3(unit.p, other.p, k),
+        q: nlerpQuat(unit.q, other.q, k),
+        normal: lerp(unit.n ?? 0, other.n ?? 0, k),
+      };
     }),
+    contacts: a.contacts ?? NO_CONTACTS,
     straps: a.straps.map((strap, i) => {
       const other = b.straps[i] ?? strap;
       return {
@@ -149,6 +170,7 @@ export function sampleFrame(doc: KeyframesDoc, t: number): Sample {
 }
 
 const ZERO: Vec3 = [0, 0, 0];
+const NO_CONTACTS: KeyframeContact[] = [];
 
 /** Rotates a vector by a unit quaternion [w, x, y, z]. */
 export function rotate([w, x, y, z]: Quat, [vx, vy, vz]: Vec3): Vec3 {
