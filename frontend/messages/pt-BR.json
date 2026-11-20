@@ -62,7 +62,7 @@
     },
     "scenarios": {
       "title": "Cenários",
-      "lead": "Quatro jeitos de uma carga dar errado. Cada cenário vai rodar como foi carregado e de novo com o plano recomendado.",
+      "lead": "Quatro jeitos de uma carga dar errado. Cada cenário roda como foi carregado e de novo corrigido.",
       "cta": "Abrir o app",
       "items": {
         "braking": {
@@ -112,6 +112,153 @@
       "unreachable": "Não foi possível falar com o servidor. Confira sua conexão e tente de novo em instantes.",
       "bad_status": "O servidor respondeu com um erro. Tente de novo em instantes.",
       "bad_payload": "O servidor respondeu em um formato que esta página não entende."
+    }
+  },
+  "Scenario": {
+    "label": "Cenário",
+    "titles": {
+      "emergency-braking": "Frenagem de emergência",
+      "weigh-station": "Balança",
+      "rope-lashing": "Amarração com corda",
+      "sharp-curve": "Curva fechada"
+    },
+    "events": {
+      "emergency-braking": "Freada de emergência a {speed} km/h, pista seca",
+      "weigh-station": "Lombada a {speed} km/h, freando",
+      "rope-lashing": "Troca brusca de faixa a {speed} km/h",
+      "sharp-curve": "Curva fechada a {speed} km/h"
+    },
+    "sentences": {
+      "emergency-braking": {
+        "as_loaded": "Como foi carregado, os paletes deslizam para a frente e um bate no painel frontal.",
+        "fixed": "Com duas cintas por palete, a carga não sai do lugar."
+      },
+      "weigh-station": {
+        "as_loaded": "A carga fica firme, mas o eixo traseiro passa do limite legal.",
+        "fixed": "Com a máquina mais para a frente, os dois eixos ficam dentro do limite."
+      },
+      "rope-lashing": {
+        "as_loaded": "Amarradas com corda, as pilhas deslizam de lado na troca de faixa.",
+        "fixed": "Sobre mantas antiderrapantes e com cintas, as pilhas não saem do lugar."
+      },
+      "sharp-curve": {
+        "as_loaded": "Soltos, os armários tombam e caem do caminhão.",
+        "fixed": "Com duas cintas cada, os armários ficam em pé."
+      }
+    },
+    "explanations": {
+      "emergency-braking": {
+        "as_loaded": "Três paletes com uma cinta cada. Uma cinta não aperta o palete contra o assoalho o bastante para o atrito segurar numa freada de emergência.",
+        "fixed": "Os mesmos paletes com duas cintas cada, o número que a norma EN 12195-1 pede com o fator de segurança. O atrito segura com folga."
+      },
+      "weigh-station": {
+        "as_loaded": "Uma máquina pesada presa com correntes na traseira e dois caixotes. Nada se mexe na lombada, mas o peso da máquina fica atrás do eixo traseiro.",
+        "fixed": "A mesma carga com a máquina perto da frente e os caixotes atrás. O peso fica dividido entre os dois eixos."
+      },
+      "rope-lashing": {
+        "as_loaded": "Pilhas sobre paletes plásticos, cada uma presa com duas cordas. A corda estica e não dá para apertar como uma cinta com catraca, e as regras brasileiras não permitem corda como amarração de carga.",
+        "fixed": "Mantas antiderrapantes de borracha sob os paletes e duas cintas com catraca por pilha."
+      },
+      "sharp-curve": {
+        "as_loaded": "Dois armários altos sem amarração. A curva empurra os dois de lado com mais força do que a base estreita aguenta.",
+        "fixed": "Duas cintas sobre cada armário apertam o volume contra o assoalho e não deixam tombar."
+      }
+    },
+    "variant": {
+      "label": "Versão da carga",
+      "as_loaded": "Como foi carregado",
+      "fixed": "Corrigido"
+    },
+    "verdict": {
+      "pass": "Aprovado",
+      "warning": "Atenção",
+      "fail": "Reprovado"
+    },
+    "replay": {
+      "label": "Replay 3D da simulação. Arraste para olhar em volta.",
+      "loading": "Carregando o replay…",
+      "error": "Não foi possível carregar o replay. Os resultados abaixo continuam válidos.",
+      "unsupported": "Este navegador não consegue desenhar o replay 3D. A linha do tempo e os resultados abaixo continuam funcionando.",
+      "play": "Reproduzir",
+      "pause": "Pausar",
+      "again": "Reproduzir de novo",
+      "time": "Tempo no replay",
+      "clock": "{now} / {total} s",
+      "source": "Dados de simulação · MuJoCo {version} · passo de {step} ms"
+    },
+    "live": {
+      "truck": "Caminhão",
+      "steady": "estável",
+      "braking": "freando a {g} g",
+      "sideways": "de lado a {g} g",
+      "vertical": "vertical a {g} g",
+      "slide": "Maior deslizamento agora",
+      "tension": "Maior tensão na amarração agora",
+      "noLashing": "sem amarração"
+    },
+    "markers": {
+      "braking_start": "Começa a frear",
+      "truck_stopped": "Caminhão parado",
+      "lane_change_start": "Começa a troca de faixa",
+      "lane_change_end": "Termina a troca de faixa",
+      "curve_start": "Começa a curva",
+      "curve_end": "Termina a curva",
+      "speed_bump": "Lombada",
+      "pothole": "Buraco",
+      "vibration_start": "Começa a vibração",
+      "pulse_start": "Começa o pulso de teste"
+    },
+    "rows": {
+      "title": "Resultado",
+      "verdict": "Veredito",
+      "maxSlide": "Maior deslizamento",
+      "maxTilt": "Maior inclinação",
+      "frictionUse": "Atrito usado",
+      "peakLashing": "Força máxima na amarração",
+      "standard": "Amarração pedida pela EN 12195-1",
+      "frontAxle": "Eixo dianteiro",
+      "rearAxle": "Eixo traseiro",
+      "event": "Evento da viagem",
+      "peak": "Aceleração máxima"
+    },
+    "values": {
+      "leftBed": "caiu do caminhão",
+      "noLashing": "sem amarração",
+      "lashing": "{force} daN, {percent} da capacidade",
+      "met": "atendida",
+      "notMet": "não atendida",
+      "metDetail": "atendida, {installed} de {required} por volume",
+      "notMetDetail": "não atendida, {installed} de {required} por volume",
+      "axle": "{load} t de {limit} t",
+      "peakForward": "{g} g freando",
+      "peakLateral": "{g} g de lado",
+      "peakVertical": "{g} g na vertical"
+    },
+    "findings": {
+      "title": "O que deu errado",
+      "unit_slid": "{unit} deslizou {distance} cm.",
+      "unit_tilted": "{unit} inclinou {angle}°.",
+      "unit_left_bed": "{unit} caiu do caminhão.",
+      "unit_hit_headboard": "{unit} bateu no painel frontal.",
+      "headboard_overloaded": "O painel frontal recebeu mais força do que suporta.",
+      "lashing_overloaded": "Uma amarração de {unit} chegou a {percent} da capacidade.",
+      "lashing_broke": "Uma amarração de {unit} rompeu.",
+      "lashing_went_slack": "Uma amarração de {unit} afrouxou.",
+      "axle_overloaded": "O eixo {axle, select, front {dianteiro} other {traseiro}} carrega {load} t. O limite legal é {limit} t."
+    },
+    "units": {
+      "pallet": "Palete {number}",
+      "crate": "Caixote {number}",
+      "machine": "A máquina",
+      "stack": "Pilha {number}",
+      "cabinet": "Armário {number}",
+      "other": "Volume {id}"
+    },
+    "method": "Como isso é calculado",
+    "others": "Outros cenários",
+    "list": {
+      "label": "Cenários de demonstração",
+      "title": "Quatro cargas, cada uma simulada como foi carregada e corrigida."
     }
   },
   "Footer": {

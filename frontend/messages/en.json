@@ -62,7 +62,7 @@
     },
     "scenarios": {
       "title": "Scenarios",
-      "lead": "Four ways a load goes wrong. Each scenario will run as loaded, and again with the recommended plan.",
+      "lead": "Four ways a load goes wrong. Each scenario runs as loaded, and again fixed.",
       "cta": "Open the app",
       "items": {
         "braking": {
@@ -112,6 +112,153 @@
       "unreachable": "The server could not be reached. Check your connection and try again in a moment.",
       "bad_status": "The server answered with an error. Try again in a moment.",
       "bad_payload": "The server answered in a format this page does not understand."
+    }
+  },
+  "Scenario": {
+    "label": "Scenario",
+    "titles": {
+      "emergency-braking": "Emergency braking",
+      "weigh-station": "Weigh station",
+      "rope-lashing": "Rope lashing",
+      "sharp-curve": "Sharp curve"
+    },
+    "events": {
+      "emergency-braking": "Emergency stop from {speed} km/h, dry road",
+      "weigh-station": "Speed bump at {speed} km/h, while braking",
+      "rope-lashing": "Sudden lane change at {speed} km/h",
+      "sharp-curve": "Sharp curve at {speed} km/h"
+    },
+    "sentences": {
+      "emergency-braking": {
+        "as_loaded": "As loaded, the pallets slide forward and one hits the headboard.",
+        "fixed": "With two straps per pallet, the load does not move."
+      },
+      "weigh-station": {
+        "as_loaded": "The load holds, but the rear axle is over the legal limit.",
+        "fixed": "With the machine moved forward, both axles are within the limit."
+      },
+      "rope-lashing": {
+        "as_loaded": "Tied with rope, the stacks slide sideways in the lane change.",
+        "fixed": "On anti-slip mats and under straps, the stacks do not move."
+      },
+      "sharp-curve": {
+        "as_loaded": "Standing free, the cabinets tip over and fall off the truck.",
+        "fixed": "With two straps each, the cabinets stay upright."
+      }
+    },
+    "explanations": {
+      "emergency-braking": {
+        "as_loaded": "Three pallets with one strap each. One strap does not press a pallet down hard enough for friction to hold it in an emergency stop.",
+        "fixed": "The same pallets with two straps each, the number the EN 12195-1 standard asks for with its safety factor. Friction holds with room to spare."
+      },
+      "weigh-station": {
+        "as_loaded": "A heavy machine chained down at the back, and two crates. Nothing moves over the speed bump, but the machine's weight sits behind the rear axle.",
+        "fixed": "The same cargo with the machine near the front and the crates behind it. The weight is shared between the two axles."
+      },
+      "rope-lashing": {
+        "as_loaded": "Stacks on plastic pallets, each tied with two ropes. Rope stretches and cannot be tightened like a ratchet strap, and Brazilian rules do not allow it as cargo lashing.",
+        "fixed": "Rubber anti-slip mats under the pallets and two ratchet straps per stack."
+      },
+      "sharp-curve": {
+        "as_loaded": "Two tall cabinets with no lashing. The curve pushes them sideways harder than their narrow base can resist.",
+        "fixed": "Two straps over each cabinet press it down and keep it from tipping."
+      }
+    },
+    "variant": {
+      "label": "Version of the load",
+      "as_loaded": "As loaded",
+      "fixed": "Fixed"
+    },
+    "verdict": {
+      "pass": "Pass",
+      "warning": "Warning",
+      "fail": "Fail"
+    },
+    "replay": {
+      "label": "3D replay of the simulation. Drag to look around.",
+      "loading": "Loading the replay…",
+      "error": "The replay could not be loaded. The results below are still valid.",
+      "unsupported": "This browser cannot draw the 3D replay. The timeline and the results below still work.",
+      "play": "Play",
+      "pause": "Pause",
+      "again": "Play again",
+      "time": "Time in the replay",
+      "clock": "{now} / {total} s",
+      "source": "Simulation data · MuJoCo {version} · {step} ms time step"
+    },
+    "live": {
+      "truck": "Truck",
+      "steady": "steady",
+      "braking": "braking at {g} g",
+      "sideways": "sideways at {g} g",
+      "vertical": "vertical at {g} g",
+      "slide": "Largest slide now",
+      "tension": "Highest lashing tension now",
+      "noLashing": "no lashing"
+    },
+    "markers": {
+      "braking_start": "Braking starts",
+      "truck_stopped": "Truck stopped",
+      "lane_change_start": "Lane change starts",
+      "lane_change_end": "Lane change ends",
+      "curve_start": "Curve starts",
+      "curve_end": "Curve ends",
+      "speed_bump": "Speed bump",
+      "pothole": "Pothole",
+      "vibration_start": "Vibration starts",
+      "pulse_start": "Test pulse starts"
+    },
+    "rows": {
+      "title": "Result",
+      "verdict": "Verdict",
+      "maxSlide": "Largest slide",
+      "maxTilt": "Largest tilt",
+      "frictionUse": "Friction used",
+      "peakLashing": "Peak lashing force",
+      "standard": "Lashing asked by EN 12195-1",
+      "frontAxle": "Front axle",
+      "rearAxle": "Rear axle",
+      "event": "Trip event",
+      "peak": "Peak acceleration"
+    },
+    "values": {
+      "leftBed": "fell off the truck",
+      "noLashing": "no lashing",
+      "lashing": "{force} daN, {percent} of capacity",
+      "met": "met",
+      "notMet": "not met",
+      "metDetail": "met, {installed} of {required} per unit",
+      "notMetDetail": "not met, {installed} of {required} per unit",
+      "axle": "{load} t of {limit} t",
+      "peakForward": "{g} g braking",
+      "peakLateral": "{g} g sideways",
+      "peakVertical": "{g} g vertical"
+    },
+    "findings": {
+      "title": "What went wrong",
+      "unit_slid": "{unit} slid {distance} cm.",
+      "unit_tilted": "{unit} tilted {angle}°.",
+      "unit_left_bed": "{unit} fell off the truck.",
+      "unit_hit_headboard": "{unit} hit the headboard.",
+      "headboard_overloaded": "The headboard was loaded beyond its rating.",
+      "lashing_overloaded": "A lashing on {unit} reached {percent} of its capacity.",
+      "lashing_broke": "A lashing on {unit} broke.",
+      "lashing_went_slack": "A lashing on {unit} went slack.",
+      "axle_overloaded": "The {axle, select, front {front} other {rear}} axle carries {load} t. The legal limit is {limit} t."
+    },
+    "units": {
+      "pallet": "Pallet {number}",
+      "crate": "Crate {number}",
+      "machine": "The machine",
+      "stack": "Stack {number}",
+      "cabinet": "Cabinet {number}",
+      "other": "Unit {id}"
+    },
+    "method": "How this is calculated",
+    "others": "Other scenarios",
+    "list": {
+      "label": "Demo scenarios",
+      "title": "Four loads, each simulated as loaded and fixed."
     }
   },
   "Footer": {
