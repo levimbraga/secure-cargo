@@ -7,6 +7,7 @@ import { DEMO_IDS, type DemoRun, VARIANTS } from "@/lib/demo";
 
 import { LiveRun } from "./engine";
 import { type LiveModel, parseLiveModel } from "./model";
+import { MUJOCO_VERSION } from "./mujoco";
 import { parityDifferences, paritySummary } from "./parity";
 
 type Mujoco = Awaited<ReturnType<typeof loadMujoco>>;
@@ -27,6 +28,11 @@ describe("LiveRun (MuJoCo WebAssembly)", () => {
 
   it("runs the engine version the server runs", () => {
     expect(mujoco.mj_versionString()).toBe(liveModel("emergency-braking", "fixed").engine.mujoco_version);
+    // The browser loads the same build, from the versioned folder under /mujoco.
+    const installed = JSON.parse(readFileSync("node_modules/@mujoco/mujoco/package.json", "utf8")) as {
+      version: string;
+    };
+    expect(MUJOCO_VERSION).toBe(installed.version);
   });
 
   for (const id of DEMO_IDS) {
