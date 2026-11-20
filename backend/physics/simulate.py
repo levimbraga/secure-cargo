@@ -11,6 +11,7 @@ The run has two phases:
 Everything is deterministic: fixed time step, no random numbers, no wall-clock dependence.
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import mujoco
@@ -31,6 +32,7 @@ from physics.results import (
     Finding,
     Keyframe,
     KeyframeBed,
+    KeyframeContact,
     KeyframeEvent,
     KeyframePose,
     KeyframeResult,
@@ -44,7 +46,15 @@ from physics.results import (
     UnitResult,
 )
 from physics.verdict import SLIDE_FAIL_M, build_verdict
-from scene.mjcf import BED_BODY, BED_JOINTS, FLOOR_GEOM, HEADBOARD_GEOM, Scene, build_scene
+from scene.mjcf import (
+    BED_BODY,
+    BED_JOINTS,
+    FLOOR_GEOM,
+    HEADBOARD_GEOM,
+    ROAD_GEOM,
+    Scene,
+    build_scene,
+)
 
 FloatArray = NDArray[np.float64]
 
@@ -62,6 +72,10 @@ _MAX_SPRING_PHASE_PER_STEP = 0.5
 _BLOCKED_GAP_M = 0.005
 # Headboard contact below this fraction of the unit's weight is ignored as noise.
 _HEADBOARD_FORCE_FRACTION = 0.01
+
+
+# Called at every keyframe with the model, its state and the time of the keyframe [s].
+FrameHook = Callable[[mujoco.MjModel, mujoco.MjData, float], None]
 
 
 class SimulationError(RuntimeError):
@@ -113,9 +127,16 @@ def simulate(
     *,
     surface_friction_cap: float | None = None,
     extra_findings: list[Finding] | None = None,
+    visual: bool = False,
+    frame_hook: FrameHook | None = None,
 ) -> SimulationResult:
-    """Simulate ``scenario`` while the bed follows ``profile``."""
-    scene = build_scene(scenario, surface_friction_cap=surface_friction_cap)
+    """Simulate ``scenario`` while the bed follows ``profile``.
+
+    ``visual`` adds textures and lights to the model for MuJoCo's own renderer, and
+    ``frame_hook`` is called with the live model and state at every keyframe; neither changes
+    the simulation (a test compares the results).
+    """
+    scene = build_scene(scenario, surface_friction_cap=surface_friction_cap, visual=visual)
     model = mujoco.MjModel.from_xml_string(scene.xml)
     data = mujoco.MjData(model)
     model.opt.gravity[:] = (0.0, 0.0, -STANDARD_GRAVITY_MPS2)
@@ -140,6 +161,7 @@ def simulate(
     unit_of_geom = np.full(model.ngeom, -1, dtype=np.intp)
     unit_of_geom[unit_geoms] = np.arange(len(unit_geoms))
     floor_friction = np.array([unit.floor_friction.coefficient for unit in scene.units])
+    contact_kinds = _contact_kinds(model, floor_geom, headboard_geom, unit_geoms)
     saddle_qpos = [
         int(model.joint(lashing.saddle_joint).qposadr[0]) if lashing.saddle_joint else -1
         for lashing in scene.lashings
@@ -178,9 +200,23 @@ def simulate(
     half_extent = np.array([half_length, half_width])
     min_upright = np.ones(count)
 
-    frames: list[Keyframe] = [
-        _keyframe(0.0, profile, 0, data, bed_id, unit_ids, lashings, saddle_qpos)
-    ]
+    def keyframe(t: float, step: int) -> Keyframe:
+        if frame_hook is not None:
+            frame_hook(model, data, t)
+        return _keyframe(
+            t,
+            profile,
+            step,
+            data,
+            bed_id,
+            unit_ids,
+            lashings,
+            saddle_qpos,
+            contact_kinds,
+            unit_of_geom,
+        )
+
+    frames: list[Keyframe] = [keyframe(0.0, 0)]
     steps_per_frame = 1.0 / (REPLAY_FPS * TIMESTEP_S)
     next_frame = 1
 
@@ -238,18 +274,7 @@ def simulate(
                 tracking_error,
                 float(np.abs(data.qpos[bed_dofs] - bed_start - prescribed[step]).max()),
             )
-            frames.append(
-                _keyframe(
-                    next_frame / REPLAY_FPS,
-                    profile,
-                    step,
-                    data,
-                    bed_id,
-                    unit_ids,
-                    lashings,
-                    saddle_qpos,
-                )
-            )
+            frames.append(keyframe(next_frame / REPLAY_FPS, step))
             next_frame += 1
 
     _check_stable(data)
@@ -313,7 +338,15 @@ def simulate(
             headboard_height_m=headboard.height_m if headboard else 0.0,
             side_rail_height_m=scenario.bed.side_rail_height_m,
         ),
-        units=[KeyframeUnit(id=unit.unit.id, size_m=unit.unit.size_m) for unit in scene.units],
+        units=[
+            KeyframeUnit(
+                id=unit.unit.id,
+                size_m=unit.unit.size_m,
+                mass_kg=unit.unit.mass_kg,
+                friction_coefficient=unit.floor_friction.coefficient,
+            )
+            for unit in scene.units
+        ],
         straps=[_keyframe_strap(scene, index) for index in range(len(scene.lashings))],
         events=[
             KeyframeEvent(t=_round(marker.t, 3), kind=marker.kind) for marker in profile.markers
@@ -492,6 +525,20 @@ def _unit_headboard_force(
     return total
 
 
+def _contact_kinds(
+    model: mujoco.MjModel, floor_geom: int, headboard_geom: int, unit_geoms: NDArray[np.intp]
+) -> list[str]:
+    """What each geom is, for labelling contact points: indexed by geom id."""
+    kinds = ["rail"] * model.ngeom
+    kinds[floor_geom] = "floor"
+    kinds[model.geom(ROAD_GEOM).id] = "road"
+    if headboard_geom >= 0:
+        kinds[headboard_geom] = "headboard"
+    for geom in unit_geoms:
+        kinds[int(geom)] = "unit"
+    return kinds
+
+
 def _keyframe(
     t: float,
     profile: MotionProfile,
@@ -501,25 +548,64 @@ def _keyframe(
     unit_ids: NDArray[np.intp],
     lashings: _Lashings,
     saddle_qpos: list[int],
+    contact_kinds: list[str],
+    unit_of_geom: NDArray[np.intp],
 ) -> Keyframe:
-    positions = data.xpos[unit_ids] - data.xpos[bed_id]
+    bed = data.xpos[bed_id]
+    positions = data.xpos[unit_ids] - bed
     quaternions = data.xquat[unit_ids]
     tension = lashings.tension(data)
+
+    # Contact points with their normal force, and the floor's push on each unit.
+    normal = np.zeros(len(unit_ids))
+    contacts: list[KeyframeContact] = []
+    geoms = data.contact.geom
+    address = data.contact.efc_address
+    points = data.contact.pos
+    for index in range(data.ncon):
+        if address[index] < 0:
+            continue
+        force = float(data.efc_force[address[index]])
+        if force < 1.0:
+            continue
+        first, second = int(geoms[index, 0]), int(geoms[index, 1])
+        # A contact is named after what the unit touches; unit against unit is "unit".
+        other = first if contact_kinds[second] == "unit" else second
+        kind = contact_kinds[other]
+        if kind == "floor":
+            unit = unit_of_geom[second if other == first else first]
+            normal[unit] += force
+        position = points[index] - bed
+        contacts.append(
+            (
+                _round(position[0], 3),
+                _round(position[1], 3),
+                _round(position[2], 3),
+                _round(force, 0),
+                kind,  # type: ignore[arg-type]
+            )
+        )
+
     return Keyframe(
         t=_round(t, 4),
         truck_speed_mps=_round(profile.truck_speed_mps[step], 3),
         bed_accel_mps2=_vec(profile.acceleration_mps2[step], 3),
         units=[
-            KeyframePose(p=_vec(positions[index], 4), q=_quat(quaternions[index]))
+            KeyframePose(
+                p=_vec(positions[index], 4),
+                q=_quat(quaternions[index]),
+                n=_round(normal[index], 0),
+            )
             for index in range(len(unit_ids))
         ],
         straps=[
             KeyframeStrapState(
                 tension_n=_round(tension[index], 0),
-                slide_m=_round(data.qpos[address], 4) if address >= 0 else 0.0,
+                slide_m=_round(data.qpos[address_], 4) if address_ >= 0 else 0.0,
             )
-            for index, address in enumerate(saddle_qpos)
+            for index, address_ in enumerate(saddle_qpos)
         ],
+        contacts=contacts,
     )
 
 

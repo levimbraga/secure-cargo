@@ -301,3 +301,43 @@ def test_a_run_without_lashings_has_no_lashing_margin() -> None:
 
     assert margins.peak_lashing_force_ratio is None
     assert margins.lashing_capacity_reserve is None
+
+
+def test_keyframes_carry_what_the_replay_needs_to_draw_forces() -> None:
+    result = brake(strapped(box(), 2), 0.5, hold_s=1.0)
+    keyframes = result.keyframes
+    unit, first = keyframes.units[0], keyframes.frames[0]
+
+    assert unit.mass_kg == 1000 and unit.friction_coefficient == 0.45
+    # The floor carries the weight plus the clamping force of two straps at 55 degrees.
+    clamping = 2 * 2 * 4000 * 0.819
+    assert first.units[0].n == pytest.approx(1000 * G + clamping, rel=0.01)
+    # A box rests on its four corners; together the contact points carry that same force.
+    floor = [contact for contact in first.contacts if contact[4] == "floor"]
+    assert len(floor) == 4
+    assert sum(contact[3] for contact in floor) == pytest.approx(first.units[0].n, abs=4)
+    assert {round(abs(contact[0]), 1) for contact in floor} == {0.6}
+    assert all(abs(contact[2]) < 0.01 for contact in floor)
+
+
+def test_a_unit_sliding_into_the_headboard_shows_a_headboard_contact() -> None:
+    result = brake(strapped(box(), 0), 0.8, hold_s=2.5)
+    kinds_by_frame = [
+        {contact[4] for contact in frame.contacts} for frame in result.keyframes.frames
+    ]
+
+    assert "headboard" not in kinds_by_frame[0]
+    assert any("headboard" in kinds for kinds in kinds_by_frame)
+
+
+def test_the_renderer_options_do_not_change_the_simulation() -> None:
+    scenario = strapped(box(mass_kg=2000), 2)
+    profile = constant_pulse(acceleration_mps2=(-0.8 * G, 0, 0), hold_s=1.0)
+    seen: list[float] = []
+
+    plain = simulate(scenario, profile)
+    rendered = simulate(scenario, profile, visual=True, frame_hook=lambda _m, _d, t: seen.append(t))
+
+    assert rendered.model_dump_json() == plain.model_dump_json()
+    assert len(seen) == len(plain.keyframes.frames)
+    assert seen[:2] == pytest.approx([0.0, 1 / 30])

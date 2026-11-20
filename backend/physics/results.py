@@ -140,6 +140,8 @@ class AxleLoad(_Model):
 class KeyframeUnit(_Model):
     id: str
     size_m: Vec3
+    mass_kg: float
+    friction_coefficient: float = Field(description="Friction factor against the bed floor.")
 
 
 class KeyframeStrap(_Model):
@@ -156,6 +158,20 @@ class KeyframeStrap(_Model):
 class KeyframePose(_Model):
     p: Vec3
     q: Quat
+    n: float = Field(
+        default=0.0,
+        description=(
+            "Force with which the bed floor pushes the unit up [N]: its weight plus what the "
+            "lashings add, minus what vertical motion takes away. Friction can hold at most "
+            "the friction factor times this."
+        ),
+    )
+
+
+ContactKind = Literal["floor", "headboard", "rail", "unit", "road"]
+# One contact point of the physics engine: position in the bed frame [m], normal force [N],
+# and what the unit touches.
+KeyframeContact = tuple[float, float, float, float, ContactKind]
 
 
 class KeyframeStrapState(_Model):
@@ -169,6 +185,9 @@ class Keyframe(_Model):
     bed_accel_mps2: Vec3
     units: list[KeyframePose]
     straps: list[KeyframeStrapState]
+    contacts: list[KeyframeContact] = Field(
+        default_factory=list, description="Contact points the solver found at this instant."
+    )
 
 
 class KeyframeBed(_Model):
