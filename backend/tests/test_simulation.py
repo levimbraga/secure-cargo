@@ -275,3 +275,29 @@ def test_the_cache_key_changes_with_any_input() -> None:
     assert scenario_hash(scenario, event) != scenario_hash(
         scenario, event.model_copy(update={"fog": True})
     )
+
+
+def test_friction_use_reports_how_close_a_load_is_to_sliding() -> None:
+    # Friction 0.45 and no lashing: braking at 0.36 g needs 80 % of the available friction.
+    held = brake(strapped(box(), 0), 0.36)
+    sliding = brake(strapped(box(), 0), 0.55)
+
+    assert held.units[0].peak_friction_use == pytest.approx(0.80, abs=0.01)
+    assert held.margins.peak_friction_use == held.units[0].peak_friction_use
+    assert sliding.units[0].peak_friction_use == 1.0
+
+
+def test_margins_report_the_busiest_lashing_against_its_capacity() -> None:
+    result = brake(strapped(box(), 2), 0.5)
+
+    assert result.margins.peak_lashing_force_n == pytest.approx(4000, rel=0.01)
+    assert result.margins.peak_lashing_force_ratio == pytest.approx(0.16, abs=0.005)
+    assert result.margins.lashing_capacity_reserve == pytest.approx(0.84, abs=0.005)
+    assert result.margins.slide_limit_m == 0.05
+
+
+def test_a_run_without_lashings_has_no_lashing_margin() -> None:
+    margins = brake(strapped(box(), 0), 0.2).margins
+
+    assert margins.peak_lashing_force_ratio is None
+    assert margins.lashing_capacity_reserve is None

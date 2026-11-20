@@ -36,6 +36,14 @@ class UnitResult(_Model):
     final_slide_m: float = Field(description="Horizontal displacement at the end [m].")
     final_displacement_m: Vec3 = Field(description="Displacement at the end, bed frame [m].")
     max_tilt_deg: float = Field(description="Largest tilt away from upright [deg].")
+    peak_friction_use: float | None = Field(
+        default=None,
+        description=(
+            "Largest share of the available floor friction the unit needed (friction force / "
+            "(friction factor x contact force)); 1.0 means it was sliding. None for a unit "
+            "that does not stand on the floor."
+        ),
+    )
     hit_headboard: bool = Field(description="Slid into the headboard during the event.")
     peak_headboard_force_n: float
     left_bed: bool = Field(description="Its centre left the bed footprint.")
@@ -52,6 +60,56 @@ class LashingResult(_Model):
     peak_force_ratio: float = Field(description="peak_force_n / lashing_capacity_n.")
     final_tension_n: float
     broke_at_s: float | None = None
+
+
+class DirectionCheck(_Model):
+    """One securing requirement of EN 12195-1 for one unit: what is needed, what is there."""
+
+    direction: Literal["forward", "rearward", "sideways"]
+    mode: Literal["sliding", "tilting"]
+    quantity: Literal["lashings", "force_n"] = Field(
+        description="Unit of required/provided: a number of lashings, or a force in newtons."
+    )
+    required: float = Field(description="Requirement with the standard's factors applied.")
+    provided: float
+    ok: bool
+
+
+class StandardCheck(_Model):
+    """Securing of one unit against the design accelerations of EN 12195-1:2010.
+
+    Independent of the trip event: 0.8 g forward, 0.5 g rearward and sideways, with the
+    safety factor f_s (1.25 forward, 1.1 otherwise) for frictional lashing and the friction
+    conversion factor f_mu (0.75) for direct lashing.
+    """
+
+    unit_id: str
+    method: Literal["top_over", "direct", "unsecured", "not_assessed"]
+    installed_lashings: int
+    required_lashings: int | None = Field(
+        default=None, description="Top-over only: lashings the standard asks for."
+    )
+    meets_standard: bool | None = Field(description="None when the unit was not assessed.")
+    checks: list[DirectionCheck]
+    note: str = ""
+
+
+class Margins(_Model):
+    """How much room is left in the run that was simulated."""
+
+    max_slide_m: float
+    slide_limit_m: float = Field(description="Slide above which the run fails.")
+    max_tilt_deg: float
+    peak_friction_use: float | None = Field(
+        description="Largest share of the available friction any unit needed."
+    )
+    peak_lashing_force_n: float | None = Field(description="Largest tension in any lashing.")
+    peak_lashing_force_ratio: float | None = Field(
+        description="Largest tension as a fraction of that lashing's capacity LC."
+    )
+    lashing_capacity_reserve: float | None = Field(
+        description="1 - peak_lashing_force_ratio: share of LC left unused."
+    )
 
 
 class Finding(_Model):
@@ -165,5 +223,10 @@ class SimulationResult(_Model):
     verdict: Verdict
     units: list[UnitResult]
     lashings: list[LashingResult]
+    margins: Margins
     axle_loads: list[AxleLoad] = Field(default_factory=list)
+    en_12195_1: list[StandardCheck] = Field(
+        default_factory=list,
+        description="Per-unit check against the design values of EN 12195-1 (informative).",
+    )
     keyframes: Keyframes

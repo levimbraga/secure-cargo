@@ -39,11 +39,12 @@ from physics.results import (
     KeyframeStrapState,
     KeyframeUnit,
     LashingResult,
+    Margins,
     SimulationResult,
     UnitResult,
 )
-from physics.verdict import build_verdict
-from scene.mjcf import BED_BODY, BED_JOINTS, HEADBOARD_GEOM, Scene, build_scene
+from physics.verdict import SLIDE_FAIL_M, build_verdict
+from scene.mjcf import BED_BODY, BED_JOINTS, FLOOR_GEOM, HEADBOARD_GEOM, Scene, build_scene
 
 FloatArray = NDArray[np.float64]
 
@@ -134,6 +135,11 @@ def simulate(
     unit_geoms = np.array([model.geom(unit.geom).id for unit in scene.units], dtype=np.intp)
     geom_to_unit = {int(geom): index for index, geom in enumerate(unit_geoms)}
     headboard_geom = model.geom(HEADBOARD_GEOM).id if scene.has_headboard else -1
+    floor_geom = model.geom(FLOOR_GEOM).id
+    # Geom id -> unit index (-1 for geoms that are not cargo units).
+    unit_of_geom = np.full(model.ngeom, -1, dtype=np.intp)
+    unit_of_geom[unit_geoms] = np.arange(len(unit_geoms))
+    floor_friction = np.array([unit.floor_friction.coefficient for unit in scene.units])
     saddle_qpos = [
         int(model.joint(lashing.saddle_joint).qposadr[0]) if lashing.saddle_joint else -1
         for lashing in scene.lashings
@@ -159,6 +165,8 @@ def simulate(
     has_lashings = len(scene.lashings) > 0
     max_slide = np.zeros(count)
     peak_headboard = np.zeros(count)
+    friction_use = np.zeros(count)
+    stood_on_floor = np.zeros(count, dtype=bool)
     left_bed = np.zeros(count, dtype=bool)
     peak_tension = initial_tension.copy()
 
@@ -206,6 +214,17 @@ def simulate(
             lashings.broke_at_s[newly_broken] = data.time
             lashings.dirty = True
 
+        if data.ncon:
+            _friction_use(
+                data,
+                floor_geom,
+                unit_of_geom,
+                floor_friction,
+                weights,
+                friction_use,
+                stood_on_floor,
+            )
+
         if headboard_geom >= 0 and data.ncon:
             geoms = data.contact.geom
             touching = geoms[(geoms == headboard_geom).any(axis=1)]
@@ -247,6 +266,9 @@ def simulate(
             final_slide_m=_round(float(np.hypot(final[index, 0], final[index, 1])), 5),
             final_displacement_m=_vec(final[index], 5),
             max_tilt_deg=_round(max_tilt[index], 3),
+            peak_friction_use=(
+                _round(min(friction_use[index], 1.0), 3) if stood_on_floor[index] else None
+            ),
             hit_headboard=bool(
                 front_gap[index] > _BLOCKED_GAP_M
                 and peak_headboard[index] > _HEADBOARD_FORCE_FRACTION * weights[index]
@@ -312,8 +334,57 @@ def simulate(
         verdict=verdict,
         units=unit_results,
         lashings=lashing_results,
+        margins=_margins(unit_results, lashing_results),
         keyframes=keyframes,
     )
+
+
+def _margins(units: list[UnitResult], lashings: list[LashingResult]) -> Margins:
+    friction = [unit.peak_friction_use for unit in units if unit.peak_friction_use is not None]
+    busiest = max(lashings, key=lambda lashing: lashing.peak_force_ratio, default=None)
+    return Margins(
+        max_slide_m=max(unit.max_slide_m for unit in units),
+        slide_limit_m=SLIDE_FAIL_M,
+        max_tilt_deg=max(unit.max_tilt_deg for unit in units),
+        peak_friction_use=max(friction, default=None),
+        peak_lashing_force_n=max((lashing.peak_force_n for lashing in lashings), default=None),
+        peak_lashing_force_ratio=busiest.peak_force_ratio if busiest else None,
+        lashing_capacity_reserve=_round(1 - busiest.peak_force_ratio, 4) if busiest else None,
+    )
+
+
+def _friction_use(
+    data: mujoco.MjData,
+    floor_geom: int,
+    unit_of_geom: NDArray[np.intp],
+    friction: FloatArray,
+    weights: FloatArray,
+    peak: FloatArray,
+    stood_on_floor: NDArray[np.bool_],
+) -> None:
+    """Update each unit's peak friction use: friction force / (friction factor x normal force).
+
+    With an elliptic friction cone the solver stores each contact's force in the contact
+    frame: normal first, then the two tangential components.
+    """
+    contact = data.contact
+    geoms = contact.geom
+    address = contact.efc_address
+    on_floor = ((geoms[:, 0] == floor_geom) | (geoms[:, 1] == floor_geom)) & (address >= 0)
+    if not on_floor.any():
+        return
+    address = address[on_floor]
+    pair = geoms[on_floor]
+    units = unit_of_geom[np.where(pair[:, 0] == floor_geom, pair[:, 1], pair[:, 0])]
+    count = len(peak)
+    normal = np.bincount(units, weights=data.efc_force[address], minlength=count)
+    along = np.bincount(units, weights=data.efc_force[address + 1], minlength=count)
+    across = np.bincount(units, weights=data.efc_force[address + 2], minlength=count)
+    # Ignore instants when a unit barely touches the floor (bouncing): the ratio is noise.
+    loaded = normal > 0.05 * weights
+    stood_on_floor |= loaded
+    use = np.hypot(along, across)[loaded] / (friction[loaded] * normal[loaded])
+    peak[loaded] = np.maximum(peak[loaded], use)
 
 
 def _prepare_lashings(
