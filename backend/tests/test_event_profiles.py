@@ -34,9 +34,10 @@ def test_every_event_builds_within_the_trucks_limits(
     acceleration = profile.acceleration_mps2
 
     assert np.isfinite(acceleration).all()
-    assert 1.5 < profile.duration_s < 12
+    assert 1.5 < profile.duration_s < (20 if kind is EventKind.FULL_TRIP else 12)
     # The truck cannot brake or corner harder than its tyres grip (plus the downhill grade).
-    grade = 0.08 * G if kind is EventKind.MOUNTAIN_DESCENT else 0.0
+    downhill = kind in (EventKind.MOUNTAIN_DESCENT, EventKind.FULL_TRIP)
+    grade = 0.08 * G if downhill else 0.0
     horizontal = np.hypot(np.minimum(acceleration[:, 0] + grade, 0), acceleration[:, 1])
     assert horizontal.max() <= condition.tyre_friction * G + 1e-6
     assert np.abs(acceleration[:, 1]).max() <= EN_CY_SLIDING * G + 1e-9
@@ -156,3 +157,35 @@ def test_profiles_are_identical_when_built_twice() -> None:
         first, _ = build_profile(event(kind, road_surface="gravel"))
         second, _ = build_profile(event(kind, road_surface="gravel"))
         assert np.array_equal(first.acceleration_mps2, second.acceleration_mps2)
+
+
+def test_a_full_trip_is_its_segments_one_after_the_other() -> None:
+    segments = [EventKind.SHARP_CURVE, EventKind.SPEED_BUMP]
+    trip, _ = build_profile(event(EventKind.FULL_TRIP, segments=segments, speed_kmh=60))
+    curve, _ = build_profile(event(EventKind.SHARP_CURVE, speed_kmh=60))
+    # The truck slows down to 30 km/h for the bump.
+    bump, _ = build_profile(event(EventKind.SPEED_BUMP, speed_kmh=30))
+
+    assert trip.steps == curve.steps + bump.steps
+    np.testing.assert_array_equal(trip.acceleration_mps2[: curve.steps], curve.acceleration_mps2)
+    np.testing.assert_array_equal(trip.acceleration_mps2[curve.steps :], bump.acceleration_mps2)
+    kinds = [marker.kind for marker in trip.markers]
+    assert kinds[0] == "segment:sharp_curve"
+    assert "segment:speed_bump" in kinds
+    assert trip.pretension_factor is None
+
+
+def test_lashings_stay_loose_after_the_vibration_of_a_full_trip() -> None:
+    segments = [EventKind.LONG_VIBRATION, EventKind.SHARP_CURVE]
+    trip, _ = build_profile(event(EventKind.FULL_TRIP, segments=segments))
+    vibration, _ = build_profile(event(EventKind.LONG_VIBRATION))
+
+    assert trip.pretension_factor is not None
+    assert vibration.pretension_factor is not None
+    after = trip.pretension_factor[vibration.steps :]
+    assert after == pytest.approx(np.full(after.shape, vibration.pretension_factor[-1]))
+
+
+def test_segments_only_belong_to_a_full_trip() -> None:
+    with pytest.raises(ValueError, match="segments"):
+        event(EventKind.SHARP_CURVE, segments=[EventKind.POTHOLE])

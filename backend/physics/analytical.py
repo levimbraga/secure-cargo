@@ -114,3 +114,32 @@ def tipping_acceleration(*, base_length_m: float, height_m: float) -> float:
     length and ``d`` the height of the centre of gravity.
     """
     return STANDARD_GRAVITY_MPS2 * (base_length_m / 2) / (height_m / 2)
+
+
+def rolling_acceleration(
+    *, bed_acceleration_mps2: float, diameter_m: float, inner_diameter_m: float = 0.0
+) -> float:
+    """Acceleration of a free cylinder relative to the bed when it rolls without slipping.
+
+    The bed accelerates by ``a``; the cylinder's inertia pushes it the other way, and part of
+    that push goes into spinning it: ``a_rel = a / (1 + I / (m R^2))`` with
+    ``I = m (R^2 + r^2) / 2`` for a tube of outer radius ``R`` and inner radius ``r``. A solid
+    cylinder rolls at two thirds of the bed's acceleration.
+    """
+    radius, inner = diameter_m / 2, inner_diameter_m / 2
+    ratio = (radius**2 + inner**2) / (2 * radius**2)
+    return bed_acceleration_mps2 / (1 + ratio)
+
+
+def roll_over_chock_acceleration(*, diameter_m: float, chock_height_m: float) -> float:
+    """Bed acceleration [m/s^2] at which a cylinder starts to roll over a chock.
+
+    The cylinder pivots on the chock's edge at height ``h``: inertia ``m a`` acts at the
+    centre, ``R - h`` above the edge, and the weight ``m g`` at ``sqrt(2 R h - h^2)`` behind it.
+    It climbs when ``a / g > sqrt(2 R h - h^2) / (R - h)``.
+    """
+    radius = diameter_m / 2
+    if not 0 < chock_height_m < radius:
+        raise ValueError("the chock must be lower than the cylinder's centre")
+    lever = math.sqrt(2 * radius * chock_height_m - chock_height_m**2)
+    return STANDARD_GRAVITY_MPS2 * lever / (radius - chock_height_m)

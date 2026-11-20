@@ -339,6 +339,64 @@ def _long_vibration(event: TripEvent, surface: SurfaceCondition) -> MotionProfil
     )
 
 
+# A full trip, when the event does not list its own segments: down the mountain, through the
+# speed bump at the port gate, and an emergency stop on the access road.
+DEFAULT_TRIP = (EventKind.MOUNTAIN_DESCENT, EventKind.SPEED_BUMP, EventKind.EMERGENCY_BRAKING)
+# A driver slows down for a speed bump: "Type A" bumps are meant for 30 km/h (MBST vol. VI).
+SPEED_BUMP_MAX_KMH = 30.0
+
+
+def _full_trip(event: TripEvent, surface: SurfaceCondition) -> MotionProfile:
+    """The segments one after the other, on the same road surface and in the same weather.
+
+    Vibration loosens lashings for good: after a long-vibration segment the pretension stays
+    at the level it fell to.
+    """
+    kinds = event.segments or list(DEFAULT_TRIP)
+    pieces: list[MotionProfile] = []
+    for kind in kinds:
+        speed = event.speed_kmh
+        if kind is EventKind.SPEED_BUMP:
+            speed = min(speed, SPEED_BUMP_MAX_KMH)
+        segment = event.model_copy(update={"kind": kind, "segments": None, "speed_kmh": speed})
+        pieces.append(_BUILDERS[kind](segment, surface))
+
+    offset = 0.0
+    markers: list[Marker] = []
+    factors: list[FloatArray] = []
+    level = 1.0
+    parameters: dict[str, float | str] = {
+        "speed_kmh": event.speed_kmh,
+        "road_surface": event.road_surface.value,
+        "tyre_friction": surface.tyre_friction,
+        "segments": ",".join(kind.value for kind in kinds),
+    }
+    for kind, piece in zip(kinds, pieces, strict=True):
+        markers.append(Marker(t=offset, kind=f"segment:{kind.value}"))
+        markers.extend(Marker(t=offset + marker.t, kind=marker.kind) for marker in piece.markers)
+        if piece.pretension_factor is not None:
+            factors.append(piece.pretension_factor * level)
+            level = float(factors[-1][-1])
+        else:
+            factors.append(np.full(piece.steps, level))
+        for name, value in piece.parameters.items():
+            if name.startswith("peak_") and isinstance(value, float):
+                previous = parameters.get(name, 0.0)
+                parameters[name] = max(float(previous), value)
+            elif name not in parameters and name != "speed_kmh":
+                parameters[name] = value
+        offset += piece.duration_s
+
+    pretension = np.concatenate(factors)
+    return MotionProfile(
+        acceleration_mps2=np.concatenate([piece.acceleration_mps2 for piece in pieces]),
+        truck_speed_mps=np.concatenate([piece.truck_speed_mps for piece in pieces]),
+        markers=tuple(markers),
+        pretension_factor=pretension if level < 1.0 else None,
+        parameters=parameters,
+    )
+
+
 def _vibration(t: FloatArray, rms_mps2: float) -> FloatArray:
     """Band-limited vertical vibration with the given RMS: a fixed set of sine tones.
 
@@ -365,6 +423,7 @@ _BUILDERS: dict[EventKind, Callable[[TripEvent, SurfaceCondition], MotionProfile
     EventKind.SPEED_BUMP: _speed_bump,
     EventKind.MOUNTAIN_DESCENT: _mountain_descent,
     EventKind.LONG_VIBRATION: _long_vibration,
+    EventKind.FULL_TRIP: _full_trip,
 }
 
 __all__ = ["RoadSurface", "build_profile"]

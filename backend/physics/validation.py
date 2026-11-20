@@ -13,8 +13,11 @@ import math
 from dataclasses import dataclass
 
 from app.scenario import (
+    Block,
+    BlockKind,
     CargoMaterial,
     CargoUnit,
+    CylinderAxis,
     FloorMaterial,
     Headboard,
     Lashing,
@@ -22,9 +25,12 @@ from app.scenario import (
     LashingRouting,
     Scenario,
     TruckBed,
+    UnitShape,
 )
 from app.scenario.presets import side_anchor_points, top_over_lashings
 from physics.analytical import (
+    roll_over_chock_acceleration,
+    rolling_acceleration,
     strap_angle_rad,
     tipping_acceleration,
     top_over_critical_acceleration,
@@ -34,7 +40,7 @@ from physics.constants import EN_CX_FORWARD, EN_FS_FORWARD, STANDARD_GRAVITY_MPS
 from physics.profile import constant_pulse
 from physics.results import SimulationResult
 from physics.simulate import simulate
-from physics.verdict import SLIDE_WARNING_M
+from physics.verdict import SLIDE_FAIL_M, SLIDE_WARNING_M
 
 G = STANDARD_GRAVITY_MPS2
 BED_LENGTH_M = 8.0
@@ -154,6 +160,103 @@ def simulated_tipping_acceleration(base_length_m: float, height_m: float) -> flo
     for _ in range(9):
         middle = (low + high) / 2
         if brake(scenario, middle).units[0].max_tilt_deg > 2.0:
+            high = middle
+        else:
+            low = middle
+    return (low + high) / 2
+
+
+# A steel coil "eye to the side": 1.6 m across, 1.2 m wide, a 610 mm (24 in) eye, 10 t.
+COIL_DIAMETER_M = 1.6
+COIL_WIDTH_M = 1.2
+COIL_EYE_M = 0.61
+COIL_MASS_KG = 10_000.0
+
+
+def coil_scenario(*, chock_height_m: float | None = None, friction: float = 0.3) -> Scenario:
+    """One coil lying across the bed, free or with a chock against its front."""
+    radius = COIL_DIAMETER_M / 2
+    blocks = []
+    if chock_height_m is not None:
+        # The chock touches the coil at its own top edge, at height h.
+        reach = math.sqrt(2 * radius * chock_height_m - chock_height_m**2)
+        blocks.append(
+            Block(
+                id="chock",
+                kind=BlockKind.CHOCK,
+                size_m=(0.2, 1.4, chock_height_m),
+                position_m=(reach + 0.1, 0.0, 0.0),
+            )
+        )
+    return Scenario(
+        id="validation-coil",
+        bed=TruckBed(
+            length_m=BED_LENGTH_M,
+            width_m=BED_WIDTH_M,
+            floor_material=FloorMaterial.PLYWOOD_LAMINATE,
+            anchor_points=[],
+            blocks=blocks,
+        ),
+        units=[
+            CargoUnit(
+                id="coil",
+                shape=UnitShape.CYLINDER,
+                axis=CylinderAxis.Y,
+                inner_diameter_m=COIL_EYE_M,
+                size_m=(COIL_DIAMETER_M, COIL_WIDTH_M, COIL_DIAMETER_M),
+                mass_kg=COIL_MASS_KG,
+                position_m=(0.0, 0.0, 0.0),
+                material=CargoMaterial.STEEL_CRATE,
+                friction_coefficient=friction,
+            )
+        ],
+    )
+
+
+def simulated_rolling_acceleration(bed_acceleration_mps2: float) -> tuple[float, float]:
+    """Predicted and simulated acceleration of a free coil relative to a braking bed [m/s^2].
+
+    The simulated value comes from the distance rolled during a constant hold:
+    ``d = a t^2 / 2`` after the ramp (the ramp's own contribution is subtracted).
+    """
+    rise, hold = 0.2, 0.6
+    run = simulate(
+        coil_scenario(),
+        constant_pulse(
+            acceleration_mps2=(-bed_acceleration_mps2, 0.0, 0.0), rise_s=rise, hold_s=hold
+        ),
+    )
+    predicted = rolling_acceleration(
+        bed_acceleration_mps2=bed_acceleration_mps2,
+        diameter_m=COIL_DIAMETER_M,
+        inner_diameter_m=COIL_EYE_M,
+    )
+    # Under a ramp from 0 to a over T followed by a hold of t, a body that follows
+    # x'' = k * bed travels k a (T^2 / 6 + T t / 2 + t^2 / 2).
+    travel = run.units[0].final_displacement_m[0]
+    shape = rise**2 / 6 + rise * hold / 2 + hold**2 / 2
+    return predicted, travel / shape
+
+
+def simulated_roll_over_chock_acceleration(chock_height_m: float) -> float:
+    """Smallest braking [m/s^2] at which a coil climbs its chock, by bisection.
+
+    The braking ramps up over 1 s so the coil leans on the chock without bouncing on it.
+    """
+    scenario = coil_scenario(chock_height_m=chock_height_m)
+    predicted = roll_over_chock_acceleration(
+        diameter_m=COIL_DIAMETER_M, chock_height_m=chock_height_m
+    )
+    low, high = 0.7 * predicted, 1.3 * predicted
+    for _ in range(8):
+        middle = (low + high) / 2
+        run = simulate(
+            scenario,
+            constant_pulse(acceleration_mps2=(-middle, 0.0, 0.0), rise_s=1.0, hold_s=1.0),
+        )
+        # Pressed into the chock's edge, the coil settles about 1 cm into the soft contact
+        # before it climbs; climbing shows as a slide beyond the verdict's fail limit.
+        if run.units[0].max_slide_m > SLIDE_FAIL_M:
             high = middle
         else:
             low = middle
@@ -351,6 +454,20 @@ def report() -> str:
         f"{predicted / 10:.0f} daN | {simulated / 10:.0f} daN "
         f"| {(simulated / predicted - 1) * 100:+.1f} % |"
     )
+    predicted, simulated = simulated_rolling_acceleration(0.5 * G)
+    lines.append(
+        "| Free 10 t coil (1.6 m, 610 mm eye) rolling forward, braking at 0.5 g | "
+        f"{predicted / G:.3f} g | {simulated / G:.3f} g "
+        f"| {(simulated / predicted - 1) * 100:+.1f} % |"
+    )
+    for height in (0.15, 0.2):
+        predicted = roll_over_chock_acceleration(diameter_m=COIL_DIAMETER_M, chock_height_m=height)
+        simulated = simulated_roll_over_chock_acceleration(height)
+        lines.append(
+            f"| Braking at which the coil rolls over a {height * 100:.0f} cm chock | "
+            f"{predicted / G:.3f} g | {simulated / G:.3f} g "
+            f"| {(simulated / predicted - 1) * 100:+.1f} % |"
+        )
     return "\n".join(lines)
 
 

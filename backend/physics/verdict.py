@@ -16,6 +16,9 @@ SLIDE_FAIL_M = 0.050
 
 TILT_WARNING_DEG = 1.0
 TILT_FAIL_DEG = 5.0
+# A cylinder lying on its side that moved and turned more than this about itself rolled
+# rather than slid. 10 degrees of a 1.6 m coil is 14 cm of rolling.
+ROLL_FAIL_DEG = 10.0
 
 # A lashing must not be loaded beyond its rated capacity LC.
 LASHING_WARNING_RATIO = 0.9
@@ -42,7 +45,23 @@ def build_verdict(
                     message=f"Unit {unit.id} left the truck bed.",
                 )
             )
-        if unit.max_slide_m > SLIDE_WARNING_M:
+        rolled = (
+            unit.can_roll
+            and unit.max_rotation_deg > ROLL_FAIL_DEG
+            and unit.max_slide_m > SLIDE_FAIL_M
+        )
+        if rolled:
+            findings.append(
+                Finding(
+                    code="unit_rolled",
+                    severity="fail",
+                    unit_id=unit.id,
+                    value=unit.max_slide_m,
+                    limit=SLIDE_FAIL_M,
+                    message=f"Unit {unit.id} rolled {unit.max_slide_m * 100:.1f} cm.",
+                )
+            )
+        elif unit.max_slide_m > SLIDE_WARNING_M:
             failed = unit.max_slide_m > SLIDE_FAIL_M
             findings.append(
                 Finding(

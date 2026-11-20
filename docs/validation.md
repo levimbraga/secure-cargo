@@ -85,7 +85,19 @@ A run is a **fail** when a unit slides more than 5 cm and a **pass** when nothin
 | Braking at which an unsecured 1.2 m x 2.4 m box tips | 0.500 g | 0.500 g | +0.1 % |
 | Sideways acceleration at which the full-width machine slides (5 lashings) | 0.858 g | 0.859 g | +0.2 % |
 | Tension in each of two direct lashings, 3 t box braking at 0.8 g | 755 daN | 775 daN | +2.7 % |
-| Force on the headboard, 2 t box loaded against it, braking at 0.8 g | 981 daN | 990 daN | +0.9 % |
+| Force on the headboard, 2 t box loaded against it, braking at 0.8 g | 981 daN | 989 daN | +0.8 % |
+| Free 10 t coil (1.6 m, 610 mm eye) rolling forward, braking at 0.5 g | 0.318 g | 0.316 g | -0.5 % |
+| Braking at which the coil rolls over a 15 cm chock | 0.717 g | 0.710 g | -1.1 % |
+| Braking at which the coil rolls over a 20 cm chock | 0.882 g | 0.875 g | -0.8 % |
+
+The last three rows check rolling cargo. A free cylinder on a braking bed rolls at
+`a / (1 + I / (m R^2))` relative to it, with `I = m (R^2 + r^2) / 2` for a tube of outer radius `R` and
+inner radius `r` (a coil's eye). A chock of height `h` stops it until `a / g = sqrt(2 R h - h^2) / (R - h)`,
+the moment balance about the chock's edge (`backend/physics/analytical.py`). The chock threshold is found
+by bisection with a 1 s ramp, and a run counts as "climbed" when the coil moves more than 5 cm: pressed
+into the chock's edge, it settles about 1 cm into the soft contact first. Tests:
+`test_a_free_coil_rolls_at_the_rate_its_inertia_allows`, `test_a_coil_climbs_its_chock_where_the_moment_balance_says`,
+`test_a_free_coil_is_reported_as_rolling_not_sliding`.
 
 What the tables say:
 

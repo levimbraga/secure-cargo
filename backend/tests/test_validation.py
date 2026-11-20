@@ -9,16 +9,20 @@ import math
 
 import pytest
 
-from physics.analytical import tipping_acceleration
+from physics.analytical import roll_over_chock_acceleration, tipping_acceleration
 from physics.constants import EN_CX_FORWARD, STANDARD_GRAVITY_MPS2
 from physics.validation import (
     CASES,
+    COIL_DIAMETER_M,
     Case,
     box_scenario,
     brake,
+    coil_scenario,
     direct_lashing_tension,
     headboard_force,
     simulated_critical_acceleration,
+    simulated_roll_over_chock_acceleration,
+    simulated_rolling_acceleration,
     simulated_tipping_acceleration,
 )
 
@@ -80,3 +84,28 @@ def test_a_blocked_load_presses_on_the_headboard_with_what_friction_cannot_hold(
     predicted, simulated = headboard_force()
 
     assert simulated == pytest.approx(predicted, rel=0.05)
+
+
+def test_a_free_coil_rolls_at_the_rate_its_inertia_allows() -> None:
+    # A tube rolls at a / (1 + (R^2 + r^2) / (2 R^2)) relative to the braking bed.
+    predicted, simulated = simulated_rolling_acceleration(0.5 * G)
+    assert simulated == pytest.approx(predicted, rel=0.02)
+
+
+@pytest.mark.parametrize("chock_height_m", [0.15, 0.2])
+def test_a_coil_climbs_its_chock_where_the_moment_balance_says(chock_height_m: float) -> None:
+    predicted = roll_over_chock_acceleration(
+        diameter_m=COIL_DIAMETER_M, chock_height_m=chock_height_m
+    )
+    simulated = simulated_roll_over_chock_acceleration(chock_height_m)
+    assert simulated == pytest.approx(predicted, rel=0.03)
+
+
+def test_a_free_coil_is_reported_as_rolling_not_sliding() -> None:
+    run = brake(coil_scenario(), 0.5 * G, hold_s=0.6)
+    codes = {finding.code for finding in run.verdict.findings}
+    assert "unit_rolled" in codes
+    assert "unit_slid" not in codes
+    # Rolling turns the coil about its own axis; its axis stays level, so it did not tip.
+    assert run.units[0].max_rotation_deg > 30
+    assert run.units[0].max_tilt_deg < 1

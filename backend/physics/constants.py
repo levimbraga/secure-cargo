@@ -12,7 +12,7 @@ REPLAY_FPS = 30
 RANDOM_SEED = 20261104
 
 # Bumped whenever a change to the model can change results; part of the cache key.
-PHYSICS_MODEL_VERSION = "2"
+PHYSICS_MODEL_VERSION = "3"
 
 # EN 12195-1:2010, Table 2: acceleration coefficients for road transport.
 EN_CX_FORWARD = 0.8

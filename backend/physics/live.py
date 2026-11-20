@@ -12,7 +12,7 @@ from typing import Literal
 import mujoco
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.scenario import LashingKind, LashingRouting, Scenario, TripEvent
+from app.scenario import CylinderAxis, LashingKind, LashingRouting, Scenario, TripEvent, UnitShape
 from physics.conditions import build_profile
 from physics.constants import (
     PHYSICS_MODEL_VERSION,
@@ -32,10 +32,11 @@ from physics.results import (
     Vec3,
 )
 from physics.run import scenario_hash
-from physics.simulate import RUN_SETTINGS, keyframe_strap
+from physics.simulate import RUN_SETTINGS, keyframe_bed, keyframe_strap
 from physics.verdict import (
     LASHING_FAIL_RATIO,
     LASHING_WARNING_RATIO,
+    ROLL_FAIL_DEG,
     SLIDE_FAIL_M,
     SLIDE_WARNING_M,
     TILT_FAIL_DEG,
@@ -46,6 +47,7 @@ from rules.en12195 import check_scenario
 from scene.mjcf import (
     BED_BODY,
     BED_JOINTS,
+    BLOCK_GEOM_PREFIX,
     FLOOR_GEOM,
     HEADBOARD_GEOM,
     ROAD_GEOM,
@@ -70,6 +72,7 @@ class LiveNames(_Model):
     floor_geom: str
     headboard_geom: str | None
     road_geom: str
+    block_geom_prefix: str = Field(description="Geoms whose name starts with it are blocks.")
 
 
 class LiveUnit(_Model):
@@ -81,6 +84,12 @@ class LiveUnit(_Model):
     position_m: Vec3 = Field(description="Centre of the bottom face as loaded, bed frame [m].")
     friction_coefficient: float
     friction_source: FrictionSource
+    shape: UnitShape
+    axis: CylinderAxis | None
+    inner_diameter_m: float | None
+    lying_axis: int | None = Field(
+        description="0 (X) or 1 (Y) for a cylinder lying on its side: it can roll."
+    )
 
 
 class LiveLashing(_Model):
@@ -131,6 +140,7 @@ class LiveThresholds(_Model):
     slide_fail_m: float
     tilt_warning_deg: float
     tilt_fail_deg: float
+    roll_fail_deg: float
     lashing_warning_ratio: float
     lashing_fail_ratio: float
     headboard_capacity_n: float | None
@@ -173,14 +183,9 @@ def build_live_model(scenario: Scenario, event: TripEvent) -> LiveModel:
             floor_geom=FLOOR_GEOM,
             headboard_geom=HEADBOARD_GEOM if scene.has_headboard else None,
             road_geom=ROAD_GEOM,
+            block_geom_prefix=BLOCK_GEOM_PREFIX,
         ),
-        bed=KeyframeBed(
-            length_m=scenario.bed.length_m,
-            width_m=scenario.bed.width_m,
-            floor_height_m=scenario.bed.floor_height_m,
-            headboard_height_m=headboard.height_m if headboard else 0.0,
-            side_rail_height_m=scenario.bed.side_rail_height_m,
-        ),
+        bed=keyframe_bed(scenario),
         units=[
             LiveUnit(
                 id=item.unit.id,
@@ -191,6 +196,10 @@ def build_live_model(scenario: Scenario, event: TripEvent) -> LiveModel:
                 position_m=item.unit.position_m,
                 friction_coefficient=item.floor_friction.coefficient,
                 friction_source=item.floor_friction.source,
+                shape=item.unit.shape,
+                axis=item.unit.axis,
+                inner_diameter_m=item.unit.inner_diameter_m,
+                lying_axis=item.lying_axis,
             )
             for item in scene.units
         ],
@@ -236,6 +245,7 @@ def build_live_model(scenario: Scenario, event: TripEvent) -> LiveModel:
             slide_fail_m=SLIDE_FAIL_M,
             tilt_warning_deg=TILT_WARNING_DEG,
             tilt_fail_deg=TILT_FAIL_DEG,
+            roll_fail_deg=ROLL_FAIL_DEG,
             lashing_warning_ratio=LASHING_WARNING_RATIO,
             lashing_fail_ratio=LASHING_FAIL_RATIO,
             headboard_capacity_n=headboard.rated_capacity_n if headboard else None,

@@ -10,13 +10,22 @@ item d, 3.2.19, 3.2.20, Table 2); the direction of each safety factor and the eq
 the European Commission's 2014 best-practice guidelines (6.1.2, 6.1.3, 6.1.5, 6.2.6).
 
 Scope: units standing on the floor, secured either by top-over lashings or by direct
-lashings. A unit on top of another, or with both kinds of lashing, is not assessed.
+lashings. A unit on top of another, with both kinds of lashing, held by blocking alone, or a
+cylinder lying on its side (it rolls rather than slides) is not assessed.
 """
 
 import math
 from typing import Literal
 
-from app.scenario import CargoUnit, Lashing, LashingKind, LashingRouting, Scenario
+from app.scenario import (
+    CargoUnit,
+    CylinderAxis,
+    Lashing,
+    LashingKind,
+    LashingRouting,
+    Scenario,
+    UnitShape,
+)
 from physics.constants import (
     EN_CX_FORWARD,
     EN_CX_REARWARD,
@@ -75,6 +84,14 @@ def _check_unit(scenario: Scenario, unit: CargoUnit) -> StandardCheck:
             checks=[],
             note="Stacked units and mixed lashing methods are outside the closed-form check.",
         )
+    if unit.shape is UnitShape.CYLINDER and unit.axis is not CylinderAxis.Z:
+        return _not_assessed(
+            unit, lashings, "A cylinder lying on its side rolls; the formulas are for sliding."
+        )
+    if not lashings and _blocked(scenario, unit):
+        return _not_assessed(
+            unit, lashings, "Held by blocking (beams, chocks or a cradle), which is not lashing."
+        )
     friction = resolve_friction(
         unit.material, scenario.bed.floor_material, override=unit.friction_coefficient
     ).coefficient
@@ -104,6 +121,31 @@ def _check_unit(scenario: Scenario, unit: CargoUnit) -> StandardCheck:
         checks=checks,
         note=note,
     )
+
+
+def _not_assessed(unit: CargoUnit, lashings: list[Lashing], note: str) -> StandardCheck:
+    return StandardCheck(
+        unit_id=unit.id,
+        method="not_assessed",
+        installed_lashings=len(lashings),
+        meets_standard=None,
+        checks=[],
+        note=note,
+    )
+
+
+def _blocked(scenario: Scenario, unit: CargoUnit, reach_m: float = 0.3) -> bool:
+    """Whether a block on the bed stands right at the unit (within ``reach_m``)."""
+    x, y, _ = unit.position_m
+    half_x, half_y = unit.size_m[0] / 2, unit.size_m[1] / 2
+    for block in scenario.bed.blocks:
+        bx, by, _ = block.position_m
+        if (
+            abs(bx - x) <= half_x + block.size_m[0] / 2 + reach_m
+            and abs(by - y) < half_y + block.size_m[1] / 2
+        ):
+            return True
+    return False
 
 
 def _overlaps(scenario: Scenario, unit: CargoUnit) -> bool:

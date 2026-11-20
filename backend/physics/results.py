@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.scenario import LashingKind, LashingRouting
+from app.scenario import BlockKind, BodyType, CylinderAxis, LashingKind, LashingRouting, UnitShape
 from physics.friction import FrictionSource
 
 Vec3 = tuple[float, float, float]
@@ -14,6 +14,7 @@ Status = Literal["pass", "warning", "fail"]
 FindingCode = Literal[
     "unit_slid",
     "unit_tilted",
+    "unit_rolled",
     "unit_left_bed",
     "unit_hit_headboard",
     "headboard_overloaded",
@@ -35,7 +36,16 @@ class UnitResult(_Model):
     max_slide_m: float = Field(description="Largest horizontal displacement on the bed [m].")
     final_slide_m: float = Field(description="Horizontal displacement at the end [m].")
     final_displacement_m: Vec3 = Field(description="Displacement at the end, bed frame [m].")
-    max_tilt_deg: float = Field(description="Largest tilt away from upright [deg].")
+    max_tilt_deg: float = Field(
+        description=(
+            "Largest tilt away from upright [deg]; for a cylinder lying on its side, how far "
+            "its axis left the horizontal."
+        )
+    )
+    max_rotation_deg: float = Field(
+        default=0.0, description="Largest angle the unit turned, about any axis [deg]."
+    )
+    can_roll: bool = Field(default=False, description="A cylinder lying on its side.")
     peak_friction_use: float | None = Field(
         default=None,
         description=(
@@ -142,6 +152,9 @@ class KeyframeUnit(_Model):
     size_m: Vec3
     mass_kg: float
     friction_coefficient: float = Field(description="Friction factor against the bed floor.")
+    shape: UnitShape = UnitShape.BOX
+    axis: CylinderAxis | None = None
+    inner_diameter_m: float | None = None
 
 
 class KeyframeStrap(_Model):
@@ -168,7 +181,7 @@ class KeyframePose(_Model):
     )
 
 
-ContactKind = Literal["floor", "headboard", "rail", "unit", "road"]
+ContactKind = Literal["floor", "headboard", "rail", "unit", "road", "block"]
 # One contact point of the physics engine: position in the bed frame [m], normal force [N],
 # and what the unit touches.
 KeyframeContact = tuple[float, float, float, float, ContactKind]
@@ -190,12 +203,22 @@ class Keyframe(_Model):
     )
 
 
+class KeyframeBlock(_Model):
+    id: str
+    kind: BlockKind
+    size_m: Vec3
+    position_m: Vec3 = Field(description="Centre of the bottom face, bed frame [m].")
+
+
 class KeyframeBed(_Model):
     length_m: float
     width_m: float
     floor_height_m: float
     headboard_height_m: float
     side_rail_height_m: float
+    body: BodyType = BodyType.FLATBED
+    rear_wall_height_m: float = 0.0
+    blocks: list[KeyframeBlock] = Field(default_factory=list)
 
 
 class KeyframeEvent(_Model):

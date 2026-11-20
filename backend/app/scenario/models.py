@@ -49,6 +49,36 @@ class CargoMaterial(StrEnum):
     CONCRETE_ROUGH = "concrete_rough"
     CONCRETE_SMOOTH = "concrete_smooth"
     RUBBER_MAT = "rubber_mat"  # the unit stands on a rubber anti-slip mat
+    CARDBOARD = "cardboard"  # a carton without a pallet; not in Annex B
+
+
+class BodyType(StrEnum):
+    """Body of the truck. It decides which walls exist and what they are called."""
+
+    FLATBED = "flatbed"  # open platform with a headboard and, optionally, low side rails
+    BOX = "box"  # closed van body: front wall, side walls and rear doors
+    CURTAIN_SIDER = "curtain_sider"  # roof on posts with tarpaulin curtains on the sides
+
+
+class UnitShape(StrEnum):
+    BOX = "box"
+    CYLINDER = "cylinder"
+
+
+class CylinderAxis(StrEnum):
+    """Direction of a cylinder's axis in the bed frame."""
+
+    X = "x"  # lying along the truck, e.g. pipes or a coil "eye fore and aft"
+    Y = "y"  # lying across the truck, e.g. a coil "eye to the side": it can roll forward
+    Z = "z"  # standing upright, e.g. a drum
+
+
+class BlockKind(StrEnum):
+    """Things fixed to the bed that stop cargo by contact (blocking, not lashing)."""
+
+    CHOCK = "chock"  # wedge or timber chock at the foot of a unit
+    BEAM = "beam"  # a beam or load bar across the bed
+    CRADLE = "cradle"  # one side of a coil cradle
 
 
 class LashingKind(StrEnum):
@@ -70,6 +100,7 @@ class EventKind(StrEnum):
     SPEED_BUMP = "speed_bump"
     MOUNTAIN_DESCENT = "mountain_descent"
     LONG_VIBRATION = "long_vibration"
+    FULL_TRIP = "full_trip"
 
 
 class RoadSurface(StrEnum):
@@ -110,6 +141,23 @@ class Headboard(_Model):
     )
 
 
+class Block(_Model):
+    """A rigid block fixed to the bed (chock, beam, cradle side): an axis-aligned box."""
+
+    id: Identifier
+    kind: BlockKind
+    size_m: Vec3 = Field(description="Length (X), width (Y) and height (Z) [m].")
+    position_m: Vec3 = Field(description="Centre of the bottom face, in the bed frame [m].")
+
+    @model_validator(mode="after")
+    def _on_floor(self) -> Self:
+        if min(self.size_m) < 0.02 or max(self.size_m) > 20:
+            raise ValueError("each side of a block must be between 0.02 m and 20 m")
+        if self.position_m[2] != 0:
+            raise ValueError("a block stands on the floor (position_m[2] = 0)")
+        return self
+
+
 class TruckBed(_Model):
     length_m: float = Field(gt=0.5, le=20, description="Inner length along X [m].")
     width_m: float = Field(gt=0.5, le=3.5, description="Inner width along Y [m].")
@@ -118,14 +166,26 @@ class TruckBed(_Model):
     )
     floor_material: FloorMaterial
     headboard: Headboard | None = None
+    body: BodyType = BodyType.FLATBED
     side_rail_height_m: float = Field(
-        default=0.0, ge=0, le=3, description="Height of the side rails [m]; 0 means a flatbed."
+        default=0.0,
+        ge=0,
+        le=3,
+        description=(
+            "Height of the side rails, or of the side walls of a box body [m]; 0 means open "
+            "sides. A curtain-sider has 0: its curtains do not restrain cargo."
+        ),
+    )
+    rear_wall_height_m: float = Field(
+        default=0.0, ge=0, le=3, description="Height of the rear doors of a box body [m]; 0: none."
     )
     anchor_points: list[AnchorPoint] = Field(max_length=200)
+    blocks: list[Block] = Field(default_factory=list, max_length=80)
 
     @model_validator(mode="after")
     def _unique_anchor_ids(self) -> Self:
         _require_unique([anchor.id for anchor in self.anchor_points], "anchor point")
+        _require_unique([block.id for block in self.blocks], "block")
         return self
 
 
@@ -140,6 +200,11 @@ class Vehicle(_Model):
     """Axle data, only needed for the axle-load check. Exactly two groups (front, rear)."""
 
     axle_groups: tuple[AxleGroup, AxleGroup]
+    payload_kg: float | None = Field(
+        default=None,
+        gt=0,
+        description="Rated payload P [kg]; box-body wall strength scales with it.",
+    )
 
     @model_validator(mode="after")
     def _distinct_positions(self) -> Self:
@@ -151,11 +216,25 @@ class Vehicle(_Model):
 
 
 class CargoUnit(_Model):
-    """One rigid, axis-aligned box of cargo."""
+    """One rigid unit of cargo: an axis-aligned box, or a cylinder inside that box."""
 
     id: Identifier
     label: str = Field(default="", max_length=80)
-    size_m: Vec3 = Field(description="Length (X), width (Y) and height (Z) [m].")
+    shape: UnitShape = UnitShape.BOX
+    axis: CylinderAxis | None = Field(
+        default=None, description="Cylinders only: direction of the axis."
+    )
+    inner_diameter_m: float | None = Field(
+        default=None,
+        gt=0,
+        description="Hollow cylinders only (a coil's eye): inner diameter [m].",
+    )
+    size_m: Vec3 = Field(
+        description=(
+            "Length (X), width (Y) and height (Z) [m]. For a cylinder, the box around it: the "
+            "two sides across the axis are its diameter."
+        )
+    )
     mass_kg: float = Field(gt=0, le=60_000, description="Mass [kg], centred in the box.")
     position_m: Vec3 = Field(description="Centre of the bottom face, in the bed frame [m].")
     material: CargoMaterial = Field(description="Material of the unit's base.")
@@ -176,7 +255,23 @@ class CargoUnit(_Model):
             raise ValueError("each side of size_m must be between 0.05 m and 20 m")
         if self.position_m[2] < 0:
             raise ValueError("position_m[2] (bottom of the unit) cannot be below the floor")
+        if self.shape is UnitShape.CYLINDER:
+            if self.axis is None:
+                raise ValueError("a cylinder needs an axis")
+            across = [side for index, side in enumerate(self.size_m) if index != _AXIS[self.axis]]
+            if abs(across[0] - across[1]) > 1e-6:
+                raise ValueError("the two sides across a cylinder's axis must be equal")
+            if self.inner_diameter_m is not None and self.inner_diameter_m >= across[0]:
+                raise ValueError("inner_diameter_m must be smaller than the diameter")
+        elif self.axis is not None or self.inner_diameter_m is not None:
+            raise ValueError("axis and inner_diameter_m only apply to cylinders")
         return self
+
+    @property
+    def diameter_m(self) -> float:
+        """Cylinders only: outer diameter [m]."""
+        assert self.axis is not None
+        return next(side for index, side in enumerate(self.size_m) if index != _AXIS[self.axis])
 
 
 class Lashing(_Model):
@@ -239,10 +334,22 @@ class Lashing(_Model):
         return self
 
 
+_AXIS = {CylinderAxis.X: 0, CylinderAxis.Y: 1, CylinderAxis.Z: 2}
+
+
 class TripEvent(_Model):
     """What happens on the road. The physics inputs are derived from these few fields."""
 
     kind: EventKind
+    segments: list[EventKind] | None = Field(
+        default=None,
+        min_length=1,
+        max_length=8,
+        description=(
+            "Full trip only: the events in the order they happen. Default: mountain descent, "
+            "sharp curve, pothole, speed bump, emergency braking."
+        ),
+    )
     speed_kmh: float = Field(ge=10, le=120, description="Truck speed when the event starts.")
     road_surface: RoadSurface = RoadSurface.DRY
     fog: bool = Field(
@@ -254,6 +361,15 @@ class TripEvent(_Model):
     grade_percent: float | None = Field(
         default=None, ge=0, le=15, description="Mountain descent only: downhill grade [%]."
     )
+
+    @model_validator(mode="after")
+    def _segments(self) -> Self:
+        if self.segments is not None:
+            if self.kind is not EventKind.FULL_TRIP:
+                raise ValueError("segments only apply to a full trip")
+            if EventKind.FULL_TRIP in self.segments:
+                raise ValueError("a full trip cannot contain another full trip")
+        return self
 
 
 class Scenario(_Model):
@@ -308,6 +424,15 @@ class Scenario(_Model):
     def _check_placement(self) -> None:
         """Units may touch but not overlap, and each one rests on the floor or on a unit."""
         boxes = [(unit, *_bounds(unit)) for unit in self.units]
+        for block in self.bed.blocks:
+            low, high = _bounds(block)
+            for unit, unit_low, unit_high in boxes:
+                if all(
+                    low[axis] < unit_high[axis] - _CONTACT_TOLERANCE_M
+                    and unit_low[axis] < high[axis] - _CONTACT_TOLERANCE_M
+                    for axis in range(3)
+                ) and _block_reaches_unit(low, high, unit):
+                    raise ValueError(f"block {block.id!r} overlaps unit {unit.id!r}")
         for index, (unit, low, high) in enumerate(boxes):
             for other, other_low, other_high in boxes[index + 1 :]:
                 overlap = all(
@@ -321,6 +446,7 @@ class Scenario(_Model):
                 continue
             supported = any(
                 other is not unit
+                and other.shape is UnitShape.BOX
                 and abs(other_high[2] - low[2]) <= _CONTACT_TOLERANCE_M
                 and low[0] < other_high[0]
                 and other_low[0] < high[0]
@@ -332,7 +458,26 @@ class Scenario(_Model):
                 raise ValueError(f"unit {unit.id!r} is not resting on the floor or another unit")
 
 
-def _bounds(unit: CargoUnit) -> tuple[Vec3, Vec3]:
+def _block_reaches_unit(low: Vec3, high: Vec3, unit: CargoUnit) -> bool:
+    """Whether a block whose box overlaps the unit's box really cuts into the unit.
+
+    A chock sits in the corner between the floor and a lying cylinder, inside the cylinder's
+    box but outside the cylinder: test the circle of its cross-section.
+    """
+    if unit.shape is not UnitShape.CYLINDER or unit.axis in (None, CylinderAxis.Z):
+        return True
+    across = 0 if unit.axis is CylinderAxis.Y else 1  # horizontal axis of the cross-section
+    radius = unit.diameter_m / 2
+    centre = (unit.position_m[across], unit.position_m[2] + radius)
+    nearest = (
+        min(max(centre[0], low[across]), high[across]),
+        min(max(centre[1], low[2]), high[2]),
+    )
+    distance = ((nearest[0] - centre[0]) ** 2 + (nearest[1] - centre[1]) ** 2) ** 0.5
+    return bool(distance < radius - _CONTACT_TOLERANCE_M)
+
+
+def _bounds(unit: CargoUnit | Block) -> tuple[Vec3, Vec3]:
     x, y, z = unit.position_m
     sx, sy, sz = unit.size_m
     return (x - sx / 2, y - sy / 2, z), (x + sx / 2, y + sy / 2, z + sz)

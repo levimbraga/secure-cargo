@@ -19,7 +19,7 @@ import mujoco
 import numpy as np
 from numpy.typing import NDArray
 
-from app.scenario import LashingRouting, Scenario
+from app.scenario import CargoUnit, LashingRouting, Scenario
 from physics.constants import (
     PHYSICS_MODEL_VERSION,
     REPLAY_FPS,
@@ -33,6 +33,7 @@ from physics.results import (
     Finding,
     Keyframe,
     KeyframeBed,
+    KeyframeBlock,
     KeyframeContact,
     KeyframeEvent,
     KeyframePose,
@@ -50,6 +51,7 @@ from physics.verdict import SLIDE_FAIL_M, build_verdict
 from scene.mjcf import (
     BED_BODY,
     BED_JOINTS,
+    BLOCK_GEOM_PREFIX,
     FLOOR_GEOM,
     HEADBOARD_GEOM,
     ROAD_GEOM,
@@ -216,6 +218,14 @@ def simulate(
     tracking_error = 0.0
     half_extent = np.array([half_length, half_width])
     min_upright = np.ones(count)
+    # Tilt is the angle of the unit's own Z axis from vertical, read from xmat[:, 8]. A
+    # cylinder lying on its side turns about its axis when it rolls, which is not a tilt:
+    # for it the tilt is how far its axis leaves the horizontal (xmat[:, 6] for an axis along
+    # X, xmat[:, 7] along Y: the Z component of that axis).
+    lying = np.array([unit.lying_axis is not None for unit in scene.units], dtype=bool)
+    lying_column = np.array([6 + (unit.lying_axis or 0) for unit in scene.units], dtype=np.intp)
+    start_quat = data.xquat[unit_ids].copy()
+    min_quat_dot = np.ones(count)
 
     floor_force_sum = np.zeros(count)
     steps_since_frame = 0
@@ -269,7 +279,17 @@ def simulate(
         displacement = relative - start
         np.maximum(max_slide, np.hypot(displacement[:, 0], displacement[:, 1]), out=max_slide)
         # xmat[:, 8] is the Z component of the unit's own Z axis: the cosine of its tilt.
-        np.minimum(min_upright, data.xmat[unit_ids, 8], out=min_upright)
+        upright = data.xmat[unit_ids, 8]
+        if lying.any():
+            axis_up = data.xmat[unit_ids, lying_column]
+            upright = np.where(lying, np.sqrt(np.maximum(1.0 - axis_up**2, 0.0)), upright)
+        np.minimum(min_upright, upright, out=min_upright)
+        # |q0 . q| is the cosine of half the angle the unit turned since the start.
+        np.minimum(
+            min_quat_dot,
+            np.abs(np.sum(start_quat * data.xquat[unit_ids], axis=1)),
+            out=min_quat_dot,
+        )
         left_bed |= (np.abs(relative[:, :2]) > half_extent).any(axis=1) | (
             displacement[:, 2] < -0.05
         )
@@ -324,6 +344,7 @@ def simulate(
 
     _check_stable(data)
     max_tilt = np.degrees(np.arccos(np.clip(min_upright, -1.0, 1.0)))
+    max_rotation = np.degrees(2 * np.arccos(np.clip(min_quat_dot, 0.0, 1.0)))
     final = (data.xpos[unit_ids] - data.xpos[bed_id]) - start
     final_tension = lashings.tension(data)
 
@@ -336,6 +357,8 @@ def simulate(
             final_slide_m=_round(float(np.hypot(final[index, 0], final[index, 1])), 5),
             final_displacement_m=_vec(final[index], 5),
             max_tilt_deg=_round(max_tilt[index], 3),
+            max_rotation_deg=_round(max_rotation[index], 3),
+            can_roll=bool(lying[index]),
             peak_friction_use=(
                 _round(min(friction_use[index], 1.0), 3) if stood_on_floor[index] else None
             ),
@@ -376,22 +399,8 @@ def simulate(
     keyframes = Keyframes(
         fps=REPLAY_FPS,
         duration_s=_round(profile.duration_s, 3),
-        bed=KeyframeBed(
-            length_m=scenario.bed.length_m,
-            width_m=scenario.bed.width_m,
-            floor_height_m=scenario.bed.floor_height_m,
-            headboard_height_m=headboard.height_m if headboard else 0.0,
-            side_rail_height_m=scenario.bed.side_rail_height_m,
-        ),
-        units=[
-            KeyframeUnit(
-                id=unit.unit.id,
-                size_m=unit.unit.size_m,
-                mass_kg=unit.unit.mass_kg,
-                friction_coefficient=unit.floor_friction.coefficient,
-            )
-            for unit in scene.units
-        ],
+        bed=keyframe_bed(scenario),
+        units=[keyframe_unit(unit.unit, unit.floor_friction.coefficient) for unit in scene.units],
         straps=[keyframe_strap(scene, index) for index in range(len(scene.lashings))],
         events=[
             KeyframeEvent(t=_round(marker.t, 3), kind=marker.kind) for marker in profile.markers
@@ -414,6 +423,38 @@ def simulate(
         lashings=lashing_results,
         margins=_margins(unit_results, lashing_results),
         keyframes=keyframes,
+    )
+
+
+def keyframe_bed(scenario: Scenario) -> KeyframeBed:
+    """What the replay needs to draw the truck body, with the simulation's dimensions."""
+    bed = scenario.bed
+    return KeyframeBed(
+        length_m=bed.length_m,
+        width_m=bed.width_m,
+        floor_height_m=bed.floor_height_m,
+        headboard_height_m=bed.headboard.height_m if bed.headboard else 0.0,
+        side_rail_height_m=bed.side_rail_height_m,
+        body=bed.body,
+        rear_wall_height_m=bed.rear_wall_height_m,
+        blocks=[
+            KeyframeBlock(
+                id=block.id, kind=block.kind, size_m=block.size_m, position_m=block.position_m
+            )
+            for block in bed.blocks
+        ],
+    )
+
+
+def keyframe_unit(unit: CargoUnit, friction: float) -> KeyframeUnit:
+    return KeyframeUnit(
+        id=unit.id,
+        size_m=unit.size_m,
+        mass_kg=unit.mass_kg,
+        friction_coefficient=friction,
+        shape=unit.shape,
+        axis=unit.axis,
+        inner_diameter_m=unit.inner_diameter_m,
     )
 
 
@@ -585,6 +626,9 @@ def _contact_kinds(
     kinds[model.geom(ROAD_GEOM).id] = "road"
     if headboard_geom >= 0:
         kinds[headboard_geom] = "headboard"
+    for geom in range(model.ngeom):
+        if (model.geom(geom).name or "").startswith(BLOCK_GEOM_PREFIX):
+            kinds[geom] = "block"
     for geom in unit_geoms:
         kinds[int(geom)] = "unit"
     return kinds

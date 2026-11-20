@@ -27,6 +27,28 @@ trip event ─────► event profile ────────────
 | Integration | Fixed 2 ms step, implicit integrator, no randomness in the engine: the same input gives the same output. |
 | Reference frame | The run happens in the inertial frame that moves with the truck's initial velocity, so only accelerations matter. A curve is a sideways acceleration of the bed; the truck's rotation is not modelled. A downhill grade is the equivalent constant forward pull `g sin(slope)`. |
 
+### Round cargo, blocking and truck bodies
+
+- **Cylinders** (steel coils, drums, pipes) are MuJoCo cylinder geoms. A hollow one (a coil's eye) gets the
+  inertia of a tube, `m (R² + r²) / 2` about its axis. A cylinder lying on its side rolls at
+  `a / (1 + I / (m R²))` relative to a braking bed whatever the friction, and is reported as **rolled**
+  (finding `unit_rolled`) when it turned more than 10° and moved more than 5 cm. Its tilt is measured on
+  its axis, so rolling is not mistaken for tipping. With a cylinder in the scene MuJoCo's `multiccd` is on,
+  so a coil rests on a line of contacts instead of one point.
+- **Blocks** are boxes fixed to the bed: chocks, beams or load bars, and the two chocks of a coil cradle.
+  Like the headboard and the walls they only push, without friction. A chock of height `h` holds a
+  cylinder up to `a / g = sqrt(2 R h − h²) / (R − h)`.
+- **Bodies.** A flatbed has a 1.2 m headboard. A box body has a front wall, side walls and rear doors; a
+  curtain-sider has the front wall and rear doors, and its curtains do not restrain anything. The front
+  wall of both is rated at 0.4 × payload (EN 12642 code L, at most 5,000 daN); more than that is
+  `headboard_overloaded`.
+- Walls and blocks stand one contact margin (2 mm) outside their nominal faces, so cargo loaded right
+  against them rests there with no force until something pushes it.
+- A **full trip** is several events in a row on the same surface and in the same weather; the truck slows
+  to 30 km/h for a speed bump, and lashings loosened by vibration stay loose.
+
+Checks: `docs/validation.md`, Table 3 (rolling rate and chock thresholds within 1.1 %).
+
 ## Numbers and where they come from
 
 Confidence: **standard** = read in the standard or legal text, or in an official guide that reproduces

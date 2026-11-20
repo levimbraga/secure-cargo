@@ -5,7 +5,10 @@ Model
 * **Bed.** One body on three slide joints (X, Y, Z). The joints carry a very large armature,
   so the cargo cannot push the bed around; the simulation loop applies the force that gives
   the bed exactly the prescribed acceleration. Floor, headboard and side rails are box geoms.
-* **Cargo units.** Free rigid boxes with uniform density.
+* **Cargo units.** Free rigid bodies: boxes with uniform density, or cylinders (coils, drums,
+  pipes) with the inertia of a thick-walled tube when they have an inner diameter.
+* **Blocks** (chocks, beams, the sides of a coil cradle) are boxes fixed to the bed; like the
+  walls they only block, without friction.
 * **Lashings.** Spatial tendons with a tension-only spring (``springlength="0 L0"``): the rest
   length ``L0`` is shorter than the installed length, which creates the pretension, and the
   stiffness is ``EA / L0`` with ``EA = LC / elongation_at_LC``.
@@ -24,7 +27,7 @@ floor surface).
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
-from app.scenario import CargoUnit, Lashing, LashingRouting, Scenario
+from app.scenario import CargoUnit, CylinderAxis, Lashing, LashingRouting, Scenario, UnitShape
 from physics.constants import TIMESTEP_S
 from physics.friction import Friction, resolve_friction
 from physics.lashing_properties import DEFAULT_ELONGATION_AT_LC
@@ -35,7 +38,11 @@ BED_BODY = "bed"
 BED_JOINTS = ("bed_x", "bed_y", "bed_z")
 FLOOR_GEOM = "bed_floor"
 HEADBOARD_GEOM = "bed_headboard"
+REAR_WALL_GEOM = "bed_rear_wall"
+BLOCK_GEOM_PREFIX = "block:"
 ROAD_GEOM = "road"
+# Euler angles (degrees) that turn MuJoCo's cylinder axis (local Z) onto each bed axis.
+_CYLINDER_EULER = {CylinderAxis.X: "0 90 0", CylinderAxis.Y: "90 0 0", CylinderAxis.Z: "0 0 0"}
 
 # Inertia added to each bed joint [kg]. It is about 10^5 times the heaviest legal load, so
 # the reaction of the cargo changes the bed's acceleration by less than 0.01 %.
@@ -51,6 +58,11 @@ _SADDLE_MASS_KG = 0.5
 _CONTACT_SOLREF = "0.01 1"
 # Contacts become active this far before touching, which keeps resting contacts steady.
 _CONTACT_MARGIN_M = 0.002
+# Walls stand this far outside the bed's edge, and blocks are this much smaller than their
+# nominal size, on every side. A contact pushes until its two bodies are a margin apart, so
+# a unit loaded right against a wall would otherwise be pushed off it (and lean on it with
+# friction) before anything happens. With the setback it rests against the wall at zero force.
+_WALL_SETBACK_M = _CONTACT_MARGIN_M
 # Friction-to-normal impedance ratio. Above 1 it suppresses the slow creep that soft
 # contacts otherwise show below the friction limit.
 _IMPRATIO = 10
@@ -66,6 +78,21 @@ class UnitModel:
     body: str
     geom: str
     floor_friction: Friction
+
+    @property
+    def lying_axis(self) -> int | None:
+        """Index (0 = X, 1 = Y) of the axis of a cylinder lying on its side; None otherwise.
+
+        Such a unit can roll, and it has tipped over when that axis is no longer horizontal.
+        """
+        axis = self.unit.axis
+        if (
+            self.unit.shape is UnitShape.CYLINDER
+            and axis is not None
+            and axis is not CylinderAxis.Z
+        ):
+            return 0 if axis is CylinderAxis.X else 1
+        return None
 
 
 @dataclass(frozen=True)
@@ -101,7 +128,7 @@ def build_scene(
     """
     bed = scenario.bed
     root = ET.Element("mujoco", model=f"securecargo-{scenario.id}")
-    ET.SubElement(
+    option = ET.SubElement(
         root,
         "option",
         timestep=_fmt(TIMESTEP_S),
@@ -110,6 +137,11 @@ def build_scene(
         impratio=str(_IMPRATIO),
         noslip_iterations=str(_NOSLIP_ITERATIONS),
     )
+    if any(unit.shape is UnitShape.CYLINDER for unit in scenario.units):
+        # A cylinder lying on a flat floor touches it along a line. The general convex
+        # collision finds a single point there, and a coil balanced on one point drifts
+        # sideways; "multiccd" finds the points at both ends of the line.
+        ET.SubElement(option, "flag", multiccd="enable")
     default = ET.SubElement(root, "default")
     # Collisions only happen between the explicit pairs listed under <contact>.
     ET.SubElement(default, "geom", contype="0", conaffinity="0")
@@ -145,7 +177,7 @@ def build_scene(
             bed_body,
             HEADBOARD_GEOM,
             size=(_WALL_THICKNESS_M / 2, half_width, height / 2),
-            pos=(half_length + _WALL_THICKNESS_M / 2, 0, height / 2),
+            pos=(half_length + _WALL_SETBACK_M + _WALL_THICKNESS_M / 2, 0, height / 2),
         )
         bed_geoms.append(HEADBOARD_GEOM)
     if bed.side_rail_height_m > 0:
@@ -155,9 +187,28 @@ def build_scene(
                 bed_body,
                 name,
                 size=(half_length, _WALL_THICKNESS_M / 2, height / 2),
-                pos=(0, side * (half_width + _WALL_THICKNESS_M / 2), height / 2),
+                pos=(0, side * (half_width + _WALL_SETBACK_M + _WALL_THICKNESS_M / 2), height / 2),
             )
             bed_geoms.append(name)
+    if bed.rear_wall_height_m > 0:
+        height = bed.rear_wall_height_m
+        _box(
+            bed_body,
+            REAR_WALL_GEOM,
+            size=(_WALL_THICKNESS_M / 2, half_width, height / 2),
+            pos=(-half_length - _WALL_SETBACK_M - _WALL_THICKNESS_M / 2, 0, height / 2),
+        )
+        bed_geoms.append(REAR_WALL_GEOM)
+    for block in bed.blocks:
+        bx, by, bz = block.size_m
+        name = f"{BLOCK_GEOM_PREFIX}{block.id}"
+        _box(
+            bed_body,
+            name,
+            size=(bx / 2 - _WALL_SETBACK_M, by / 2 - _WALL_SETBACK_M, bz / 2),
+            pos=(block.position_m[0], block.position_m[1], bz / 2),
+        )
+        bed_geoms.append(name)
     anchors = {anchor.id: anchor.position_m for anchor in bed.anchor_points}
     for anchor_id, position in anchors.items():
         ET.SubElement(bed_body, "site", name=f"anchor:{anchor_id}", pos=_vec(position))
@@ -170,14 +221,17 @@ def build_scene(
         body_name, geom_name = f"unit:{unit.id}", f"unit_geom:{unit.id}"
         body = ET.SubElement(worldbody, "body", name=body_name, pos=_vec((x, y, z + sz / 2)))
         ET.SubElement(body, "freejoint", name=f"unit_joint:{unit.id}")
-        ET.SubElement(
-            body,
-            "geom",
-            name=geom_name,
-            type="box",
-            size=_vec((sx / 2, sy / 2, sz / 2)),
-            mass=_fmt(unit.mass_kg),
-        )
+        if unit.shape is UnitShape.CYLINDER:
+            _cylinder(body, geom_name, unit)
+        else:
+            ET.SubElement(
+                body,
+                "geom",
+                name=geom_name,
+                type="box",
+                size=_vec((sx / 2, sy / 2, sz / 2)),
+                mass=_fmt(unit.mass_kg),
+            )
         unit_bodies[unit.id] = body
         friction = resolve_friction(
             unit.material,
@@ -327,7 +381,11 @@ def _add_visuals(root: ET.Element) -> None:
     ET.SubElement(
         asset, "material", name="checker", texture="checker", texrepeat="2 2", texuniform="true"
     )
-    colours = {"unit_geom:": "0.83 0.69 0.48 0.45", "bed_": "0.62 0.64 0.66 1"}
+    colours = {
+        "unit_geom:": "0.83 0.69 0.48 0.45",
+        "bed_": "0.62 0.64 0.66 1",
+        BLOCK_GEOM_PREFIX: "0.45 0.33 0.2 1",
+    }
     for geom in root.iter("geom"):
         name = geom.get("name", "")
         if name == ROAD_GEOM:
@@ -348,6 +406,48 @@ def _add_visuals(root: ET.Element) -> None:
         dir="0.3 0.4 -1",
         diffuse="0.6 0.6 0.6",
         castshadow="true",
+    )
+
+
+def cylinder_inertia(unit: CargoUnit) -> Vec3:
+    """Principal moments of inertia of a cylindrical unit about X, Y, Z of the bed [kg m^2].
+
+    A thick-walled tube of outer radius R, inner radius r and length L: m (R^2 + r^2) / 2
+    about its axis and m (3 (R^2 + r^2) + L^2) / 12 across it (r = 0 for a solid cylinder).
+    """
+    assert unit.axis is not None
+    radius = unit.diameter_m / 2
+    inner = (unit.inner_diameter_m or 0.0) / 2
+    axis = {CylinderAxis.X: 0, CylinderAxis.Y: 1, CylinderAxis.Z: 2}[unit.axis]
+    length = unit.size_m[axis]
+    squares = radius**2 + inner**2
+    along = unit.mass_kg * squares / 2
+    across = unit.mass_kg * (3 * squares + length**2) / 12
+    return (
+        along if axis == 0 else across,
+        along if axis == 1 else across,
+        along if axis == 2 else across,
+    )
+
+
+def _cylinder(body: ET.Element, name: str, unit: CargoUnit) -> None:
+    assert unit.axis is not None
+    axis = {CylinderAxis.X: 0, CylinderAxis.Y: 1, CylinderAxis.Z: 2}[unit.axis]
+    ET.SubElement(
+        body,
+        "inertial",
+        pos="0 0 0",
+        mass=_fmt(unit.mass_kg),
+        diaginertia=_vec(cylinder_inertia(unit)),
+    )
+    ET.SubElement(
+        body,
+        "geom",
+        name=name,
+        type="cylinder",
+        size=f"{_fmt(unit.diameter_m / 2)} {_fmt(unit.size_m[axis] / 2)}",
+        euler=_CYLINDER_EULER[unit.axis],
+        mass="0",
     )
 
 
