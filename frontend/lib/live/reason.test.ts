@@ -49,4 +49,41 @@ describe("explain", () => {
     const reason = explain(result, result.keyframes);
     expect(["slides", "slidesLoose"]).toContain(reason.key);
   });
+
+  it("names tipping when a tall unit holds, with its margin next to friction", () => {
+    const result = run("sharp-curve", "fixed");
+    const reason = explain(result, result.keyframes);
+    expect(["holdsUpright", "holdsTall"]).toContain(reason.key);
+    expect(reason.subject).toMatch(/^cabinet-/);
+    expect(reason.values.overturning).toBeGreaterThan(0);
+    expect(reason.values.overturning).toBeLessThan(reason.values.restoring ?? 0);
+    expect(reason.values.friction).toBeGreaterThan(0);
+  });
+
+  it("keeps a low pallet to friction alone", () => {
+    const result = run("anti-slip-mat", "fixed");
+    expect(explain(result, result.keyframes).key).toBe("holds");
+  });
+
+  it("says a coil rolls, not slides", () => {
+    const result = run("steel-coil", "as_loaded");
+    const reason = explain(result, result.keyframes);
+    expect(reason.key).toBe("rollsIntoHeadboard");
+    expect(reason.values.slide).toBeGreaterThan(100);
+  });
+
+  it("puts the overloaded front wall in the sentence", () => {
+    const result = run("box-truck", "as_loaded");
+    const reason = explain(result, result.keyframes);
+    expect(reason.key).toBe("slidesIntoWall");
+    expect(reason.values.force).toBeGreaterThan(reason.values.capacity ?? Infinity);
+  });
+
+  it("blames loosened straps on the dirt road", () => {
+    const result = run("dirt-road", "as_loaded");
+    const reason = explain(result, result.keyframes);
+    expect(reason.key).toBe("slidesAfterLoosening");
+    expect(reason.values.after).toBeLessThan(0.75 * (reason.values.before ?? 0));
+    expect(reason.values.inertia).toBeGreaterThan(reason.values.friction ?? Infinity);
+  });
 });
