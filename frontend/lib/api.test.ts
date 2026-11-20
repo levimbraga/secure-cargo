@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { API_URL, ApiError, fetchHealth, parseHealth } from "./api";
+import {
+  API_URL,
+  ApiError,
+  fetchHealth,
+  parseHealth,
+  warmUpApi,
+} from "./api";
 
 const VALID = { status: "ok", version: "0.1.0", mujoco_version: "4.0.1" };
 
@@ -74,5 +80,40 @@ describe("fetchHealth", () => {
     expect(await errorCodeOf(fetchHealth(undefined, failing))).toBe(
       "bad_payload",
     );
+  });
+});
+
+describe("warmUpApi", () => {
+  it("sends one request to /health and returns without waiting", () => {
+    const calls: string[] = [];
+    const never = new Promise<Response>(() => {});
+
+    const result = warmUpApi((input) => {
+      calls.push(String(input));
+      return never;
+    });
+
+    expect(result).toBeUndefined();
+    expect(calls).toEqual([`${API_URL}/health`]);
+  });
+
+  it("swallows a failed request", async () => {
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => unhandled.push(reason);
+    process.on("unhandledRejection", onUnhandled);
+
+    warmUpApi(stubFetch(new TypeError("fetch failed")));
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    process.off("unhandledRejection", onUnhandled);
+    expect(unhandled).toEqual([]);
+  });
+
+  it("swallows a fetch implementation that throws synchronously", () => {
+    expect(() =>
+      warmUpApi(() => {
+        throw new Error("fetch is not available");
+      }),
+    ).not.toThrow();
   });
 });

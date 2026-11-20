@@ -3,6 +3,7 @@ import { hasLocale, useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { ApiWarmup } from "@/components/api-warmup";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -18,6 +19,7 @@ export default function LandingPage({ params }: PageProps<"/[locale]">) {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-16 px-5 py-14 sm:py-24">
+      <ApiWarmup />
       <section className="flex flex-col items-start gap-6">
         <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
           <span aria-hidden className="size-2 rounded-full bg-brand" />

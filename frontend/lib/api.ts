@@ -73,3 +73,24 @@ export async function fetchHealth(
   }
   return parseHealth(payload);
 }
+
+/**
+ * Wakes the API up without waiting for the answer.
+ *
+ * The API container stops when idle, so its first request after a pause is slow. Calling this
+ * from the landing page gets the container started before the visitor opens the app.
+ * Fire-and-forget: it never throws and never rejects.
+ */
+export function warmUpApi(fetchImpl: typeof fetch = fetch): void {
+  try {
+    void fetchImpl(`${API_URL}/health`, {
+      cache: "no-store",
+      // Lets the request finish even if the visitor navigates away right after.
+      keepalive: true,
+    })
+      .then((response) => response.body?.cancel())
+      .catch(() => undefined);
+  } catch {
+    // Nothing to do: warming up is only an optimization.
+  }
+}
