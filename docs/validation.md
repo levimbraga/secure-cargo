@@ -129,6 +129,51 @@ it slides unless something else holds it. The straps stay at their pretension (3
 (friction 0.2): on the bare floor the standard would ask for six straps per stack, so the fix adds
 rubber anti-slip mats (friction 0.6).
 
+## Browser vs. server (MuJoCo WebAssembly)
+
+The live lab (`/app/lab/<id>`) steps the model in the visitor's browser with the official MuJoCo
+WebAssembly build (`@mujoco/mujoco` 4.0.1, the same version as the server's Python package). It does
+not build a model of its own: the server sends the MJCF it simulates together with the run plan (bed
+acceleration for every 2 ms step, lashing parameters, run-loop constants, thresholds), through
+`POST /mjcf` and `GET /scenarios/{id}/mjcf`, and `frontend/lib/live/engine.ts` repeats
+`backend/physics/simulate.py` step for step.
+
+Table 4 compares the two on the eight demo runs. Each cell is browser / server.
+
+### Table 4. Browser run vs. server run
+
+| Scenario | Version | Verdict | Largest slide [m] | Peak lashing force [N] |
+|---|---|---|---|---|
+| emergency-braking | as loaded | fail / fail | 0.81427 / 0.81427 | 5898.7 / 5898.7 |
+| emergency-braking | fixed | pass / pass | 0.00002 / 0.00002 | 3003.3 / 3003.3 |
+| weigh-station | as loaded | fail / fail | 0.0018 / 0.0018 | 6627.5 / 6627.5 |
+| weigh-station | fixed | pass / pass | 0.00059 / 0.00059 | 4295.2 / 4295.2 |
+| rope-lashing | as loaded | fail / fail | 0.19027 / 0.19027 | 349.5 / 349.5 |
+| rope-lashing | fixed | pass / pass | 0.00001 / 0.00001 | 3000 / 3000 |
+| sharp-curve | as loaded | fail / fail | 25.48192 / 25.48192 | none / none |
+| sharp-curve | fixed | pass / pass | 0.0001 / 0.0001 | 3000.1 / 3000.1 |
+
+Over all 990 keyframes of the eight runs, the largest difference in any unit position (rounded to
+0.1 mm) and in any lashing tension (rounded to 1 N) is zero. That is expected rather than lucky: the
+engine, its version, the model and the inputs are the same, and WebAssembly arithmetic is
+deterministic, so even the cabinet that tumbles off the bed lands in the same place.
+
+**Tolerance.** The automated tests do not demand bit equality, so that a different WebAssembly
+engine or a rebuilt binary does not break them, but they do not let a real divergence through
+(`frontend/lib/live/parity.ts`): the same verdict and the same findings; largest slide within 1 mm,
+or 1 % beyond 10 cm; largest tilt within 0.1 degree (a unit that tumbles only has to tumble in both);
+peak lashing force within 1 %, and at least 10 N.
+
+**Where it runs.** `frontend/lib/live/engine.test.ts` runs the WebAssembly engine in Node on every
+push. `frontend/e2e/parity.spec.ts` opens the lab page for each of the eight runs in headless
+Chromium (Playwright) in CI and compares what the page computed with the server's result in
+`frontend/public/demo/`. `backend/tests/test_live_model.py` checks that the document served to the
+browser is exactly what the server simulates.
+
+**What the browser result is for.** Exploring. It is labelled "live, not certified" in the UI;
+certificates only ever use the server's result. The numbers above say the two agree, not that either
+is more than the model described in `docs/physics-model.md`.
+
 ## What this does not show
 
 - The simulation is validated against the standard's own model of a rigid box on a flat floor. It has
