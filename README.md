@@ -41,10 +41,13 @@ The project is being built in phases during the hackathon. What exists today:
   the number of straps the formula asks for is where the simulation flips from fail to pass, and the
   sliding threshold agrees within 0.3 %. See [docs/validation.md](docs/validation.md) for the tables and
   [docs/physics-model.md](docs/physics-model.md) for the model and the source of every number.
-- `frontend/` — Next.js app with the landing page at `/`, the app at `/app` and a 3D replay of each demo
-  scenario at `/app/scenarios/<id>` (as loaded / fixed toggle, timeline, verdict and margins), in English
-  and Brazilian Portuguese. The simulated scenarios ship as static JSON in `frontend/public/demo/`, so they
-  replay even when the API is cold or down, and the page still shows every number without WebGL.
+- `frontend/` — Next.js app with the landing page at `/`, the app at `/app` and a replay of each demo
+  scenario at `/app/scenarios/<id>`, in English and Brazilian Portuguese: as loaded / fixed toggle; a 3D
+  scene where the road moves at the truck's speed, lashings are coloured by tension and each unit shows
+  inertia against the friction available; a realistic and an engineering view; a clip of the same run
+  drawn by MuJoCo's own renderer; three charts on the replay clock; verdict and margins. The simulated
+  scenarios ship as static files in `frontend/public/demo/`, so they replay even when the API is cold or
+  down, and the page keeps working without WebGL.
 - `docs/design.md` — the design system: tokens, type, layout, components, imagery and motion, plus the
   keyframes contract for the 3D replay.
 - `backend/worker/` — Cloudflare Worker that starts the API container on demand and forwards requests to it.
@@ -121,6 +124,7 @@ site ships with (a test fails if they are stale):
 ```bash
 uv run python -m scripts.build_demo_fixtures   # backend/scenarios/demo/*.json
 uv run python -m scripts.precompute_demo       # frontend/public/demo/*.json
+uv run python -m scripts.render_demo_videos    # frontend/public/demo/video/*.mp4 (needs EGL and ffmpeg)
 uv run python -m physics.validation            # tables of docs/validation.md
 ```
 

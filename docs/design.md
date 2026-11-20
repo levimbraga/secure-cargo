@@ -200,52 +200,65 @@ Loading: neutral "Checking…" badge and placeholder values of fixed size, so no
 ## 10. 3D replay (`/app/scenarios/[id]`)
 
 There is still no 3D on the landing page; the scenario cards there are photographs and open the replay
-pages. The replay lives in the app, where it shows real simulation output, never an illustration.
+pages. The replay lives in the app and its job is to **prove the physics**: everything that moves or is
+drawn as a force comes from the simulation output, and the page shows where each number comes from.
 
-Page, in the reading column, top to bottom:
+Page, in the reading column, top to bottom: mono label, one serif sentence that answers "is it safe?",
+verdict badge, one paragraph of why; the two pills "As loaded / Fixed" (the selected one is the primary)
+with the view choice "Realistic / Engineering" beside them; the scene; the timeline (play pill, range
+input, mono clock), the markers of the event and the speed choice; a legend of the arrows and colours;
+MuJoCo's own render; three charts; the result rows; the findings.
 
-```
-      Scenario · Emergency braking                       mono label
-      As loaded, the pallets slide forward               one serif sentence: is it safe?
-      and one hits the headboard.
-      ✕ Fail                                             verdict badge
-      Three pallets with one strap each. …               one paragraph: why
+**What the scene shows, in both views**
 
-      (As loaded) (Fixed)                                two pills; the selected one is the primary
+- **Motion of the trip.** Every pose is relative to the truck, so the truck stands still and the road
+  streams past at the truck's real speed from the keyframes: lane dashes, roadside posts and the grain of
+  the surface. Under braking it visibly slows to a stop. A read-out in the corner gives the speed in km/h
+  and the acceleration in g. The body dips at the nose under braking and leans in curves (2° and 4° per
+  g), rides up over a speed bump by the simulated height, and the camera falls slightly behind a braking
+  truck. These four are visual only and are driven by the acceleration profile.
+- **Forces.** Above each unit, two arrows to one scale (1 m = 10 kN, the same in every scenario): the
+  inertia the motion of the truck asks of it (mass × acceleration, ink) and against it the most friction
+  can give (friction factor × the floor force exported by the engine, green). When inertia is the longer
+  one the unit slides and the arrow turns red.
+- **Lashings** are coloured by the tension they carry on a continuous scale: neutral when slack, amber at
+  half their capacity LC, red at LC. Pointing at a lashing, or tapping it, shows its force in daN and as a
+  share of LC.
+- **Where things were.** A dashed outline marks where each unit started and a line traces where its base
+  has been; a red ring opens where a unit hits the headboard.
 
-      ┌──────────────────────────────────────────┐
-      │                3D scene                  │       16:10 (4:3 on phones), 4px radius, surface fill
-      └──────────────────────────────────────────┘
-      Simulation data · MuJoCo 4.0.1 · 2 ms time step    mono caption: where the motion comes from
-      (Play) ──────●──────────────── 2.40 / 4.17 s       timeline: pill, range input, mono clock
-      0.3 s · Braking starts   3.6 s · Truck stopped     markers; each jumps to its time
+**Realistic view** (default). Physically based materials, light from a studio environment generated in
+the browser, one sun with soft shadows, ACES tone mapping. A two-axle truck with a plank deck, pallets
+with cartons under stretch film, crates, plastic pallets, a machine on a skid, sheet-steel cabinets,
+ratchet straps, chains and rope. All of it is built in code: nothing is downloaded, and every unit fills
+exactly the box the simulation used. Bed and headboard have the simulated dimensions.
 
-      Truck                              braking at 0.76 g      data rows that follow the timeline
-      Largest slide now                           62.8 cm
-      Highest lashing tension now                 300 daN
+**Engineering view.** The look of a physics debugger: checkered ground (1 m squares), translucent
+bodies with their axes, the solver's contact points with their normal forces, the tension of every
+lashing and the two forces on every unit as numbers, and the axes of the bed frame.
 
-      Result                                             data rows of the whole run: slide, tilt,
-      …                                                  friction used, lashing force, EN 12195-1, axles
-      What went wrong                                    one plain sentence per finding
-```
+**MuJoCo's own render.** Under the scene, a short clip of the same run drawn by MuJoCo's renderer
+(`backend/scripts/render_demo_videos.py`): the frames are taken during the run that produces the
+keyframes, from the same model, with the engine's contact points and tendons. It plays on the clock of
+the replay. This is the evidence that the scene above is the simulation and not a drawing.
 
-- **Scene.** Only what the simulation knows is drawn with weight: bed, headboard, cargo units, lashings.
-  Cab, chassis and wheels are plain boxes and cylinders that show which way is forward. Flat fills with ink
-  edges, no shadows, no textures. Straps are amber (the reserved accent), chains dark gray, rope tan. A unit
-  that moved gets red edges. Positions are relative to the truck, so the truck stands still and the lane
-  markings move.
-- **Camera.** Three-quarter view from the side for braking and bumps, from behind for sideways events.
-  Drag to orbit; no zoom, so the page keeps the scroll wheel and vertical touch scrolling.
-- **Motion.** The replay starts by itself once loaded, except with `prefers-reduced-motion: reduce`, and
-  stops at the end. This is the one place on the site where something other than the three motions of
-  section 7 moves, because the motion is the data.
-- **Without WebGL** (or if the scene fails) the frame shows one line of text and everything else on the
-  page keeps working: sentence, verdict, timeline and numbers are plain HTML rendered on the server from
-  the same data.
-- **Loading.** The frame has a fixed aspect ratio, so nothing shifts. three.js is loaded only on these
-  pages, after the text is on screen.
+**Charts.** Three small charts on the time axis of the replay: truck acceleration (g), slide of each
+unit (cm) and lashing force (daN) with the capacity as a reference line. A vertical cursor is the replay
+clock; dragging on a chart moves it. The stretch played in slow motion is shaded. Series colours are a
+fixed categorical order (blue `#3B6FD4`, orange `#C8501E`, teal `#168F7A`) checked for contrast and
+colour-blind separation against the page background; with more than a few lashings they are drawn in
+neutral gray with the highest tension in ink. Values at the cursor sit in the legend, and a data table is
+one click away.
 
-The same player and format will serve the driver flow and the certificate.
+**Playback.** 0.25×, 0.5×, 1× and "Auto" (default): normal speed, slowed to 0.25× from just before the
+load starts to move until a second after. The replay starts by itself the first time the scene is on
+screen, except with `prefers-reduced-motion: reduce`, and renders only while it is on screen.
+
+**Without WebGL** (or if the scene fails) MuJoCo's clip takes the place of the scene; the sentence, the
+verdict, the timeline, the charts and the numbers are plain HTML and keep working.
+
+**Loading.** The frame has a fixed aspect ratio, so nothing shifts. three.js is loaded only on these
+pages, after the text is on screen; the clip loads its metadata only until it plays.
 
 ### Keyframes contract (v2)
 
@@ -260,7 +273,7 @@ document.
   "fps": 30,
   "duration_s": 4.172,
   "bed": { "length_m": 6.2, "width_m": 2.4, "floor_height_m": 1.25, "headboard_height_m": 1.2, "side_rail_height_m": 0 },
-  "units": [{ "id": "pallet-1", "size_m": [1.2, 1.0, 1.1] }],
+  "units": [{ "id": "pallet-1", "size_m": [1.2, 1.0, 1.1], "mass_kg": 900, "friction_coefficient": 0.45 }],
   "straps": [{
     "id": "pallet-1-s1", "unit_id": "pallet-1", "kind": "strap", "routing": "top_over",
     "lashing_capacity_n": 25000,
@@ -273,8 +286,9 @@ document.
     "t": 0.0,
     "truck_speed_mps": 22.222,
     "bed_accel_mps2": [0, 0, 0],
-    "units": [{ "p": [2.0, 0, 0.552], "q": [1, 0, 0, 0] }],
-    "straps": [{ "tension_n": 3000, "slide_m": 0 }]
+    "units": [{ "p": [2.0, 0, 0.552], "q": [1, 0, 0, 0], "n": 13898 }],
+    "straps": [{ "tension_n": 3000, "slide_m": 0 }],
+    "contacts": [[2.6, 0.5, 0.001, 3475, "floor"]]
   }],
   "result": { "status": "fail", "unit_ids": ["pallet-1"] }
 }
@@ -290,6 +304,12 @@ unit's center and move with it (rotate by `q`, add `p`). A top-over strap runs a
 point, anchor and may slide along the unit: add `slide_m` to the X of both unit points before
 transforming. A direct lashing runs anchor to unit point. `path_m` is the path as installed.
 `bed_accel_mps2` is the acceleration of the bed (braking is negative X), for a g-force readout.
+
+Forces: `units[].n` in a frame is the force with which the floor holds that unit up, in newtons, averaged
+since the previous frame (a sliding unit chatters, so single instants are noise). Friction can give at
+most `friction_coefficient × n`; the inertia the unit feels is `mass_kg ×` the bed acceleration, opposite
+to it. `contacts` are the solver's contact points: x, y, z in the bed frame, normal force in newtons, and
+what the unit touches (`floor`, `headboard`, `rail`, `unit`, `road`).
 
 Version 1 (hand-made placeholders, `source: "placeholder"`) had no `kind`, `routing`, anchor or unit
 points and no `bed_accel_mps2`. `frontend/lib/keyframes.ts` reads both versions; the site only shows

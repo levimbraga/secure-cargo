@@ -86,6 +86,15 @@ source.
   the verdict says whether the load survived the simulated event, this says whether the lashing meets
   the standard. Computed in `backend/rules/en12195.py`.
 - `axle_loads`: load per axle group against the legal limit, when the vehicle is described.
+- `keyframes`: poses at 30 fps, plus what a replay needs to show the forces: the tension of every
+  lashing, the solver's contact points with their normal forces, and the force of the floor on each
+  unit. A sliding unit chatters on the floor (it leaves it and knocks back within milliseconds), so that
+  force is exported as its average over each frame.
+
+MuJoCo's own renderer can draw any run (`backend/scripts/render_demo_videos.py`): the frames are taken
+during the run through a hook of the simulation, from the same model with a checkered ground and colours
+added. A test compares the results with and without the hook and the visual additions: they are
+identical.
 
 ## Verdict thresholds
 
