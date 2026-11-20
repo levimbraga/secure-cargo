@@ -286,7 +286,7 @@ def _mountain_descent(event: TripEvent, surface: SurfaceCondition) -> MotionProf
     grade = (
         event.grade_percent if event.grade_percent is not None else DEFAULT_GRADE_PERCENT
     ) / 100
-    brake, transition, hold, gap = 1.5, 0.8, 0.8, 0.2
+    brake, transition, hold, gap = 1.2, 0.6, 0.6, 0.2
     curve = 2 * transition + hold
     timeline = _Timeline(LEAD_IN_S + 2 * (brake + gap + curve + gap) + TAIL_S, event, surface)
     # On a downhill grade gravity pulls the cargo forward all the time: g * sin(slope).

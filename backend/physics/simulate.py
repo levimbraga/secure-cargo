@@ -78,6 +78,9 @@ class _Lashings:
     breaking: FloatArray  # breaking strength [N], inf if it never breaks
     broken: NDArray[np.bool_]
     broke_at_s: FloatArray
+    taut: NDArray[np.bool_]
+    # True when stiffness, rest length or broken state changed since the last ``apply``.
+    dirty: bool = True
 
     def tension(self, data: mujoco.MjData) -> FloatArray:
         """Force carried by each lashing [N]: spring plus damping, never negative."""
@@ -88,13 +91,19 @@ class _Lashings:
         return np.maximum(force, 0.0)
 
     def apply(self, model: mujoco.MjModel, data: mujoco.MjData) -> None:
-        """Write the current lashing parameters into the model before a step."""
-        taut = data.ten_length[self.tendon_ids] > self.rest_length
-        alive = ~self.broken
-        model.tendon_stiffness[self.tendon_ids] = np.where(alive, self.stiffness, 0.0)
-        model.tendon_damping[self.tendon_ids] = np.where(taut & alive, self.damping, 0.0)
-        model.tendon_lengthspring[self.tendon_ids, 0] = 0.0
-        model.tendon_lengthspring[self.tendon_ids, 1] = self.rest_length
+        """Write the lashing parameters into the model before a step, if they changed."""
+        if not len(self.tendon_ids):
+            return
+        # Damping only acts while the lashing is taut, so a slack one does not resist.
+        taut = (data.ten_length[self.tendon_ids] > self.rest_length) & ~self.broken
+        if self.dirty:
+            model.tendon_stiffness[self.tendon_ids] = np.where(self.broken, 0.0, self.stiffness)
+            model.tendon_lengthspring[self.tendon_ids, 0] = 0.0
+            model.tendon_lengthspring[self.tendon_ids, 1] = self.rest_length
+        if self.dirty or not np.array_equal(taut, self.taut):
+            model.tendon_damping[self.tendon_ids] = np.where(taut, self.damping, 0.0)
+            self.taut = taut
+        self.dirty = False
 
 
 def simulate(
@@ -147,17 +156,19 @@ def simulate(
     weights = np.array([unit.unit.mass_kg * STANDARD_GRAVITY_MPS2 for unit in scene.units])
 
     count = len(scene.units)
+    has_lashings = len(scene.lashings) > 0
     max_slide = np.zeros(count)
-    max_tilt = np.zeros(count)
     peak_headboard = np.zeros(count)
     left_bed = np.zeros(count, dtype=bool)
     peak_tension = initial_tension.copy()
 
-    # The motion the bed should follow, integrated the way the engine integrates.
+    # The motion the bed should follow, integrated the way the engine integrates (velocity
+    # first, then position); the simulated bed is compared with it at every keyframe.
     bed_start = data.qpos[bed_dofs].copy()
-    prescribed_velocity = np.zeros(3)
-    prescribed_position = np.zeros(3)
+    prescribed = np.cumsum(np.cumsum(profile.acceleration_mps2, axis=0), axis=0) * TIMESTEP_S**2
     tracking_error = 0.0
+    half_extent = np.array([half_length, half_width])
+    min_upright = np.ones(count)
 
     frames: list[Keyframe] = [
         _keyframe(0.0, profile, 0, data, bed_id, unit_ids, lashings, saddle_qpos)
@@ -174,37 +185,26 @@ def simulate(
             lashings.rest_length = (
                 lashings.reference_length - factor * lashings.target / lashings.stiffness
             )
+            lashings.dirty = True
         lashings.apply(model, data)
         mujoco.mj_step(model, data)
-
-        prescribed_velocity += profile.acceleration_mps2[step] * TIMESTEP_S
-        prescribed_position += prescribed_velocity * TIMESTEP_S
-        tracking_error = max(
-            tracking_error,
-            float(np.abs(data.qpos[bed_dofs] - bed_start - prescribed_position).max()),
-        )
 
         relative = data.xpos[unit_ids] - data.xpos[bed_id]
         displacement = relative - start
         np.maximum(max_slide, np.hypot(displacement[:, 0], displacement[:, 1]), out=max_slide)
         # xmat[:, 8] is the Z component of the unit's own Z axis: the cosine of its tilt.
-        np.maximum(
-            max_tilt,
-            np.degrees(np.arccos(np.clip(data.xmat[unit_ids, 8], -1.0, 1.0))),
-            out=max_tilt,
-        )
-        left_bed |= (
-            (np.abs(relative[:, 0]) > half_length)
-            | (np.abs(relative[:, 1]) > half_width)
-            | (displacement[:, 2] < -0.05)
+        np.minimum(min_upright, data.xmat[unit_ids, 8], out=min_upright)
+        left_bed |= (np.abs(relative[:, :2]) > half_extent).any(axis=1) | (
+            displacement[:, 2] < -0.05
         )
 
-        tension = lashings.tension(data)
+        tension = lashings.tension(data) if has_lashings else initial_tension
         np.maximum(peak_tension, tension, out=peak_tension)
         newly_broken = (tension > lashings.breaking) & ~lashings.broken
-        if newly_broken.any():
+        if has_lashings and newly_broken.any():
             lashings.broken |= newly_broken
             lashings.broke_at_s[newly_broken] = data.time
+            lashings.dirty = True
 
         if headboard_geom >= 0 and data.ncon:
             geoms = data.contact.geom
@@ -215,6 +215,10 @@ def simulate(
                 peak_headboard[unit] = max(peak_headboard[unit], force)
 
         if step + 1 >= round(next_frame * steps_per_frame):
+            tracking_error = max(
+                tracking_error,
+                float(np.abs(data.qpos[bed_dofs] - bed_start - prescribed[step]).max()),
+            )
             frames.append(
                 _keyframe(
                     next_frame / REPLAY_FPS,
@@ -230,6 +234,7 @@ def simulate(
             next_frame += 1
 
     _check_stable(data)
+    max_tilt = np.degrees(np.arccos(np.clip(min_upright, -1.0, 1.0)))
     final = (data.xpos[unit_ids] - data.xpos[bed_id]) - start
     final_tension = lashings.tension(data)
 
@@ -348,6 +353,7 @@ def _prepare_lashings(
         breaking=breaking,
         broken=np.zeros(count, dtype=bool),
         broke_at_s=np.zeros(count),
+        taut=np.zeros(count, dtype=bool),
     )
 
 
@@ -389,6 +395,7 @@ def _pretension(
         static = lashings.stiffness * np.maximum(length - lashings.rest_length, 0.0)
         error = np.abs(static - lashings.target) / np.maximum(lashings.target, 100.0)
         lashings.rest_length = length - lashings.target / lashings.stiffness
+        lashings.dirty = True
         if error.max() < _PRETENSION_TOLERANCE:
             break
     for _ in range(_FINAL_SETTLE_STEPS):
