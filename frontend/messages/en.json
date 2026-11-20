@@ -649,5 +649,66 @@
       "straps_mismatch": "The straps in this link do not match its units."
     },
     "open": "Open in the explorer"
+  },
+  "Gallery": {
+    "label": "Examples",
+    "metaTitle": "Examples · SecureCargo",
+    "description": "Nine loads, each simulated as loaded and fixed, with the raw MuJoCo render of every run.",
+    "title": "Nine loads, each simulated as loaded and fixed.",
+    "intro": "Every example opens in the explorer, where any of its choices can be changed. The matrix at the end shows which example covers each option the product supports.",
+    "asLoaded": "As loaded",
+    "fixed": "Fixed",
+    "replay": "Replay",
+    "lab": "Live lab",
+    "explorer": "Explorer",
+    "explorerFixed": "Explorer, fixed",
+    "replayName": "{title}: replay",
+    "labName": "{title}: live lab",
+    "explorerName": "{title}: open as loaded in the explorer",
+    "explorerFixedName": "{title}: open fixed in the explorer",
+    "video": "Raw MuJoCo render of the load as loaded",
+    "videoCaption": "As loaded, drawn by MuJoCo's own renderer.",
+    "coverage": {
+      "title": "Coverage",
+      "summary": "{covered} of {total} options covered by {examples} examples.",
+      "option": "Option",
+      "examples": "Shown by",
+      "none": "not yet",
+      "viaTrip": "in a full trip",
+      "dims": {
+        "body": "Body",
+        "size": "Truck",
+        "cargo": "Cargo",
+        "position": "Position",
+        "restraint": "Securing",
+        "speed": "Speed",
+        "road": "Road",
+        "weather": "Surface and weather",
+        "event": "Event",
+        "outcome": "Outcome"
+      },
+      "speed": {
+        "20_40": "20–40 km/h",
+        "50_70": "50–70 km/h",
+        "80_100": "80–100 km/h"
+      },
+      "outcome": {
+        "slide": "Slide",
+        "tip_over": "Tip-over",
+        "roll": "Roll",
+        "hit_headboard": "Hits the headboard or wall",
+        "fall_off_side": "Falls off the side",
+        "strap_overload": "Strap overload",
+        "axle_overload": "Axle overload",
+        "pretension_loss": "Pretension loss"
+      }
+    }
+  },
+  "AppHome": {
+    "label": "App",
+    "title": "Check a load before the trip.",
+    "explorer": "Open the explorer",
+    "examples": "All examples and coverage",
+    "listLabel": "Examples"
   }
 }

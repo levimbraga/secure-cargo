@@ -649,5 +649,66 @@
       "straps_mismatch": "As cintas deste link não batem com os volumes."
     },
     "open": "Abrir no explorador"
+  },
+  "Gallery": {
+    "label": "Exemplos",
+    "metaTitle": "Exemplos · Carga Segura",
+    "description": "Nove cargas, cada uma simulada como foi carregada e corrigida, com o render do MuJoCo de cada simulação.",
+    "title": "Nove cargas, cada uma simulada como foi carregada e corrigida.",
+    "intro": "Cada exemplo abre no explorador, onde qualquer escolha pode ser mudada. A matriz no fim mostra qual exemplo cobre cada opção que o produto suporta.",
+    "asLoaded": "Como carregada",
+    "fixed": "Corrigida",
+    "replay": "Replay",
+    "lab": "Laboratório",
+    "explorer": "Explorador",
+    "explorerFixed": "Explorador, corrigida",
+    "replayName": "{title}: replay",
+    "labName": "{title}: laboratório ao vivo",
+    "explorerName": "{title}: abrir como carregada no explorador",
+    "explorerFixedName": "{title}: abrir corrigida no explorador",
+    "video": "Render do MuJoCo da carga como foi carregada",
+    "videoCaption": "Como foi carregada, desenhada pelo próprio renderizador do MuJoCo.",
+    "coverage": {
+      "title": "Cobertura",
+      "summary": "{covered} de {total} opções cobertas por {examples} exemplos.",
+      "option": "Opção",
+      "examples": "Mostrada em",
+      "none": "ainda não",
+      "viaTrip": "numa viagem completa",
+      "dims": {
+        "body": "Carroceria",
+        "size": "Caminhão",
+        "cargo": "Carga",
+        "position": "Posição",
+        "restraint": "Amarração",
+        "speed": "Velocidade",
+        "road": "Estrada",
+        "weather": "Pista e clima",
+        "event": "Evento",
+        "outcome": "Resultado"
+      },
+      "speed": {
+        "20_40": "20–40 km/h",
+        "50_70": "50–70 km/h",
+        "80_100": "80–100 km/h"
+      },
+      "outcome": {
+        "slide": "Deslizamento",
+        "tip_over": "Tombamento",
+        "roll": "Rolamento",
+        "hit_headboard": "Bate no painel ou na parede",
+        "fall_off_side": "Cai pela lateral",
+        "strap_overload": "Cinta sobrecarregada",
+        "axle_overload": "Excesso de peso no eixo",
+        "pretension_loss": "Perda de tensão"
+      }
+    }
+  },
+  "AppHome": {
+    "label": "App",
+    "title": "Confira a carga antes da viagem.",
+    "explorer": "Abrir o explorador",
+    "examples": "Todos os exemplos e a cobertura",
+    "listLabel": "Exemplos"
   }
 }
