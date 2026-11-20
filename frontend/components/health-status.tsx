@@ -3,30 +3,32 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  API_URL,
-  ApiError,
-  type ApiErrorCode,
-  fetchHealth,
-  type Health,
-} from "@/lib/api";
+import { pill } from "@/components/ui/pill";
+import { SectionLabel } from "@/components/ui/section-label";
+import { VerdictBadge } from "@/components/ui/verdict-badge";
+import { API_URL, ApiError, type ApiErrorCode, fetchHealth, type Health } from "@/lib/api";
 
 type State =
   | { kind: "loading" }
   | { kind: "online"; health: Health }
   | { kind: "offline"; code: ApiErrorCode };
 
+const VERDICT = { loading: "neutral", online: "pass", offline: "fail" } as const;
+
+function Row({ label, value }: { label: string; value?: string }) {
+  return (
+    <div className="flex h-14 items-center justify-between gap-6 border-t border-hairline">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-mono tabular-nums">
+        {value ?? <span aria-hidden className="block h-4 w-16 rounded-sm bg-surface" />}
+      </dd>
+    </div>
+  );
+}
+
+/** Answers "is the simulation server up?" in one sentence, then shows the details. */
 export function HealthStatus() {
-  const t = useTranslations("App.health");
+  const t = useTranslations("App");
   const [state, setState] = useState<State>({ kind: "loading" });
   const [attempt, setAttempt] = useState(0);
 
@@ -50,61 +52,34 @@ export function HealthStatus() {
     setAttempt((current) => current + 1);
   }
 
+  const health = state.kind === "online" ? state.health : undefined;
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between gap-3">
-          {t("title")}
-          <span aria-live="polite">
-            {state.kind === "loading" && (
-              <Badge variant="secondary">{t("loading")}</Badge>
-            )}
-            {state.kind === "online" && (
-              <Badge className="bg-emerald-600 text-white">{t("online")}</Badge>
-            )}
-            {state.kind === "offline" && (
-              <Badge variant="destructive">{t("offline")}</Badge>
-            )}
-          </span>
-        </CardTitle>
-        <CardDescription className="font-mono text-xs break-all">
-          {t("endpoint")}: {API_URL}/health
-        </CardDescription>
-      </CardHeader>
+    <section>
+      <SectionLabel>{t("label")}</SectionLabel>
+      <div aria-live="polite">
+        <h1 className="type-h2 mt-3 text-balance">{t(`states.${state.kind}.sentence`)}</h1>
+        <VerdictBadge verdict={VERDICT[state.kind]} className="mt-5">
+          {t(`states.${state.kind}.badge`)}
+        </VerdictBadge>
+      </div>
 
-      <CardContent>
-        {state.kind === "loading" && (
-          <div aria-hidden className="flex flex-col gap-3">
-            <div className="h-5 animate-pulse rounded bg-muted" />
-            <div className="h-5 animate-pulse rounded bg-muted" />
-            <div className="h-5 animate-pulse rounded bg-muted" />
-          </div>
-        )}
+      {state.kind === "offline" ? (
+        <div className="mt-8 flex flex-col items-start gap-5 border-t border-hairline pt-6">
+          <p role="alert">{t(`errors.${state.code}`)}</p>
+          <button type="button" onClick={retry} className={pill({ variant: "secondary" })}>
+            {t("retry")}
+          </button>
+        </div>
+      ) : (
+        <dl className="mt-8 border-b border-hairline">
+          <Row label={t("rows.status")} value={health?.status} />
+          <Row label={t("rows.version")} value={health?.version} />
+          <Row label={t("rows.mujocoVersion")} value={health?.mujocoVersion} />
+        </dl>
+      )}
 
-        {state.kind === "online" && (
-          <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
-            <dt className="text-muted-foreground">{t("status")}</dt>
-            <dd className="text-right font-mono">{state.health.status}</dd>
-            <dt className="text-muted-foreground">{t("version")}</dt>
-            <dd className="text-right font-mono">{state.health.version}</dd>
-            <dt className="text-muted-foreground">{t("mujocoVersion")}</dt>
-            <dd className="text-right font-mono">
-              {state.health.mujocoVersion}
-            </dd>
-          </dl>
-        )}
-
-        {state.kind === "offline" && (
-          <div className="flex flex-col items-start gap-4">
-            <p role="alert" className="text-sm">
-              {t(`errors.${state.code}`)}
-            </p>
-            <Button variant="outline" size="lg" onClick={retry}>
-              {t("retry")}
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      <p className="mt-4 font-mono text-sm break-all text-muted-foreground">{API_URL}/health</p>
+    </section>
   );
 }
