@@ -4,21 +4,24 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import mujoco
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.config import Settings, get_settings
 from app.demo import load_demo_scenarios
+from app.demo.fixtures import Variant
 from app.schemas import (
     DemoScenariosResponse,
     ErrorDetail,
     HealthResponse,
+    LiveModelResponse,
     SimulateRequest,
     SimulateResponse,
 )
 from app.simulation_service import simulate_cached
 from app.storage import create_storage
+from physics.live import build_live_model
 from physics.simulate import SimulationError
 
 
@@ -73,6 +76,40 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def demo_scenarios() -> DemoScenariosResponse:
         """The four demo scenarios, each as loaded and fixed, with their trip event."""
         return DemoScenariosResponse(scenarios=list(load_demo_scenarios()))
+
+    @app.post("/mjcf", response_model=LiveModelResponse, tags=["simulation"])
+    def mjcf(body: SimulateRequest) -> LiveModelResponse:
+        """The exact MJCF the server simulates for these inputs, with its run plan.
+
+        A browser loads the document into MuJoCo WebAssembly and steps it live: same model,
+        same 2 ms step, same prescribed bed motion. Nothing is simulated here.
+        """
+        live = build_live_model(body.scenario, body.event)
+        return LiveModelResponse.model_validate(live, from_attributes=True)
+
+    @app.get(
+        "/scenarios/{scenario_id}/mjcf",
+        response_model=LiveModelResponse,
+        tags=["simulation"],
+        responses={
+            200: {"content": {"application/xml": {}}},
+            404: {"description": "Unknown demo scenario."},
+        },
+    )
+    def scenario_mjcf(
+        scenario_id: str,
+        variant: Variant = "as_loaded",
+        format: str = Query(default="json", pattern="^(json|xml)$"),
+    ) -> Response | LiveModelResponse:
+        """Live model of a demo scenario; ``format=xml`` returns only the MJCF document."""
+        demo = next((d for d in load_demo_scenarios() if d.id == scenario_id), None)
+        if demo is None:
+            detail = ErrorDetail(code="unknown_scenario", message="No such demo scenario.")
+            raise HTTPException(status_code=404, detail=detail.model_dump())
+        live = build_live_model(demo.variant(variant), demo.event)
+        if format == "xml":
+            return Response(content=live.mjcf, media_type="application/xml")
+        return LiveModelResponse.model_validate(live, from_attributes=True)
 
     return app
 

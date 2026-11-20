@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.demo import DemoScenario
 from app.scenario import Scenario, TripEvent
+from physics.live import LiveModel
 from physics.results import SimulationResult
 
 
@@ -27,6 +28,10 @@ class SimulateResponse(BaseModel):
     cached: bool = Field(description="True when the result came from the cache.")
     cpu_time_s: float = Field(description="CPU time the simulation took when it was computed.")
     result: SimulationResult
+
+
+class LiveModelResponse(LiveModel):
+    """The MJCF and run plan the browser steps live (see ``physics/live.py``)."""
 
 
 class DemoScenariosResponse(BaseModel):

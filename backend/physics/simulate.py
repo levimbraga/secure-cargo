@@ -13,6 +13,7 @@ Everything is deterministic: fixed time step, no random numbers, no wall-clock d
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Any
 
 import mujoco
 import numpy as np
@@ -75,6 +76,19 @@ _MAX_SPRING_PHASE_PER_STEP = 0.5
 _BLOCKED_GAP_M = 0.005
 # Headboard contact below this fraction of the unit's weight is ignored as noise.
 _HEADBOARD_FORCE_FRACTION = 0.01
+
+# The constants above, for a second engine that repeats the run (see ``physics/live.py``).
+RUN_SETTINGS: dict[str, Any] = {
+    "solver_tolerance": _SOLVER_TOLERANCE,
+    "contact_lookback_steps": _CONTACT_LOOKBACK_STEPS,
+    "pretension_round_steps": _PRETENSION_ROUND_STEPS,
+    "pretension_max_rounds": _PRETENSION_MAX_ROUNDS,
+    "pretension_tolerance": _PRETENSION_TOLERANCE,
+    "final_settle_steps": _FINAL_SETTLE_STEPS,
+    "max_spring_phase_per_step": _MAX_SPRING_PHASE_PER_STEP,
+    "blocked_gap_m": _BLOCKED_GAP_M,
+    "headboard_force_fraction": _HEADBOARD_FORCE_FRACTION,
+}
 
 
 # Called at every keyframe with the model, its state and the time of the keyframe [s].
@@ -378,7 +392,7 @@ def simulate(
             )
             for unit in scene.units
         ],
-        straps=[_keyframe_strap(scene, index) for index in range(len(scene.lashings))],
+        straps=[keyframe_strap(scene, index) for index in range(len(scene.lashings))],
         events=[
             KeyframeEvent(t=_round(marker.t, 3), kind=marker.kind) for marker in profile.markers
         ],
@@ -653,7 +667,8 @@ def _keyframe(
     )
 
 
-def _keyframe_strap(scene: Scene, index: int) -> KeyframeStrap:
+def keyframe_strap(scene: Scene, index: int) -> KeyframeStrap:
+    """Geometry of one lashing for the replay."""
     item = scene.lashings[index]
     unit = scene.units[item.unit_index].unit
     centre = (unit.position_m[0], unit.position_m[1], unit.position_m[2] + unit.size_m[2] / 2)
