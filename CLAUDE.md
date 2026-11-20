@@ -21,17 +21,39 @@ Domain: securecargo.app (Cloudflare Registrar/DNS). `securecargo.app` = landing,
   explanation next to them the first time they appear.
 
 ## What the project is
-SecureCargo is a **physical AI** system that checks, before a trip, whether a truck's cargo
-(open-body / flatbed trucks) is well distributed and properly secured. The loop is **perceive → simulate → plan**:
+SecureCargo is a **physical AI** system that checks, before a trip, whether a truck's cargo is well distributed
+and properly secured. The loop is **perceive → simulate → plan**:
 
-1. **Perceive:** from a form or a photo of the truck bed, obtain the cargo units (size, weight, position)
-   and the straps already in place.
-2. **Simulate:** a physics engine (MuJoCo, Python bindings) applies hard braking, cornering and a pothole
-   to the truck bed and records what slides or tips over.
-3. **Plan:** recommend unit placement (axle loads within legal limits) and lashing (number, position and type
-   of straps) following Brazilian rules, validating every candidate plan in simulation.
-4. **Record:** produce a shareable "load certificate" (plan + simulation + checks + timestamp) and show trips
-   on a dashboard for carriers / insurers.
+1. **Perceive:** from a photo of the truck bed (Claude vision) or the manual load editor, obtain the cargo units
+   (size, weight, position) and the restraints already in place.
+2. **Simulate:** MuJoCo applies hard braking, cornering, potholes and whole trips to the truck bed and records
+   what slides, tips, rolls or overloads. The same model runs in two places: live in the browser (MuJoCo
+   WebAssembly, "live, not certified") and on the server (Python bindings, the source of truth).
+3. **Plan:** find the smallest change (placement, number, position and type of restraints) that passes Brazilian
+   rules and every simulated event, and prove it in simulation.
+4. **Record:** produce a shareable "load certificate" (plan + simulation + checks + timestamp).
+
+Product flow (direction set on 2026-11-20):
+1. **Gallery** `/app/examples`: ready-made examples, no login, covering every supported option; each has "as
+   loaded" and "fixed", a one-sentence story, "Open in explorer" and a raw MuJoCo render video.
+   `docs/coverage.md` (generated, shown on the page) proves every option appears in at least one example.
+2. **Explorer** `/app/explorer`: any combination simulated live; one selector per dimension, a top-down load
+   editor (drag units, tap to add straps, live axle loads), configuration in a shareable URL.
+3. **New load:** from a photo (login, quota) or manual (no API cost); both land in the explorer prefilled.
+4. **Fix it:** the planner. 5. **Certificate.**
+
+Supported dimensions (every one must appear in the gallery):
+- Truck body: flatbed, box truck, curtain-sider. Size: VUC, toco, truck, semi (axles/limits per CONTRAN 882).
+- Cargo: wood pallet, plastic pallet, crate, drum, steel coil, machine, tall cabinet, sacks, long pipes,
+  stacked boxes.
+- Position: against the headboard, with a gap, at the rear, to one side, stacked.
+- Restraint: none, top-over strap, direct/diagonal, chain, rope, blocking, anti-slip mat, coil cradle.
+- Speed 20–100 km/h. Road: straight highway, curvy highway, mountain descent, dirt/gravel, potholed asphalt,
+  urban with speed bumps. Surface/weather: dry, wet, heavy rain, mud, fog.
+- Event: emergency braking, lane change, sharp curve, pothole, speed bump, long descent, long vibration; plus a
+  full trip as a sequence of events.
+- Outcomes: slide, tip-over, roll, hit headboard/wall, fall off the side, strap overload, axle overload,
+  pretension loss.
 
 Users: owner-operator truck drivers and small/mid-size carriers (free for the driver). Payers: carriers,
 cargo insurers (mandatory RCTR-C insurance) and risk-management companies.
@@ -51,11 +73,13 @@ cargo insurers (mandatory RCTR-C insurance) and risk-management companies.
 ```
 secure-cargo/
 ├── backend/            # Python 3.11, FastAPI, Pydantic
-│   ├── app/            # API routes: /simulate, /scenarios/demo, /plan, /check, /certificate, /trips, /health
+│   ├── app/            # API routes: /simulate, /mjcf, /scenarios/demo, /scenarios/{id}/mjcf, /plan, /check,
+│   │                   # /certificate, /health
 │   │   ├── scenario/   # load scenario schema (Pydantic, versioned): bed, units, lashings, trip event
 │   │   └── demo/       # loader of the demo fixtures
 │   ├── scene/          # scenario -> MJCF (scene generator)
-│   ├── physics/        # MuJoCo run, event profiles (conditions/), metrics, verdict, EN formulas, validation
+│   ├── physics/        # MuJoCo run, event profiles (conditions/), metrics, verdict, EN formulas, validation,
+│   │                   # live.py (the "live model": MJCF + run plan the browser steps)
 │   ├── rules/          # CONTRAN 945/2022 (lashing) + axle load limits (CONTRAN 882/2021), config with sources
 │   ├── planner/        # placement + lashing search with simulation in the loop
 │   ├── perception/     # photo -> suggestions (Claude vision) + manual marking support
@@ -65,18 +89,24 @@ secure-cargo/
 │   └── tests/
 ├── frontend/           # Next.js (TypeScript), Tailwind, shadcn/ui, React Three Fiber, next-intl
 │   ├── messages/       # en.json (default), pt-BR.json
-│   ├── app/driver/     # 5-step flow: truck -> cargo/photo -> straps -> trip test -> fix
-│   ├── app/certificate/[id]/
-│   ├── app/dashboard/  # carrier / insurer view
-│   └── components/viewer3d/
+│   ├── app/[locale]/app/  # scenarios/[id] (replay), lab/[id] (live lab), examples, explorer, certificate
+│   ├── lib/live/       # MuJoCo WASM engine: the browser port of backend/physics/simulate.py
+│   ├── components/scene/  # the 3D scene shared by the replay and the live lab
+│   └── e2e/            # Playwright: browser-vs-server parity in headless Chromium
 ├── docs/               # design.md, physics-model.md (model + sources), validation.md (sim vs. EN 12195-1)
 ├── .github/workflows/ci.yml
 └── README.md
 ```
-- Simulation runs **on the server** and returns keyframes as JSON (position/rotation of each unit and tension
-  of each strap per frame, 30 fps); the browser only replays them in 3D. This keeps the demo light and stable.
-- Fallback: the main demo scenarios are also exported as static JSON in the frontend, so the replay works
-  even if the backend is down during judging.
+- **Same model everywhere.** The server generates the MJCF and the run plan (bed motion sampled every 2 ms,
+  lashing parameters, thresholds) for a scenario and an event: `GET /scenarios/{id}/mjcf` and `POST /mjcf`.
+  The server simulates exactly that document (`POST /simulate`, keyframes as JSON at 30 fps), and the browser
+  loads the same document into the official MuJoCo WebAssembly build (`@mujoco/mujoco`, same version as the
+  Python package) and steps it live. `frontend/lib/live/` mirrors `backend/physics/simulate.py` step for step;
+  when one changes, change the other and keep the parity test green.
+- Browser results are labelled "live, not certified". Certificates only ever use the server's result.
+- The WASM module (about 2.8 MB gzipped) loads lazily, only on pages that step the model.
+- Fallback chain: WASM or WebGL unavailable, or the device too slow -> server `/simulate` + replay -> static
+  JSON of the demo scenarios (works with the backend down) -> the raw MuJoCo video for precomputed cases.
 - Deploy: own domain bought on Cloudflare Registrar, DNS on Cloudflare. Root = landing page, `/app` = driver
   app, certificate and dashboard (Vercel, one Next.js project); `api.<domain>` = FastAPI + MuJoCo in Docker on
   Cloudflare Containers (Workers Paid plan; a thin Worker routes requests to the container). Photos and
@@ -86,8 +116,13 @@ secure-cargo/
   Deploy a hello-world on day 1. Health route and cached demo scenarios. Must stay online through judging.
 
 ## Physics (backend/physics)
-- Engine: MuJoCo. The scene is an MJCF generated by code from the scenario JSON (the same MJCF can be loaded
-  in the browser via `@mujoco/mujoco` as a stretch goal).
+- Engine: MuJoCo. The scene is an MJCF generated by code from the scenario JSON; the browser loads the same
+  MJCF through `@mujoco/mujoco`.
+- Anything new (rolling cylinders, wall/curtain restraint strength, stacking, pretension loss) needs a source or
+  a documented assumption in the workspace's `notes/physics-sources.md`, and a validation test where a
+  closed-form check exists (e.g. rolling and tipping thresholds), listed in `docs/validation.md`.
+- The truck is generated by code and parametric: body type (flatbed, box truck, curtain-sider) and size (VUC,
+  toco, truck, semi), always drawn with the exact simulation dimensions. No third-party 3D models.
 - Truck bed = body driven by slide joints with prescribed acceleration; floor, rebatable side rails and a
   headboard (front panel), with dimensions per truck type.
 - Cargo units = rigid boxes with mass and a configurable friction coefficient per material pair
@@ -97,7 +132,7 @@ secure-cargo/
   Fallback if unstable: equivalent vertical clamping force.
 - Trip-condition library (`backend/physics/conditions/`): every condition is data that maps to physics inputs,
   never new simulation code. Dimensions:
-  - speed: 40 / 60 / 80 / 100 km/h (braking intensity; lateral accel = v^2 / r on curves);
+  - speed: 20–100 km/h (braking intensity; lateral accel = v^2 / r on curves);
   - road type: straight highway, curvy highway, mountain descent (long downhill, repeated braking),
     dirt/gravel road, potholed asphalt, urban with speed bumps (curve radii, vertical impulse frequency/amplitude);
   - road surface & weather: dry / wet (rain) / heavy rain with puddles / mud (wet dirt road) / fog.
@@ -154,7 +189,8 @@ vehicle tare and each unit's center of mass.
    candidates; full simulation still confirms the final plan.
 
 ## Perception (backend/perception)
-- **Photo-first UX:** the app opens on the camera. Typing everything is only a fallback.
+- A new load starts from a photo (login + quota, because it costs API money) or from the manual editor (free).
+  Both land in the explorer prefilled.
 - Claude vision returns structured JSON (unit count, cargo type, visible straps, body type, suggested
   bounding boxes) drawn over the photo; the user confirms or edits by tapping (adjust boxes, weights, add a
   missed strap, pick the truck). The known truck-bed length provides scale.
@@ -169,8 +205,13 @@ vehicle tare and each unit's center of mass.
   "how we calculate this".
 - Key demo screen: side by side, "as loaded" vs. "Carga Segura plan", running the braking test in 3D, with axle
   loads in green/yellow/red and the CONTRAN checks listed with their articles.
+- Every result shows the verdict, the reason in one sentence with numbers (e.g. "Inertia 7.1 kN > friction
+  4.0 kN: the pallet slides") and the EN 12195-1 check.
 - Certificate: shareable page with plan, checks, simulation GIF/video, timestamp and a verification hash.
-- Dashboard: ~200 synthetic trips (fictional plates), risk per trip, filters by driver and risk.
+- **Mobile performance budget** (replay and live lab): mount the scene only when visible; render on demand when
+  paused; cap devicePixelRatio at 1.5; no shadows or post-processing on low-end or mobile GPUs; pause when the
+  tab is hidden. At 375 px the engineering view shows fewer labels, larger tap targets and details in a
+  tap-to-open panel.
 
 ## Conventions
 - Python: type hints, ruff, mypy, pytest. TypeScript: strict, ESLint, Vitest. Small, frequent commits with
@@ -180,11 +221,12 @@ vehicle tare and each unit's center of mass.
 - Every number in the README/pitch needs a source. The system is a decision-support tool, not an engineering
   certification — state this clearly in the UI and README.
 
-## Build order
-1. Scene generator + physics + JSON replay (the heart of the demo).
-2. CONTRAN rules + axle loads.
-3. Planner with simulation in the loop; 4 scenarios passing.
-4. 3D viewer + driver flow + side-by-side view; i18n (en default, pt-BR).
-5. Photo marking + Claude vision assistant; certificate.
-6. Dashboard, deploy, static fallback.
-7. README, video.
+## Build order (dates in the workspace CLAUDE.md)
+1. Scene generator + physics + JSON replay. **Done.**
+2. Live MuJoCo in the browser: live model endpoints, WASM engine, lab page, parity test, fallback.
+3. Gallery, explorer, load editor, cargo library, box truck, full trip.
+4. Photo perception + auth/quotas.
+5. Planner ("Fix it").
+6. Certificate.
+7. Polish, README, video.
+Cut order if late: curtain-sider, the "then" gallery examples, full trip, certificate polish.
