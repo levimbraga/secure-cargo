@@ -178,23 +178,13 @@
       "label": "3D replay of the simulation. Drag to look around.",
       "loading": "Loading the replay…",
       "error": "The replay could not be loaded. The results below are still valid.",
-      "unsupported": "This browser cannot draw the 3D replay. The timeline and the results below still work.",
+      "unsupported": "This browser cannot draw the 3D replay. The video, the charts and the results below still work.",
       "play": "Play",
       "pause": "Pause",
       "again": "Play again",
       "time": "Time in the replay",
       "clock": "{now} / {total} s",
       "source": "Simulation data · MuJoCo {version} · {step} ms time step"
-    },
-    "live": {
-      "truck": "Truck",
-      "steady": "steady",
-      "braking": "braking at {g} g",
-      "sideways": "sideways at {g} g",
-      "vertical": "vertical at {g} g",
-      "slide": "Largest slide now",
-      "tension": "Highest lashing tension now",
-      "noLashing": "no lashing"
     },
     "markers": {
       "braking_start": "Braking starts",
@@ -259,6 +249,54 @@
     "list": {
       "label": "Demo scenarios",
       "title": "Four loads, each simulated as loaded and fixed."
+    },
+    "view": {
+      "label": "View",
+      "realistic": "Realistic",
+      "engineering": "Engineering"
+    },
+    "speed": {
+      "label": "Playback speed",
+      "auto": "Auto",
+      "slow": "slow motion"
+    },
+    "hud": {
+      "speed": "{value} km/h",
+      "braking": "{value} g braking",
+      "sideways": "{value} g sideways",
+      "vertical": "{value} g vertical",
+      "steady": "steady"
+    },
+    "legend": {
+      "inertia": "Inertia: mass × acceleration",
+      "friction": "Friction available: friction factor × floor force",
+      "scale": "arrows to scale, 1 m = 10 kN",
+      "tension": "Lashing colour: slack, half of capacity, at capacity",
+      "hint": "Point at a lashing to read its force."
+    },
+    "labels": {
+      "ofCapacity": "{percent} of capacity"
+    },
+    "raw": {
+      "title": "Raw MuJoCo render",
+      "caption": "Drawn by MuJoCo's own renderer during the run that produced this replay: the same model, with the engine's contact points and tendons.",
+      "alt": "Video of the simulation as MuJoCo itself draws it."
+    },
+    "charts": {
+      "title": "Over time",
+      "acceleration": "Truck acceleration (g)",
+      "slide": "Slide of each unit (cm)",
+      "force": "Lashing force (daN)",
+      "braking": "Braking",
+      "sideways": "Sideways",
+      "vertical": "Vertical",
+      "highest": "Highest tension",
+      "others": "Each lashing",
+      "capacity": "Capacity (LC) {value} daN",
+      "noLashing": "This load has no lashing.",
+      "slowMotion": "Played in slow motion",
+      "time": "Time (s)",
+      "table": "Data table"
     }
   },
   "Footer": {

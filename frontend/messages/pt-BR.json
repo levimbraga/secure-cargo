@@ -178,23 +178,13 @@
       "label": "Replay 3D da simulação. Arraste para olhar em volta.",
       "loading": "Carregando o replay…",
       "error": "Não foi possível carregar o replay. Os resultados abaixo continuam válidos.",
-      "unsupported": "Este navegador não consegue desenhar o replay 3D. A linha do tempo e os resultados abaixo continuam funcionando.",
+      "unsupported": "Este navegador não consegue desenhar o replay 3D. O vídeo, os gráficos e os resultados abaixo continuam funcionando.",
       "play": "Reproduzir",
       "pause": "Pausar",
       "again": "Reproduzir de novo",
       "time": "Tempo no replay",
       "clock": "{now} / {total} s",
       "source": "Dados de simulação · MuJoCo {version} · passo de {step} ms"
-    },
-    "live": {
-      "truck": "Caminhão",
-      "steady": "estável",
-      "braking": "freando a {g} g",
-      "sideways": "de lado a {g} g",
-      "vertical": "vertical a {g} g",
-      "slide": "Maior deslizamento agora",
-      "tension": "Maior tensão na amarração agora",
-      "noLashing": "sem amarração"
     },
     "markers": {
       "braking_start": "Começa a frear",
@@ -259,6 +249,54 @@
     "list": {
       "label": "Cenários de demonstração",
       "title": "Quatro cargas, cada uma simulada como foi carregada e corrigida."
+    },
+    "view": {
+      "label": "Visão",
+      "realistic": "Realista",
+      "engineering": "Engenharia"
+    },
+    "speed": {
+      "label": "Velocidade do replay",
+      "auto": "Auto",
+      "slow": "câmera lenta"
+    },
+    "hud": {
+      "speed": "{value} km/h",
+      "braking": "{value} g freando",
+      "sideways": "{value} g de lado",
+      "vertical": "{value} g na vertical",
+      "steady": "estável"
+    },
+    "legend": {
+      "inertia": "Inércia: massa × aceleração",
+      "friction": "Atrito disponível: coeficiente de atrito × força do assoalho",
+      "scale": "setas em escala, 1 m = 10 kN",
+      "tension": "Cor da amarração: frouxa, metade da capacidade, na capacidade",
+      "hint": "Aponte para uma amarração para ler a força."
+    },
+    "labels": {
+      "ofCapacity": "{percent} da capacidade"
+    },
+    "raw": {
+      "title": "Renderização bruta do MuJoCo",
+      "caption": "Desenhada pelo renderizador do próprio MuJoCo durante a execução que gerou este replay: o mesmo modelo, com os pontos de contato e os tendões do motor de física.",
+      "alt": "Vídeo da simulação como o próprio MuJoCo a desenha."
+    },
+    "charts": {
+      "title": "Ao longo do tempo",
+      "acceleration": "Aceleração do caminhão (g)",
+      "slide": "Deslizamento de cada volume (cm)",
+      "force": "Força na amarração (daN)",
+      "braking": "Frenagem",
+      "sideways": "Lateral",
+      "vertical": "Vertical",
+      "highest": "Maior tensão",
+      "others": "Cada amarração",
+      "capacity": "Capacidade (LC) {value} daN",
+      "noLashing": "Esta carga não tem amarração.",
+      "slowMotion": "Reproduzido em câmera lenta",
+      "time": "Tempo (s)",
+      "table": "Tabela de dados"
     }
   },
   "Footer": {
