@@ -220,3 +220,15 @@ def test_post_explorer_draft_builds_an_edited_load(client: TestClient) -> None:
     assert (
         len([item for item in body["scenario"]["lashings"] if item["unit_id"] == "pallet-1"]) == 3
     )
+
+
+def test_the_query_the_frontend_writes_for_an_edited_load_is_canonical_here_too() -> None:
+    # The same string as frontend/lib/explorer/explorer.test.ts ("writes the edits back").
+    query = (
+        "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80"
+        "&road=straight&weather=dry&event=emergency_braking&straps=2.1.1&moves=2_-1.85_0.00"
+    )
+    edited = config(query)
+    assert edited.to_query() == query
+    draft = build(edited).draft
+    assert [(unit.x_m, unit.straps) for unit in draft.units] == [(2.0, 2), (0.4, 1), (-1.85, 1)]
