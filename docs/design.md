@@ -197,15 +197,55 @@ question, a verdict badge, then data rows. The nav is the wordmark and the langu
 Unavailable: fail badge, one sentence on what happened and what to do, a secondary "Try again" pill.
 Loading: neutral "Checking…" badge and placeholder values of fixed size, so nothing shifts.
 
-## 10. 3D replay (not on the site yet)
+## 10. 3D replay (`/app/scenarios/[id]`)
 
-There is no 3D on the landing page. It returns as its own "Click to explore" section once it can replay
-real MuJoCo keyframes with materials that hold up next to the photographs: soft shadows, environment light
-and realistic proportions. Until then nothing low-poly is shown.
+There is still no 3D on the landing page; the scenario cards there are photographs and open the replay
+pages. The replay lives in the app, where it shows real simulation output, never an illustration.
 
-What stays in the repository for that work, unmounted: the keyframes format and its tests
-(`frontend/lib/keyframes.ts`), a basic player (`frontend/components/scene/keyframe-player.tsx`) and two
-hand-made placeholder documents (`frontend/content/keyframes/`).
+Page, in the reading column, top to bottom:
+
+```
+      Scenario · Emergency braking                       mono label
+      As loaded, the pallets slide forward               one serif sentence: is it safe?
+      and one hits the headboard.
+      ✕ Fail                                             verdict badge
+      Three pallets with one strap each. …               one paragraph: why
+
+      (As loaded) (Fixed)                                two pills; the selected one is the primary
+
+      ┌──────────────────────────────────────────┐
+      │                3D scene                  │       16:10 (4:3 on phones), 4px radius, surface fill
+      └──────────────────────────────────────────┘
+      Simulation data · MuJoCo 4.0.1 · 2 ms time step    mono caption: where the motion comes from
+      (Play) ──────●──────────────── 2.40 / 4.17 s       timeline: pill, range input, mono clock
+      0.3 s · Braking starts   3.6 s · Truck stopped     markers; each jumps to its time
+
+      Truck                              braking at 0.76 g      data rows that follow the timeline
+      Largest slide now                           62.8 cm
+      Highest lashing tension now                 300 daN
+
+      Result                                             data rows of the whole run: slide, tilt,
+      …                                                  friction used, lashing force, EN 12195-1, axles
+      What went wrong                                    one plain sentence per finding
+```
+
+- **Scene.** Only what the simulation knows is drawn with weight: bed, headboard, cargo units, lashings.
+  Cab, chassis and wheels are plain boxes and cylinders that show which way is forward. Flat fills with ink
+  edges, no shadows, no textures. Straps are amber (the reserved accent), chains dark gray, rope tan. A unit
+  that moved gets red edges. Positions are relative to the truck, so the truck stands still and the lane
+  markings move.
+- **Camera.** Three-quarter view from the side for braking and bumps, from behind for sideways events.
+  Drag to orbit; no zoom, so the page keeps the scroll wheel and vertical touch scrolling.
+- **Motion.** The replay starts by itself once loaded, except with `prefers-reduced-motion: reduce`, and
+  stops at the end. This is the one place on the site where something other than the three motions of
+  section 7 moves, because the motion is the data.
+- **Without WebGL** (or if the scene fails) the frame shows one line of text and everything else on the
+  page keeps working: sentence, verdict, timeline and numbers are plain HTML rendered on the server from
+  the same data.
+- **Loading.** The frame has a fixed aspect ratio, so nothing shifts. three.js is loaded only on these
+  pages, after the text is on screen.
+
+The same player and format will serve the driver flow and the certificate.
 
 ### Keyframes contract (v2)
 
@@ -252,8 +292,8 @@ transforming. A direct lashing runs anchor to unit point. `path_m` is the path a
 `bed_accel_mps2` is the acceleration of the bed (braking is negative X), for a g-force readout.
 
 Version 1 (hand-made placeholders, `source: "placeholder"`) had no `kind`, `routing`, anchor or unit
-points and no `bed_accel_mps2`; the player in `frontend/lib/keyframes.ts` still reads version 1 until the
-replay page is built.
+points and no `bed_accel_mps2`. `frontend/lib/keyframes.ts` reads both versions; the site only shows
+version 2.
 
 ## 11. Writing
 
@@ -268,8 +308,8 @@ replay page is built.
 
 ## 12. Quality bar
 
-- **Lighthouse (mobile): performance ≥ 90 and accessibility ≥ 90** on `/` and `/app`, on the production
-  build.
+- **Lighthouse (mobile): performance ≥ 90 and accessibility ≥ 90** on `/`, `/app` and the scenario
+  pages, on the production build.
 - Every visual change is compared side by side with the reference at 1440px and 375px, in both languages.
 - Keyboard: every control reachable, visible focus ring.
 - Images have explicit dimensions and a fixed aspect ratio; fonts use `display: swap`.

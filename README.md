@@ -41,15 +41,16 @@ The project is being built in phases during the hackathon. What exists today:
   the number of straps the formula asks for is where the simulation flips from fail to pass, and the
   sliding threshold agrees within 0.3 %. See [docs/validation.md](docs/validation.md) for the tables and
   [docs/physics-model.md](docs/physics-model.md) for the model and the source of every number.
-- `frontend/` — Next.js app with the landing page at `/`, the app shell at `/app` (shows the API health), and
-  an English / Brazilian Portuguese language switcher. The simulated demo scenarios ship as static JSON in
-  `frontend/public/demo/`, so they replay even when the API is cold or down.
+- `frontend/` — Next.js app with the landing page at `/`, the app at `/app` and a 3D replay of each demo
+  scenario at `/app/scenarios/<id>` (as loaded / fixed toggle, timeline, verdict and margins), in English
+  and Brazilian Portuguese. The simulated scenarios ship as static JSON in `frontend/public/demo/`, so they
+  replay even when the API is cold or down, and the page still shows every number without WebGL.
 - `docs/design.md` — the design system: tokens, type, layout, components, imagery and motion, plus the
   keyframes contract for the 3D replay.
 - `backend/worker/` — Cloudflare Worker that starts the API container on demand and forwards requests to it.
 - CI on every push to `main`.
 
-The 3D replay, CONTRAN rules, planner, photo analysis, certificate and dashboard come next.
+CONTRAN rules, planner, photo analysis, certificate and dashboard come next.
 
 ## Stack
 
@@ -79,7 +80,7 @@ backend/            FastAPI service
 frontend/           Next.js app
   app/[locale]/     pages (landing at /, app at /app)
   components/       UI components (site chrome, landing sections, base components)
-  content/          placeholder keyframes for the future 3D replay
+  content/          hand-made placeholder keyframes (used by tests only)
   public/demo/      simulated demo scenarios as static JSON (written by the backend)
   scripts/          photo treatment, placeholder keyframes generator
   i18n/             locale routing
