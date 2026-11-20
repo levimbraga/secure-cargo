@@ -1,0 +1,41 @@
+"""Load scenario schema: the JSON contract between the app, the API and the physics engine."""
+
+from app.scenario.models import (
+    SCHEMA_VERSION,
+    AnchorPoint,
+    AxleGroup,
+    AxleGroupKind,
+    CargoMaterial,
+    CargoUnit,
+    EventKind,
+    FloorMaterial,
+    Headboard,
+    Lashing,
+    LashingKind,
+    LashingRouting,
+    RoadSurface,
+    Scenario,
+    TripEvent,
+    TruckBed,
+    Vehicle,
+)
+
+__all__ = [
+    "SCHEMA_VERSION",
+    "AnchorPoint",
+    "AxleGroup",
+    "AxleGroupKind",
+    "CargoMaterial",
+    "CargoUnit",
+    "EventKind",
+    "FloorMaterial",
+    "Headboard",
+    "Lashing",
+    "LashingKind",
+    "LashingRouting",
+    "RoadSurface",
+    "Scenario",
+    "TripEvent",
+    "TruckBed",
+    "Vehicle",
+]
