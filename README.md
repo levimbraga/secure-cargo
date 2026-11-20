@@ -31,6 +31,7 @@ The project is being built in phases during the hackathon. What exists today:
   interface with SQLite and in-memory backends, and a linux/amd64 Docker image.
 - `frontend/` — Next.js app with the landing page at `/`, the app shell at `/app` (shows the API health),
   and an English / Brazilian Portuguese language switcher.
+- `backend/worker/` — Cloudflare Worker that starts the API container on demand and forwards requests to it.
 - CI on every push to `main`.
 
 Physics, rules, planner, photo analysis, certificate and dashboard come next.
@@ -55,6 +56,7 @@ backend/            FastAPI service
   planner/          load advisor and lashing planner
   perception/       photo -> cargo and strap suggestions
   tests/
+  worker/           Cloudflare Worker that routes requests to the API container
 frontend/           Next.js app
   app/[locale]/     pages (landing at /, app at /app)
   components/       UI components
@@ -114,6 +116,25 @@ docker run --rm -p 8000:8080 securecargo-api
 ```
 
 The image is pinned to linux/amd64, the platform Cloudflare Containers run.
+
+## Deployment
+
+- **Frontend** — Vercel builds the `frontend/` directory on every push to `main`. The API base URL is the
+  `NEXT_PUBLIC_API_URL` environment variable of the Vercel project.
+- **Backend** — the Docker image runs on [Cloudflare Containers](https://developers.cloudflare.com/containers/)
+  behind the Worker in `backend/worker/`. The container starts on the first request and stops after ten
+  minutes without traffic, so the first call after a pause takes a few seconds longer.
+
+Deploying the backend needs Docker running locally and a Wrangler login (`pnpm exec wrangler login`):
+
+```bash
+cd backend/worker
+pnpm install
+pnpm run deploy
+```
+
+The browser origins allowed to call the API are the `CORS_ORIGINS` variable in `backend/worker/wrangler.jsonc`.
+Every deploy serves from a fresh container instance; the previous one stops by itself once it is idle.
 
 ### Git hooks
 
