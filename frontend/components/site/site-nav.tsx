@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 
+import { AppLinks, AppUser } from "@/components/app/app-nav";
 import { LanguagePill } from "@/components/language-switcher";
 import { Mark } from "@/components/site/mark";
 import { MobileMenu } from "@/components/site/mobile-menu";
@@ -7,7 +8,7 @@ import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
 import { REPOSITORY_URL } from "@/lib/site";
 
-/** `full` is the landing-page nav; `minimal` is the app nav (wordmark and language only). */
+/** `full` is the landing-page nav; `minimal` is the app nav: sections for the role, language and user. */
 export function SiteNav({ variant }: { variant: "full" | "minimal" }) {
   const t = useTranslations("Nav");
 
@@ -40,10 +41,12 @@ export function SiteNav({ variant }: { variant: "full" | "minimal" }) {
                   </Link>
                 ),
               )}
+            {variant === "minimal" && <AppLinks />}
           </nav>
 
           <div className="col-start-3 flex items-center gap-2 justify-self-end">
-            <LanguagePill className={variant === "full" ? "max-md:hidden" : undefined} />
+            <LanguagePill className="max-md:hidden" />
+            {variant === "minimal" && <AppUser />}
             {variant === "full" && (
               <>
                 <Link href="/app" className={pill({ className: "max-md:hidden" })}>

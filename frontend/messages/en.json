@@ -710,5 +710,201 @@
     "explorer": "Open the explorer",
     "examples": "All examples and coverage",
     "listLabel": "Examples"
+  },
+  "AppNav": {
+    "inspections": "Inspections",
+    "org": "Organization",
+    "admin": "Admin",
+    "examples": "Examples",
+    "explorer": "Explorer",
+    "lab": "Lab",
+    "signIn": "Sign in",
+    "menu": "App sections",
+    "demoBadge": "Demo account"
+  },
+  "Auth": {
+    "label": "Sign in",
+    "title": "Inspect a load before the trip.",
+    "sentence": "Drivers create inspections from photos; managers at insurers and carriers see every inspection of their organization.",
+    "demoLabel": "Try it without an account",
+    "demoDriver": "Enter as demo driver",
+    "demoInsurer": "Enter as demo insurer",
+    "demoNote": "Both open the organization Demo Insurer, with drivers and inspections already in it. Nothing to sign up for.",
+    "entering": "Signing in…",
+    "orLabel": "Or with your account",
+    "errors": {
+      "rate_limited": "Too many attempts. Wait a minute and try again.",
+      "demo_unavailable": "The demo accounts are not available right now.",
+      "failed": "Could not sign in. Try again."
+    }
+  },
+  "Member": {
+    "label": "Inspections",
+    "greeting": "Your inspections, newest first.",
+    "greetingEmpty": "No inspections yet. Start one from photos of the load.",
+    "newInspection": "New inspection",
+    "listLabel": "My inspections",
+    "loading": "Loading inspections…",
+    "allowance": "Photo analyses today: {used} of {quota}",
+    "allowanceShared": "Photo analyses today (shared by the demo accounts): {used} of {quota}",
+    "demoMode": "Photo analysis is in demo mode: use the sample photos.",
+    "explorerHint": "Or build a load by hand in the explorer, at no cost."
+  },
+  "NewInspection": {
+    "label": "New inspection",
+    "title": "Photos, weight and truck: the inspection flow opens here next.",
+    "sentence": "Until then, build the load in the explorer or open an example; both simulate live.",
+    "explorer": "Open the explorer",
+    "examples": "See the examples"
+  },
+  "Inspection": {
+    "label": "Inspection",
+    "back": "All inspections",
+    "untitled": "Untitled inspection",
+    "notFound": "This inspection does not exist or you cannot see it.",
+    "rows": {
+      "author": "Driver",
+      "organization": "Organization",
+      "created": "Created",
+      "truck": "Truck",
+      "weight": "Cargo weight",
+      "status": "Status",
+      "situations": "Situations passed",
+      "plate": "Plate"
+    },
+    "asLoaded": "As loaded",
+    "fixed": "With the fix",
+    "fixLabel": "Fix",
+    "fixPasses": "The fix passes in simulation.",
+    "fixFails": "The fix does not pass yet.",
+    "changes": "Changes",
+    "openEditor": "Open in the editor",
+    "openReplay": "Replay",
+    "openLab": "Live lab",
+    "status": {
+      "draft": "Draft",
+      "analyzed": "Analyzed",
+      "confirmed": "Confirmed",
+      "simulated": "Simulated"
+    },
+    "verdict": {
+      "pass": "Passes",
+      "warning": "Warning",
+      "fail": "Fails",
+      "none": "Not simulated"
+    },
+    "fixedTo": "fixed: passes",
+    "situations": "{passed} of {total}",
+    "change": {
+      "straps": "{unit}: {from} → {to} straps",
+      "restraint": "Restraint: {from} → {to}",
+      "units": "Units: {from} → {to}"
+    },
+    "weightKg": "{weight} kg"
+  },
+  "Org": {
+    "label": "Organization",
+    "title": "Every inspection of {org}.",
+    "noOrg": "Your account is not a manager of an organization.",
+    "typeInsurer": "Insurer",
+    "typeCarrier": "Carrier",
+    "inspectionsLabel": "All inspections",
+    "summary": "{total} inspections · {failing} fail as loaded · {fixed} fixed",
+    "columns": {
+      "date": "Date",
+      "driver": "Driver",
+      "load": "Load",
+      "truck": "Truck",
+      "weight": "Weight",
+      "asLoaded": "As loaded",
+      "fixed": "Fix"
+    },
+    "filterAll": "All",
+    "filterFail": "Fails as loaded",
+    "filterFixed": "Fixed",
+    "filterPass": "Passes",
+    "filterLabel": "Show",
+    "driverFilter": "Driver",
+    "allDrivers": "All drivers",
+    "membersLabel": "Members",
+    "memberColumns": {
+      "name": "Name",
+      "role": "Role",
+      "inspections": "Inspections",
+      "last": "Last inspection"
+    },
+    "roles": {
+      "member": "Driver",
+      "org_admin": "Manager"
+    },
+    "inviteLabel": "Invite",
+    "inviteEmail": "Email",
+    "inviteRole": "Role",
+    "inviteSend": "Send invitation",
+    "inviteSent": "Invitation sent to {email}.",
+    "inviteDemo": "Demo accounts cannot send invitations.",
+    "pendingLabel": "Pending invitations",
+    "none": "None.",
+    "loading": "Loading the organization…",
+    "errors": {
+      "invalid_email": "Enter a valid email.",
+      "failed": "Could not send the invitation."
+    }
+  },
+  "Admin": {
+    "label": "Platform",
+    "title": "Usage this month: {spend} of {cap}.",
+    "loading": "Loading usage…",
+    "forbidden": "This page is only for the platform admin.",
+    "capLabel": "Monthly budget",
+    "killSwitch": "Kill switch",
+    "killOn": "On: every photo analysis answers in demo mode.",
+    "killOff": "Off: photo analysis runs within quota and budget.",
+    "turnOn": "Turn on",
+    "turnOff": "Turn off",
+    "settingsLabel": "Limits",
+    "cap": "Monthly cap (US$)",
+    "defaultQuota": "Analyses per user per day",
+    "demoQuota": "Demo pool per day",
+    "save": "Save",
+    "saved": "Saved.",
+    "totals": {
+      "users": "Users",
+      "organizations": "Organizations",
+      "inspections": "Inspections",
+      "analysesMonth": "Billed analyses this month",
+      "cachedMonth": "Cached analyses this month",
+      "analysesToday": "Billed analyses today"
+    },
+    "dailyLabel": "Daily cost",
+    "noUsage": "No recorded usage this month.",
+    "usersLabel": "Users",
+    "userColumns": {
+      "user": "User",
+      "orgs": "Organizations",
+      "inspections": "Inspections",
+      "today": "Today",
+      "month": "Month",
+      "cost": "Cost",
+      "quota": "Daily quota",
+      "status": "Access"
+    },
+    "orgsLabel": "Organizations",
+    "orgColumns": {
+      "name": "Name",
+      "type": "Type",
+      "members": "Members",
+      "inspections": "Inspections",
+      "cost": "Cost this month",
+      "quota": "Daily quota"
+    },
+    "default": "default",
+    "block": "Block",
+    "unblock": "Unblock",
+    "blocked": "Blocked",
+    "active": "Active",
+    "demo": "demo",
+    "on": "On",
+    "off": "Off"
   }
 }

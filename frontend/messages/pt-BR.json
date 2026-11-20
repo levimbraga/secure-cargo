@@ -710,5 +710,201 @@
     "explorer": "Abrir o explorador",
     "examples": "Todos os exemplos e a cobertura",
     "listLabel": "Exemplos"
+  },
+  "AppNav": {
+    "inspections": "Inspeções",
+    "org": "Organização",
+    "admin": "Admin",
+    "examples": "Exemplos",
+    "explorer": "Explorador",
+    "lab": "Laboratório",
+    "signIn": "Entrar",
+    "menu": "Seções do app",
+    "demoBadge": "Conta de demonstração"
+  },
+  "Auth": {
+    "label": "Entrar",
+    "title": "Inspecione a carga antes da viagem.",
+    "sentence": "Motoristas criam inspeções a partir de fotos; gestores de seguradoras e transportadoras veem todas as inspeções da organização.",
+    "demoLabel": "Experimente sem conta",
+    "demoDriver": "Entrar como motorista demo",
+    "demoInsurer": "Entrar como seguradora demo",
+    "demoNote": "As duas abrem a organização Demo Insurer, já com motoristas e inspeções. Sem cadastro.",
+    "entering": "Entrando…",
+    "orLabel": "Ou com a sua conta",
+    "errors": {
+      "rate_limited": "Muitas tentativas. Espere um minuto e tente de novo.",
+      "demo_unavailable": "As contas de demonstração não estão disponíveis agora.",
+      "failed": "Não foi possível entrar. Tente de novo."
+    }
+  },
+  "Member": {
+    "label": "Inspeções",
+    "greeting": "Suas inspeções, das mais recentes para as mais antigas.",
+    "greetingEmpty": "Nenhuma inspeção ainda. Comece uma a partir de fotos da carga.",
+    "newInspection": "Nova inspeção",
+    "listLabel": "Minhas inspeções",
+    "loading": "Carregando inspeções…",
+    "allowance": "Análises de foto hoje: {used} de {quota}",
+    "allowanceShared": "Análises de foto hoje (compartilhadas pelas contas demo): {used} de {quota}",
+    "demoMode": "A análise de fotos está em modo demonstração: use as fotos de exemplo.",
+    "explorerHint": "Ou monte a carga à mão no explorador, sem custo."
+  },
+  "NewInspection": {
+    "label": "Nova inspeção",
+    "title": "Fotos, peso e caminhão: o fluxo de inspeção abre aqui em seguida.",
+    "sentence": "Até lá, monte a carga no explorador ou abra um exemplo; os dois simulam ao vivo.",
+    "explorer": "Abrir o explorador",
+    "examples": "Ver os exemplos"
+  },
+  "Inspection": {
+    "label": "Inspeção",
+    "back": "Todas as inspeções",
+    "untitled": "Inspeção sem título",
+    "notFound": "Esta inspeção não existe ou você não tem acesso a ela.",
+    "rows": {
+      "author": "Motorista",
+      "organization": "Organização",
+      "created": "Criada em",
+      "truck": "Caminhão",
+      "weight": "Peso da carga",
+      "status": "Situação",
+      "situations": "Situações aprovadas",
+      "plate": "Placa"
+    },
+    "asLoaded": "Como carregado",
+    "fixed": "Com a correção",
+    "fixLabel": "Correção",
+    "fixPasses": "A correção passa na simulação.",
+    "fixFails": "A correção ainda não passa.",
+    "changes": "Mudanças",
+    "openEditor": "Abrir no editor",
+    "openReplay": "Replay",
+    "openLab": "Laboratório ao vivo",
+    "status": {
+      "draft": "Rascunho",
+      "analyzed": "Analisada",
+      "confirmed": "Confirmada",
+      "simulated": "Simulada"
+    },
+    "verdict": {
+      "pass": "Passa",
+      "warning": "Atenção",
+      "fail": "Reprova",
+      "none": "Não simulada"
+    },
+    "fixedTo": "corrigida: passa",
+    "situations": "{passed} de {total}",
+    "change": {
+      "straps": "{unit}: {from} → {to} cintas",
+      "restraint": "Amarração: {from} → {to}",
+      "units": "Volumes: {from} → {to}"
+    },
+    "weightKg": "{weight} kg"
+  },
+  "Org": {
+    "label": "Organização",
+    "title": "Todas as inspeções de {org}.",
+    "noOrg": "Sua conta não é gestora de uma organização.",
+    "typeInsurer": "Seguradora",
+    "typeCarrier": "Transportadora",
+    "inspectionsLabel": "Todas as inspeções",
+    "summary": "{total} inspeções · {failing} reprovam como carregadas · {fixed} corrigidas",
+    "columns": {
+      "date": "Data",
+      "driver": "Motorista",
+      "load": "Carga",
+      "truck": "Caminhão",
+      "weight": "Peso",
+      "asLoaded": "Como carregado",
+      "fixed": "Correção"
+    },
+    "filterAll": "Todas",
+    "filterFail": "Reprovam como carregadas",
+    "filterFixed": "Corrigidas",
+    "filterPass": "Passam",
+    "filterLabel": "Mostrar",
+    "driverFilter": "Motorista",
+    "allDrivers": "Todos os motoristas",
+    "membersLabel": "Membros",
+    "memberColumns": {
+      "name": "Nome",
+      "role": "Papel",
+      "inspections": "Inspeções",
+      "last": "Última inspeção"
+    },
+    "roles": {
+      "member": "Motorista",
+      "org_admin": "Gestor"
+    },
+    "inviteLabel": "Convidar",
+    "inviteEmail": "E-mail",
+    "inviteRole": "Papel",
+    "inviteSend": "Enviar convite",
+    "inviteSent": "Convite enviado para {email}.",
+    "inviteDemo": "Contas de demonstração não enviam convites.",
+    "pendingLabel": "Convites pendentes",
+    "none": "Nenhum.",
+    "loading": "Carregando a organização…",
+    "errors": {
+      "invalid_email": "Digite um e-mail válido.",
+      "failed": "Não foi possível enviar o convite."
+    }
+  },
+  "Admin": {
+    "label": "Plataforma",
+    "title": "Uso neste mês: {spend} de {cap}.",
+    "loading": "Carregando o uso…",
+    "forbidden": "Esta página é só para o administrador da plataforma.",
+    "capLabel": "Orçamento mensal",
+    "killSwitch": "Chave de desligamento",
+    "killOn": "Ligada: toda análise de foto responde em modo demonstração.",
+    "killOff": "Desligada: a análise de fotos roda dentro da cota e do orçamento.",
+    "turnOn": "Ligar",
+    "turnOff": "Desligar",
+    "settingsLabel": "Limites",
+    "cap": "Teto mensal (US$)",
+    "defaultQuota": "Análises por usuário por dia",
+    "demoQuota": "Cota demo por dia",
+    "save": "Salvar",
+    "saved": "Salvo.",
+    "totals": {
+      "users": "Usuários",
+      "organizations": "Organizações",
+      "inspections": "Inspeções",
+      "analysesMonth": "Análises cobradas no mês",
+      "cachedMonth": "Análises em cache no mês",
+      "analysesToday": "Análises cobradas hoje"
+    },
+    "dailyLabel": "Custo por dia",
+    "noUsage": "Nenhum uso registrado neste mês.",
+    "usersLabel": "Usuários",
+    "userColumns": {
+      "user": "Usuário",
+      "orgs": "Organizações",
+      "inspections": "Inspeções",
+      "today": "Hoje",
+      "month": "Mês",
+      "cost": "Custo",
+      "quota": "Cota diária",
+      "status": "Acesso"
+    },
+    "orgsLabel": "Organizações",
+    "orgColumns": {
+      "name": "Nome",
+      "type": "Tipo",
+      "members": "Membros",
+      "inspections": "Inspeções",
+      "cost": "Custo no mês",
+      "quota": "Cota diária"
+    },
+    "default": "padrão",
+    "block": "Bloquear",
+    "unblock": "Desbloquear",
+    "blocked": "Bloqueado",
+    "active": "Ativo",
+    "demo": "demo",
+    "on": "Ligada",
+    "off": "Desligada"
   }
 }
