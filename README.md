@@ -34,6 +34,9 @@ The project is being built in phases during the hackathon. What exists today:
   - `POST /simulate` — a load scenario plus a trip event in; verdict, per-unit slide and tilt, peak lashing
     forces and 30 fps keyframes out. Deterministic, cached by the hash of the inputs.
   - `GET /scenarios/demo` — the four demo scenarios, each "as loaded" and "fixed".
+  - `POST /mjcf` and `GET /scenarios/{id}/mjcf` — the exact MJCF the server simulates for a scenario and
+    event, with its run plan (bed motion for every 2 ms step, lashing parameters, thresholds, rule
+    checks), so that a second MuJoCo can repeat the run. `?format=xml` returns the MJCF alone.
   - `GET /health` — API and MuJoCo versions.
 - **Physics core** — a MuJoCo simulation of the truck bed, cargo units and lashings under seven trip
   events (emergency braking, lane change, sharp curve, pothole, speed bump, mountain descent, long
@@ -48,19 +51,29 @@ The project is being built in phases during the hackathon. What exists today:
   drawn by MuJoCo's own renderer; three charts on the replay clock; verdict and margins. The simulated
   scenarios ship as static files in `frontend/public/demo/`, so they replay even when the API is cold or
   down, and the page keeps working without WebGL.
+- **Live lab** at `/app/lab/<id>` — the same model stepped in the visitor's browser by the official
+  MuJoCo WebAssembly build (`@mujoco/mujoco`, the version the server runs). Changing the speed, the road
+  surface, the event, the straps per unit, their pretension, the mass or the anti-slip mat re-runs the
+  simulation at once; a cargo unit can be pushed by hand to feel the lashing hold it. Every result shows
+  the verdict, the reason in one sentence with the forces, and the EN 12195-1 check. Browser results
+  are labelled "live, not certified": on the eight demo runs they equal the server's to the last rounded
+  digit ([docs/validation.md](docs/validation.md), "Browser vs. server"), and a test in headless Chromium
+  keeps it that way. Without WebAssembly, or on a device that is too slow, the page uses the server's
+  simulation instead.
 - `docs/design.md` — the design system: tokens, type, layout, components, imagery and motion, plus the
   keyframes contract for the 3D replay.
 - `backend/worker/` — Cloudflare Worker that starts the API container on demand and forwards requests to it.
 - CI on every push to `main`.
 
-CONTRAN rules, planner, photo analysis, certificate and dashboard come next.
+Next: the gallery of examples, the explorer with the load editor, photo analysis, the planner and the
+certificate.
 
 ## Stack
 
 | Part     | Technology                                                                                   |
 | -------- | -------------------------------------------------------------------------------------------- |
 | Backend  | Python 3.11, FastAPI, Pydantic, MuJoCo, [uv](https://docs.astral.sh/uv/), ruff, mypy, pytest |
-| Frontend | Next.js (App Router), TypeScript (strict), Tailwind CSS, shadcn/ui, next-intl, React Three Fiber, Vitest |
+| Frontend | Next.js (App Router), TypeScript (strict), Tailwind CSS, shadcn/ui, next-intl, React Three Fiber, MuJoCo WebAssembly, Vitest, Playwright |
 | Hosting  | Vercel (frontend), Cloudflare Containers (backend), Cloudflare R2 (photos and certificates)  |
 | CI       | GitHub Actions                                                                               |
 
@@ -72,7 +85,8 @@ backend/            FastAPI service
     scenario/       load scenario schema (Pydantic, versioned)
     demo/           loader of the demo fixtures
   scene/            scenario -> MJCF scene generator
-  physics/          MuJoCo simulation, event profiles, metrics, verdict, EN 12195-1 formulas
+  physics/          MuJoCo simulation, event profiles, metrics, verdict, EN 12195-1 formulas,
+                    live.py (the MJCF and run plan served to the browser)
   rules/            axle loads (CONTRAN checks come next)
   planner/          load advisor and lashing planner
   perception/       photo -> cargo and strap suggestions
@@ -84,8 +98,10 @@ frontend/           Next.js app
   app/[locale]/     pages (landing at /, app at /app)
   components/       UI components (site chrome, landing sections, base components)
   content/          hand-made placeholder keyframes (used by tests only)
-  public/demo/      simulated demo scenarios as static JSON (written by the backend)
-  scripts/          photo treatment, placeholder keyframes generator
+  lib/live/         MuJoCo WebAssembly engine (mirrors backend/physics/simulate.py), lab controls
+  e2e/              Playwright: browser run against server run, in headless Chromium
+  public/demo/      simulated demo scenarios and their live models as static JSON (written by the backend)
+  scripts/          photo treatment, placeholder keyframes generator, MuJoCo WebAssembly copy
   i18n/             locale routing
   messages/         en.json (default) and pt-BR.json — every UI string lives here
 .github/workflows/  CI
@@ -150,6 +166,8 @@ uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pyt
 
 # frontend/
 pnpm lint && pnpm typecheck && pnpm test && pnpm build
+pnpm exec playwright install chromium   # once
+pnpm e2e                                # browser-vs-server parity, needs the build above
 ```
 
 ### Landing-page photographs

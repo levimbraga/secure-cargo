@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
     // Builds here take seconds, so always start cold.
     turbopackFileSystemCacheForBuild: false,
   },
+  async headers() {
+    return [
+      {
+        // MuJoCo WebAssembly lives under its version number, so a copy never changes.
+        source: "/mujoco/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+    ];
+  },
   images: {
     formats: ["image/avif", "image/webp"],
   },
