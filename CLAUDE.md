@@ -51,20 +51,25 @@ cargo insurers (mandatory RCTR-C insurance) and risk-management companies.
 ```
 secure-cargo/
 ├── backend/            # Python 3.11, FastAPI, Pydantic
-│   ├── app/            # API routes: /simulate, /plan, /check, /certificate, /trips, /health
-│   ├── scene/          # scenario JSON -> MJCF (scene generator)
-│   ├── physics/        # MuJoCo: truck bed, cargo units, straps (tendons), acceleration profiles, metrics
+│   ├── app/            # API routes: /simulate, /scenarios/demo, /plan, /check, /certificate, /trips, /health
+│   │   ├── scenario/   # load scenario schema (Pydantic, versioned): bed, units, lashings, trip event
+│   │   └── demo/       # loader of the demo fixtures
+│   ├── scene/          # scenario -> MJCF (scene generator)
+│   ├── physics/        # MuJoCo run, event profiles (conditions/), metrics, verdict, EN formulas, validation
 │   ├── rules/          # CONTRAN 945/2022 (lashing) + axle load limits (CONTRAN 882/2021), config with sources
 │   ├── planner/        # placement + lashing search with simulation in the loop
 │   ├── perception/     # photo -> suggestions (Claude vision) + manual marking support
+│   ├── scenarios/demo/ # 4 demo scenarios (JSON): braking, weigh station, rope, sharp curve — also used as
+│   │                   # tests. Inside backend/ because the Docker build context is backend/.
+│   ├── scripts/        # build_demo_fixtures, precompute_demo (writes frontend/public/demo/)
 │   └── tests/
-├── scenarios/          # 4 demo scenarios (JSON): braking, weigh station, rope, cornering — also used as tests
 ├── frontend/           # Next.js (TypeScript), Tailwind, shadcn/ui, React Three Fiber, next-intl
 │   ├── messages/       # en.json (default), pt-BR.json
 │   ├── app/driver/     # 5-step flow: truck -> cargo/photo -> straps -> trip test -> fix
 │   ├── app/certificate/[id]/
 │   ├── app/dashboard/  # carrier / insurer view
 │   └── components/viewer3d/
+├── docs/               # design.md, physics-model.md (model + sources), validation.md (sim vs. EN 12195-1)
 ├── .github/workflows/ci.yml
 └── README.md
 ```

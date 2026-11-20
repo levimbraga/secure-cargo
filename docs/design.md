@@ -207,35 +207,53 @@ What stays in the repository for that work, unmounted: the keyframes format and 
 (`frontend/lib/keyframes.ts`), a basic player (`frontend/components/scene/keyframe-player.tsx`) and two
 hand-made placeholder documents (`frontend/content/keyframes/`).
 
-### Keyframes contract (draft v1)
+### Keyframes contract (v2)
+
+The backend is the source of truth (`backend/physics/results.py`, model `Keyframes`). `POST /simulate`
+returns it as `result.keyframes`, and the precomputed demo files in `frontend/public/demo/` carry the same
+document.
 
 ```json
 {
-  "version": 1,
-  "source": "placeholder",
+  "version": 2,
+  "source": "simulation",
   "fps": 30,
-  "duration_s": 4.0,
-  "bed": { "length_m": 6.0, "width_m": 2.4, "floor_height_m": 1.1, "headboard_height_m": 1.2 },
-  "units": [{ "id": "u1", "size_m": [1.1, 1.2, 1.0] }],
-  "straps": [{ "id": "u1-s1", "unit_id": "u1", "path_m": [[0.6, -1.2, 0], [0.6, -0.4, 1.0], [0.6, 0.8, 1.0], [0.6, 1.2, 0]] }],
-  "events": [{ "t": 0.7, "kind": "braking" }],
-  "frames": [
-    {
-      "t": 0.0,
-      "truck_speed_mps": 15,
-      "units": [{ "p": [0.9, 0.25, 0.5], "q": [1, 0, 0, 0] }],
-      "straps": [{ "tension_n": 2500 }]
-    }
-  ],
-  "result": { "status": "fail", "unit_ids": ["u1"] }
+  "duration_s": 4.172,
+  "bed": { "length_m": 6.2, "width_m": 2.4, "floor_height_m": 1.25, "headboard_height_m": 1.2, "side_rail_height_m": 0 },
+  "units": [{ "id": "pallet-1", "size_m": [1.2, 1.0, 1.1] }],
+  "straps": [{
+    "id": "pallet-1-s1", "unit_id": "pallet-1", "kind": "strap", "routing": "top_over",
+    "lashing_capacity_n": 25000,
+    "anchor_points_m": [[2.0, 1.2, 0], [2.0, -1.2, 0]],
+    "unit_points_m": [[0, 0.5, 0.55], [0, -0.5, 0.55]],
+    "path_m": [[2.0, 1.2, 0], [2.0, 0.5, 1.1], [2.0, -0.5, 1.1], [2.0, -1.2, 0]]
+  }],
+  "events": [{ "t": 0.3, "kind": "braking_start" }],
+  "frames": [{
+    "t": 0.0,
+    "truck_speed_mps": 22.222,
+    "bed_accel_mps2": [0, 0, 0],
+    "units": [{ "p": [2.0, 0, 0.552], "q": [1, 0, 0, 0] }],
+    "straps": [{ "tension_n": 3000, "slide_m": 0 }]
+  }],
+  "result": { "status": "fail", "unit_ids": ["pallet-1"] }
 }
 ```
 
 Conventions: SI units; right-handed frame with X to the front of the truck, Y to its left and **Z up**; the
-origin is the center of the bed floor surface; quaternions are `[w, x, y, z]` (MuJoCo's order). `source` is
-`"placeholder"` for hand-made animation and `"simulation"` for physics output. `frames[].units` and
-`frames[].straps` follow the order of `units` and `straps`. The backend is the source of truth for this
-schema and will finalize it in the physics phase.
+origin is the center of the bed floor surface and moves with the bed, so every pose is relative to the truck;
+quaternions are `[w, x, y, z]` (MuJoCo's order). `frames[].units` and `frames[].straps` follow the order of
+`units` and `straps`.
+
+Drawing a strap at a frame: `anchor_points_m` are fixed on the bed; `unit_points_m` are relative to the
+unit's center and move with it (rotate by `q`, add `p`). A top-over strap runs anchor, unit point, unit
+point, anchor and may slide along the unit: add `slide_m` to the X of both unit points before
+transforming. A direct lashing runs anchor to unit point. `path_m` is the path as installed.
+`bed_accel_mps2` is the acceleration of the bed (braking is negative X), for a g-force readout.
+
+Version 1 (hand-made placeholders, `source: "placeholder"`) had no `kind`, `routing`, anchor or unit
+points and no `bed_accel_mps2`; the player in `frontend/lib/keyframes.ts` still reads version 1 until the
+replay page is built.
 
 ## 11. Writing
 

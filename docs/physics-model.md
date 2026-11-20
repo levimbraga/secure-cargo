@@ -19,7 +19,7 @@ trip event ─────► event profile ────────────
 | Frame | X to the front of the truck, Y to its left, Z up; origin at the centre of the bed floor. SI units. |
 | Truck bed | One body on three slide joints (X, Y, Z). Its motion is **prescribed**: at every step the simulation applies the force that gives the bed the acceleration of the event profile, cancelling the reaction of the cargo. The bed follows the profile within a micrometre (reported in every result as `bed_tracking_error_m`). |
 | Cargo units | Free rigid boxes with uniform density, standing on the floor or on each other. |
-| Contacts | MuJoCo soft contacts with an elliptic friction cone, one friction factor per material pair. Headboard and side rails block without friction. |
+| Contacts | MuJoCo soft contacts with an elliptic friction cone, one friction factor per material pair. Headboard and side rails block without friction. A frictionless road plane under the truck catches units that fall off; what happens to them on the road is not simulated. |
 | Straps, chains, ropes | Spatial tendons with a tension-only spring. The rest length is shorter than the installed length, which creates the pretension; the stiffness is `LC / (elongation at LC x length)`. A rope is the same model with a lower capacity and more stretch. A lashing with a breaking strength snaps when it is exceeded. |
 | Top-over lashing | Runs anchor, top edge, top edge, anchor. It presses the unit down and centres it sideways, and it is free to slide along the unit's length: it holds by friction only, which is the assumption of EN 12195-1. |
 | Direct lashing | Runs from an anchor straight to a fixed point on the unit. |
@@ -91,6 +91,19 @@ numerical noise; they are engineering judgement.
 
 A load that holds does not move in the simulation (0.0 mm in the validation runs), so the 1 cm line is
 far from noise.
+
+## Performance
+
+Measured in the API's Docker image limited to a quarter of a CPU core (the size of the production
+container), CPU time per run:
+
+| Run | CPU time |
+|---|---|
+| The eight demo runs (3.2 to 5.4 s of simulated time) | 0.32 to 0.51 s |
+| Longest event, mountain descent (7.7 s simulated), 3 units and 9 lashings | 0.78 s |
+
+`POST /simulate` reports the CPU time of every run as `cpu_time_s`, and a test keeps the demo runs under
+one second (`tests/test_api_simulate.py`).
 
 ## Known limits
 

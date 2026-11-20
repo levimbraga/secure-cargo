@@ -29,16 +29,27 @@ Built for [Hack Brasil 2026](https://hackbrasil.com), Logistics & Automation tra
 
 The project is being built in phases during the hackathon. What exists today:
 
-- `backend/` — FastAPI service with `GET /health` (reports the API and MuJoCo versions), a storage
-  interface with SQLite and in-memory backends, and a linux/amd64 Docker image.
+- `backend/` — FastAPI service with a storage interface (SQLite and in-memory) and a linux/amd64 Docker
+  image. Endpoints:
+  - `POST /simulate` — a load scenario plus a trip event in; verdict, per-unit slide and tilt, peak lashing
+    forces and 30 fps keyframes out. Deterministic, cached by the hash of the inputs.
+  - `GET /scenarios/demo` — the four demo scenarios, each "as loaded" and "fixed".
+  - `GET /health` — API and MuJoCo versions.
+- **Physics core** — a MuJoCo simulation of the truck bed, cargo units and lashings under seven trip
+  events (emergency braking, lane change, sharp curve, pothole, speed bump, mountain descent, long
+  vibration) on five road surfaces. It is validated against the closed-form calculations of EN 12195-1:
+  the number of straps the formula asks for is where the simulation flips from fail to pass, and the
+  sliding threshold agrees within 0.3 %. See [docs/validation.md](docs/validation.md) for the tables and
+  [docs/physics-model.md](docs/physics-model.md) for the model and the source of every number.
 - `frontend/` — Next.js app with the landing page at `/`, the app shell at `/app` (shows the API health), and
-  an English / Brazilian Portuguese language switcher.
+  an English / Brazilian Portuguese language switcher. The simulated demo scenarios ship as static JSON in
+  `frontend/public/demo/`, so they replay even when the API is cold or down.
 - `docs/design.md` — the design system: tokens, type, layout, components, imagery and motion, plus the
-  keyframes contract for the future 3D replay.
+  keyframes contract for the 3D replay.
 - `backend/worker/` — Cloudflare Worker that starts the API container on demand and forwards requests to it.
 - CI on every push to `main`.
 
-Physics, rules, planner, photo analysis, certificate and dashboard come next.
+The 3D replay, CONTRAN rules, planner, photo analysis, certificate and dashboard come next.
 
 ## Stack
 
@@ -54,17 +65,22 @@ Physics, rules, planner, photo analysis, certificate and dashboard come next.
 ```
 backend/            FastAPI service
   app/              API routes, configuration, storage interface
-  scene/            scenario JSON -> MJCF scene generator
-  physics/          MuJoCo simulation
-  rules/            CONTRAN checks and axle loads
+    scenario/       load scenario schema (Pydantic, versioned)
+    demo/           loader of the demo fixtures
+  scene/            scenario -> MJCF scene generator
+  physics/          MuJoCo simulation, event profiles, metrics, verdict, EN 12195-1 formulas
+  rules/            axle loads (CONTRAN checks come next)
   planner/          load advisor and lashing planner
   perception/       photo -> cargo and strap suggestions
+  scenarios/demo/   the four demo scenarios as JSON fixtures
+  scripts/          fixture generator, static demo precompute
   tests/
   worker/           Cloudflare Worker that routes requests to the API container
 frontend/           Next.js app
   app/[locale]/     pages (landing at /, app at /app)
   components/       UI components (site chrome, landing sections, base components)
   content/          placeholder keyframes for the future 3D replay
+  public/demo/      simulated demo scenarios as static JSON (written by the backend)
   scripts/          photo treatment, placeholder keyframes generator
   i18n/             locale routing
   messages/         en.json (default) and pt-BR.json — every UI string lives here
@@ -88,6 +104,24 @@ Check it: <http://localhost:8000/health> returns `{"status":"ok","version":"…"
 Interactive API docs: <http://localhost:8000/docs>.
 
 Optional settings go in `backend/.env` (see `backend/.env.example`).
+
+Simulate a demo scenario from the command line:
+
+```bash
+curl -s localhost:8000/scenarios/demo \
+  | jq '{scenario: .scenarios[0].as_loaded, event: .scenarios[0].event}' \
+  | curl -s -X POST localhost:8000/simulate -H 'content-type: application/json' -d @- \
+  | jq '{cpu_time_s, verdict: .result.verdict}'
+```
+
+After changing the physics or the demo scenarios, regenerate the fixtures and the static results the
+site ships with (a test fails if they are stale):
+
+```bash
+uv run python -m scripts.build_demo_fixtures   # backend/scenarios/demo/*.json
+uv run python -m scripts.precompute_demo       # frontend/public/demo/*.json
+uv run python -m physics.validation            # tables of docs/validation.md
+```
 
 ### Frontend
 
