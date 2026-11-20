@@ -13,6 +13,9 @@ import {
 } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
+import type { KeyframesDoc } from "@/lib/keyframes";
+import { type Quality, QUALITY_SETTINGS } from "@/lib/quality";
+
 import { COLOR, type SceneProps, type ViewMode } from "./shared";
 
 /** Length of road drawn ahead of and behind the truck [m]. */
@@ -24,24 +27,32 @@ const DASH_LENGTH = 4;
 const POST_PERIOD = 8;
 const ROAD_HALF_WIDTH = 5.2;
 
+/** How far the cab reaches in front of the bed, and the soft border of the contact shadow [m]. */
+const CAB_REACH = 2.3;
+const SHADOW_BORDER = 0.9;
+
 /**
- * Light of each view. The realistic view is lit by an image of a studio room generated in
- * the browser (no file to download) plus one sun with soft shadows; the renderer's ACES tone
- * mapping and soft shadow maps are switched on by the canvas.
+ * Light of each view. At high quality the realistic view is lit by an image of a studio room
+ * generated in the browser (no file to download) plus one sun with soft shadows; the
+ * renderer's ACES tone mapping and soft shadow maps are switched on by the canvas. At low
+ * quality (phones, weak GPUs) the same sun and a sky light stand in for the image, and nothing
+ * casts a shadow map.
  */
-export function Lighting({ mode }: { mode: ViewMode }) {
+export function Lighting({ mode, quality = "high" }: { mode: ViewMode; quality?: Quality }) {
   const gl = useThree((state) => state.gl);
   const realistic = mode === "realistic";
+  const settings = QUALITY_SETTINGS[quality];
+  const imageLit = realistic && settings.environment;
 
   const environment = useMemo(() => {
-    if (!realistic) return null;
+    if (!imageLit) return null;
     const generator = new PMREMGenerator(gl);
     const room = new RoomEnvironment();
     const target = generator.fromScene(room, 0.04);
     generator.dispose();
     room.dispose();
     return target;
-  }, [gl, realistic]);
+  }, [gl, imageLit]);
   useEffect(() => () => environment?.dispose(), [environment]);
 
   return (
@@ -55,7 +66,7 @@ export function Lighting({ mode }: { mode: ViewMode }) {
           <directionalLight
             position={[-7, 13, 8]}
             intensity={2.4}
-            castShadow
+            castShadow={settings.shadows}
             shadow-mapSize={[1024, 1024]}
             shadow-camera-left={-9}
             shadow-camera-right={9}
@@ -67,6 +78,13 @@ export function Lighting({ mode }: { mode: ViewMode }) {
             shadow-radius={5}
           />
         </>
+      ) : realistic ? (
+        <>
+          {/* No image to light from: a brighter sky, the same sun and a fill from the camera side. */}
+          <hemisphereLight args={["#ffffff", "#a3a39c", 2.5]} />
+          <directionalLight position={[-7, 13, 8]} intensity={2.2} />
+          <directionalLight position={[6, 4, 10]} intensity={0.6} />
+        </>
       ) : (
         <>
           <ambientLight intensity={2.1} />
@@ -74,6 +92,46 @@ export function Lighting({ mode }: { mode: ViewMode }) {
         </>
       )}
     </>
+  );
+}
+
+/** A dark patch with soft edges, as the alpha of a small texture. */
+function shadowTexture(): CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 64;
+  const context = canvas.getContext("2d");
+  if (context) {
+    const image = context.createImageData(canvas.width, canvas.height);
+    const ease = (k: number) => k * k * (3 - 2 * k);
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        // Distance to the nearest edge as a share of the soft border: 0 at the edge, 1 inside.
+        const u = Math.min(x + 0.5, canvas.width - x - 0.5) / (canvas.width * 0.16);
+        const v = Math.min(y + 0.5, canvas.height - y - 0.5) / (canvas.height * 0.3);
+        image.data[(y * canvas.width + x) * 4 + 3] = 255 * ease(Math.min(u, 1)) * ease(Math.min(v, 1));
+      }
+    }
+    context.putImageData(image, 0, 0);
+  }
+  return new CanvasTexture(canvas);
+}
+
+/**
+ * The shadow of the truck when shadow maps are off: one flat, soft patch on the road under
+ * it. The truck stands still in the scene, so the patch does too.
+ */
+export function ContactShadow({ bed }: { bed: KeyframesDoc["bed"] }) {
+  const texture = useMemo(() => shadowTexture(), []);
+  useEffect(() => () => texture.dispose(), [texture]);
+  const rear = -bed.length_m / 2 - SHADOW_BORDER;
+  const front = bed.length_m / 2 + CAB_REACH + SHADOW_BORDER;
+
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[(rear + front) / 2, 0.02, 0]}>
+      <planeGeometry args={[front - rear, bed.width_m + SHADOW_BORDER * 2]} />
+      <meshBasicMaterial map={texture} color="#000000" transparent opacity={0.36} depthWrite={false} />
+    </mesh>
   );
 }
 
