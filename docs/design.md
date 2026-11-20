@@ -138,8 +138,9 @@ Rules:
 - **Scenario card.** 4:3 duotone image (ink on surface) with an 8px radius, serif title, one line of text,
   "Run scenario" link. The whole card is one link target.
 - **Data row** (app). Label on the left in muted sans, value on the right in mono, hairline between rows.
-- **Nav.** 64px tall, paper background, hairline appears once the page scrolls. Below 768px it shows the
-  wordmark, the language switch and the primary pill; the three text links move into a menu button.
+- **Nav.** 64px tall, sticky, paper background with a hairline below. Below 768px it shows the wordmark,
+  the language switch and a menu button that holds the links; the primary pill joins from 640px, because
+  on a phone the hero pill sits right under it.
 - **Language switch.** "EN" / "PT" in mono; the active language is ink, the other muted. Real links.
 
 ## 6. Motion
@@ -175,7 +176,8 @@ A framed, interactive React Three Fiber scene of a flatbed with cargo.
   "Secured" replays the same event with straps and the cargo stays put. A caption under the toggle says what
   happened in one sentence.
 - **Controls:** segmented toggle, replay button, orbit by drag ("Click to explore" hint that disappears
-  after the first interaction). Zoom is clamped; pan is disabled; page scroll is never captured.
+  after the first interaction). Zoom and pan are disabled, so the scroll wheel and vertical touch
+  scrolling always belong to the page.
 - **Honest labeling:** until real simulation data exists, the frame carries a small "Illustration" label.
   It is removed when the scene replays MuJoCo keyframes.
 - **Loading:** the frame first shows a static poster (a render of our own scene, WebP with explicit
@@ -199,22 +201,34 @@ will finalize it in the physics phase.
 ```json
 {
   "version": 1,
+  "source": "placeholder",
   "fps": 30,
-  "duration_s": 3.0,
+  "duration_s": 4.0,
   "bed": { "length_m": 6.0, "width_m": 2.4, "floor_height_m": 1.1, "headboard_height_m": 1.2 },
-  "units": [{ "id": "u1", "size_m": [1.2, 1.0, 1.0] }],
-  "straps": [{ "id": "s1", "unit_id": "u1", "path_m": [[0.6, -1.2, 1.1], [0.6, 0.0, 2.1], [0.6, 1.2, 1.1]] }],
-  "events": [{ "t": 0.5, "kind": "braking" }],
+  "units": [{ "id": "u1", "size_m": [1.1, 1.2, 1.0] }],
+  "straps": [{ "id": "u1-s1", "unit_id": "u1", "path_m": [[0.6, -1.2, 0], [0.6, -0.4, 1.0], [0.6, 0.8, 1.0], [0.6, 1.2, 0]] }],
+  "events": [{ "t": 0.7, "kind": "braking" }],
   "frames": [
-    { "t": 0.0, "units": [{ "p": [0.6, 0.0, 1.6], "q": [1, 0, 0, 0] }], "straps": [{ "tension_n": 2500 }] }
+    {
+      "t": 0.0,
+      "truck_speed_mps": 15,
+      "units": [{ "p": [0.9, 0.25, 0.5], "q": [1, 0, 0, 0] }],
+      "straps": [{ "tension_n": 2500 }]
+    }
   ],
   "result": { "status": "fail", "unit_ids": ["u1"] }
 }
 ```
 
-Conventions: SI units, right-handed frame with **Z up** and X pointing to the front of the truck, quaternions
-as `[w, x, y, z]` (MuJoCo's convention). The player converts to three.js (Y up, `[x, y, z, w]`) in one place
-and interpolates between frames.
+Conventions: SI units; right-handed frame with X to the front of the truck, Y to its left and **Z up**; the
+origin is the center of the bed floor surface; quaternions are `[w, x, y, z]` (MuJoCo's order). `source` is
+`"placeholder"` for hand-made animation and `"simulation"` for physics output. `truck_speed_mps` only moves
+the road under the truck. `frames[].units` and `frames[].straps` follow the order of `units` and `straps`.
+The player (`frontend/lib/keyframes.ts`, `frontend/components/scene/keyframe-player.tsx`) converts to
+three.js (Y up, `[x, y, z, w]`) in one place and interpolates between frames.
+
+The placeholder documents are written by `frontend/scripts/generate-placeholder-keyframes.mjs`; the
+posters, phone videos and scenario stills are rendered from the scene by `frontend/scripts/render-media.mjs`.
 
 ## 8. Landing page blueprint
 

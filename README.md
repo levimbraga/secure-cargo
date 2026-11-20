@@ -31,8 +31,10 @@ The project is being built in phases during the hackathon. What exists today:
 
 - `backend/` — FastAPI service with `GET /health` (reports the API and MuJoCo versions), a storage
   interface with SQLite and in-memory backends, and a linux/amd64 Docker image.
-- `frontend/` — Next.js app with the landing page at `/`, the app shell at `/app` (shows the API health),
-  and an English / Brazilian Portuguese language switcher.
+- `frontend/` — Next.js app with the landing page at `/` (including a 3D replay of a braking event, for now
+  a hand-made placeholder animation), the app shell at `/app` (shows the API health), and an English /
+  Brazilian Portuguese language switcher.
+- `docs/design.md` — the design system: tokens, type, components, motion and the keyframes contract.
 - `backend/worker/` — Cloudflare Worker that starts the API container on demand and forwards requests to it.
 - CI on every push to `main`.
 
@@ -43,7 +45,7 @@ Physics, rules, planner, photo analysis, certificate and dashboard come next.
 | Part     | Technology                                                                                   |
 | -------- | -------------------------------------------------------------------------------------------- |
 | Backend  | Python 3.11, FastAPI, Pydantic, MuJoCo, [uv](https://docs.astral.sh/uv/), ruff, mypy, pytest |
-| Frontend | Next.js (App Router), TypeScript (strict), Tailwind CSS, shadcn/ui, next-intl, Vitest        |
+| Frontend | Next.js (App Router), TypeScript (strict), Tailwind CSS, shadcn/ui, next-intl, React Three Fiber, Vitest |
 | Hosting  | Vercel (frontend), Cloudflare Containers (backend), Cloudflare R2 (photos and certificates)  |
 | CI       | GitHub Actions                                                                               |
 
@@ -61,7 +63,9 @@ backend/            FastAPI service
   worker/           Cloudflare Worker that routes requests to the API container
 frontend/           Next.js app
   app/[locale]/     pages (landing at /, app at /app)
-  components/       UI components
+  components/       UI components (landing sections, 3D scene, base components)
+  content/          keyframes for the 3D scene, landing-page figures
+  scripts/          placeholder keyframes generator, media renderer
   i18n/             locale routing
   messages/         en.json (default) and pt-BR.json — every UI string lives here
 .github/workflows/  CI
@@ -108,6 +112,19 @@ uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pyt
 # frontend/
 pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
+
+### Landing-page media
+
+The poster, the phone video and the scenario stills are rendered from the project's own 3D scene. To
+regenerate them, run the dev server and, in another terminal:
+
+```bash
+cd frontend
+node scripts/generate-placeholder-keyframes.mjs
+CHROME_PATH=/path/to/chrome node scripts/render-media.mjs
+```
+
+This needs `ffmpeg` and a Chromium or Chrome binary.
 
 ### Backend container
 
