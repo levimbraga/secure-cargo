@@ -15,6 +15,7 @@ Model
   of the frictional-lashing formula of EN 12195-1.
 * **Direct lashings** run straight from an anchor to a point fixed on the unit.
 * **Contacts** are explicit geom pairs, each with the friction factor of its material pair.
+  Headboard, side rails and the road under the truck are frictionless.
 
 The frame is the scenario's bed frame (X front, Y left, Z up, origin at the centre of the
 floor surface).
@@ -34,6 +35,7 @@ BED_BODY = "bed"
 BED_JOINTS = ("bed_x", "bed_y", "bed_z")
 FLOOR_GEOM = "bed_floor"
 HEADBOARD_GEOM = "bed_headboard"
+ROAD_GEOM = "road"
 
 # Inertia added to each bed joint [kg]. It is about 10^5 times the heaviest legal load, so
 # the reaction of the cargo changes the bed's acceleration by less than 0.01 %.
@@ -109,6 +111,16 @@ def build_scene(scenario: Scenario, *, surface_friction_cap: float | None = None
     ET.SubElement(default, "geom", contype="0", conaffinity="0")
 
     worldbody = ET.SubElement(root, "worldbody")
+    # The road under the truck, so a unit that falls off the bed lands instead of falling
+    # for ever. It is frictionless: what happens to cargo on the road is not simulated.
+    ET.SubElement(
+        worldbody,
+        "geom",
+        name=ROAD_GEOM,
+        type="plane",
+        size="0 0 1",
+        pos=_vec((0, 0, -bed.floor_height_m)),
+    )
     bed_body = ET.SubElement(worldbody, "body", name=BED_BODY, gravcomp="1")
     for name, axis in zip(BED_JOINTS, ("1 0 0", "0 1 0", "0 0 1"), strict=True):
         ET.SubElement(
@@ -251,6 +263,7 @@ def build_scene(scenario: Scenario, *, surface_friction_cap: float | None = None
             # Headboard and side rails only block: they are modelled without friction, so a
             # wall never carries part of a unit's weight.
             _pair(contact, wall, model.geom, None)
+        _pair(contact, ROAD_GEOM, model.geom, None)
     for index, upper in enumerate(units):
         for lower in units[index + 1 :]:
             # The friction of a unit-on-unit contact is that of the unit on top.
