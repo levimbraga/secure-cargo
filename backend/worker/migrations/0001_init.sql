@@ -45,7 +45,7 @@ CREATE TABLE inspections (
     status             TEXT NOT NULL DEFAULT 'draft'
                        CHECK (status IN ('draft', 'analyzed', 'confirmed', 'simulated')),
     title              TEXT NOT NULL DEFAULT '',
-    truck_body         TEXT CHECK (truck_body IN ('flatbed', 'box_truck', 'curtain_sider')),
+    truck_body         TEXT CHECK (truck_body IN ('flatbed', 'box', 'curtain_sider')),  -- the draft's BodyType
     truck_size         TEXT CHECK (truck_size IN ('vuc', 'toco', 'truck', 'semi')),
     cargo_weight_kg    REAL CHECK (cargo_weight_kg > 0),
     notes              TEXT NOT NULL DEFAULT '',

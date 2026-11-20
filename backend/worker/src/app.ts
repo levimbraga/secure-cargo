@@ -54,7 +54,7 @@ export function isAppRoute(pathname: string): boolean {
 	return APP_ROUTE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
-const BODIES = ["flatbed", "box_truck", "curtain_sider"] as const;
+const BODIES = ["flatbed", "box", "curtain_sider"] as const;
 const SIZES = ["vuc", "toco", "truck", "semi"] as const;
 const STATUSES = ["draft", "analyzed", "confirmed", "simulated"] as const;
 const ROLES = ["member", "org_admin"] as const;
@@ -280,7 +280,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
 			email,
 			role,
 			inviterUserId: p.userId,
-			redirectUrl: `${deps.siteUrl}/sign-up`,
+			redirectUrl: `${deps.siteUrl}/app/sign-up`,
 		});
 		return c.json(invitation, 201);
 	});
