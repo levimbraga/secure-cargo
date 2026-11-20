@@ -2,135 +2,264 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * Design tokens. See docs/design.md.
+ * The shadcn/ui variable names are mapped onto the same tokens, so components added with the
+ * shadcn CLI pick up the palette.
+ */
+:root {
+  --paper: #f8f8f3;
+  --ink: #191918;
+  --muted-ink: #636361;
+  --surface: #e9e9e4;
+  --hairline: #d6d6cf;
+  --control-border: #8a8a86;
+  --amber: #f2a100;
+  --amber-ink: #8f5200;
+  --fail: #b42318;
+  --fail-tint: #fbe9e7;
+  --pass: #136f33;
+  --pass-tint: #e2f0e4;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--paper);
+  --card-foreground: var(--ink);
+  --popover: var(--paper);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: var(--surface);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface);
+  --muted-foreground: var(--muted-ink);
+  --accent: var(--surface);
+  --accent-foreground: var(--ink);
+  --destructive: var(--fail);
+  --border: var(--hairline);
+  --input: var(--control-border);
+  --ring: var(--ink);
+  --radius: 0.5rem;
+}
 
 @theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-hairline: var(--hairline);
+  --color-control: var(--control-border);
+  --color-amber: var(--amber);
+  --color-amber-ink: var(--amber-ink);
+  --color-fail: var(--fail);
+  --color-fail-tint: var(--fail-tint);
+  --color-pass: var(--pass);
+  --color-pass-tint: var(--pass-tint);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-geist-sans);
-  --color-brand: var(--brand);
-  --color-brand-foreground: var(--brand-foreground);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
+  --font-serif: var(--font-instrument-serif);
+  --font-heading: var(--font-instrument-serif);
+
+  --container-reading: 40rem;
+  --container-wide: 80rem;
+
   --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-:root {
-  --brand: oklch(0.8 0.165 75);
-  --brand-foreground: oklch(0.2 0.03 75);
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --brand: oklch(0.8 0.165 75);
-  --brand-foreground: oklch(0.2 0.03 75);
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.5);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
+    @apply border-border outline-ring;
   }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/* Type scale */
+@utility type-display {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2.75rem, 7vw + 1rem, 5.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+@utility type-h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(2rem, 3vw + 1.25rem, 3.25rem);
+  line-height: 1.08;
+}
+@utility type-h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+@utility type-lead {
+  font-size: clamp(1.125rem, 0.5vw + 1rem, 1.3125rem);
+  line-height: 1.5;
+}
+@utility type-small {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+@utility type-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-ink);
+}
+@utility type-stat {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2.5rem, 4vw + 1rem, 4rem);
+  line-height: 1;
+}
+
+/* Layout */
+@utility shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--container-wide);
+  padding-inline: 1.25rem;
+  @media (width >= 48rem) {
+    padding-inline: 2rem;
+  }
+  @media (width >= 80rem) {
+    padding-inline: 3rem;
+  }
+}
+@utility section-y {
+  padding-block: 6rem;
+  @media (width >= 48rem) {
+    padding-block: 10rem;
+  }
+}
+
+/* Enter animation: applied by <RevealOnScroll />, only to blocks that start below the viewport. */
+[data-reveal].reveal-pending {
+  opacity: 0;
+  transform: translateY(12px);
+}
+[data-reveal].reveal-run {
+  transition:
+    opacity 500ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* Hero subtitle: hidden until the typing starts; shown anyway if the script never runs. */
+.typed-fallback {
+  opacity: 0;
+  animation: typed-fallback-show 0s linear 2s forwards;
+}
+@keyframes typed-fallback-show {
+  to {
+    opacity: 1;
+  }
+}
+.typed-caret {
+  position: relative;
+  display: inline-block;
+  width: 0;
+  height: 1em;
+  vertical-align: -0.12em;
+}
+.typed-caret::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 1px;
+  width: 2px;
+  background: var(--ink);
+}
+.typed-caret[data-done="true"]::after {
+  animation: typed-caret-blink 1s steps(2, jump-none) 3 forwards;
+}
+@keyframes typed-caret-blink {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Accordion visual cross-fade */
+.fade-in {
+  animation: fade-in 200ms ease-out both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The 3D canvas must not trap vertical touch scrolling. */
+.scene-canvas canvas {
+  touch-action: pan-y !important;
+}
+
+/* Duotone treatment for placeholder imagery: ink on surface. */
+.duotone {
+  background: var(--surface);
+}
+.duotone img {
+  filter: grayscale(1) contrast(1.05);
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal].reveal-pending {
+    opacity: 1;
+    transform: none;
+  }
+  [data-reveal].reveal-run {
+    transition: none;
+  }
+  .typed-fallback {
+    opacity: 1;
+    animation: none;
+  }
+  .fade-in {
+    animation: none;
   }
 }
