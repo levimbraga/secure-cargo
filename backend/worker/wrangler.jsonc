@@ -9,7 +9,11 @@
 	},
 	"vars": {
 		// Browser origins allowed to call the API (comma-separated). Passed to the container.
-		"CORS_ORIGINS": "https://securecargo.app,https://www.securecargo.app"
+		"CORS_ORIGINS": "https://securecargo.app,https://www.securecargo.app,https://secure-cargo.vercel.app"
+	},
+	// Identifies the deployed Worker version; used to give every deploy a fresh container.
+	"version_metadata": {
+		"binding": "VERSION"
 	},
 	"containers": [
 		{

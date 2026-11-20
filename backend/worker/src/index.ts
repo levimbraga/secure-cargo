@@ -1,14 +1,18 @@
 /**
  * Thin Worker in front of the SecureCargo API.
  *
- * The FastAPI + MuJoCo service runs in a Cloudflare Container. Every request is routed to a
- * single named container instance, which is started on demand and stopped after a period
- * without traffic (scale to zero).
+ * The FastAPI + MuJoCo service runs in a Cloudflare Container. Every request is routed to one
+ * named container instance, which is started on demand and stopped after a period without
+ * traffic (scale to zero).
+ *
+ * The instance name includes the Worker version. A deploy does not restart a Durable Object
+ * whose container is still running, so without this the previous code, image and environment
+ * would keep serving until the container went idle. With it, each deploy gets a fresh instance
+ * and the previous one stops by itself after the inactivity timeout.
  */
 import { DurableObject } from "cloudflare:workers";
 
 const CONTAINER_PORT = 8080;
-const INSTANCE_NAME = "api";
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
 const READINESS_POLL_MS = 200;
 const READINESS_TIMEOUT_MS = 60_000;
@@ -100,7 +104,7 @@ export class ApiContainer extends DurableObject<Env> {
 export default {
 	async fetch(request, env): Promise<Response> {
 		try {
-			return await env.API_CONTAINER.getByName(INSTANCE_NAME).fetch(request);
+			return await env.API_CONTAINER.getByName(`api-${env.VERSION.id}`).fetch(request);
 		} catch (error) {
 			console.error("Could not reach the API container:", error);
 			return Response.json(
