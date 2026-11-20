@@ -17,6 +17,7 @@ export default function AppPage({ params }: PageProps<"/[locale]/app">) {
 
   const t = useTranslations("App");
   const scenario = useTranslations("Scenario");
+  const lab = useTranslations("Lab");
 
   return (
     <>
@@ -27,15 +28,23 @@ export default function AppPage({ params }: PageProps<"/[locale]/app">) {
           <h1 className="type-hero mt-5 text-balance">{scenario("list.title")}</h1>
           <ul className="mt-7 border-b border-hairline">
             {DEMO_IDS.map((id) => (
-              <li key={id} className="border-t border-hairline">
+              <li key={id} className="flex items-center gap-x-5 border-t border-hairline">
                 <Link
                   href={`/app/scenarios/${id}`}
-                  className="flex min-h-11 items-center justify-between gap-6 py-2.5 hover:underline hover:decoration-1 hover:underline-offset-4"
+                  className="flex min-h-11 min-w-0 flex-1 items-center justify-between gap-6 py-2.5 hover:underline hover:decoration-1 hover:underline-offset-4"
                 >
                   <span>{scenario(`titles.${id}`)}</span>
                   <span className="text-right font-mono text-[0.8125rem] text-gray">
                     {scenario(`events.${id}`, { speed: demoSummary(id).event.speed_kmh })}
                   </span>
+                </Link>
+                {/* The same load in the live lab, where its controls can be changed. */}
+                <Link
+                  href={`/app/lab/${id}`}
+                  aria-label={lab("listLinkName", { title: scenario(`titles.${id}`) })}
+                  className="type-label flex min-h-11 shrink-0 items-center underline decoration-hairline underline-offset-4 hover:text-ink"
+                >
+                  {lab("listLink")}
                 </Link>
               </li>
             ))}

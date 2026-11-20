@@ -59,6 +59,8 @@ export type LabLimits = {
   authoredStraps: number | null;
   authoredPretension: number | null;
   authoredMat: boolean;
+  /** Mass of every unit as authored [kg], in the order of the units. */
+  unitMassesKg: number[];
 };
 
 export type LiveLab = {
@@ -255,6 +257,7 @@ export function useLiveLab(id: DemoId, variant: Variant): LiveLab {
             authoredStraps: authoredStrapsPerUnit(current.run.scenario),
             authoredPretension: authoredPretension(current.run.scenario),
             authoredMat: authoredMat(current.run.scenario),
+            unitMassesKg: current.run.scenario.units.map((unit) => unit.mass_kg),
           }
         : null,
     [current],

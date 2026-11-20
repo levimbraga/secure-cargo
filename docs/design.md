@@ -345,7 +345,72 @@ Version 1 (hand-made placeholders, `source: "placeholder"`) had no `kind`, `rout
 points and no `bed_accel_mps2`. `frontend/lib/keyframes.ts` reads both versions; the site only shows
 version 2.
 
-## 11. Writing
+## 11. Live lab (`/app/lab/[id]`)
+
+The replay shows a run the server computed. The lab **computes it again in the browser** (MuJoCo
+WebAssembly stepping the server's model, `frontend/lib/live/`) every time a control changes, and steps it
+live while it plays, so the visitor can push the cargo. `?variant=as_loaded|fixed` picks the version of
+the load and is read in the browser; the page itself is static. The replay links to it ("Open the live
+lab", under the timeline) and so does the list on `/app`; the lab links back.
+
+It is the one app page on the **wide block**: from 1024px the result and the controls sit in a 320px
+column beside the scene, so a change and its effect are on screen together. Below that it is one reading
+column in this order, which is also the DOM and focus order:
+
+1. **Header.** Mono label "Live lab" with "Back to the replay" opposite, the scenario title in the serif,
+   the pills "As loaded / Fixed" and the view choice "Realistic / Engineering".
+2. **Result**, above the fold with the scene at 375px: verdict badge; the reason as **one serif sentence
+   with numbers** built from the run (`lib/live/reason.ts`: "Inertia 6.7 kN > friction 4.8 kN: Pallet 2
+   slides 81 cm and hits the headboard."); the EN 12195-1 check in one small line; and a neutral badge
+   **"Live, not certified"** with one mono line saying the run was simulated in the browser, how long it
+   took, and that certificates only use the server's result. When the server simulated the run instead,
+   the badge reads "Simulated on the server" and the line says why (no WebAssembly, the engine did not
+   load, the device is too slow). While the next run is computed the previous result stays under a 2px
+   progress bar. Errors are one red sentence; "the API is not answering" offers "Back to the scenario as
+   authored".
+3. **Scene.** The same player as the replay, with everything section 10 describes (both views, read-out,
+   force arrows, lashing colours and labels, ghosts, impact ring, phone markers and panel). Under it:
+   Play / Pause, one frame back, one frame forward (1/30 s) and Restart as pills (icon pills for the last
+   three), the scrubber and clock, the event markers and the speed choice.
+4. **Controls.** Rows with a hairline above each, gray label left, value in mono right: event (select),
+   speed 20 to 100 km/h (slider), road surface (select), straps per unit (number field with − and +),
+   strap pretension in daN (slider), mass per unit in kg (slider), anti-slip mat (checkbox). A change
+   applies at once. A control put back on its authored value counts as unchanged; otherwise a text link
+   "Back to the scenario as authored" appears. Controls are 44px tall on phones.
+5. Legend, MuJoCo's own render (only for the scenario as authored: with changed controls it would show
+   another load), the three charts, the result rows and the findings, as on the replay.
+
+**Live stepping.** Playing a run the browser simulated does not replay keyframes: the engine is put at
+the keyframe of the current time (`seek`) and stepped by the replay time that passes each animation
+frame (2 ms steps, at the playback speed, at most 10 ms of stepping per frame, so a slow device slows
+the clock instead of freezing). Untouched, that is the same motion as the keyframes. Paused, scrubbing
+and stepping by frame show the keyframes; so do runs from the server, and a device that stays under half
+the asked speed for two seconds (the caption under the scene says which). After the end of the event the
+engine goes on with the bed at rest ("free play") and pauses by itself after three seconds without a push.
+While a new run is being computed the clock and the scene wait.
+
+**Pushing the cargo.** Pressing on a unit and dragging pulls it with a spring toward the pointer, on a
+horizontal plane at the height of the grab: the full force, 1.5 times the unit's weight, is reached 40 cm
+away. The force acts on the unit's centre and is drawn as a blue arrow (`#3B6FD4`, the first chart
+colour) to the scale of the other arrows; the read-out shows it in kN. While a unit is held the camera
+does not turn and the touch does not scroll the page; one finger anywhere else on the scene still
+scrolls. A drag on a paused scene starts the engine. The same is possible without a pointer: a select
+for the unit and four pills (Forward, Back, Left, Right) that push with the unit's weight for a quarter
+of a second. Once the cargo was pushed, a line says **"You pushed the cargo: the verdict is for the
+undisturbed run"**, how far the unit is from its start, and offers Restart. The verdict never changes
+with a push.
+
+**Budget and fallbacks.** The budget of section 10 holds (mount when visible, on demand when paused,
+pixel ratio 1.5, `low` quality on phones, nothing while the tab is hidden: the stepping loop stops with
+the rendering). The engine (2.8 MB gzipped) is requested only by this page. Without WebGL the result,
+the controls, the charts and the numbers work; the frame shows MuJoCo's clip for the scenario as
+authored and one sentence otherwise.
+
+**For tests.** The root element carries `data-lab-state` (`loading`, `running`, `ready`, `error`) and
+`data-lab-result` (the parity summary of the run, its source and its time); the controls carry
+`data-testid="lab-…"`. `frontend/e2e/parity.spec.ts` reads them.
+
+## 12. Writing
 
 - Plain verbs, sentence case, no exclamation marks. A button says what it does.
 - English is the default; Brazilian Portuguese is a full translation written for truck drivers and
@@ -356,7 +421,7 @@ version 2.
 - No string is hard-coded in a component: all copy is in `messages/en.json` and `messages/pt-BR.json`,
   and a test keeps the two files in sync.
 
-## 12. Quality bar
+## 13. Quality bar
 
 - **Lighthouse (mobile): performance ≥ 90 and accessibility ≥ 90** on `/`, `/app` and the scenario
   pages, on the production build.

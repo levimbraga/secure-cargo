@@ -313,6 +313,128 @@
       "table": "Data table"
     }
   },
+  "Lab": {
+    "label": "Live lab",
+    "metaTitle": "{title} · Live lab · SecureCargo",
+    "description": "Change the event, the speed, the road and the lashing of this load, and watch MuJoCo simulate it again in your browser.",
+    "open": "Open the live lab",
+    "openHint": "Change the event, the speed and the lashing; the physics runs in your browser.",
+    "listLink": "Live lab",
+    "listLinkName": "{title}: live lab",
+    "back": "Back to the replay",
+    "others": "Other scenarios in the live lab",
+    "state": {
+      "error": "Not available",
+      "loading": "Loading the scenario…",
+      "running": "Simulating…"
+    },
+    "result": {
+      "title": "Result",
+      "standard": "EN 12195-1: {value}",
+      "progress": "Simulation progress"
+    },
+    "reason": {
+      "slides": "Inertia {inertia} kN > friction {friction} kN: {unit} slides {slide} cm.",
+      "slidesIntoHeadboard": "Inertia {inertia} kN > friction {friction} kN: {unit} slides {slide} cm and hits the headboard.",
+      "slidesLoose": "Inertia {inertia} kN is close to the friction available, {friction} kN: {unit} slides {slide} cm.",
+      "tips": "Overturning moment {overturning} kN·m > holding moment {restoring} kN·m: {unit} tips {tilt}°.",
+      "leavesBed": "Inertia {inertia} kN > friction {friction} kN: {unit} slides off the truck.",
+      "leavesBedPlain": "{unit} falls off the truck.",
+      "lashingOverloaded": "A lashing carries {force} kN, more than its capacity of {capacity} kN.",
+      "lashingBroke": "A lashing breaks: {force} kN against a breaking strength of {capacity} kN.",
+      "headboardOverloaded": "The cargo presses on the headboard with {force} kN; it is rated for {capacity} kN.",
+      "axleOverloaded": "The {axle, select, front {front} other {rear}} axle carries {load} t; the legal limit is {limit} t.",
+      "holds": "Friction {friction} kN ≥ inertia {inertia} kN: nothing moves.",
+      "holdsLashed": "Inertia {inertia} kN > friction {friction} kN, and the lashings take the difference: nothing moves.",
+      "holdsBarely": "Friction {friction} kN ≥ inertia {inertia} kN: the load holds, with little margin.",
+      "holdsBarelyLashed": "Inertia {inertia} kN > friction {friction} kN: the lashings hold the load, with little margin."
+    },
+    "live": {
+      "badge": "Live, not certified",
+      "browser": "Simulated in {seconds} s in your browser by MuJoCo WebAssembly. Certificates only use the server's result.",
+      "serverBadge": "Simulated on the server",
+      "server": {
+        "no_wasm": "This browser cannot run WebAssembly, so the server simulated this run.",
+        "load_failed": "The physics engine could not be loaded in this browser, so the server simulated this run.",
+        "slow": "This device steps the model too slowly, so the server simulates the runs.",
+        "other": "The server simulated this run."
+      },
+      "serverTime": "It answered in {seconds} s."
+    },
+    "errors": {
+      "load_failed": "The scenario could not be loaded. Check your connection and reload the page.",
+      "api_unreachable": "Changed controls need the simulation server, and it is not answering. What you see is the previous run.",
+      "unstable": "The simulation became unstable with these values. What you see is the previous run."
+    },
+    "reset": "Back to the scenario as authored",
+    "controls": {
+      "title": "Controls",
+      "hint": "Every change simulates the load again.",
+      "event": "Event",
+      "speed": "Speed",
+      "speedValue": "{value} km/h",
+      "surface": "Road surface",
+      "straps": "Straps per unit",
+      "strapsAsLoaded": "as loaded",
+      "fewer": "One strap fewer per unit",
+      "more": "One strap more per unit",
+      "pretension": "Strap pretension",
+      "pretensionValue": "{value} daN",
+      "pretensionNone": "no straps",
+      "mass": "Mass per unit",
+      "massValue": "{value} kg",
+      "massFactor": "× {value}",
+      "mat": "Anti-slip mat",
+      "matOn": "on",
+      "matOff": "off"
+    },
+    "events": {
+      "emergency_braking": "Emergency braking",
+      "lane_change": "Sudden lane change",
+      "sharp_curve": "Sharp curve",
+      "pothole": "Pothole",
+      "speed_bump": "Speed bump",
+      "mountain_descent": "Mountain descent",
+      "long_vibration": "Long vibration"
+    },
+    "surfaces": {
+      "dry": "Dry",
+      "wet": "Wet",
+      "heavy_rain": "Heavy rain",
+      "mud": "Mud",
+      "gravel": "Gravel"
+    },
+    "eventLine": "{event} · {speed} km/h · {surface}",
+    "transport": {
+      "stepBack": "One frame back (1/30 s)",
+      "stepForward": "One frame forward (1/30 s)",
+      "restart": "Restart"
+    },
+    "scene": {
+      "label": "3D scene of the simulation. Drag a cargo unit to push it; drag anywhere else to look around.",
+      "labelReplay": "3D replay of the simulation. Drag to look around.",
+      "unsupported": "This browser cannot draw the 3D scene. The result, the controls and the numbers still work.",
+      "unsupportedVideo": "This browser cannot draw the 3D scene. This is MuJoCo's own render of the run; the result, the controls and the numbers still work.",
+      "stepping": "stepped live in your browser",
+      "keyframes": "replayed from the run (this device cannot step it in real time)",
+      "serverRun": "replayed from the server's run"
+    },
+    "push": {
+      "title": "Push the cargo",
+      "hint": "Drag a cargo unit in the scene to push it, or pick one and use the buttons.",
+      "unit": "Unit to push",
+      "forward": "Forward",
+      "back": "Back",
+      "left": "Left",
+      "right": "Right",
+      "direction": "Push {unit} {direction, select, forward {forward} back {backward} left {to the left} other {to the right}}",
+      "pushing": "pushing {force} kN",
+      "freePlay": "event over · free play",
+      "note": "You pushed the cargo: the verdict is for the undisturbed run.",
+      "moved": "{unit} is {distance} cm from where it started.",
+      "legend": "Your push"
+    }
+  },
   "Footer": {
     "wordmark": "SecureCargo",
     "project": "Project",

@@ -313,6 +313,128 @@
       "table": "Tabela de dados"
     }
   },
+  "Lab": {
+    "label": "Laboratório ao vivo",
+    "metaTitle": "{title} · Laboratório ao vivo · SecureCargo",
+    "description": "Mude o evento, a velocidade, a pista e a amarração desta carga e veja o MuJoCo simular tudo de novo no seu navegador.",
+    "open": "Abrir o laboratório ao vivo",
+    "openHint": "Mude o evento, a velocidade e a amarração; a física roda no seu navegador.",
+    "listLink": "Laboratório",
+    "listLinkName": "{title}: laboratório ao vivo",
+    "back": "Voltar ao replay",
+    "others": "Outros cenários no laboratório ao vivo",
+    "state": {
+      "error": "Indisponível",
+      "loading": "Carregando o cenário…",
+      "running": "Simulando…"
+    },
+    "result": {
+      "title": "Resultado",
+      "standard": "EN 12195-1: {value}",
+      "progress": "Andamento da simulação"
+    },
+    "reason": {
+      "slides": "Inércia {inertia} kN > atrito {friction} kN: {unit} desliza {slide} cm.",
+      "slidesIntoHeadboard": "Inércia {inertia} kN > atrito {friction} kN: {unit} desliza {slide} cm e bate no painel frontal.",
+      "slidesLoose": "A inércia, {inertia} kN, chega perto do atrito disponível, {friction} kN: {unit} desliza {slide} cm.",
+      "tips": "Momento de tombamento {overturning} kN·m > momento que segura {restoring} kN·m: {unit} inclina {tilt}°.",
+      "leavesBed": "Inércia {inertia} kN > atrito {friction} kN: {unit} desliza para fora do caminhão.",
+      "leavesBedPlain": "{unit} cai do caminhão.",
+      "lashingOverloaded": "Uma amarração carrega {force} kN, mais que a capacidade dela, {capacity} kN.",
+      "lashingBroke": "Uma amarração rompe: {force} kN contra uma resistência à ruptura de {capacity} kN.",
+      "headboardOverloaded": "A carga empurra o painel frontal com {force} kN; ele aguenta {capacity} kN.",
+      "axleOverloaded": "O eixo {axle, select, front {dianteiro} other {traseiro}} carrega {load} t; o limite legal é {limit} t.",
+      "holds": "Atrito {friction} kN ≥ inércia {inertia} kN: nada se move.",
+      "holdsLashed": "Inércia {inertia} kN > atrito {friction} kN, e as amarrações seguram a diferença: nada se move.",
+      "holdsBarely": "Atrito {friction} kN ≥ inércia {inertia} kN: a carga segura, com pouca folga.",
+      "holdsBarelyLashed": "Inércia {inertia} kN > atrito {friction} kN: as amarrações seguram a carga, com pouca folga."
+    },
+    "live": {
+      "badge": "Ao vivo, não certificado",
+      "browser": "Simulado em {seconds} s no seu navegador pelo MuJoCo WebAssembly. Os certificados usam só o resultado do servidor.",
+      "serverBadge": "Simulado no servidor",
+      "server": {
+        "no_wasm": "Este navegador não roda WebAssembly, então o servidor simulou esta rodada.",
+        "load_failed": "O motor de física não carregou neste navegador, então o servidor simulou esta rodada.",
+        "slow": "Este aparelho roda o modelo devagar demais, então o servidor simula as rodadas.",
+        "other": "O servidor simulou esta rodada."
+      },
+      "serverTime": "Ele respondeu em {seconds} s."
+    },
+    "errors": {
+      "load_failed": "Não foi possível carregar o cenário. Confira sua conexão e recarregue a página.",
+      "api_unreachable": "Controles alterados precisam do servidor de simulação, e ele não está respondendo. O que aparece é a rodada anterior.",
+      "unstable": "A simulação ficou instável com esses valores. O que aparece é a rodada anterior."
+    },
+    "reset": "Voltar ao cenário original",
+    "controls": {
+      "title": "Controles",
+      "hint": "Cada mudança simula a carga de novo.",
+      "event": "Evento",
+      "speed": "Velocidade",
+      "speedValue": "{value} km/h",
+      "surface": "Pista",
+      "straps": "Cintas por volume",
+      "strapsAsLoaded": "como carregado",
+      "fewer": "Uma cinta a menos por volume",
+      "more": "Uma cinta a mais por volume",
+      "pretension": "Pré-tensão das cintas",
+      "pretensionValue": "{value} daN",
+      "pretensionNone": "sem cintas",
+      "mass": "Massa por volume",
+      "massValue": "{value} kg",
+      "massFactor": "× {value}",
+      "mat": "Manta antiderrapante",
+      "matOn": "com",
+      "matOff": "sem"
+    },
+    "events": {
+      "emergency_braking": "Frenagem de emergência",
+      "lane_change": "Troca brusca de faixa",
+      "sharp_curve": "Curva fechada",
+      "pothole": "Buraco",
+      "speed_bump": "Lombada",
+      "mountain_descent": "Descida de serra",
+      "long_vibration": "Vibração prolongada"
+    },
+    "surfaces": {
+      "dry": "Seca",
+      "wet": "Molhada",
+      "heavy_rain": "Chuva forte",
+      "mud": "Lama",
+      "gravel": "Cascalho"
+    },
+    "eventLine": "{event} · {speed} km/h · {surface}",
+    "transport": {
+      "stepBack": "Voltar um quadro (1/30 s)",
+      "stepForward": "Avançar um quadro (1/30 s)",
+      "restart": "Reiniciar"
+    },
+    "scene": {
+      "label": "Cena 3D da simulação. Arraste um volume da carga para empurrá-lo; arraste em qualquer outro ponto para olhar em volta.",
+      "labelReplay": "Replay 3D da simulação. Arraste para olhar em volta.",
+      "unsupported": "Este navegador não consegue desenhar a cena 3D. O resultado, os controles e os números continuam funcionando.",
+      "unsupportedVideo": "Este navegador não consegue desenhar a cena 3D. Este é o render do próprio MuJoCo para a rodada; o resultado, os controles e os números continuam funcionando.",
+      "stepping": "calculado ao vivo no seu navegador",
+      "keyframes": "reproduzido a partir da rodada (este aparelho não consegue calcular em tempo real)",
+      "serverRun": "reproduzido a partir da rodada do servidor"
+    },
+    "push": {
+      "title": "Empurrar a carga",
+      "hint": "Arraste um volume da carga na cena para empurrá-lo, ou escolha um e use os botões.",
+      "unit": "Volume a empurrar",
+      "forward": "Frente",
+      "back": "Trás",
+      "left": "Esquerda",
+      "right": "Direita",
+      "direction": "Empurrar {unit} {direction, select, forward {para a frente} back {para trás} left {para a esquerda} other {para a direita}}",
+      "pushing": "empurrando {force} kN",
+      "freePlay": "evento encerrado · modo livre",
+      "note": "Você empurrou a carga: o veredito vale para a rodada sem interferência.",
+      "moved": "{unit} está a {distance} cm de onde começou.",
+      "legend": "Seu empurrão"
+    }
+  },
   "Footer": {
     "wordmark": "SecureCargo",
     "project": "Projeto",
