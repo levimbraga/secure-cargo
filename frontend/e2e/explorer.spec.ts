@@ -46,4 +46,8 @@ test("tapping a unit adds a strap, writes it in the URL and simulates again", as
   await expect(page).toHaveURL(/moves=0_1\.90_0\.00/);
   await ready(page);
   await expect(page.locator("[data-explorer-state]")).toHaveAttribute("data-explorer-status", "pass");
+  // A new securing keeps the unit where the editor put it.
+  await page.getByTestId("explorer-restraint").selectOption("chain");
+  await expect(page).toHaveURL(/restraint=chain.*moves=0_1\.90_0\.00/);
+  await ready(page);
 });

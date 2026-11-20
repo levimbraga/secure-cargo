@@ -229,16 +229,16 @@ export function useExplorer(initial: Source): ExplorerState {
           }
           if (dimension === "restraint") return { kind: "draft", draft: { ...outside, restraint: value as LoadDraft["restraint"] } };
         }
-        const from = current.kind === "config" ? current.config : fromSearch("");
-        const next =
+        const config = current.kind === "config" ? current.config : fromSearch("");
+        // Choices that keep the layout (the trip, the securing, the mass) keep the editor's
+        // edits too: they are written into the configuration before the choice applies.
+        const keepsLayout = !["body", "size", "cargo", "position", "count"].includes(dimension);
+        const from =
+          keepsLayout && current.kind === "config" && base && draft ? (editsToConfig(config, base, draft) ?? config) : config;
+        const kept =
           dimension === "speed_kmh" || dimension === "count" || dimension === "mass_kg"
             ? { ...from, [dimension]: value, ...(dimension === "count" ? { moves: [], straps: null } : {}) }
             : choose(from, dimension as Dimension, value as ExplorerConfig[Dimension]);
-        // Trip choices keep the editor's edits: they are written into the new configuration.
-        const kept =
-          current.kind === "config" && base && draft && (dimension === "speed_kmh" || dimension === "road" || dimension === "weather" || dimension === "event")
-            ? (editsToConfig(next, base, draft) ?? next)
-            : next;
         return { kind: "config", config: kept };
       });
     },

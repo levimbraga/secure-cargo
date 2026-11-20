@@ -88,9 +88,11 @@ describe("explain", () => {
   });
 
   it("takes friction from instants when the unit stands on the floor", () => {
-    const result = run("emergency-braking", "as_loaded");
+    const result = run("full-trip", "as_loaded");
     const reason = explain(result, result.keyframes);
-    // 900 kg on plywood (0.45) under one 300 daN strap: at least the weight's 4 kN.
-    expect(reason.values.friction).toBeGreaterThan(3.9);
+    // A 1.5 t crate on plywood (0.45), no lashing: about the weight's 6.6 kN, though it bounces
+    // over the speed bump and on the crate in front.
+    expect(reason.values.friction).toBeGreaterThan(5.5);
+    expect(reason.values.friction).toBeLessThan(7.5);
   });
 });

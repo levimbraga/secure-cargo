@@ -42,7 +42,7 @@ type ResultLike = {
   axle_loads?: AxleLoad[];
 };
 
-/** What the truck's motion asks of a unit against what friction can give, at the worst instant. */
+/** What the truck's motion asks of a unit against what friction can give, when it asks the most. */
 export function worstBalance(
   doc: KeyframesDoc,
   unitIndex: number,
@@ -66,8 +66,9 @@ export function worstBalance(
       pose.n ?? 0,
       frame.bed_accel_mps2 ?? [0, 0, 0],
     );
-    // The instant friction is shortest of what is asked: the largest gap, relative to the ask.
-    const gap = forces.inertiaMagnitude - forces.frictionLimit;
+    // The instant of the largest ask; between instants that ask the same, the one with the
+    // least friction to answer it.
+    const gap = forces.inertiaMagnitude - forces.frictionLimit * 1e-6;
     if (forces.inertiaMagnitude > 1 && gap > margin) {
       margin = gap;
       worst = { inertia: forces.inertiaMagnitude, friction: forces.frictionLimit, frame: index };
