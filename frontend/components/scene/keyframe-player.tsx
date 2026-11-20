@@ -4,11 +4,10 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { type RefObject, useEffect, useMemo, useRef } from "react";
 import {
   BoxGeometry,
-  CatmullRomCurve3,
   CylinderGeometry,
   type Group,
   type LineBasicMaterial,
-  TubeGeometry,
+  type Mesh,
   Vector3,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -19,6 +18,7 @@ import {
   type KeyframesDoc,
   type Sample,
   sampleFrame,
+  strapPath,
   toThreePosition,
   toThreeQuaternion,
   type Vec3,
@@ -35,7 +35,9 @@ const COLOR = {
   wood: "#d3bb93",
   steel: "#c4c4bc",
   chassis: "#3a3a37",
-  tire: "#232322",
+  tire: "#4a4a46",
+  chain: "#5b5b57",
+  rope: "#b08d57",
 } as const;
 
 /** Pushes filled faces slightly back so the edge lines drawn on top of them stay solid. */
@@ -51,7 +53,7 @@ export type CameraView = "hero" | "side" | "rear" | "top";
 const VIEW_DIRECTION: Record<CameraView, Vec3> = {
   hero: [-0.42, 0.4, 1],
   side: [0, 0.16, 1],
-  rear: [-1, 0.42, 0.55],
+  rear: [-1, 0.5, 0.62],
   top: [-0.12, 1, 0.35],
 };
 
@@ -70,8 +72,10 @@ export type KeyframePlayerProps = {
   onReady?: () => void;
   /** Called when the visitor starts to orbit the camera. */
   onInteract?: () => void;
-  /** For frame-exact captures: when set, the scene shows this time instead of running a clock. */
+  /** When set, the scene shows this time (seconds) instead of running its own clock. */
   controlledTime?: RefObject<number>;
+  /** Keep the last frame readable from the canvas, for captures. */
+  capture?: boolean;
 };
 
 /** Replays a keyframes document as a 3D scene of a flatbed truck. */
@@ -84,13 +88,14 @@ export default function KeyframePlayer({
   onReady,
   onInteract,
   controlledTime,
+  capture = false,
 }: KeyframePlayerProps) {
   return (
     <Canvas
       flat
       dpr={[1, 2]}
       frameloop={active ? "always" : "never"}
-      gl={{ antialias: true, alpha: true, preserveDrawingBuffer: Boolean(controlledTime) }}
+      gl={{ antialias: true, alpha: true, preserveDrawingBuffer: capture }}
       camera={{ fov: 30, near: 0.5, far: 120 }}
       onCreated={() => onReady?.()}
       // OrbitControls turns touch gestures off on the canvas; this class keeps vertical page
@@ -151,14 +156,17 @@ function Replay({
       <Road doc={doc} clock={clock} />
       <group position={[0, doc.bed.floor_height_m, 0]}>
         <Truck bed={doc.bed} />
-        <Straps doc={doc} />
+        <Straps doc={doc} clock={clock} />
         <Units doc={doc} clock={clock} />
       </group>
     </>
   );
 }
 
-const TARGET: Vec3 = [1.1, 1.5, 0];
+/** The camera looks at a point just above the middle of the truck. */
+const TARGET: Vec3 = [0.7, 1.35, 0];
+/** Camera distance per view at a 16:10 frame, chosen so the truck fills most of it. */
+const VIEW_DISTANCE: Record<CameraView, number> = { hero: 11.4, side: 12.4, rear: 12, top: 13.5 };
 
 function CameraRig({ view, onInteract }: { view: CameraView; onInteract?: () => void }) {
   const camera = useThree((state) => state.camera);
@@ -170,7 +178,7 @@ function CameraRig({ view, onInteract }: { view: CameraView; onInteract?: () => 
   // Frame the whole truck: narrower viewports need the camera further away.
   useEffect(() => {
     if (touched.current) return;
-    const distance = 13.2 * Math.max(1, 1.62 / aspect) * (view === "top" ? 1.15 : 1);
+    const distance = VIEW_DISTANCE[view] * Math.max(1, 1.6 / aspect);
     const direction = new Vector3(...VIEW_DIRECTION[view]).normalize();
     camera.position.set(
       TARGET[0] + direction.x * distance,
@@ -234,43 +242,64 @@ function OutlinedBox({
   );
 }
 
+/**
+ * A two-axle rigid truck drawn around the simulated bed. Only the bed and the headboard take
+ * part in the simulation; cab, chassis and wheels are there to show which way is forward.
+ */
 function Truck({ bed }: { bed: KeyframesDoc["bed"] }) {
   const { length_m: length, width_m: width, floor_height_m: floorHeight } = bed;
   const front = length / 2;
-  const wheelRadius = 0.52;
-  const wheel = useMemo(() => new CylinderGeometry(wheelRadius, wheelRadius, 0.34, 28), []);
-  useEffect(() => () => wheel.dispose(), [wheel]);
+  const wheelRadius = 0.5;
+  const single = useMemo(() => new CylinderGeometry(wheelRadius, wheelRadius, 0.3, 32), []);
+  const dual = useMemo(() => new CylinderGeometry(wheelRadius, wheelRadius, 0.56, 32), []);
+  useEffect(
+    () => () => {
+      single.dispose();
+      dual.dispose();
+    },
+    [single, dual],
+  );
 
   const wheelY = wheelRadius - floorHeight;
-  const wheelZ = width / 2 - 0.2;
-  const axles = [-front + 1.0, -front + 2.25, front + 1.55];
+  // Front axle under the cab, rear axle (dual tyres) under the rear third of the bed.
+  const wheels = [
+    { x: front + 0.9, z: width / 2 - 0.17, geometry: single },
+    { x: -front + 2.3, z: width / 2 - 0.3, geometry: dual },
+  ];
 
   return (
     <group>
       {/* Bed floor and headboard */}
       <OutlinedBox size={[length, 0.14, width]} color={COLOR.steel} position={[0, -0.07, 0]} />
-      <OutlinedBox
-        size={[0.1, bed.headboard_height_m, width]}
-        color={COLOR.steel}
-        position={[front + 0.05, bed.headboard_height_m / 2, 0]}
-      />
+      {bed.headboard_height_m > 0 && (
+        <OutlinedBox
+          size={[0.1, bed.headboard_height_m, width]}
+          color={COLOR.steel}
+          position={[front + 0.05, bed.headboard_height_m / 2, 0]}
+        />
+      )}
       {/* Chassis rail */}
       <OutlinedBox
-        size={[length + 2.6, 0.24, 0.9]}
+        size={[length + 1.5, 0.22, 0.9]}
         color={COLOR.chassis}
-        position={[1.25, -0.28, 0]}
+        position={[0.75, -0.26, 0]}
       />
       {/* Cab */}
-      <OutlinedBox size={[2.1, 2.3, width]} color={COLOR.paper} position={[front + 1.4, 0.6, 0]} />
+      <OutlinedBox size={[1.9, 2.2, width]} color={COLOR.paper} position={[front + 1.2, 0.55, 0]} />
       <OutlinedBox
-        size={[0.9, 0.8, width + 0.02]}
+        size={[0.8, 0.75, width + 0.02]}
         color={COLOR.surface}
-        position={[front + 1.85, 1.15, 0]}
+        position={[front + 1.6, 1.1, 0]}
       />
       {/* Wheels */}
-      {axles.flatMap((x) =>
-        [-wheelZ, wheelZ].map((z) => (
-          <mesh key={`${x}:${z}`} geometry={wheel} position={[x, wheelY, z]} rotation={[Math.PI / 2, 0, 0]}>
+      {wheels.flatMap((wheel) =>
+        [-wheel.z, wheel.z].map((z) => (
+          <mesh
+            key={`${wheel.x}:${z}`}
+            geometry={wheel.geometry}
+            position={[wheel.x, wheelY, z]}
+            rotation={[Math.PI / 2, 0, 0]}
+          >
             <meshLambertMaterial color={COLOR.tire} />
           </mesh>
         )),
@@ -341,25 +370,56 @@ function UnitBox({
   );
 }
 
-/** Straps are the only amber objects in the scene. */
-function Straps({ doc }: { doc: KeyframesDoc }) {
-  const geometries = useMemo(
-    () =>
-      doc.straps.map((strap) => {
-        const points = strap.path_m.map((point) => new Vector3(...toThreePosition(point)));
-        const curve = new CatmullRomCurve3(points, false, "catmullrom", 0.02);
-        return new TubeGeometry(curve, 48, 0.035, 6);
-      }),
-    [doc],
-  );
-  useEffect(() => () => geometries.forEach((geometry) => geometry.dispose()), [geometries]);
+const LASHING_COLOR = { strap: COLOR.amber, chain: COLOR.chain, rope: COLOR.rope } as const;
+const Y_AXIS = new Vector3(0, 1, 0);
+
+/**
+ * Lashings follow their unit: each one is a chain of thin cylinders between the points of its
+ * path, repositioned every frame. Straps are the only amber objects in the scene.
+ */
+function Straps({ doc, clock }: { doc: KeyframesDoc; clock: RefObject<Clock> }) {
+  const segment = useMemo(() => new CylinderGeometry(0.028, 0.028, 1, 6), []);
+  useEffect(() => () => segment.dispose(), [segment]);
+  const meshes = useRef<(Mesh | null)[][]>([]);
+  const scratch = useMemo(() => ({ from: new Vector3(), to: new Vector3(), along: new Vector3() }), []);
+
+  useFrame(() => {
+    const { sample } = clock.current;
+    for (let index = 0; index < doc.straps.length; index++) {
+      const path = strapPath(doc, sample, index);
+      const segments = meshes.current[index] ?? [];
+      for (let part = 0; part < segments.length; part++) {
+        const mesh = segments[part];
+        const start = path[part];
+        const end = path[part + 1];
+        if (!mesh || !start || !end) continue;
+        scratch.from.set(...toThreePosition(start));
+        scratch.to.set(...toThreePosition(end));
+        scratch.along.subVectors(scratch.to, scratch.from);
+        const length = scratch.along.length();
+        mesh.position.copy(scratch.from).addScaledVector(scratch.along, 0.5);
+        mesh.scale.set(1, Math.max(length, 1e-6), 1);
+        mesh.quaternion.setFromUnitVectors(Y_AXIS, scratch.along.normalize());
+      }
+    }
+  });
 
   return (
     <>
-      {geometries.map((geometry, index) => (
-        <mesh key={doc.straps[index]?.id ?? index} geometry={geometry}>
-          <meshBasicMaterial color={COLOR.amber} />
-        </mesh>
+      {doc.straps.map((strap, index) => (
+        <group key={strap.id}>
+          {strap.path_m.slice(1).map((_, part) => (
+            <mesh
+              key={part}
+              geometry={segment}
+              ref={(node) => {
+                (meshes.current[index] ??= [])[part] = node;
+              }}
+            >
+              <meshBasicMaterial color={LASHING_COLOR[strap.kind ?? "strap"]} />
+            </mesh>
+          ))}
+        </group>
       ))}
     </>
   );
