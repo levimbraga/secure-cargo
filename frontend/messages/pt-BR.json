@@ -7,8 +7,9 @@
     "wordmark": "SecureCargo",
     "home": "Página inicial do SecureCargo",
     "sections": "Seções",
+    "problem": "Problema",
     "howItWorks": "Como funciona",
-    "demo": "Demo",
+    "scenarios": "Cenários",
     "github": "GitHub",
     "cta": "Testar a demo",
     "openMenu": "Abrir menu",
@@ -17,95 +18,64 @@
   "LanguageSwitcher": {
     "label": "Idioma",
     "en": "English",
-    "pt-BR": "Português (Brasil)",
-    "enShort": "EN",
-    "pt-BRShort": "PT"
+    "pt-BR": "Português"
   },
   "Landing": {
     "hero": {
       "title": "Amarração de carga testada com física.",
-      "subtitle": "Simule a viagem antes de o caminhão sair.",
+      "subtitle": "Simule a viagem antes de o caminhão sair: veja o que desliza, o que tomba e o que corrigir.",
       "primary": "Testar a demo",
-      "secondary": "Como funciona"
-    },
-    "scene": {
-      "toggleLabel": "Amarração da carga",
-      "unsecured": "Sem amarração",
-      "secured": "Amarrada",
-      "illustration": "Ilustração",
-      "explore": "Clique para explorar",
-      "explore3d": "Explorar em 3D",
-      "replay": "Repetir",
-      "play": "Reproduzir",
-      "posterAlt": {
-        "unsecured": "Caminhão de carroceria aberta levando três caixas de madeira sem cintas.",
-        "secured": "Caminhão de carroceria aberta levando três caixas de madeira presas por cintas cor de âmbar."
-      },
-      "captions": {
-        "unsecured": "Sem amarração: na frenagem brusca, a carga desliza para a frente até bater no painel frontal.",
-        "secured": "Amarrada: a mesma frenagem, e as cintas seguram a carga no lugar."
-      }
-    },
-    "stats": {
-      "label": "Em números",
-      "sourceLabel": "Fonte",
-      "placeholder": "TODO(source)",
-      "items": {
-        "one": { "caption": "TODO(source)" },
-        "two": { "caption": "TODO(source)" },
-        "three": { "caption": "TODO(source)" },
-        "four": { "caption": "TODO(source)" }
-      }
+      "secondary": "Como funciona",
+      "photoAlt": "Fotografia em preto e branco de carga presa por cintas em um caminhão."
     },
     "problem": {
       "label": "Problema",
       "title": "A carga é conferida no olho e no puxão da cinta.",
-      "p1": "Antes da viagem, o motorista dá a volta no caminhão, puxa cada cinta e decide que está bom. Nada nessa conferência diz o que a carga vai fazer numa freada forte, numa curva fechada ou num buraco.",
-      "p2": "O Brasil tem regras detalhadas para a amarração da carga e para o peso que cada eixo pode levar. São texto de lei. No pátio de carregamento, o que se precisa é de um sim ou de um não para esta carga, neste caminhão.",
-      "p3": "O Carga Segura faz a viagem antes de o caminhão sair. Monta a carga a partir de uma foto, leva essa carga por frenagens, curvas e buracos numa simulação física e mostra o que se move, por quê, e a menor mudança que resolve."
+      "p1": "Antes da viagem, o motorista dá a volta no caminhão, puxa cada cinta e decide que está bom.",
+      "p2": "Essa conferência não diz nada sobre uma freada forte, uma curva fechada ou um buraco.",
+      "p3": "O Brasil tem regras detalhadas para a amarração da carga e para o peso que cada eixo pode levar. São texto de lei. No pátio de carregamento, o que se precisa é de um sim ou de um não para esta carga, neste caminhão.",
+      "photoAlt": "Fotografia em preto e branco de uma área de carregamento de cargas."
     },
-    "how": {
-      "label": "Como funciona",
-      "title": "Da foto ao plano testado.",
-      "steps": {
+    "solution": {
+      "label": "Nossa solução",
+      "title": "Fazemos a viagem antes de o caminhão sair.",
+      "body": "O Carga Segura monta a carga a partir de uma foto e a leva por frenagens, curvas e buracos numa simulação física. Mostra o que se move, por quê, e a menor mudança que resolve.",
+      "listLabel": "Como funciona:",
+      "items": {
         "photo": {
           "title": "Foto",
-          "body": "Tire uma foto da carroceria carregada. Não há formulário para preencher antes."
+          "body": "Fotografe a carroceria carregada. A IA marca os volumes e as cintas; você confirma ou corrige."
         },
-        "perceive": {
-          "title": "Perceber",
-          "body": "A IA marca os volumes e as cintas que enxerga. Você confirma ou corrige o que ela errou."
-        },
-        "simulate": {
-          "title": "Simular",
+        "simulation": {
+          "title": "Simulação",
           "body": "Um motor de física leva a carga por frenagens bruscas, curvas e buracos e registra o que desliza ou tomba."
         },
         "plan": {
-          "title": "Planejar",
-          "body": "Você vê onde cada volume deve ficar e quantas cintas vão em cada ponto, conferido com as regras brasileiras e com todos os eventos simulados."
+          "title": "Plano",
+          "body": "Onde cada volume deve ficar e quantas cintas vão em cada ponto, conferido com as regras brasileiras."
         },
         "certificate": {
           "title": "Certificado",
-          "body": "Um registro compartilhável da foto, do plano e do resultado da simulação, para a transportadora e a seguradora."
+          "body": "Um registro compartilhável da foto, do plano e do resultado, para a transportadora e a seguradora."
         }
       }
     },
-    "demo": {
-      "label": "Demo",
-      "title": "Quatro cargas, quatro jeitos de dar errado.",
-      "run": "Rodar cenário",
-      "scenarios": {
+    "scenarios": {
+      "title": "Cenários",
+      "lead": "Quatro jeitos de uma carga dar errado. Cada cenário vai rodar como foi carregado e de novo com o plano recomendado.",
+      "cta": "Abrir o app",
+      "items": {
         "braking": {
           "title": "Frenagem de emergência",
-          "body": "Uma freada forte com caixas soltas. Veja o que chega ao painel frontal."
+          "body": "Uma freada forte com caixas soltas."
         },
         "weighStation": {
           "title": "Balança",
-          "body": "A carga cabe na carroceria, mas o peso está no eixo errado."
+          "body": "A carga cabe, mas o peso está no eixo errado."
         },
         "rope": {
           "title": "Amarração com corda",
-          "body": "Uma carga presa com corda em vez de cintas, testada na frenagem."
+          "body": "Uma carga presa com corda em vez de cintas."
         },
         "curve": {
           "title": "Curva fechada",
@@ -134,7 +104,8 @@
     "rows": {
       "status": "Status",
       "version": "Versão da API",
-      "mujocoVersion": "Motor de física (MuJoCo)"
+      "mujocoVersion": "Motor de física (MuJoCo)",
+      "endpoint": "Endereço"
     },
     "retry": "Tentar de novo",
     "errors": {
@@ -145,8 +116,9 @@
   },
   "Footer": {
     "wordmark": "SecureCargo",
-    "disclaimer": "O Carga Segura é uma ferramenta de apoio à decisão, não uma certificação de engenharia.",
+    "project": "Projeto",
     "github": "GitHub",
-    "hackathon": "Hack Brasil 2026"
+    "language": "Idioma",
+    "disclaimer": "O Carga Segura é uma ferramenta de apoio à decisão, não uma certificação de engenharia."
   }
 }

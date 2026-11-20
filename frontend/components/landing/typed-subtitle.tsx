@@ -36,8 +36,9 @@ export function TypedSubtitle({ text, className }: { text: string; className?: s
       <span aria-hidden className={hydrated ? undefined : "typed-fallback"}>
         {typing ? (
           <>
-            {text.slice(0, count)}
-            <span className="typed-caret" data-done={count >= text.length} />
+            <span className="typed-text" data-done={count >= text.length}>
+              {text.slice(0, count)}
+            </span>
             <span className="invisible">{text.slice(count)}</span>
           </>
         ) : (

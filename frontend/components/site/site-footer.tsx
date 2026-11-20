@@ -1,27 +1,39 @@
 import { useTranslations } from "next-intl";
 
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { HACKATHON_URL, REPOSITORY_URL } from "@/lib/site";
+import { LanguageLinks } from "@/components/language-switcher";
+import { Mark } from "@/components/site/mark";
+import { REPOSITORY_URL } from "@/lib/site";
 
 export function SiteFooter() {
   const t = useTranslations("Footer");
-  const link = "underline decoration-1 underline-offset-4 hover:decoration-2";
+  const link = "text-gray hover:text-ink";
 
   return (
-    <footer className="border-t border-hairline">
-      <div className="shell flex flex-col gap-6 py-10 md:flex-row md:items-start md:justify-between">
-        <div className="flex max-w-reading flex-col gap-2">
-          <p className="font-serif text-2xl leading-none">{t("wordmark")}</p>
-          <p className="type-small text-muted-foreground">{t("disclaimer")}</p>
-        </div>
-        <div className="flex items-center gap-6 text-[0.9375rem]">
-          <a href={REPOSITORY_URL} className={link}>
-            {t("github")}
-          </a>
-          <a href={HACKATHON_URL} className={link}>
-            {t("hackathon")}
-          </a>
-          <LanguageSwitcher />
+    <footer className="mt-32 pb-16">
+      <div className="wide">
+        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between md:px-8">
+          <p className="flex items-center gap-2">
+            <Mark className="size-5" />
+            <span className="font-serif text-[1.375rem] leading-none tracking-[-0.01em]">{t("wordmark")}</span>
+          </p>
+
+          <div className="flex flex-wrap gap-x-16 gap-y-8 text-[0.8125rem]">
+            <div>
+              <p className="font-medium">{t("project")}</p>
+              <ul className="mt-3 flex flex-col gap-2">
+                <li>
+                  <a href={REPOSITORY_URL} className={link}>
+                    {t("github")}
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium">{t("language")}</p>
+              <LanguageLinks className="mt-3 flex flex-col gap-2" linkClassName={link} />
+            </div>
+            <p className="max-w-[16rem] text-gray">{t("disclaimer")}</p>
+          </div>
         </div>
       </div>
     </footer>

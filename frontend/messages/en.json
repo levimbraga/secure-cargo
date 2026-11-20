@@ -7,8 +7,9 @@
     "wordmark": "SecureCargo",
     "home": "SecureCargo home",
     "sections": "Sections",
+    "problem": "Problem",
     "howItWorks": "How it works",
-    "demo": "Demo",
+    "scenarios": "Scenarios",
     "github": "GitHub",
     "cta": "Try the demo",
     "openMenu": "Open menu",
@@ -17,99 +18,68 @@
   "LanguageSwitcher": {
     "label": "Language",
     "en": "English",
-    "pt-BR": "Português (Brasil)",
-    "enShort": "EN",
-    "pt-BRShort": "PT"
+    "pt-BR": "Português"
   },
   "Landing": {
     "hero": {
       "title": "Physics-tested cargo securement.",
-      "subtitle": "Simulate the trip before the truck leaves.",
+      "subtitle": "Simulate the trip before the truck leaves: see what slides, what tips and what to fix.",
       "primary": "Try the demo",
-      "secondary": "How it works"
-    },
-    "scene": {
-      "toggleLabel": "Cargo securement",
-      "unsecured": "Unsecured",
-      "secured": "Secured",
-      "illustration": "Illustration",
-      "explore": "Click to explore",
-      "explore3d": "Explore in 3D",
-      "replay": "Replay",
-      "play": "Play",
-      "posterAlt": {
-        "unsecured": "A flatbed truck carrying three wooden crates with no straps.",
-        "secured": "A flatbed truck carrying three wooden crates held down by amber straps."
-      },
-      "captions": {
-        "unsecured": "Unsecured: under hard braking, the cargo slides forward into the headboard.",
-        "secured": "Secured: the same braking, and the straps hold the cargo in place."
-      }
-    },
-    "stats": {
-      "label": "In numbers",
-      "sourceLabel": "Source",
-      "placeholder": "TODO(source)",
-      "items": {
-        "one": { "caption": "TODO(source)" },
-        "two": { "caption": "TODO(source)" },
-        "three": { "caption": "TODO(source)" },
-        "four": { "caption": "TODO(source)" }
-      }
+      "secondary": "How it works",
+      "photoAlt": "Black-and-white photograph of cargo held down by straps on a truck."
     },
     "problem": {
       "label": "Problem",
       "title": "A load is checked with a look and a pull on the strap.",
-      "p1": "Before a trip, the driver walks around the truck, tugs each strap and decides it is good enough. Nothing in that check says what the cargo will do in a hard stop, a tight curve or a pothole.",
-      "p2": "Brazil has detailed rules for lashing cargo and for the weight each axle may carry. They are legal text. On the loading dock, what is needed is a yes or a no for this cargo on this truck.",
-      "p3": "SecureCargo runs the trip before the truck leaves. It builds the load from a photo, drives it through braking, curves and potholes in a physics simulation, and shows what moves, why, and the smallest change that fixes it."
+      "p1": "Before a trip, the driver walks around the truck, tugs each strap and decides it is good enough.",
+      "p2": "That check says nothing about a hard stop, a tight curve or a pothole.",
+      "p3": "Brazil has detailed rules for lashing cargo and for the weight each axle may carry. They are legal text. On the loading dock, what is needed is a yes or a no for this cargo, on this truck.",
+      "photoAlt": "Black-and-white photograph of a freight loading area."
     },
-    "how": {
-      "label": "How it works",
-      "title": "From a photo to a tested plan.",
-      "steps": {
+    "solution": {
+      "label": "Our solution",
+      "title": "We run the trip before the truck leaves.",
+      "body": "SecureCargo builds the load from a photo and drives it through braking, curves and potholes in a physics simulation. It shows what moves, why, and the smallest change that fixes it.",
+      "listLabel": "How it works:",
+      "items": {
         "photo": {
           "title": "Photo",
-          "body": "Take a photo of the loaded truck bed. There are no forms to fill in first."
+          "body": "Photograph the loaded truck bed. AI marks the cargo and the straps; you confirm or correct them."
         },
-        "perceive": {
-          "title": "Perceive",
-          "body": "AI marks the cargo units and the straps it sees. You confirm them, or fix what it got wrong."
-        },
-        "simulate": {
-          "title": "Simulate",
+        "simulation": {
+          "title": "Simulation",
           "body": "A physics engine drives the load through hard braking, curves and potholes, and records what slides or tips."
         },
         "plan": {
           "title": "Plan",
-          "body": "You see where each unit should sit and how many straps go where, checked against Brazilian rules and against every simulated event."
+          "body": "Where each unit should sit and how many straps go where, checked against Brazilian rules."
         },
         "certificate": {
           "title": "Certificate",
-          "body": "A shareable record of the photo, the plan and the simulation result, for the carrier and the insurer."
+          "body": "A shareable record of the photo, the plan and the result, for the carrier and the insurer."
         }
       }
     },
-    "demo": {
-      "label": "Demo",
-      "title": "Four loads, four ways it can go wrong.",
-      "run": "Run scenario",
-      "scenarios": {
+    "scenarios": {
+      "title": "Scenarios",
+      "lead": "Four ways a load goes wrong. Each scenario will run as loaded, and again with the recommended plan.",
+      "cta": "Open the app",
+      "items": {
         "braking": {
           "title": "Emergency braking",
-          "body": "A hard stop with loose crates. See what reaches the headboard."
+          "body": "A hard stop with loose crates."
         },
         "weighStation": {
           "title": "Weigh station",
-          "body": "The cargo fits on the bed, but the weight sits on the wrong axle."
+          "body": "The cargo fits, but the weight sits on the wrong axle."
         },
         "rope": {
           "title": "Rope lashing",
-          "body": "A load tied with rope instead of straps, tested under braking."
+          "body": "A load tied with rope instead of straps."
         },
         "curve": {
           "title": "Sharp curve",
-          "body": "A tall unit, a tight curve and not enough lashing."
+          "body": "A tall unit, a tight curve and too little lashing."
         }
       }
     }
@@ -134,7 +104,8 @@
     "rows": {
       "status": "Status",
       "version": "API version",
-      "mujocoVersion": "Physics engine (MuJoCo)"
+      "mujocoVersion": "Physics engine (MuJoCo)",
+      "endpoint": "Endpoint"
     },
     "retry": "Try again",
     "errors": {
@@ -145,8 +116,9 @@
   },
   "Footer": {
     "wordmark": "SecureCargo",
-    "disclaimer": "SecureCargo is a decision-support tool, not an engineering certification.",
+    "project": "Project",
     "github": "GitHub",
-    "hackathon": "Hack Brasil 2026"
+    "language": "Language",
+    "disclaimer": "SecureCargo is a decision-support tool, not an engineering certification."
   }
 }

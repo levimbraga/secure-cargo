@@ -3,41 +3,52 @@
 import { cn } from "cn";
 import { useLocale, useTranslations } from "next-intl";
 
+import { pill } from "@/components/ui/pill";
 import { Link, usePathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 
-/** Links to the current page in each locale. Plain links, so it works before hydration too. */
-export function LanguageSwitcher({ className }: { className?: string }) {
+/** A small pill that switches to the other language. A plain link, so it works before hydration. */
+export function LanguagePill({ className }: { className?: string }) {
+  const t = useTranslations("LanguageSwitcher");
+  const activeLocale = useLocale();
+  const pathname = usePathname();
+  const other = routing.locales.find((locale) => locale !== activeLocale) ?? routing.defaultLocale;
+
+  return (
+    <Link
+      href={pathname}
+      locale={other}
+      hrefLang={other}
+      lang={other}
+      className={pill({ variant: "secondary", className })}
+    >
+      {t(other)}
+    </Link>
+  );
+}
+
+/** Both languages as text links, for the footer and the phone menu. */
+export function LanguageLinks({ className, linkClassName }: { className?: string; linkClassName?: string }) {
   const t = useTranslations("LanguageSwitcher");
   const activeLocale = useLocale();
   const pathname = usePathname();
 
   return (
-    <nav
-      aria-label={t("label")}
-      className={cn("flex items-center font-mono text-sm", className)}
-    >
-      {routing.locales.map((locale) => {
-        const isActive = locale === activeLocale;
-        return (
+    <ul aria-label={t("label")} className={className}>
+      {routing.locales.map((locale) => (
+        <li key={locale}>
           <Link
-            key={locale}
             href={pathname}
             locale={locale}
             hrefLang={locale}
-            aria-current={isActive ? "true" : undefined}
-            className={cn(
-              "flex h-10 min-w-9 items-center justify-center rounded-full px-1.5 transition-colors duration-100",
-              isActive
-                ? "text-ink underline decoration-1 underline-offset-4"
-                : "text-muted-foreground hover:text-ink",
-            )}
+            lang={locale}
+            aria-current={locale === activeLocale ? "true" : undefined}
+            className={cn(linkClassName, locale === activeLocale && "text-ink")}
           >
-            {t(`${locale}Short`)}
-            <span className="sr-only">, {t(locale)}</span>
+            {t(locale)}
           </Link>
-        );
-      })}
-    </nav>
+        </li>
+      ))}
+    </ul>
   );
 }

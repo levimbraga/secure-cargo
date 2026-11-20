@@ -1,40 +1,39 @@
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
+import braking from "@/public/media/scenario-braking.jpg";
+import curve from "@/public/media/scenario-curve.jpg";
+import rope from "@/public/media/scenario-rope.jpg";
+import weighStation from "@/public/media/scenario-weigh-station.jpg";
 
-const SCENARIOS = [
-  { id: "braking", image: "/media/scenario-braking.webp" },
-  { id: "weighStation", image: "/media/scenario-weigh-station.webp" },
-  { id: "rope", image: "/media/scenario-rope.webp" },
-  { id: "curve", image: "/media/scenario-curve.webp" },
-] as const;
+const SCENARIOS: { id: "braking" | "weighStation" | "rope" | "curve"; image: StaticImageData }[] = [
+  { id: "braking", image: braking },
+  { id: "weighStation", image: weighStation },
+  { id: "rope", image: rope },
+  { id: "curve", image: curve },
+];
 
-/** Four demo scenarios. Until they exist in the app, every card opens `/app`. */
+/** Four demo scenarios as duotone photo cards. Until they exist in the app, each opens `/app`. */
 export function Scenarios() {
-  const t = useTranslations("Landing.demo");
+  const t = useTranslations("Landing.scenarios");
 
   return (
-    <ul className="mt-12 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+    <ul className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 md:gap-x-4 lg:grid-cols-4">
       {SCENARIOS.map((scenario) => (
         <li key={scenario.id}>
-          <Link href="/app" className="group flex flex-col gap-4">
-            <div className="duotone relative aspect-[4/3] overflow-hidden rounded-lg border border-hairline">
-              <Image
-                src={scenario.image}
-                alt=""
-                fill
-                sizes="(min-width: 1024px) 20rem, (min-width: 640px) 50vw, 100vw"
-                className="object-cover"
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <h3 className="type-h3">{t(`scenarios.${scenario.id}.title`)}</h3>
-              <p className="text-muted-foreground">{t(`scenarios.${scenario.id}.body`)}</p>
-              <p className="mt-1 text-[0.9375rem] font-medium underline decoration-1 underline-offset-4 group-hover:decoration-2">
-                {t("run")}
-              </p>
-            </div>
+          <Link href="/app" className="group block">
+            <Image
+              src={scenario.image}
+              alt=""
+              placeholder="blur"
+              sizes="(min-width: 1024px) 275px, 50vw"
+              className="aspect-[4/5] w-full rounded object-cover"
+            />
+            <h3 className="type-card-title mt-4 text-balance group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
+              {t(`items.${scenario.id}.title`)}
+            </h3>
+            <p className="type-small mt-1.5 text-gray">{t(`items.${scenario.id}.body`)}</p>
           </Link>
         </li>
       ))}

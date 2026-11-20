@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { LanguagePill } from "@/components/language-switcher";
+import { Mark } from "@/components/site/mark";
 import { MobileMenu } from "@/components/site/mobile-menu";
 import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
@@ -11,69 +12,52 @@ export function SiteNav({ variant }: { variant: "full" | "minimal" }) {
   const t = useTranslations("Nav");
 
   const links = [
+    { href: "/#problem", label: t("problem") },
     { href: "/#how-it-works", label: t("howItWorks") },
-    { href: "/#demo", label: t("demo") },
+    { href: "/#scenarios", label: t("scenarios") },
+    { href: REPOSITORY_URL, label: t("github"), external: true },
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-hairline bg-paper">
-      <div className="shell flex h-16 items-center justify-between gap-3">
-        <Link
-          href="/"
-          aria-label={t("home")}
-          className="font-serif text-[1.625rem] leading-none"
-        >
-          {t("wordmark")}
-        </Link>
+    <header className="sticky top-0 z-40 bg-paper">
+      <div className="wide">
+        <div className="grid h-[68px] grid-cols-[1fr_auto_1fr] items-center gap-4 md:px-8">
+          <Link href="/" aria-label={t("home")} className="flex items-center gap-2 justify-self-start">
+            <Mark className="size-5" />
+            <span className="font-serif text-[1.375rem] leading-none tracking-[-0.01em]">{t("wordmark")}</span>
+          </Link>
 
-        <div className="flex items-center gap-1 md:gap-2">
-          {variant === "full" && (
-            <nav
-              aria-label={t("sections")}
-              className="mr-2 hidden items-center gap-7 text-[0.9375rem] md:flex"
-            >
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="hover:underline hover:underline-offset-4"
-                >
-                  {link.label}
+          <nav aria-label={t("sections")} className="hidden items-center gap-7 text-sm font-[450] md:flex">
+            {variant === "full" &&
+              links.map((link) =>
+                link.external ? (
+                  <a key={link.href} href={link.href} className="hover:text-gray">
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link key={link.href} href={link.href} className="hover:text-gray">
+                    {link.label}
+                  </Link>
+                ),
+              )}
+          </nav>
+
+          <div className="col-start-3 flex items-center gap-2 justify-self-end">
+            <LanguagePill className={variant === "full" ? "max-md:hidden" : undefined} />
+            {variant === "full" && (
+              <>
+                <Link href="/app" className={pill({ className: "max-md:hidden" })}>
+                  {t("cta")}
                 </Link>
-              ))}
-              <a
-                href={REPOSITORY_URL}
-                className="hover:underline hover:underline-offset-4"
-              >
-                {t("github")}
-              </a>
-            </nav>
-          )}
-
-          <LanguageSwitcher />
-
-          {variant === "full" && (
-            <>
-              <Link
-                href="/app"
-                className={pill({
-                  size: "sm",
-                  className: "ml-1 max-sm:hidden",
-                })}
-              >
-                {t("cta")}
-              </Link>
-              <MobileMenu
-                openLabel={t("openMenu")}
-                closeLabel={t("closeMenu")}
-                items={[
-                  ...links,
-                  { href: REPOSITORY_URL, label: t("github"), external: true },
-                  { href: "/app", label: t("cta") },
-                ]}
-              />
-            </>
-          )}
+                <MobileMenu
+                  openLabel={t("openMenu")}
+                  closeLabel={t("closeMenu")}
+                  cta={{ href: "/app", label: t("cta") }}
+                  items={links}
+                />
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>
