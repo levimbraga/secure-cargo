@@ -58,6 +58,46 @@ Supported dimensions (every one must appear in the gallery):
 Users: owner-operator truck drivers and small/mid-size carriers (free for the driver). Payers: carriers,
 cargo insurers (mandatory RCTR-C insurance) and risk-management companies.
 
+## Main goal and roles (refocus of 2026-11-20)
+**Any judge opens the link on a phone, photographs a load (or uses a sample photo) and, in under 2 minutes, sees in
+a 3D simulation whether the load arrives intact; and if not, what happens, why and how to fix it.**
+
+SecureCargo is a cargo-inspection system used by companies. Roles:
+- `member` (driver/inspector): creates inspections (photos + information), sees the result, simulation and fix.
+  Reads **only their own** inspections. UI mobile-first, at `/app`.
+- `org_admin` (manager at an insurer or a carrier): reads every inspection of their organization, invites
+  members. UI desktop-first, at `/app/org`.
+- `platform_admin` (the project owner): costs, quotas, kill switch, reads everything. UI desktop-first, at
+  `/app/admin`. Identified by email from the `PLATFORM_ADMIN_EMAILS` secret; **no personal email in the repo**.
+An organization has a type: `insurer` or `carrier`. Gallery, explorer and lab stay public and in the menu.
+
+Demo access: "Enter as demo driver" / "Enter as demo insurer" on the sign-in page, no signup, into the seeded
+organization "Demo Insurer" (a few drivers, inspections from the sample photos and gallery examples: passes,
+fails, fixes). Demo accounts spend nothing except analyzing a new photo of their own, from a small shared quota.
+
+### Authorization (enforced in the backend on every endpoint, each rule tested)
+- a member reads and changes only inspections they authored;
+- an org_admin reads every inspection of their organization;
+- nobody reads another organization's data (answer 404, not 403, so ids do not leak);
+- the platform admin reads everything.
+The UI hides what a role cannot do, but the backend is the only enforcement.
+
+### Data model (Cloudflare D1 = SQLite; photos in a private R2 bucket)
+`organizations` (name, type insurer|carrier, quota overrides) · `users` (email, name, platform role, blocked,
+quota override) · `memberships` (user, org, role member|org_admin) · `invitations` · `inspections` (org,
+author, created_at, status draft|analyzed|confirmed|simulated, truck body/size, cargo weight, notes, optional
+plate, off by default) · `photos` (inspection, R2 key, SHA-256, EXIF stripped) · `analyses` (AI output, model,
+tokens, cost, cached by photo hash) · `scenarios` (the user-confirmed load draft) · `results` (per situation:
+verdict, metrics, keyframes reference) · `fixes` · `usage` (per user, per call, estimated cost) ·
+`settings` (kill switch, monthly cap). An inspection's payload is the explorer's load draft (`#draft=` /
+`POST /explorer/draft`); a saved inspection opens directly in the editor, replay and lab.
+
+### Credit protection (Anthropic API)
+Only real photo analysis spends credits. Quota: 5 analyses per day per user (overridable per user and per
+org). Monthly cap US$80 computed from the `usage` table; at the cap or with the kill switch on, analysis answers
+`demo_mode` and the UI offers the sample photos. Results cached by photo hash (a repeated photo is never
+re-billed). Anonymous endpoints rate-limited by IP. Secrets only in Cloudflare/Vercel secret stores.
+
 ## Hackathon rules the code must respect
 - Public GitHub repository created after 2026-11-04 21:00 (Brasília), all commits from then on.
   **Never** fork, import history, or copy pre-existing private code.
@@ -189,8 +229,11 @@ vehicle tare and each unit's center of mass.
    candidates; full simulation still confirms the final plan.
 
 ## Perception (backend/perception)
-- A new load starts from a photo (login + quota, because it costs API money) or from the manual editor (free).
-  Both land in the explorer prefilled.
+- A new load starts from an inspection: 1–4 photos (front, sides, rear, login + quota, because it costs API
+  money) plus the **required cargo weight** (a photo cannot show weight) and the confirmed truck type; or from
+  the manual editor (free). Both land in the top-down editor prefilled, with numbered overlays on the photo.
+- Claude vision answers structured JSON only, **never invents weights** (weights come from the user's total),
+  and is cached by photo hash.
 - Claude vision returns structured JSON (unit count, cargo type, visible straps, body type, suggested
   bounding boxes) drawn over the photo; the user confirms or edits by tapping (adjust boxes, weights, add a
   missed strap, pick the truck). The known truck-bed length provides scale.
@@ -223,10 +266,14 @@ vehicle tare and each unit's center of mass.
 
 ## Build order (dates in the workspace CLAUDE.md)
 1. Scene generator + physics + JSON replay. **Done.**
-2. Live MuJoCo in the browser: live model endpoints, WASM engine, lab page, parity test, fallback.
-3. Gallery, explorer, load editor, cargo library, box truck, full trip.
-4. Photo perception + auth/quotas.
-5. Planner ("Fix it").
-6. Certificate.
-7. Polish, README, video.
-Cut order if late: curtain-sider, the "then" gallery examples, full trip, certificate polish.
+2. Live MuJoCo in the browser: live model endpoints, WASM engine, lab page, parity test, fallback. **Done.**
+3. Gallery (nine "must" examples), explorer, load editor, cargo library, box truck, full trip. **Done.**
+4. (Phase 5) Auth, organizations, roles, demo accounts, D1 schema, authorization tests, credit protection,
+   shells of `/app`, `/app/org`, `/app/admin`.
+5. (Phase 6) Driver inspection flow: photos + weight + truck → Claude vision prefill → confirm → 7-situation
+   battery → scorecard → "Apply fix and re-simulate" (planner) → saved.
+6. (Phase 7) Manager dashboard and the certificate of a saved inspection.
+7. (Phase 8) Polish: gallery examples 10–16 (the 8 uncovered options), full trip, EN 12642 code L check from a
+   primary source, landing page featuring the inspection flow.
+8. (Phase 9) Perception evaluation on a large photo set, README, video, submission.
+Cut order if late: the Phase 8 list, then full trip, then certificate polish.
