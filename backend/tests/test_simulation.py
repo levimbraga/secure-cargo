@@ -341,3 +341,16 @@ def test_the_renderer_options_do_not_change_the_simulation() -> None:
     assert rendered.model_dump_json() == plain.model_dump_json()
     assert len(seen) == len(plain.keyframes.frames)
     assert seen[:2] == pytest.approx([0.0, 1 / 30])
+
+
+def test_the_floor_force_of_a_sliding_unit_averages_to_its_weight() -> None:
+    # A sliding box chatters on the floor: at single instants it is in the air or knocking
+    # hard. The exported force is an average per frame, and over the slide it is the weight.
+    result = brake(strapped(box(), 0), 0.6, hold_s=1.5)
+    sliding = result.keyframes.frames[16:60]
+    forces = [frame.units[0].n for frame in sliding]
+
+    assert result.units[0].max_slide_m > 0.2
+    assert sum(forces) / len(forces) == pytest.approx(1000 * G, rel=0.12)
+    # Contact points are shown whenever the unit touched the floor during the frame.
+    assert sum(1 for frame in sliding if frame.contacts) > 0.8 * len(sliding)

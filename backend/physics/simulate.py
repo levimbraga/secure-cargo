@@ -61,6 +61,9 @@ FloatArray = NDArray[np.float64]
 # Default solver tolerance of MuJoCo; it is rescaled below because of the bed's armature.
 _SOLVER_TOLERANCE = 1e-8
 # Pretensioning: rounds of settling, each followed by a correction of the rest lengths.
+# Steps before a keyframe in which contact points are also looked at (see the main loop):
+# the whole interval between two keyframes.
+_CONTACT_LOOKBACK_STEPS = 17
 _PRETENSION_ROUND_STEPS = 75
 _PRETENSION_MAX_ROUNDS = 10
 _PRETENSION_TOLERANCE = 0.002
@@ -200,9 +203,24 @@ def simulate(
     half_extent = np.array([half_length, half_width])
     min_upright = np.ones(count)
 
+    floor_force_sum = np.zeros(count)
+    steps_since_frame = 0
+    recent_contacts: list[KeyframeContact] = []
+
     def keyframe(t: float, step: int) -> Keyframe:
+        nonlocal floor_force_sum, steps_since_frame, recent_contacts
         if frame_hook is not None:
             frame_hook(model, data, t)
+        contacts, floor_force = _contact_points(data, bed_id, contact_kinds, unit_of_geom, count)
+        if len(recent_contacts) > len(contacts):
+            contacts = recent_contacts
+        # The floor force of a frame is its average over the steps since the previous frame
+        # (the instantaneous value at the very first one).
+        if steps_since_frame:
+            floor_force = floor_force_sum / steps_since_frame
+        floor_force_sum = np.zeros(count)
+        steps_since_frame = 0
+        recent_contacts = []
         return _keyframe(
             t,
             profile,
@@ -212,8 +230,8 @@ def simulate(
             unit_ids,
             lashings,
             saddle_qpos,
-            contact_kinds,
-            unit_of_geom,
+            contacts,
+            floor_force,
         )
 
     frames: list[Keyframe] = [keyframe(0.0, 0)]
@@ -250,7 +268,7 @@ def simulate(
             lashings.broke_at_s[newly_broken] = data.time
             lashings.dirty = True
 
-        if data.ncon:
+        floor_force = (
             _friction_use(
                 data,
                 floor_geom,
@@ -260,6 +278,19 @@ def simulate(
                 friction_use,
                 stood_on_floor,
             )
+            if data.ncon
+            else None
+        )
+        if floor_force is not None:
+            floor_force_sum += floor_force
+        steps_since_frame += 1
+        # A sliding unit chatters on the floor, so the contacts of a single instant may be
+        # missing. For the replay, keep the fullest set seen since the previous keyframe.
+        frame_step = round(next_frame * steps_per_frame)
+        if 0 < frame_step - (step + 1) <= _CONTACT_LOOKBACK_STEPS and data.ncon:
+            snapshot, _ = _contact_points(data, bed_id, contact_kinds, unit_of_geom, count)
+            if len(snapshot) >= len(recent_contacts):
+                recent_contacts = snapshot
 
         if headboard_geom >= 0 and data.ncon:
             geoms = data.contact.geom
@@ -394,8 +425,11 @@ def _friction_use(
     weights: FloatArray,
     peak: FloatArray,
     stood_on_floor: NDArray[np.bool_],
-) -> None:
+) -> FloatArray | None:
     """Update each unit's peak friction use: friction force / (friction factor x normal force).
+
+    Returns the force of the floor on each unit at this step [N], or None if nothing touches
+    the floor.
 
     With an elliptic friction cone the solver stores each contact's force in the contact
     frame: normal first, then the two tangential components.
@@ -405,12 +439,14 @@ def _friction_use(
     address = contact.efc_address
     on_floor = ((geoms[:, 0] == floor_geom) | (geoms[:, 1] == floor_geom)) & (address >= 0)
     if not on_floor.any():
-        return
+        return None
     address = address[on_floor]
     pair = geoms[on_floor]
     units = unit_of_geom[np.where(pair[:, 0] == floor_geom, pair[:, 1], pair[:, 0])]
     count = len(peak)
-    normal = np.bincount(units, weights=data.efc_force[address], minlength=count)
+    normal: FloatArray = np.asarray(
+        np.bincount(units, weights=data.efc_force[address], minlength=count), dtype=np.float64
+    )
     along = np.bincount(units, weights=data.efc_force[address + 1], minlength=count)
     across = np.bincount(units, weights=data.efc_force[address + 2], minlength=count)
     # Ignore instants when a unit barely touches the floor (bouncing): the ratio is noise.
@@ -418,6 +454,7 @@ def _friction_use(
     stood_on_floor |= loaded
     use = np.hypot(along, across)[loaded] / (friction[loaded] * normal[loaded])
     peak[loaded] = np.maximum(peak[loaded], use)
+    return normal
 
 
 def _prepare_lashings(
@@ -539,25 +576,16 @@ def _contact_kinds(
     return kinds
 
 
-def _keyframe(
-    t: float,
-    profile: MotionProfile,
-    step: int,
+def _contact_points(
     data: mujoco.MjData,
     bed_id: int,
-    unit_ids: NDArray[np.intp],
-    lashings: _Lashings,
-    saddle_qpos: list[int],
     contact_kinds: list[str],
     unit_of_geom: NDArray[np.intp],
-) -> Keyframe:
+    units: int,
+) -> tuple[list[KeyframeContact], FloatArray]:
+    """Contact points with their normal force, and the floor's push on each unit, right now."""
     bed = data.xpos[bed_id]
-    positions = data.xpos[unit_ids] - bed
-    quaternions = data.xquat[unit_ids]
-    tension = lashings.tension(data)
-
-    # Contact points with their normal force, and the floor's push on each unit.
-    normal = np.zeros(len(unit_ids))
+    floor_force = np.zeros(units)
     contacts: list[KeyframeContact] = []
     geoms = data.contact.geom
     address = data.contact.efc_address
@@ -573,8 +601,7 @@ def _keyframe(
         other = first if contact_kinds[second] == "unit" else second
         kind = contact_kinds[other]
         if kind == "floor":
-            unit = unit_of_geom[second if other == first else first]
-            normal[unit] += force
+            floor_force[unit_of_geom[second if other == first else first]] += force
         position = points[index] - bed
         contacts.append(
             (
@@ -585,7 +612,24 @@ def _keyframe(
                 kind,  # type: ignore[arg-type]
             )
         )
+    return contacts, floor_force
 
+
+def _keyframe(
+    t: float,
+    profile: MotionProfile,
+    step: int,
+    data: mujoco.MjData,
+    bed_id: int,
+    unit_ids: NDArray[np.intp],
+    lashings: _Lashings,
+    saddle_qpos: list[int],
+    contacts: list[KeyframeContact],
+    floor_force: FloatArray,
+) -> Keyframe:
+    positions = data.xpos[unit_ids] - data.xpos[bed_id]
+    quaternions = data.xquat[unit_ids]
+    tension = lashings.tension(data)
     return Keyframe(
         t=_round(t, 4),
         truck_speed_mps=_round(profile.truck_speed_mps[step], 3),
@@ -594,16 +638,16 @@ def _keyframe(
             KeyframePose(
                 p=_vec(positions[index], 4),
                 q=_quat(quaternions[index]),
-                n=_round(normal[index], 0),
+                n=_round(floor_force[index], 0),
             )
             for index in range(len(unit_ids))
         ],
         straps=[
             KeyframeStrapState(
                 tension_n=_round(tension[index], 0),
-                slide_m=_round(data.qpos[address_], 4) if address_ >= 0 else 0.0,
+                slide_m=_round(data.qpos[address], 4) if address >= 0 else 0.0,
             )
-            for index, address_ in enumerate(saddle_qpos)
+            for index, address in enumerate(saddle_qpos)
         ],
         contacts=contacts,
     )

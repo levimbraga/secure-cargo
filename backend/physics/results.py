@@ -162,8 +162,8 @@ class KeyframePose(_Model):
         default=0.0,
         description=(
             "Force with which the bed floor pushes the unit up [N]: its weight plus what the "
-            "lashings add, minus what vertical motion takes away. Friction can hold at most "
-            "the friction factor times this."
+            "lashings add, minus what vertical motion takes away, averaged since the previous "
+            "frame. Friction can hold at most the friction factor times this."
         ),
     )
 
