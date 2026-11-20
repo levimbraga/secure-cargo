@@ -35,7 +35,7 @@ select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF"]
 python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
-packages = ["app", "scene", "physics", "rules", "planner", "perception", "tests"]
+packages = ["app", "scene", "physics", "rules", "planner", "perception", "scripts", "tests"]
 
 [[tool.mypy.overrides]]
 module = ["mujoco", "mujoco.*"]

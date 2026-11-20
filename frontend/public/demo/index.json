@@ -1,0 +1,104 @@
+{
+  "scenarios": [
+    {
+      "id": "emergency-braking",
+      "title": "Emergency braking",
+      "summary": "Three 900 kg pallets with one strap each: under emergency braking from 80 km/h they slide forward and the first one hits the headboard. With two straps each they stay put.",
+      "event": {
+        "kind": "emergency_braking",
+        "speed_kmh": 80.0,
+        "road_surface": "dry",
+        "fog": false,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "emergency-braking.as_loaded.json",
+          "scenario_hash": "a7a1047c5d287edf1714449d386a6b6a297f224d3cd72ebbb81137b75f64474c",
+          "status": "fail"
+        },
+        "fixed": {
+          "file": "emergency-braking.fixed.json",
+          "scenario_hash": "086a368c032994451cab021a81472547d0ae9f69b2519c2438280ec7ef04ce5d",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "id": "weigh-station",
+      "title": "Weigh station",
+      "summary": "A 6 t machine loaded at the back: its chains hold it over the speed bump, but the rear axle carries 11.35 t, above the 10 t legal limit. Moving the machine forward brings both axles within their limits.",
+      "event": {
+        "kind": "speed_bump",
+        "speed_kmh": 20.0,
+        "road_surface": "dry",
+        "fog": false,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "weigh-station.as_loaded.json",
+          "scenario_hash": "fc15347df2ee404a97af20a3656426fabd0ffc5b924653f4ab3fd6ea97b1a587",
+          "status": "fail"
+        },
+        "fixed": {
+          "file": "weigh-station.fixed.json",
+          "scenario_hash": "768d15b10737003d6c4bc333003e2cebd7f69dbbf881298ec1ebe98d5550c610",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "id": "rope-lashing",
+      "title": "Rope lashing",
+      "summary": "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be tightened enough, so the stacks slide in a sudden lane change. Rope is also prohibited as cargo lashing (CONTRAN Resolution 945/2022). Three ratchet straps per stack hold them.",
+      "event": {
+        "kind": "lane_change",
+        "speed_kmh": 80.0,
+        "road_surface": "dry",
+        "fog": false,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "rope-lashing.as_loaded.json",
+          "scenario_hash": "7aec32f84732a3d03f41c4a0097ee1a0c891e1974e86aa555770bd22adf281e5",
+          "status": "fail"
+        },
+        "fixed": {
+          "file": "rope-lashing.fixed.json",
+          "scenario_hash": "c3e88eb6c295db12354d5d0650a27ccaaee855d75599e033709ace530416e0a4",
+          "status": "pass"
+        }
+      }
+    },
+    {
+      "id": "sharp-curve",
+      "title": "Sharp curve",
+      "summary": "Two tall cabinets standing free behind the headboard: in a sharp curve at 60 km/h they tip over. Two straps over each one keep them upright.",
+      "event": {
+        "kind": "sharp_curve",
+        "speed_kmh": 60.0,
+        "road_surface": "dry",
+        "fog": false,
+        "curve_radius_m": 60.0,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "sharp-curve.as_loaded.json",
+          "scenario_hash": "a5ad2d28a8861ad06b36980b67221effdff815d50eb40dc2b052daa76c27e1be",
+          "status": "fail"
+        },
+        "fixed": {
+          "file": "sharp-curve.fixed.json",
+          "scenario_hash": "92e2f572e36e9838b87238e09cdd16a85cb623004137b949bb1cebab50ed4f2e",
+          "status": "pass"
+        }
+      }
+    }
+  ]
+}
