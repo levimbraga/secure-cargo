@@ -410,6 +410,35 @@ authored and one sentence otherwise.
 `data-lab-result` (the parity summary of the run, its source and its time); the controls carry
 `data-testid="lab-…"`. `frontend/e2e/parity.spec.ts` reads them.
 
+## 11a. Explorer (`/app/explorer`) and gallery (`/app/examples`)
+
+**Explorer.** The same column grid as the live lab. Phones: the verdict and its reason sentence, then the
+load editor, the selectors, the 3D run and the result rows. Wide screens: the editor and the 3D run on the
+left, the verdict and the selectors in a 20rem column beside them.
+
+- **Load editor.** The bed from above, front (cab) to the right, drawn with the simulation's dimensions:
+  lashing points as gray dots, axle groups as dashed lines, the headboard as a thick ink line, blocks in
+  wood brown, units in a pale wood fill with their number in a corner, straps in amber across the bed,
+  the centre of mass as a small cross. Drag snaps to 5 cm; a drop on another unit is refused (fail tint
+  and a one-line message). A tap adds a strap; after the last one the unit's lashing points allow, it goes
+  back to none. Keyboard: each unit is a button; arrows move it 10 cm, Enter adds a strap.
+- **Axle loads** under the editor: one row per axle group, value in mono, a thin bar to 125 % of the
+  limit. Green up to 90 %, amber to 100 %, red above (the one place amber is a status: it is "close").
+- **Units list** under the axle loads: name, mass and − / + strap buttons, 44 px on phones, for loads
+  whose units are too small to tap on the drawing.
+- **Selectors**: one native select per dimension, speed as a slider that applies on release, unit count
+  as a stepper, mass per unit as a slider. Data rows with hairlines, as the lab's controls.
+
+**Gallery.** One hairline row per example: MuJoCo's raw render of the "as loaded" run (poster, plays on
+demand), the title, the trip in mono, two lines "As loaded" / "Fixed" with a verdict badge and the
+one-sentence story, and the ways in (replay, live lab, explorer as loaded and fixed) as small mono
+links. Then the coverage matrix: one small table per dimension, option and the examples that show it;
+an option nobody shows yet reads "not yet" in gray italics (not red: it is not a verdict).
+
+**App home (`/app`).** One sentence, a primary pill to the explorer and a secondary one to the gallery,
+then the examples as rows: title over the trip line, and the three ways in under them on a phone (each
+44 px tall), beside them from 640 px.
+
 ## 12. Writing
 
 - Plain verbs, sentence case, no exclamation marks. A button says what it does.
