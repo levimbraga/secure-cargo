@@ -44,9 +44,7 @@ describe("translation catalogs", () => {
     }
   });
 
-  it("show the product tagline on the English landing page", () => {
-    expect(en.Landing.title).toBe(
-      "SecureCargo — Physics-tested cargo securement",
-    );
+  it("show the product tagline as the English headline", () => {
+    expect(en.Landing.hero.title).toBe("Physics-tested cargo securement.");
   });
 });

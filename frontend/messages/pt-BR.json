@@ -3,10 +3,16 @@
     "title": "Carga Segura — Amarração de carga testada com física",
     "description": "Confira antes da viagem se a carga do caminhão está bem distribuída e bem amarrada: foto, simulação física e um plano de amarração que segue as regras brasileiras."
   },
-  "Header": {
-    "brand": "Carga Segura",
-    "home": "Página inicial do Carga Segura",
-    "openApp": "Abrir app"
+  "Nav": {
+    "wordmark": "SecureCargo",
+    "home": "Página inicial do SecureCargo",
+    "sections": "Seções",
+    "howItWorks": "Como funciona",
+    "demo": "Demo",
+    "github": "GitHub",
+    "cta": "Testar a demo",
+    "openMenu": "Abrir menu",
+    "closeMenu": "Fechar menu"
   },
   "LanguageSwitcher": {
     "label": "Idioma",
@@ -16,48 +22,131 @@
     "pt-BRShort": "PT"
   },
   "Landing": {
-    "eyebrow": "IA física para o transporte rodoviário de cargas",
-    "title": "Carga Segura — Amarração de carga testada com física",
-    "lead": "Tire uma foto da carroceria. O Carga Segura simula frenagens bruscas, curvas e buracos e mostra como posicionar e amarrar a carga para ela não sair do lugar.",
-    "cta": "Abrir o app",
-    "stepsTitle": "Como funciona",
-    "steps": {
-      "perceive": {
-        "title": "Perceber",
-        "body": "Uma foto identifica os volumes e as cintas que já estão no lugar. Você confirma ou edita."
+    "hero": {
+      "title": "Amarração de carga testada com física.",
+      "subtitle": "Simule a viagem antes de o caminhão sair.",
+      "primary": "Testar a demo",
+      "secondary": "Como funciona"
+    },
+    "scene": {
+      "toggleLabel": "Amarração da carga",
+      "unsecured": "Sem amarração",
+      "secured": "Amarrada",
+      "illustration": "Ilustração",
+      "explore": "Clique para explorar",
+      "explore3d": "Explorar em 3D",
+      "replay": "Repetir",
+      "play": "Reproduzir",
+      "posterAlt": {
+        "unsecured": "Caminhão de carroceria aberta levando três caixas de madeira sem cintas.",
+        "secured": "Caminhão de carroceria aberta levando três caixas de madeira presas por cintas cor de âmbar."
       },
-      "simulate": {
-        "title": "Simular",
-        "body": "Um motor de física leva a carga pela viagem: frenagens, curvas, buracos e condições da estrada."
-      },
-      "plan": {
-        "title": "Planejar",
-        "body": "Você recebe um plano de posicionamento e amarração que atende às regras brasileiras e a todos os eventos simulados."
+      "captions": {
+        "unsecured": "Sem amarração: na frenagem brusca, a carga desliza para a frente até bater no painel frontal.",
+        "secured": "Amarrada: a mesma frenagem, e as cintas seguram a carga no lugar."
+      }
+    },
+    "stats": {
+      "label": "Em números",
+      "sourceLabel": "Fonte",
+      "placeholder": "TODO(source)",
+      "items": {
+        "one": { "caption": "TODO(source)" },
+        "two": { "caption": "TODO(source)" },
+        "three": { "caption": "TODO(source)" },
+        "four": { "caption": "TODO(source)" }
+      }
+    },
+    "problem": {
+      "label": "Problema",
+      "title": "A carga é conferida no olho e no puxão da cinta.",
+      "p1": "Antes da viagem, o motorista dá a volta no caminhão, puxa cada cinta e decide que está bom. Nada nessa conferência diz o que a carga vai fazer numa freada forte, numa curva fechada ou num buraco.",
+      "p2": "O Brasil tem regras detalhadas para a amarração da carga e para o peso que cada eixo pode levar. São texto de lei. No pátio de carregamento, o que se precisa é de um sim ou de um não para esta carga, neste caminhão.",
+      "p3": "O Carga Segura faz a viagem antes de o caminhão sair. Monta a carga a partir de uma foto, leva essa carga por frenagens, curvas e buracos numa simulação física e mostra o que se move, por quê, e a menor mudança que resolve."
+    },
+    "how": {
+      "label": "Como funciona",
+      "title": "Da foto ao plano testado.",
+      "steps": {
+        "photo": {
+          "title": "Foto",
+          "body": "Tire uma foto da carroceria carregada. Não há formulário para preencher antes."
+        },
+        "perceive": {
+          "title": "Perceber",
+          "body": "A IA marca os volumes e as cintas que enxerga. Você confirma ou corrige o que ela errou."
+        },
+        "simulate": {
+          "title": "Simular",
+          "body": "Um motor de física leva a carga por frenagens bruscas, curvas e buracos e registra o que desliza ou tomba."
+        },
+        "plan": {
+          "title": "Planejar",
+          "body": "Você vê onde cada volume deve ficar e quantas cintas vão em cada ponto, conferido com as regras brasileiras e com todos os eventos simulados."
+        },
+        "certificate": {
+          "title": "Certificado",
+          "body": "Um registro compartilhável da foto, do plano e do resultado da simulação, para a transportadora e a seguradora."
+        }
+      }
+    },
+    "demo": {
+      "label": "Demo",
+      "title": "Quatro cargas, quatro jeitos de dar errado.",
+      "run": "Rodar cenário",
+      "scenarios": {
+        "braking": {
+          "title": "Frenagem de emergência",
+          "body": "Uma freada forte com caixas soltas. Veja o que chega ao painel frontal."
+        },
+        "weighStation": {
+          "title": "Balança",
+          "body": "A carga cabe na carroceria, mas o peso está no eixo errado."
+        },
+        "rope": {
+          "title": "Amarração com corda",
+          "body": "Uma carga presa com corda em vez de cintas, testada na frenagem."
+        },
+        "curve": {
+          "title": "Curva fechada",
+          "body": "Um volume alto, uma curva fechada e amarração de menos."
+        }
       }
     }
   },
   "App": {
-    "title": "App Carga Segura",
-    "lead": "O fluxo do motorista chega nas próximas fases. Por enquanto, esta página verifica a conexão com o servidor de simulação.",
-    "health": {
-      "title": "Servidor de simulação",
-      "endpoint": "Endereço",
-      "loading": "Verificando o servidor…",
-      "online": "No ar",
-      "offline": "Indisponível",
+    "label": "Servidor de simulação",
+    "note": "O fluxo do motorista chega nas próximas fases. Por enquanto, esta página verifica a conexão com o servidor de simulação.",
+    "states": {
+      "loading": {
+        "badge": "Verificando…",
+        "sentence": "Verificando o servidor de simulação."
+      },
+      "online": {
+        "badge": "No ar",
+        "sentence": "O servidor de simulação está no ar."
+      },
+      "offline": {
+        "badge": "Indisponível",
+        "sentence": "O servidor de simulação não está respondendo."
+      }
+    },
+    "rows": {
       "status": "Status",
       "version": "Versão da API",
-      "mujocoVersion": "Motor de física (MuJoCo)",
-      "retry": "Tentar de novo",
-      "errors": {
-        "unreachable": "Não foi possível falar com o servidor. Confira sua conexão ou tente de novo em instantes.",
-        "bad_status": "O servidor respondeu com um erro.",
-        "bad_payload": "O servidor respondeu em um formato inesperado."
-      }
+      "mujocoVersion": "Motor de física (MuJoCo)"
+    },
+    "retry": "Tentar de novo",
+    "errors": {
+      "unreachable": "Não foi possível falar com o servidor. Confira sua conexão e tente de novo em instantes.",
+      "bad_status": "O servidor respondeu com um erro. Tente de novo em instantes.",
+      "bad_payload": "O servidor respondeu em um formato que esta página não entende."
     }
   },
   "Footer": {
+    "wordmark": "SecureCargo",
     "disclaimer": "O Carga Segura é uma ferramenta de apoio à decisão, não uma certificação de engenharia.",
-    "source": "Código-fonte"
+    "github": "GitHub",
+    "hackathon": "Hack Brasil 2026"
   }
 }

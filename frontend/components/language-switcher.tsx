@@ -7,7 +7,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 
 /** Links to the current page in each locale. Plain links, so it works before hydration too. */
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ className }: { className?: string }) {
   const t = useTranslations("LanguageSwitcher");
   const activeLocale = useLocale();
   const pathname = usePathname();
@@ -15,7 +15,7 @@ export function LanguageSwitcher() {
   return (
     <nav
       aria-label={t("label")}
-      className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5 text-sm font-medium"
+      className={cn("flex items-center font-mono text-sm", className)}
     >
       {routing.locales.map((locale) => {
         const isActive = locale === activeLocale;
@@ -25,18 +25,16 @@ export function LanguageSwitcher() {
             href={pathname}
             locale={locale}
             hrefLang={locale}
-            lang={locale}
-            title={t(locale)}
-            aria-label={t(locale)}
             aria-current={isActive ? "true" : undefined}
             className={cn(
-              "flex h-8 min-w-10 items-center justify-center rounded-md px-2.5 transition-colors",
+              "flex h-10 min-w-9 items-center justify-center rounded-full px-1.5 transition-colors duration-100",
               isActive
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground",
+                ? "text-ink underline decoration-1 underline-offset-4"
+                : "text-muted-foreground hover:text-ink",
             )}
           >
             {t(`${locale}Short`)}
+            <span className="sr-only">, {t(locale)}</span>
           </Link>
         );
       })}
