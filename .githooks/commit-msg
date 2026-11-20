@@ -1,0 +1,19 @@
+#!/bin/sh
+# Safety net: strip AI attribution lines from commit messages.
+# The repository owner is the only author of every commit.
+# Enable with: git config core.hooksPath .githooks
+set -eu
+
+msg_file="$1"
+tmp_file="$(mktemp)"
+trap 'rm -f "$tmp_file"' EXIT
+
+grep -viE \
+  -e '^[[:space:]]*co-authored-by:.*(claude|anthropic)' \
+  -e '^[[:space:]]*claude-session:' \
+  -e 'generated with.*claude code' \
+  "$msg_file" | cat -s > "$tmp_file" || true
+
+# Drop trailing blank lines left behind by the removed trailers.
+awk '{ lines[NR] = $0 } END { n = NR; while (n > 0 && lines[n] ~ /^[[:space:]]*$/) n--; for (i = 1; i <= n; i++) print lines[i] }' \
+  "$tmp_file" > "$msg_file"
