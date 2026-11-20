@@ -28,6 +28,29 @@ that balance, so the comparison is made at `f_s = 1`. The number the standard it
 with its safety factor, is shown next to it; a plan that follows the standard therefore passes the
 simulation with margin.
 
+### Which safety factor
+
+EN 12195-1:2010 has **two** safety factors, and both belong to frictional (top-over) lashing only:
+
+| Lashing method | Direction | Factor | Where it is written |
+|---|---|---|---|
+| Frictional (top-over) | forward | `f_s = 1.25` | EC guidelines, section 6.1.2, p. 44: "f_s = 1.25 forward and 1.1 sideways and backward" |
+| Frictional (top-over) | sideways, rearward | `f_s = 1.1` | same |
+| Direct (diagonal, spring, loop) | all | no `f_s`; the friction factor is multiplied by the conversion factor `f_mu = 0.75` | EN 12195-1:2010, 3.2.20 (p. 9) and 5.1; EC guidelines 6.1.3, p. 44 |
+
+The standard's own public preview confirms the values and what they apply to: foreword, item d (p. 4),
+"safety factors f_S = 1,1 and f_S = 1,25 and conversion factor = 0,75 for friction introduced";
+definition 3.2.19 (p. 9), the safety factor covers "uncertainties of distribution of tension forces for
+frictional lashing"; Table 1 (p. 10), "f_s: safety factor for frictional lashing". The pages that assign
+each value to a direction are not in the preview, so that assignment is taken from the Commission's
+guidelines, and checked numerically: their forward example (two lashings at 55°, S_TF 500 daN,
+friction 0.45) prints 1.7 t, which our formula gives with 1.25 (1.72 t) and not with 1.1 (1.95 t). The
+test `test_the_forward_safety_factor_is_1_25_not_1_1` keeps that on record.
+
+The tables below are for braking, so the column "EN 12195-1" uses 1.25. The sideways row of Table 3 is a
+force balance without safety factor. For that load the standard's sideways requirement (0.5 g, `f_s = 1.1`)
+is a single lashing (0.67), so the forward direction governs, as it usually does.
+
 A run is a **fail** when a unit slides more than 5 cm and a **pass** when nothing moves more than 1 cm
 (thresholds in `backend/physics/verdict.py`).
 
@@ -86,6 +109,26 @@ The cases live in `backend/physics/validation.py` and run in CI on every push. R
 deterministic: fixed 2 ms time step, no random numbers in these runs, same input, same output
 (`tests/test_simulation.py::test_the_same_input_gives_exactly_the_same_output`).
 
+## The demo scenarios carry the standard's number
+
+The four "fixed" demo scenarios are lashed to what EN 12195-1 asks for **with** its safety factor, in
+every direction (0.8 g forward, 0.5 g rearward and sideways, sliding and tipping), not to the bare force
+balance. `backend/rules/en12195.py` computes the requirement per unit and every simulation result
+carries it (`en_12195_1`), next to the margins measured in the run (`margins`).
+
+| Scenario (fixed) | Lashing | EN 12195-1 asks for | Friction used in the event | Peak lashing force |
+|---|---|---|---|---|
+| Emergency braking, 3 pallets of 900 kg | 2 straps each | 2 each (1.70, forward sliding) | 78 % | 12 % of LC |
+| Weigh station, 6 t machine + 2 crates of 1.5 t | 4 chains; 3 straps per crate | chains hold 79 kN of 27 kN needed; 3 per crate (2.91) | 100 % (the chains carry the rest) | 12 % of LC |
+| Rope lashing, 3 stacks of 800 kg on anti-slip mats | 2 straps each | 1 each (0.62) | 22 % | 12 % of LC |
+| Sharp curve, 2 cabinets of 700 kg | 2 straps each | 2 each (1.18, forward sliding) | 40 % | 12 % of LC |
+
+"Friction used" is the largest share of the available friction a unit needed during the event; at 100 %
+it slides unless something else holds it. The straps stay at their pretension (300 daN of an LC of
+2500 daN) because the loads do not move. The stacks of the rope scenario stand on plastic pallets
+(friction 0.2): on the bare floor the standard would ask for six straps per stack, so the fix adds
+rubber anti-slip mats (friction 0.6).
+
 ## What this does not show
 
 - The simulation is validated against the standard's own model of a rigid box on a flat floor. It has
@@ -93,6 +136,8 @@ deterministic: fixed 2 ms time step, no random numbers in these runs, same input
 - Top-over straps are modelled the way the standard assumes: they press the load down and do not hold
   it lengthwise. Real straps add some direct restraint, so real loads move a little less.
 - Friction factors come from the standard's table. A real deck that is oily, icy or worn has less.
+- The direct-lashing and tipping equations of `rules/en12195.py` are taken from guides that reproduce
+  the standard, not from the standard's own pages.
 - SecureCargo is a decision-support tool. It is not an engineering certification.
 
 The model, its assumptions and the source of every number are in [physics-model.md](physics-model.md).

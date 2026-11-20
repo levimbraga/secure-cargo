@@ -75,6 +75,18 @@ source.
 | Rope elongation at working load | 15 % | none found | assumption |
 | Axle load limits | 6 t, 10 t, 17 t, 25.5 t | CONTRAN Resolution 882/2021, art. 6 [14] | standard |
 
+## What a result contains besides the verdict
+
+- `margins`: largest slide against the fail limit, largest tilt, the largest share of the available
+  friction any unit needed (`peak_friction_use`; 1.0 means sliding), and the busiest lashing's peak force
+  as a fraction of its capacity LC, with the reserve left.
+- `en_12195_1`: for each unit, the lashing EN 12195-1 asks for with its safety factor (1.25 forward,
+  1.1 sideways and rearward for top-over lashing; `f_mu = 0.75` for direct lashing) against what is
+  installed, per direction, for sliding and tipping. It is informative and does not change the verdict:
+  the verdict says whether the load survived the simulated event, this says whether the lashing meets
+  the standard. Computed in `backend/rules/en12195.py`.
+- `axle_loads`: load per axle group against the legal limit, when the vehicle is described.
+
 ## Verdict thresholds
 
 EN 12195-1 designs for no movement. The thresholds separate real movement from elastic give and
