@@ -17,6 +17,7 @@ import { strapPath, type Vec3 } from "@/lib/keyframes";
 import { tensionColor, unitForces } from "@/lib/replay";
 import { type Point, spreadMarkers } from "@/lib/unit-details";
 
+import type { UnitPush } from "./push";
 import { COLOR, FORCE_MIN, FORCE_SCALE, type SceneProps, three } from "./shared";
 
 const Y_AXIS = new Vector3(0, 1, 0);
@@ -79,6 +80,12 @@ export function Lashings({ doc, live, mode }: SceneProps) {
     event.stopPropagation();
     live.current.activeStrap = index;
   };
+  // A press selects the nearest lashing and still reaches the unit under it, which may be
+  // dragged (the live lab).
+  const press = (index: number) => (event: ThreeEvent<PointerEvent>) => {
+    const nearest = event.intersections.find((hit) => hit.object.userData.lashing !== undefined);
+    if (nearest?.object === event.object) live.current.activeStrap = index;
+  };
 
   return (
     <>
@@ -99,7 +106,7 @@ export function Lashings({ doc, live, mode }: SceneProps) {
                 <meshBasicMaterial />
               )}
               {/* A wide, invisible sleeve around the lashing: something a finger can hit. */}
-              <mesh onPointerOver={select(index)} onPointerDown={select(index)}>
+              <mesh userData={{ lashing: index }} onPointerOver={select(index)} onPointerDown={press(index)}>
                 <cylinderGeometry args={[0.14, 0.14, 1, 6]} />
                 <meshBasicMaterial transparent opacity={0} depthWrite={false} />
               </mesh>
@@ -191,6 +198,36 @@ function UnitArrows({ doc, live, index }: Pick<SceneProps, "doc" | "live"> & { i
       {friction.node}
     </>
   );
+}
+
+/** Colour of the arrow of a push by the visitor: the first colour of the chart series. */
+const PUSH_COLOR = "#3b6fd4";
+
+/** The force the visitor applies to a unit (the live lab), to the scale of the other arrows. */
+export function PushArrow({
+  doc,
+  live,
+  push,
+}: Pick<SceneProps, "doc" | "live"> & { push: RefObject<UnitPush | null> }) {
+  const arrow = useArrow();
+  const scratch = useMemo(() => ({ origin: new Vector3(), direction: new Vector3() }), []);
+
+  useFrame(() => {
+    const current = push.current;
+    const unit = current ? doc.units[current.unit] : undefined;
+    const pose = current ? live.current.sample.units[current.unit] : undefined;
+    const size = current ? Math.hypot(current.force[0], current.force[1], current.force[2]) : 0;
+    if (!current || !unit || !pose || size < FORCE_MIN) {
+      arrow.set(scratch.origin, scratch.direction.set(1, 0, 0), 0, PUSH_COLOR);
+      return;
+    }
+    // On top of the unit, under the arrows of inertia and friction.
+    scratch.origin.set(...three([pose.p[0], pose.p[1], pose.p[2] + unit.size_m[2] / 2 + 0.08]));
+    scratch.direction.set(...three(current.force));
+    arrow.set(scratch.origin, scratch.direction, size * FORCE_SCALE, PUSH_COLOR);
+  });
+
+  return arrow.node;
 }
 
 export function ForceArrows({ doc, live }: Pick<SceneProps, "doc" | "live">) {

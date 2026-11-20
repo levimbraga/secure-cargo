@@ -19,6 +19,7 @@ import {
 import { unitName } from "@/lib/demo";
 import { displacement, toThreeQuaternion, type Vec3 } from "@/lib/keyframes";
 
+import type { UnitHandlers } from "./push";
 import { COLOR, type SceneProps, three } from "./shared";
 
 /** A unit that moved more than this is drawn as failed [m]. */
@@ -28,7 +29,15 @@ const MOVED_M = 0.05;
  * Cargo units at their simulated poses, with a dashed outline where each one started and a
  * trail of where its base has been.
  */
-export function Units({ doc, live, mode }: SceneProps) {
+export function Units({
+  doc,
+  live,
+  mode,
+  unitHandlers,
+}: SceneProps & {
+  /** Pointer handlers of each unit, when the visitor may push the cargo (the live lab). */
+  unitHandlers?: UnitHandlers;
+}) {
   const groups = useRef<(Group | null)[]>([]);
   const edges = useRef<(LineBasicMaterial | null)[]>([]);
   const failing = useMemo(
@@ -88,6 +97,7 @@ export function Units({ doc, live, mode }: SceneProps) {
               ref={(node) => {
                 groups.current[index] = node;
               }}
+              {...unitHandlers?.(index)}
             >
               {mode === "realistic" ? (
                 <CargoModel kind={unitName(unit.id).kind} size={unit.size_m} />

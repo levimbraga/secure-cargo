@@ -5,7 +5,7 @@ import { type RefObject, useEffect, useRef } from "react";
 import { type Group, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-import { type KeyframesDoc, sampleFrame, type Vec3 } from "@/lib/keyframes";
+import { type KeyframesDoc, type Sample, sampleFrame, type Vec3 } from "@/lib/keyframes";
 import { type Quality, QUALITY_SETTINGS } from "@/lib/quality";
 import { GRAVITY, type Impact, type Series, seriesAt } from "@/lib/replay";
 import { useQuality } from "@/lib/use-quality";
@@ -13,12 +13,19 @@ import { usePageVisible } from "@/lib/use-scene-visibility";
 
 import { AxisTriad, Units } from "./cargo";
 import { ContactShadow, Lighting, Road } from "./environment";
-import { Contacts, ForceArrows, ImpactFlash, type LabelFormat, Labels, Lashings } from "./forces";
+import { Contacts, ForceArrows, ImpactFlash, type LabelFormat, Labels, Lashings, PushArrow } from "./forces";
+import { type PushProps, useUnitPush } from "./push";
 import type { Live, ViewMode } from "./shared";
 import { TruckBody, Wheels } from "./truck";
 
 export type CameraView = "hero" | "side" | "rear" | "top";
-export type { LabelFormat, Quality, ViewMode };
+export type { LabelFormat, PushProps, Quality, ViewMode };
+
+/**
+ * The state of a model that is being stepped right now, drawn instead of the keyframes.
+ * `time` is the event time it has reached [s]; it keeps growing after the end of the event.
+ */
+export type LiveState = { sample: Sample; time: number };
 
 /** At most this wide [CSS px], the engineering view uses numbered markers instead of text labels. */
 export const COMPACT_LABELS_MAX_WIDTH = 480;
@@ -70,6 +77,13 @@ export type KeyframePlayerProps = {
   selectedUnit?: number | null;
   /** A unit marker was tapped or activated from the keyboard. Without it the markers are not buttons. */
   onSelectUnit?: (unitIndex: number) => void;
+  /**
+   * The live lab: a function that returns the state of the engine it is stepping, or `null`
+   * to draw the keyframes at `time`. It is asked once per frame.
+   */
+  sampler?: RefObject<(() => LiveState | null) | null>;
+  /** The live lab: pressing on a unit and dragging pushes it (see `useUnitPush`). */
+  push?: PushProps;
 };
 
 /** Replays a keyframes document as a 3D scene of a flatbed truck. */
@@ -90,8 +104,12 @@ export default function KeyframePlayer({
   compactLabels,
   selectedUnit = null,
   onSelectUnit,
+  sampler,
+  push,
 }: KeyframePlayerProps) {
   const realistic = mode === "realistic";
+  // Shared by the camera and by the push: the camera stands still while a unit is dragged.
+  const orbit = useRef<OrbitControls | null>(null);
   const detected = useQuality();
   const level = quality ?? detected;
   const settings = QUALITY_SETTINGS[level];
@@ -121,7 +139,7 @@ export default function KeyframePlayer({
       data-quality={level}
     >
       <Lighting mode={mode} quality={level} />
-      <CameraRig view={view} />
+      <CameraRig view={view} controlsRef={orbit} />
       <Stage
         doc={doc}
         series={series}
@@ -135,6 +153,9 @@ export default function KeyframePlayer({
         compactLabels={compactLabels}
         selectedUnit={selectedUnit}
         onSelectUnit={onSelectUnit}
+        sampler={sampler}
+        push={push}
+        orbit={orbit}
       />
     </Canvas>
   );
@@ -153,6 +174,9 @@ function Stage({
   compactLabels,
   selectedUnit,
   onSelectUnit,
+  sampler,
+  push,
+  orbit,
 }: Pick<
   KeyframePlayerProps,
   | "doc"
@@ -166,9 +190,12 @@ function Stage({
   | "compactLabels"
   | "selectedUnit"
   | "onSelectUnit"
+  | "sampler"
+  | "push"
 > & {
   /** Draw the flat shadow under the truck that stands in for shadow maps. */
   contactShadow: boolean;
+  orbit: RefObject<OrbitControls | null>;
 }) {
   const invalidate = useThree((state) => state.invalidate);
   const width = useThree((state) => state.size.width);
@@ -184,14 +211,25 @@ function Stage({
   const body = useRef<Group>(null);
   const motion = useRef({ pitch: 0, roll: 0, lag: 0 });
   const floorHeight = doc.bed.floor_height_m;
+  // After the end of the event the truck keeps the speed it had.
+  const finalSpeed = doc.frames[doc.frames.length - 1]?.truck_speed_mps ?? 0;
+  const unitHandlers = useUnitPush({ doc, live, body, orbit, push });
 
   // Runs before every other part of the scene, so they all draw the same instant.
   useFrame((_, delta) => {
     const state = live.current;
     const t = Math.min(Math.max(time.current, 0), doc.duration_s);
     state.t = t;
-    state.sample = sampleFrame(doc, t);
-    state.distance = seriesAt(doc, series.distance, t);
+    // A model stepped live is drawn as it is; otherwise the keyframes at the replay time. A
+    // state left over from another model (other units or lashings) is not drawn.
+    const stepped = sampler?.current?.() ?? null;
+    const fits =
+      stepped !== null &&
+      stepped.sample.units.length === doc.units.length &&
+      stepped.sample.straps.length === doc.straps.length;
+    state.sample = fits ? stepped.sample : sampleFrame(doc, t);
+    const beyond = fits ? Math.max(stepped.time - doc.duration_s, 0) : 0;
+    state.distance = seriesAt(doc, series.distance, t) + beyond * finalSpeed;
     state.height = seriesAt(doc, series.bedHeight, t);
 
     // Suspension and camera follow the acceleration with a short lag.
@@ -234,9 +272,10 @@ function Stage({
         </group>
         <group ref={body} position={[0, floorHeight, 0]}>
           <TruckBody bed={doc.bed} mode={mode} />
-          <Units {...scene} />
+          <Units {...scene} unitHandlers={unitHandlers} />
           <Lashings {...scene} />
           <ForceArrows doc={doc} live={live} />
+          {push && <PushArrow doc={doc} live={live} push={push.state} />}
           <ImpactFlash impacts={impacts} live={live} />
           {mode === "engineering" && (
             <>
@@ -261,12 +300,18 @@ function Stage({
   );
 }
 
-function CameraRig({ view }: { view: CameraView }) {
+function CameraRig({
+  view,
+  controlsRef,
+}: {
+  view: CameraView;
+  /** Receives the camera controls, so a drag on a unit can hold the camera still. */
+  controlsRef: RefObject<OrbitControls | null>;
+}) {
   const camera = useThree((state) => state.camera);
   const canvas = useThree((state) => state.gl.domElement);
   const aspect = useThree((state) => state.size.width / state.size.height);
   const invalidate = useThree((state) => state.invalidate);
-  const controls = useRef<OrbitControls | null>(null);
   const touched = useRef(false);
 
   // Frame the whole truck: narrower viewports need the camera further away.
@@ -280,9 +325,9 @@ function CameraRig({ view }: { view: CameraView }) {
       TARGET[2] + direction.z * distance,
     );
     camera.lookAt(...TARGET);
-    controls.current?.update();
+    controlsRef.current?.update();
     invalidate();
-  }, [aspect, camera, view, invalidate]);
+  }, [aspect, camera, view, invalidate, controlsRef]);
 
   useEffect(() => {
     const orbit = new OrbitControls(camera, canvas);
@@ -301,15 +346,15 @@ function CameraRig({ view }: { view: CameraView }) {
     orbit.addEventListener("start", onStart);
     orbit.addEventListener("change", onChange);
     orbit.update();
-    controls.current = orbit;
+    controlsRef.current = orbit;
     return () => {
       orbit.removeEventListener("start", onStart);
       orbit.removeEventListener("change", onChange);
       orbit.dispose();
-      controls.current = null;
+      controlsRef.current = null;
     };
-  }, [camera, canvas, invalidate]);
+  }, [camera, canvas, invalidate, controlsRef]);
 
-  useFrame(() => controls.current?.update());
+  useFrame(() => controlsRef.current?.update());
   return null;
 }
