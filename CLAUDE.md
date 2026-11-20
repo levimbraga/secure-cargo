@@ -101,13 +101,14 @@ secure-cargo/
   - road type: straight highway, curvy highway, mountain descent (long downhill, repeated braking),
     dirt/gravel road, potholed asphalt, urban with speed bumps (curve radii, vertical impulse frequency/amplitude);
   - road surface & weather: dry / wet (rain) / heavy rain with puddles / mud (wet dirt road) / fog.
-    Wet road lowers the truck's max braking; wet cargo lowers cargo-floor friction; the sim shows which wins.
-    Puddles and mud add vertical impulses and unexpected braking. Fog does not change physics: model it as
-    late reaction (harsher, later braking events);
+    A wet road lowers the truck's max braking. It does **not** lower cargo-floor friction: the EN 12195-1
+    friction table holds for surfaces "dry or wet but clean". Only a dirty deck does (mud: cap 0.2, gravel:
+    cap 0.3, both assumptions documented in docs/physics-model.md). Fog does not change physics: model it
+    as late reaction (harsher, later braking events);
   - events: emergency braking, sudden lane change, sharp curve, pothole, speed bump, mountain descent,
     long vibration (gradual loss of strap pretension — why CONTRAN requires re-tightening en route).
-  - "Full test" caps loads at EN 12195-1 road reference values (verify before the pitch): forward 0.8 g,
-    backward 0.5 g, sideways 0.5 g.
+  - "Full test" caps loads at EN 12195-1 road reference values: forward 0.8 g, backward 0.5 g, sideways
+    0.5 g (verified 2026-11-20 against Table 2 of the standard's public preview).
 - Failure explanation (`backend/physics/explain.py`): for every failing event return
   (1) what happens (frames + force vectors: inertia vs. friction + straps), (2) why (one-sentence force balance
   with numbers from the sim), (3) consequence class: slides/damages cargo, hits the cab, falls on the road,
