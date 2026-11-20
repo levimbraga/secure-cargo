@@ -47,6 +47,27 @@ jobs:
       - name: Import MuJoCo inside the container
         run: docker run --rm securecargo-api:ci python -c "import mujoco; print('mujoco', mujoco.__version__)"
 
+  worker:
+    name: API Worker (types)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/worker
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: backend/worker/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: backend/worker/pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Type-check
+        run: pnpm typecheck
+
   frontend:
     name: Frontend (lint, types, tests, build)
     runs-on: ubuntu-latest
