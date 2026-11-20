@@ -108,3 +108,27 @@ def test_a_box_twice_as_tall_as_its_base_tips_at_half_a_g() -> None:
     assert tipping_acceleration(base_length_m=1.0, height_m=2.0) == pytest.approx(
         0.5 * STANDARD_GRAVITY_MPS2
     )
+
+
+def test_the_forward_safety_factor_is_1_25_not_1_1() -> None:
+    """The published forward example (1.7 t) is only reproduced with f_s = 1.25.
+
+    EN 12195-1:2010 has two safety factors for frictional lashing, 1.1 and 1.25 (foreword item
+    d; definition 3.2.19). The guidelines assign them: 1.25 forward, 1.1 sideways and
+    backward (EC guidelines 6.1.2, p. 44).
+    """
+
+    def secured_t(safety_factor: float) -> float:
+        mass = top_over_mass_secured(
+            lashings=2,
+            friction=0.45,
+            acceleration_coefficient=EN_CX_FORWARD,
+            tension_n=5000.0,
+            angle_rad=math.radians(55),
+            safety_factor=safety_factor,
+        )
+        return mass / 1000
+
+    assert EN_FS_FORWARD == 1.25 and EN_FS_OTHER == 1.1
+    assert secured_t(1.25) == pytest.approx(1.7, abs=0.05)
+    assert secured_t(1.1) == pytest.approx(1.95, abs=0.01)

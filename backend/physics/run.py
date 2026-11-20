@@ -11,10 +11,15 @@ from physics.constants import PHYSICS_MODEL_VERSION
 from physics.results import SimulationResult
 from physics.simulate import simulate
 from rules.axle_loads import axle_findings, axle_loads
+from rules.en12195 import check_scenario
 
 
 def run_event(scenario: Scenario, event: TripEvent) -> SimulationResult:
-    """Simulate ``scenario`` through ``event`` and check axle loads when the vehicle is given."""
+    """Simulate ``scenario`` through ``event``.
+
+    Also reports axle loads (when the vehicle is described) and how each unit's lashing
+    compares with the design values of EN 12195-1.
+    """
     profile, surface = build_profile(event)
     loads = axle_loads(scenario)
     result = simulate(
@@ -23,7 +28,7 @@ def run_event(scenario: Scenario, event: TripEvent) -> SimulationResult:
         surface_friction_cap=surface.cargo_friction_cap,
         extra_findings=axle_findings(loads),
     )
-    return result.model_copy(update={"axle_loads": loads})
+    return result.model_copy(update={"axle_loads": loads, "en_12195_1": check_scenario(scenario)})
 
 
 def scenario_hash(scenario: Scenario, event: TripEvent) -> str:
