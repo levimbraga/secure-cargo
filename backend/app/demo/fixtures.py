@@ -9,8 +9,18 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.scenario import Scenario, TripEvent
 
 DEMO_DIR = Path(__file__).resolve().parents[2] / "scenarios" / "demo"
-# Order of the scenarios on the site.
-DEMO_ORDER = ("emergency-braking", "weigh-station", "rope-lashing", "sharp-curve")
+# Order of the examples in the gallery (app/demo/gallery.py).
+DEMO_ORDER = (
+    "emergency-braking",
+    "sharp-curve",
+    "rope-lashing",
+    "steel-coil",
+    "weigh-station",
+    "box-truck",
+    "dirt-road",
+    "anti-slip-mat",
+    "full-trip",
+)
 
 Variant = Literal["as_loaded", "fixed"]
 VARIANTS: tuple[Variant, ...] = ("as_loaded", "fixed")
@@ -27,6 +37,9 @@ class DemoScenario(BaseModel):
     event: TripEvent
     as_loaded: Scenario
     fixed: Scenario
+    explorer: dict[Variant, str] = Field(
+        description="Canonical explorer query string of each version (app/explorer/config.py)."
+    )
 
     def variant(self, name: Variant) -> Scenario:
         return self.as_loaded if name == "as_loaded" else self.fixed

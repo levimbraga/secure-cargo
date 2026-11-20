@@ -38,16 +38,25 @@ AZIMUTH = {
     "weigh-station": 62.0,
     "rope-lashing": 28.0,
     "sharp-curve": 28.0,
+    "steel-coil": 62.0,
+    "box-truck": 50.0,
+    "dirt-road": 62.0,
+    "anti-slip-mat": 62.0,
+    "full-trip": 55.0,
 }
+# Camera distance for the 6.2 m bed of a "toco"; longer beds are filmed from farther away.
+DISTANCE_M = 8.6
+REFERENCE_BED_M = 6.2
 
 
 class Recorder:
     """Collects one rendered frame per keyframe, with the camera riding along with the bed."""
 
-    def __init__(self, profile: MotionProfile, azimuth: float) -> None:
+    def __init__(self, profile: MotionProfile, azimuth: float, distance: float) -> None:
         # Distance the truck has covered on the road at every time step [m].
         self.travelled = np.cumsum(profile.truck_speed_mps) * TIMESTEP_S
         self.azimuth = azimuth
+        self.distance = distance
         self.renderer: mujoco.Renderer | None = None
         self.frames: list[bytes] = []
 
@@ -57,7 +66,7 @@ class Recorder:
             self.camera = mujoco.MjvCamera()
             self.camera.type = mujoco.mjtCamera.mjCAMERA_TRACKING
             self.camera.trackbodyid = model.body(BED_BODY).id
-            self.camera.distance = 8.6
+            self.camera.distance = self.distance
             self.camera.azimuth = self.azimuth
             self.camera.elevation = -24.0
             self.options = mujoco.MjvOption()
@@ -94,12 +103,16 @@ def encode(frames: list[bytes], path: Path) -> None:
     subprocess.run([*poster, str(path.with_suffix(".jpg"))], check=True)
 
 
-def main() -> None:
+def main(only: list[str] | None = None) -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     for demo in load_demo_scenarios():
+        if only and demo.id not in only:
+            continue
         profile, surface = build_profile(demo.event)
+        length = demo.as_loaded.bed.length_m
+        distance = DISTANCE_M * max(1.0, length / REFERENCE_BED_M) ** 0.8
         for variant in VARIANTS:
-            recorder = Recorder(profile, AZIMUTH[demo.id])
+            recorder = Recorder(profile, AZIMUTH[demo.id], distance)
             simulate(
                 demo.variant(variant),
                 profile,
@@ -114,4 +127,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    main(sys.argv[1:] or None)

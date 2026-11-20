@@ -4,6 +4,7 @@
   "summary": "Three 900 kg pallets with one strap each: under emergency braking from 80 km/h they slide forward and the first one hits the headboard. With two straps each they stay put.",
   "event": {
     "kind": "emergency_braking",
+    "segments": null,
     "speed_kmh": 80.0,
     "road_surface": "dry",
     "fog": false,
@@ -23,7 +24,9 @@
         "height_m": 1.2,
         "rated_capacity_n": null
       },
+      "body": "flatbed",
       "side_rail_height_m": 0.0,
+      "rear_wall_height_m": 0.0,
       "anchor_points": [
         {
           "id": "L0",
@@ -295,7 +298,8 @@
           ],
           "rated_capacity_n": null
         }
-      ]
+      ],
+      "blocks": []
     },
     "vehicle": {
       "axle_groups": [
@@ -311,12 +315,16 @@
           "position_x_m": -0.8,
           "tare_load_kg": 2600.0
         }
-      ]
+      ],
+      "payload_kg": 8000.0
     },
     "units": [
       {
         "id": "pallet-1",
         "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -335,6 +343,9 @@
       {
         "id": "pallet-2",
         "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -353,6 +364,9 @@
       {
         "id": "pallet-3",
         "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -430,7 +444,9 @@
         "height_m": 1.2,
         "rated_capacity_n": null
       },
+      "body": "flatbed",
       "side_rail_height_m": 0.0,
+      "rear_wall_height_m": 0.0,
       "anchor_points": [
         {
           "id": "L0",
@@ -702,7 +718,8 @@
           ],
           "rated_capacity_n": null
         }
-      ]
+      ],
+      "blocks": []
     },
     "vehicle": {
       "axle_groups": [
@@ -718,12 +735,16 @@
           "position_x_m": -0.8,
           "tare_load_kg": 2600.0
         }
-      ]
+      ],
+      "payload_kg": 8000.0
     },
     "units": [
       {
         "id": "pallet-1",
         "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -742,6 +763,9 @@
       {
         "id": "pallet-2",
         "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -760,6 +784,9 @@
       {
         "id": "pallet-3",
         "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -868,5 +895,9 @@
         "breaking_strength_n": null
       }
     ]
+  },
+  "explorer": {
+    "as_loaded": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=1.1.1",
+    "fixed": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=2.2.2"
   }
 }

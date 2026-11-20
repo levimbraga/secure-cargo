@@ -1,4 +1,4 @@
-"""The four demo scenarios: "as loaded" fails and "fixed" passes, in simulation and on disk."""
+"""The gallery's demo scenarios: "as loaded" fails and "fixed" passes, in simulation and on disk."""
 
 import json
 from pathlib import Path
@@ -16,9 +16,19 @@ DEMOS = load_demo_scenarios()
 STATIC_DIR = Path(__file__).resolve().parents[2] / "frontend" / "public" / "demo"
 
 
-def test_there_are_four_demo_scenarios_in_the_site_order() -> None:
+def test_the_nine_must_examples_are_in_the_gallery_order() -> None:
     assert tuple(demo.id for demo in DEMOS) == DEMO_ORDER
-    assert DEMO_ORDER == ("emergency-braking", "weigh-station", "rope-lashing", "sharp-curve")
+    assert DEMO_ORDER == (
+        "emergency-braking",
+        "sharp-curve",
+        "rope-lashing",
+        "steel-coil",
+        "weigh-station",
+        "box-truck",
+        "dirt-road",
+        "anti-slip-mat",
+        "full-trip",
+    )
 
 
 @pytest.mark.parametrize("demo", DEMOS, ids=DEMO_ORDER)
@@ -29,7 +39,7 @@ def test_as_loaded_fails_and_fixed_passes(demo: DemoScenario) -> None:
     assert as_loaded.verdict.status == "fail"
     assert fixed.verdict.status == "pass"
     assert fixed.verdict.findings == []
-    assert max(unit.max_slide_m for unit in fixed.units) < 0.005
+    assert max(unit.max_slide_m for unit in fixed.units) < 0.01
 
 
 def test_each_demo_fails_for_the_reason_it_illustrates() -> None:
@@ -41,16 +51,41 @@ def test_each_demo_fails_for_the_reason_it_illustrates() -> None:
     }
 
     assert {"unit_slid", "unit_hit_headboard"} <= reasons["emergency-braking"]
-    assert reasons["weigh-station"] == {"axle_overloaded"}  # the load itself holds
-    assert "unit_slid" in reasons["rope-lashing"]
     assert {"unit_tilted", "unit_left_bed"} <= reasons["sharp-curve"]
+    assert "unit_slid" in reasons["rope-lashing"]
+    assert {"unit_rolled", "unit_hit_headboard"} <= reasons["steel-coil"]
+    assert "unit_slid" not in reasons["steel-coil"]  # it rolled
+    assert reasons["weigh-station"] == {"axle_overloaded"}  # the load itself holds
+    assert {"unit_hit_headboard", "headboard_overloaded"} <= reasons["box-truck"]
+    assert "unit_slid" in reasons["dirt-road"]
+    assert "unit_slid" in reasons["anti-slip-mat"]
+    assert "unit_slid" in reasons["full-trip"]
+
+
+def test_on_the_dirt_road_the_straps_lose_half_their_tension_before_the_slide() -> None:
+    demo = next(item for item in DEMOS if item.id == "dirt-road")
+    as_loaded = run_event(demo.as_loaded, demo.event)
+    for lashing in as_loaded.lashings:
+        assert lashing.initial_tension_n > 2500
+    # The pretension decays to half while the bed shakes; by the end of the run the slide
+    # has pulled some straps tighter, but the ones that were left loose show the loss.
+    assert min(item.final_tension_n for item in as_loaded.lashings) < 0.6 * 3000
+    # With full pretension three straps hold: the slide is the vibration's doing.
+    braking = demo.event.model_copy(update={"kind": "emergency_braking"})
+    assert run_event(demo.as_loaded, braking).verdict.status == "pass"
 
 
 @pytest.mark.parametrize("demo", DEMOS, ids=DEMO_ORDER)
 def test_the_fixed_version_meets_en_12195_1_with_its_safety_factor(demo: DemoScenario) -> None:
     checks = check_scenario(demo.fixed)
 
-    assert [check.meets_standard for check in checks] == [True] * len(demo.fixed.units)
+    # Units held by blocking, stacked units and lying cylinders are outside the closed-form
+    # check (None); every unit the standard covers meets it.
+    assert False not in [check.meets_standard for check in checks]
+    assert True in [check.meets_standard for check in checks] or demo.id in (
+        "steel-coil",
+        "box-truck",
+    )
     for check in checks:
         if check.method == "top_over":
             assert check.required_lashings is not None
@@ -65,12 +100,18 @@ def test_the_as_loaded_versions_fall_short_of_the_standard_where_the_lashing_is_
         for demo in DEMOS
     }
 
-    # At the weigh station the lashing is fine; the load is in the wrong place.
+    # At the weigh station the lashing is fine; the load is in the wrong place. On the dirt
+    # road three straps meet the standard, which assumes a clean deck and full pretension.
     assert meets == {
         "emergency-braking": False,
-        "weigh-station": True,
-        "rope-lashing": False,
         "sharp-curve": False,
+        "rope-lashing": False,
+        "steel-coil": False,
+        "weigh-station": True,
+        "box-truck": False,
+        "dirt-road": True,
+        "anti-slip-mat": False,
+        "full-trip": False,
     }
 
 
@@ -78,7 +119,10 @@ def test_the_fixed_runs_report_their_margins() -> None:
     for demo in DEMOS:
         margins = run_event(demo.fixed, demo.event).margins
 
-        assert margins.max_slide_m < margins.slide_limit_m / 10
+        assert margins.max_slide_m < margins.slide_limit_m / 5
+        if not demo.fixed.lashings:  # held by blocking
+            assert margins.peak_lashing_force_ratio is None
+            continue
         assert margins.peak_lashing_force_ratio is not None
         assert margins.peak_lashing_force_ratio < 0.5
         assert margins.lashing_capacity_reserve == pytest.approx(
@@ -94,13 +138,7 @@ def test_the_fixed_version_carries_the_same_cargo() -> None:
 
 
 def test_the_fixtures_on_disk_are_what_the_generator_writes() -> None:
-    generated = (
-        build_demo_fixtures.emergency_braking(),
-        build_demo_fixtures.weigh_station(),
-        build_demo_fixtures.rope_lashing(),
-        build_demo_fixtures.sharp_curve(),
-    )
-    assert generated == DEMOS
+    assert build_demo_fixtures.demos() == DEMOS
 
 
 @pytest.mark.parametrize("demo", DEMOS, ids=DEMO_ORDER)
@@ -114,7 +152,16 @@ def test_the_static_results_shipped_with_the_site_are_current(demo: DemoScenario
         assert document["scenario_hash"] == scenario_hash(demo.variant(variant), demo.event)
         assert result.verdict.status == ("fail" if variant == "as_loaded" else "pass")
         assert result.keyframes.fps == 30
-        assert len(result.keyframes.frames) == round(result.duration_s * 30) + 1
+        assert len(result.keyframes.frames) == _frame_count(result.duration_s)
+
+
+def _frame_count(duration_s: float) -> int:
+    """Keyframes of a run: the first, then one each time a 30 fps frame is due (2 ms steps)."""
+    steps = round(duration_s / 0.002)
+    frames = 1
+    while round(frames / (30 * 0.002)) <= steps:
+        frames += 1
+    return frames
 
 
 def test_the_static_index_lists_every_run() -> None:

@@ -4,6 +4,7 @@
   "summary": "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be tightened enough, so the stacks slide in a sudden lane change. Rope is also prohibited as cargo lashing (CONTRAN Resolution 945/2022). Anti-slip mats under the pallets and two ratchet straps per stack hold them.",
   "event": {
     "kind": "lane_change",
+    "segments": null,
     "speed_kmh": 80.0,
     "road_surface": "dry",
     "fog": false,
@@ -23,7 +24,9 @@
         "height_m": 1.2,
         "rated_capacity_n": null
       },
+      "body": "flatbed",
       "side_rail_height_m": 0.0,
+      "rear_wall_height_m": 0.0,
       "anchor_points": [
         {
           "id": "L0",
@@ -295,7 +298,8 @@
           ],
           "rated_capacity_n": null
         }
-      ]
+      ],
+      "blocks": []
     },
     "vehicle": {
       "axle_groups": [
@@ -311,12 +315,16 @@
           "position_x_m": -0.8,
           "tare_load_kg": 2600.0
         }
-      ]
+      ],
+      "payload_kg": 8000.0
     },
     "units": [
       {
         "id": "stack-1",
         "label": "Crates on a plastic pallet",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -324,7 +332,7 @@
         ],
         "mass_kg": 800.0,
         "position_m": [
-          1.6,
+          2.0,
           0.0,
           0.0
         ],
@@ -335,6 +343,9 @@
       {
         "id": "stack-2",
         "label": "Crates on a plastic pallet",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -342,7 +353,7 @@
         ],
         "mass_kg": 800.0,
         "position_m": [
-          0.0,
+          0.4,
           0.0,
           0.0
         ],
@@ -353,6 +364,9 @@
       {
         "id": "stack-3",
         "label": "Crates on a plastic pallet",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -360,7 +374,7 @@
         ],
         "mass_kg": 800.0,
         "position_m": [
-          -1.6,
+          -1.2,
           0.0,
           0.0
         ],
@@ -376,8 +390,8 @@
         "routing": "top_over",
         "unit_id": "stack-1",
         "anchor_ids": [
-          "L10",
-          "R10"
+          "L11",
+          "R11"
         ],
         "attachment_point_m": null,
         "pretension_n": 300.0,
@@ -391,8 +405,8 @@
         "routing": "top_over",
         "unit_id": "stack-1",
         "anchor_ids": [
-          "L12",
-          "R12"
+          "L13",
+          "R13"
         ],
         "attachment_point_m": null,
         "pretension_n": 300.0,
@@ -406,8 +420,8 @@
         "routing": "top_over",
         "unit_id": "stack-2",
         "anchor_ids": [
-          "L6",
-          "R6"
+          "L7",
+          "R7"
         ],
         "attachment_point_m": null,
         "pretension_n": 300.0,
@@ -421,8 +435,8 @@
         "routing": "top_over",
         "unit_id": "stack-2",
         "anchor_ids": [
-          "L8",
-          "R8"
+          "L9",
+          "R9"
         ],
         "attachment_point_m": null,
         "pretension_n": 300.0,
@@ -436,8 +450,8 @@
         "routing": "top_over",
         "unit_id": "stack-3",
         "anchor_ids": [
-          "L2",
-          "R2"
+          "L3",
+          "R3"
         ],
         "attachment_point_m": null,
         "pretension_n": 300.0,
@@ -451,8 +465,8 @@
         "routing": "top_over",
         "unit_id": "stack-3",
         "anchor_ids": [
-          "L4",
-          "R4"
+          "L5",
+          "R5"
         ],
         "attachment_point_m": null,
         "pretension_n": 300.0,
@@ -475,7 +489,9 @@
         "height_m": 1.2,
         "rated_capacity_n": null
       },
+      "body": "flatbed",
       "side_rail_height_m": 0.0,
+      "rear_wall_height_m": 0.0,
       "anchor_points": [
         {
           "id": "L0",
@@ -747,7 +763,8 @@
           ],
           "rated_capacity_n": null
         }
-      ]
+      ],
+      "blocks": []
     },
     "vehicle": {
       "axle_groups": [
@@ -763,12 +780,16 @@
           "position_x_m": -0.8,
           "tare_load_kg": 2600.0
         }
-      ]
+      ],
+      "payload_kg": 8000.0
     },
     "units": [
       {
         "id": "stack-1",
         "label": "Crates on a plastic pallet",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -776,7 +797,7 @@
         ],
         "mass_kg": 800.0,
         "position_m": [
-          1.6,
+          2.0,
           0.0,
           0.0
         ],
@@ -787,6 +808,9 @@
       {
         "id": "stack-2",
         "label": "Crates on a plastic pallet",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -794,7 +818,7 @@
         ],
         "mass_kg": 800.0,
         "position_m": [
-          0.0,
+          0.4,
           0.0,
           0.0
         ],
@@ -805,6 +829,9 @@
       {
         "id": "stack-3",
         "label": "Crates on a plastic pallet",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           1.2,
           1.0,
@@ -812,7 +839,7 @@
         ],
         "mass_kg": 800.0,
         "position_m": [
-          -1.6,
+          -1.2,
           0.0,
           0.0
         ],
@@ -828,8 +855,8 @@
         "routing": "top_over",
         "unit_id": "stack-1",
         "anchor_ids": [
-          "L10",
-          "R10"
+          "L11",
+          "R11"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -843,8 +870,8 @@
         "routing": "top_over",
         "unit_id": "stack-1",
         "anchor_ids": [
-          "L12",
-          "R12"
+          "L13",
+          "R13"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -858,8 +885,8 @@
         "routing": "top_over",
         "unit_id": "stack-2",
         "anchor_ids": [
-          "L6",
-          "R6"
+          "L7",
+          "R7"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -873,8 +900,8 @@
         "routing": "top_over",
         "unit_id": "stack-2",
         "anchor_ids": [
-          "L8",
-          "R8"
+          "L9",
+          "R9"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -888,8 +915,8 @@
         "routing": "top_over",
         "unit_id": "stack-3",
         "anchor_ids": [
-          "L2",
-          "R2"
+          "L3",
+          "R3"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -903,8 +930,8 @@
         "routing": "top_over",
         "unit_id": "stack-3",
         "anchor_ids": [
-          "L4",
-          "R4"
+          "L5",
+          "R5"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -913,5 +940,9 @@
         "breaking_strength_n": null
       }
     ]
+  },
+  "explorer": {
+    "as_loaded": "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=rope&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2",
+    "fixed": "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=mat&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2"
   }
 }

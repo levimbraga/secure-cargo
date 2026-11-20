@@ -1,0 +1,98 @@
+{
+  "queries": {
+    "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=1.1.1": {
+      "file": "explorer/emergency-braking.as_loaded.json",
+      "live": "live/emergency-braking.as_loaded.json",
+      "run": "emergency-braking.as_loaded.json"
+    },
+    "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=2.2.2": {
+      "file": "explorer/emergency-braking.fixed.json",
+      "live": "live/emergency-braking.fixed.json",
+      "run": "emergency-braking.fixed.json"
+    },
+    "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=none&speed=60&road=curvy&weather=dry&event=sharp_curve": {
+      "file": "explorer/sharp-curve.as_loaded.json",
+      "live": "live/sharp-curve.as_loaded.json",
+      "run": "sharp-curve.as_loaded.json"
+    },
+    "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=top_over&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=2.2": {
+      "file": "explorer/sharp-curve.fixed.json",
+      "live": "live/sharp-curve.fixed.json",
+      "run": "sharp-curve.fixed.json"
+    },
+    "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=rope&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2": {
+      "file": "explorer/rope-lashing.as_loaded.json",
+      "live": "live/rope-lashing.as_loaded.json",
+      "run": "rope-lashing.as_loaded.json"
+    },
+    "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=mat&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2": {
+      "file": "explorer/rope-lashing.fixed.json",
+      "live": "live/rope-lashing.fixed.json",
+      "run": "rope-lashing.fixed.json"
+    },
+    "body=flatbed&size=truck&cargo=steel_coil&position=gap&restraint=none&speed=60&road=straight&weather=wet&event=emergency_braking&moves=0_0.00_0.00": {
+      "file": "explorer/steel-coil.as_loaded.json",
+      "live": "live/steel-coil.as_loaded.json",
+      "run": "steel-coil.as_loaded.json"
+    },
+    "body=flatbed&size=truck&cargo=steel_coil&position=gap&restraint=cradle&speed=60&road=straight&weather=wet&event=emergency_braking&moves=0_0.00_0.00": {
+      "file": "explorer/steel-coil.fixed.json",
+      "live": "live/steel-coil.fixed.json",
+      "run": "steel-coil.fixed.json"
+    },
+    "body=flatbed&size=toco&cargo=machine&position=rear&restraint=chain&speed=20&road=urban&weather=dry&event=speed_bump&kg=8000&moves=0_-1.60_0.00": {
+      "file": "explorer/weigh-station.as_loaded.json",
+      "live": "live/weigh-station.as_loaded.json",
+      "run": "weigh-station.as_loaded.json"
+    },
+    "body=flatbed&size=toco&cargo=machine&position=rear&restraint=chain&speed=20&road=urban&weather=dry&event=speed_bump&kg=8000&moves=0_0.40_0.00": {
+      "file": "explorer/weigh-station.fixed.json",
+      "live": "live/weigh-station.fixed.json",
+      "run": "weigh-station.fixed.json"
+    },
+    "body=box&size=vuc&cargo=stacked_boxes&position=rear&restraint=none&speed=50&road=urban&weather=fog&event=emergency_braking&n=6": {
+      "file": "explorer/box-truck.as_loaded.json",
+      "live": "live/box-truck.as_loaded.json",
+      "run": "box-truck.as_loaded.json"
+    },
+    "body=box&size=vuc&cargo=stacked_boxes&position=stacked&restraint=blocking&speed=50&road=urban&weather=fog&event=emergency_braking&n=3": {
+      "file": "explorer/box-truck.fixed.json",
+      "live": "live/box-truck.fixed.json",
+      "run": "box-truck.fixed.json"
+    },
+    "body=flatbed&size=toco&cargo=sacks&position=gap&restraint=top_over&speed=40&road=dirt&weather=dry&event=long_vibration&straps=3.3.3": {
+      "file": "explorer/dirt-road.as_loaded.json",
+      "live": "live/dirt-road.as_loaded.json",
+      "run": "dirt-road.as_loaded.json"
+    },
+    "body=flatbed&size=toco&cargo=sacks&position=gap&restraint=direct&speed=40&road=dirt&weather=dry&event=long_vibration": {
+      "file": "explorer/dirt-road.fixed.json",
+      "live": "live/dirt-road.fixed.json",
+      "run": "dirt-road.fixed.json"
+    },
+    "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=top_over&speed=60&road=straight&weather=wet&event=emergency_braking": {
+      "file": "explorer/anti-slip-mat.as_loaded.json",
+      "live": "live/anti-slip-mat.as_loaded.json",
+      "run": "anti-slip-mat.as_loaded.json"
+    },
+    "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=mat&speed=60&road=straight&weather=wet&event=emergency_braking": {
+      "file": "explorer/anti-slip-mat.fixed.json",
+      "live": "live/anti-slip-mat.fixed.json",
+      "run": "anti-slip-mat.fixed.json"
+    },
+    "body=flatbed&size=semi&cargo=crate&position=gap&restraint=none&speed=60&road=mountain&weather=heavy_rain&event=full_trip&n=6": {
+      "file": "explorer/full-trip.as_loaded.json",
+      "live": "live/full-trip.as_loaded.json",
+      "run": "full-trip.as_loaded.json"
+    },
+    "body=flatbed&size=semi&cargo=crate&position=gap&restraint=top_over&speed=60&road=mountain&weather=heavy_rain&event=full_trip&n=6&straps=3.3.3.3.3.3": {
+      "file": "explorer/full-trip.fixed.json",
+      "live": "live/full-trip.fixed.json",
+      "run": "full-trip.fixed.json"
+    },
+    "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking": {
+      "file": "explorer/default.json",
+      "live": "live/explorer-default.json"
+    }
+  }
+}

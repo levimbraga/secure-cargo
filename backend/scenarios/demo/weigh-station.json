@@ -1,9 +1,10 @@
 {
   "id": "weigh-station",
   "title": "Weigh station",
-  "summary": "A 6 t machine loaded at the back: its chains hold it over the speed bump, but the rear axle carries 11.35 t, above the 10 t legal limit. Moving the machine forward brings both axles within their limits.",
+  "summary": "An 8 t machine chained near the back: it holds over the speed bump, but the rear axle carries 11.9 t, above the 10 t legal limit, and the steering axle is left with 2.1 t. Moved forward, over the middle of the wheelbase, both axles are within their limits.",
   "event": {
     "kind": "speed_bump",
+    "segments": null,
     "speed_kmh": 20.0,
     "road_surface": "dry",
     "fog": false,
@@ -23,7 +24,9 @@
         "height_m": 1.2,
         "rated_capacity_n": null
       },
+      "body": "flatbed",
       "side_rail_height_m": 0.0,
+      "rear_wall_height_m": 0.0,
       "anchor_points": [
         {
           "id": "L0",
@@ -295,7 +298,8 @@
           ],
           "rated_capacity_n": null
         }
-      ]
+      ],
+      "blocks": []
     },
     "vehicle": {
       "axle_groups": [
@@ -311,18 +315,22 @@
           "position_x_m": -0.8,
           "tare_load_kg": 2600.0
         }
-      ]
+      ],
+      "payload_kg": 8000.0
     },
     "units": [
       {
-        "id": "machine",
+        "id": "machine-1",
         "label": "Machine on a steel skid",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           2.0,
           1.6,
           1.2
         ],
-        "mass_kg": 6000.0,
+        "mass_kg": 8000.0,
         "position_m": [
           -1.6,
           0.0,
@@ -331,50 +339,14 @@
         "material": "steel_crate",
         "friction_coefficient": null,
         "stackable": true
-      },
-      {
-        "id": "crate-1",
-        "label": "Crate of parts",
-        "size_m": [
-          1.2,
-          1.0,
-          1.0
-        ],
-        "mass_kg": 1500.0,
-        "position_m": [
-          0.4,
-          0.0,
-          0.0
-        ],
-        "material": "sawn_wood",
-        "friction_coefficient": null,
-        "stackable": true
-      },
-      {
-        "id": "crate-2",
-        "label": "Crate of parts",
-        "size_m": [
-          1.2,
-          1.0,
-          1.0
-        ],
-        "mass_kg": 1500.0,
-        "position_m": [
-          2.0,
-          0.0,
-          0.0
-        ],
-        "material": "sawn_wood",
-        "friction_coefficient": null,
-        "stackable": true
       }
     ],
     "lashings": [
       {
-        "id": "machine-chain-front-left",
+        "id": "machine-1-chain-front-left",
         "kind": "chain",
         "routing": "direct",
-        "unit_id": "machine",
+        "unit_id": "machine-1",
         "anchor_ids": [
           "L8"
         ],
@@ -389,10 +361,10 @@
         "breaking_strength_n": null
       },
       {
-        "id": "machine-chain-front-right",
+        "id": "machine-1-chain-front-right",
         "kind": "chain",
         "routing": "direct",
-        "unit_id": "machine",
+        "unit_id": "machine-1",
         "anchor_ids": [
           "R8"
         ],
@@ -407,10 +379,10 @@
         "breaking_strength_n": null
       },
       {
-        "id": "machine-chain-rear-left",
+        "id": "machine-1-chain-rear-left",
         "kind": "chain",
         "routing": "direct",
-        "unit_id": "machine",
+        "unit_id": "machine-1",
         "anchor_ids": [
           "L0"
         ],
@@ -425,10 +397,10 @@
         "breaking_strength_n": null
       },
       {
-        "id": "machine-chain-rear-right",
+        "id": "machine-1-chain-rear-right",
         "kind": "chain",
         "routing": "direct",
-        "unit_id": "machine",
+        "unit_id": "machine-1",
         "anchor_ids": [
           "R0"
         ],
@@ -439,96 +411,6 @@
         ],
         "pretension_n": 2500.0,
         "lashing_capacity_n": 40000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-1-s1",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-1",
-        "anchor_ids": [
-          "L7",
-          "R7"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-1-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-1",
-        "anchor_ids": [
-          "L8",
-          "R8"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-1-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-1",
-        "anchor_ids": [
-          "L9",
-          "R9"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-2-s1",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-2",
-        "anchor_ids": [
-          "L11",
-          "R11"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-2-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-2",
-        "anchor_ids": [
-          "L12",
-          "R12"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-2-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-2",
-        "anchor_ids": [
-          "L13",
-          "R13"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
         "elongation_at_lc": null,
         "breaking_strength_n": null
       }
@@ -547,7 +429,9 @@
         "height_m": 1.2,
         "rated_capacity_n": null
       },
+      "body": "flatbed",
       "side_rail_height_m": 0.0,
+      "rear_wall_height_m": 0.0,
       "anchor_points": [
         {
           "id": "L0",
@@ -819,7 +703,8 @@
           ],
           "rated_capacity_n": null
         }
-      ]
+      ],
+      "blocks": []
     },
     "vehicle": {
       "axle_groups": [
@@ -835,72 +720,40 @@
           "position_x_m": -0.8,
           "tare_load_kg": 2600.0
         }
-      ]
+      ],
+      "payload_kg": 8000.0
     },
     "units": [
       {
-        "id": "machine",
+        "id": "machine-1",
         "label": "Machine on a steel skid",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
         "size_m": [
           2.0,
           1.6,
           1.2
         ],
-        "mass_kg": 6000.0,
+        "mass_kg": 8000.0,
         "position_m": [
-          1.2,
+          0.4,
           0.0,
           0.0
         ],
         "material": "steel_crate",
         "friction_coefficient": null,
         "stackable": true
-      },
-      {
-        "id": "crate-1",
-        "label": "Crate of parts",
-        "size_m": [
-          1.2,
-          1.0,
-          1.0
-        ],
-        "mass_kg": 1500.0,
-        "position_m": [
-          -0.8,
-          0.0,
-          0.0
-        ],
-        "material": "sawn_wood",
-        "friction_coefficient": null,
-        "stackable": true
-      },
-      {
-        "id": "crate-2",
-        "label": "Crate of parts",
-        "size_m": [
-          1.2,
-          1.0,
-          1.0
-        ],
-        "mass_kg": 1500.0,
-        "position_m": [
-          -2.4,
-          0.0,
-          0.0
-        ],
-        "material": "sawn_wood",
-        "friction_coefficient": null,
-        "stackable": true
       }
     ],
     "lashings": [
       {
-        "id": "machine-chain-front-left",
+        "id": "machine-1-chain-front-left",
         "kind": "chain",
         "routing": "direct",
-        "unit_id": "machine",
+        "unit_id": "machine-1",
         "anchor_ids": [
-          "L14"
+          "L13"
         ],
         "attachment_point_m": [
           1.0,
@@ -913,12 +766,12 @@
         "breaking_strength_n": null
       },
       {
-        "id": "machine-chain-front-right",
+        "id": "machine-1-chain-front-right",
         "kind": "chain",
         "routing": "direct",
-        "unit_id": "machine",
+        "unit_id": "machine-1",
         "anchor_ids": [
-          "R14"
+          "R13"
         ],
         "attachment_point_m": [
           1.0,
@@ -931,12 +784,12 @@
         "breaking_strength_n": null
       },
       {
-        "id": "machine-chain-rear-left",
+        "id": "machine-1-chain-rear-left",
         "kind": "chain",
         "routing": "direct",
-        "unit_id": "machine",
+        "unit_id": "machine-1",
         "anchor_ids": [
-          "L5"
+          "L3"
         ],
         "attachment_point_m": [
           -1.0,
@@ -949,12 +802,12 @@
         "breaking_strength_n": null
       },
       {
-        "id": "machine-chain-rear-right",
+        "id": "machine-1-chain-rear-right",
         "kind": "chain",
         "routing": "direct",
-        "unit_id": "machine",
+        "unit_id": "machine-1",
         "anchor_ids": [
-          "R5"
+          "R3"
         ],
         "attachment_point_m": [
           -1.0,
@@ -963,99 +816,13 @@
         ],
         "pretension_n": 2500.0,
         "lashing_capacity_n": 40000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-1-s1",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-1",
-        "anchor_ids": [
-          "L4",
-          "R4"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-1-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-1",
-        "anchor_ids": [
-          "L5",
-          "R5"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-1-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-1",
-        "anchor_ids": [
-          "L6",
-          "R6"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-2-s1",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-2",
-        "anchor_ids": [
-          "L0",
-          "R0"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-2-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-2",
-        "anchor_ids": [
-          "L1",
-          "R1"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "crate-2-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "crate-2",
-        "anchor_ids": [
-          "L2",
-          "R2"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
         "elongation_at_lc": null,
         "breaking_strength_n": null
       }
     ]
+  },
+  "explorer": {
+    "as_loaded": "body=flatbed&size=toco&cargo=machine&position=rear&restraint=chain&speed=20&road=urban&weather=dry&event=speed_bump&kg=8000&moves=0_-1.60_0.00",
+    "fixed": "body=flatbed&size=toco&cargo=machine&position=rear&restraint=chain&speed=20&road=urban&weather=dry&event=speed_bump&kg=8000&moves=0_0.40_0.00"
   }
 }

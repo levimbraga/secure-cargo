@@ -1,0 +1,1103 @@
+{
+  "examples": [
+    "emergency-braking",
+    "sharp-curve",
+    "rope-lashing",
+    "steel-coil",
+    "weigh-station",
+    "box-truck",
+    "dirt-road",
+    "anti-slip-mat",
+    "full-trip"
+  ],
+  "dimensions": [
+    {
+      "id": "body",
+      "options": [
+        {
+          "id": "flatbed",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "fixed"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "fixed"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "fixed"
+            },
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "box",
+          "covered_by": [
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "curtain_sider",
+          "covered_by": []
+        }
+      ]
+    },
+    {
+      "id": "size",
+      "options": [
+        {
+          "id": "vuc",
+          "covered_by": [
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "toco",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "fixed"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "truck",
+          "covered_by": [
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "semi",
+          "covered_by": [
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cargo",
+      "options": [
+        {
+          "id": "wood_pallet",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "plastic_pallet",
+          "covered_by": [
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "crate",
+          "covered_by": [
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "drum",
+          "covered_by": []
+        },
+        {
+          "id": "steel_coil",
+          "covered_by": [
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "machine",
+          "covered_by": [
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "tall_cabinet",
+          "covered_by": [
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "sacks",
+          "covered_by": [
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "long_pipes",
+          "covered_by": []
+        },
+        {
+          "id": "stacked_boxes",
+          "covered_by": [
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "fixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "position",
+      "options": [
+        {
+          "id": "headboard",
+          "covered_by": [
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "gap",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "fixed"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "fixed"
+            },
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "rear",
+          "covered_by": [
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "fixed"
+            },
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            }
+          ]
+        },
+        {
+          "id": "side",
+          "covered_by": []
+        },
+        {
+          "id": "stacked",
+          "covered_by": [
+            {
+              "example": "box-truck",
+              "variant": "fixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "restraint",
+      "options": [
+        {
+          "id": "none",
+          "covered_by": [
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            }
+          ]
+        },
+        {
+          "id": "top_over",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "direct",
+          "covered_by": [
+            {
+              "example": "dirt-road",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "chain",
+          "covered_by": [
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "rope",
+          "covered_by": [
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            }
+          ]
+        },
+        {
+          "id": "blocking",
+          "covered_by": [
+            {
+              "example": "box-truck",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "mat",
+          "covered_by": [
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "cradle",
+          "covered_by": [
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "speed",
+      "options": [
+        {
+          "id": "20_40",
+          "covered_by": [
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "fixed"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "50_70",
+          "covered_by": [
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            },
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "fixed"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "fixed"
+            },
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "80_100",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "road",
+      "options": [
+        {
+          "id": "straight",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "curvy",
+          "covered_by": [
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "mountain",
+          "covered_by": [
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "dirt",
+          "covered_by": [
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "potholed",
+          "covered_by": []
+        },
+        {
+          "id": "urban",
+          "covered_by": [
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "fixed"
+            },
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "fixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "weather",
+      "options": [
+        {
+          "id": "dry",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "fixed"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "wet",
+          "covered_by": [
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "heavy_rain",
+          "covered_by": [
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "mud",
+          "covered_by": []
+        },
+        {
+          "id": "fog",
+          "covered_by": [
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "fixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "event",
+      "options": [
+        {
+          "id": "emergency_braking",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            },
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "fixed"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "fixed"
+            },
+            {
+              "example": "full-trip",
+              "variant": "as_loaded",
+              "via": "full_trip"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed",
+              "via": "full_trip"
+            }
+          ]
+        },
+        {
+          "id": "lane_change",
+          "covered_by": [
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "sharp_curve",
+          "covered_by": [
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "pothole",
+          "covered_by": []
+        },
+        {
+          "id": "speed_bump",
+          "covered_by": [
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "fixed"
+            },
+            {
+              "example": "full-trip",
+              "variant": "as_loaded",
+              "via": "full_trip"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed",
+              "via": "full_trip"
+            }
+          ]
+        },
+        {
+          "id": "mountain_descent",
+          "covered_by": [
+            {
+              "example": "full-trip",
+              "variant": "as_loaded",
+              "via": "full_trip"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed",
+              "via": "full_trip"
+            }
+          ]
+        },
+        {
+          "id": "long_vibration",
+          "covered_by": [
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "full_trip",
+          "covered_by": [
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outcome",
+      "options": [
+        {
+          "id": "slide",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            }
+          ]
+        },
+        {
+          "id": "tip_over",
+          "covered_by": [
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            }
+          ]
+        },
+        {
+          "id": "roll",
+          "covered_by": [
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            }
+          ]
+        },
+        {
+          "id": "hit_headboard",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            }
+          ]
+        },
+        {
+          "id": "fall_off_side",
+          "covered_by": [
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            }
+          ]
+        },
+        {
+          "id": "strap_overload",
+          "covered_by": []
+        },
+        {
+          "id": "axle_overload",
+          "covered_by": [
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            }
+          ]
+        },
+        {
+          "id": "pretension_loss",
+          "covered_by": [
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

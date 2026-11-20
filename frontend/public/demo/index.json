@@ -6,6 +6,7 @@
       "summary": "Three 900 kg pallets with one strap each: under emergency braking from 80 km/h they slide forward and the first one hits the headboard. With two straps each they stay put.",
       "event": {
         "kind": "emergency_braking",
+        "segments": null,
         "speed_kmh": 80.0,
         "road_surface": "dry",
         "fog": false,
@@ -15,63 +16,15 @@
       "variants": {
         "as_loaded": {
           "file": "emergency-braking.as_loaded.json",
-          "scenario_hash": "35f584ce8eabc1c9c306a9049f4e41306ad86bd269998fac8995dc080944b882",
-          "status": "fail"
+          "scenario_hash": "b9138ae17dfafcf1d1d170b213a813b41706b99dad73841541fd814d26632d93",
+          "status": "fail",
+          "explorer": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=1.1.1"
         },
         "fixed": {
           "file": "emergency-braking.fixed.json",
-          "scenario_hash": "6ac3e484e00c4d5be4832ea90ea3cb6d706204ec48a29709e5b19740e2f27c40",
-          "status": "pass"
-        }
-      }
-    },
-    {
-      "id": "weigh-station",
-      "title": "Weigh station",
-      "summary": "A 6 t machine loaded at the back: its chains hold it over the speed bump, but the rear axle carries 11.35 t, above the 10 t legal limit. Moving the machine forward brings both axles within their limits.",
-      "event": {
-        "kind": "speed_bump",
-        "speed_kmh": 20.0,
-        "road_surface": "dry",
-        "fog": false,
-        "curve_radius_m": null,
-        "grade_percent": null
-      },
-      "variants": {
-        "as_loaded": {
-          "file": "weigh-station.as_loaded.json",
-          "scenario_hash": "f5ce350d4a3209e70eed75ce15af6f637d298cbca817a45d85101964e71a8b22",
-          "status": "fail"
-        },
-        "fixed": {
-          "file": "weigh-station.fixed.json",
-          "scenario_hash": "5ff749a700b1dc357f23ae491ec1a687e791e09690687c60b2da9c8a456fdf95",
-          "status": "pass"
-        }
-      }
-    },
-    {
-      "id": "rope-lashing",
-      "title": "Rope lashing",
-      "summary": "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be tightened enough, so the stacks slide in a sudden lane change. Rope is also prohibited as cargo lashing (CONTRAN Resolution 945/2022). Anti-slip mats under the pallets and two ratchet straps per stack hold them.",
-      "event": {
-        "kind": "lane_change",
-        "speed_kmh": 80.0,
-        "road_surface": "dry",
-        "fog": false,
-        "curve_radius_m": null,
-        "grade_percent": null
-      },
-      "variants": {
-        "as_loaded": {
-          "file": "rope-lashing.as_loaded.json",
-          "scenario_hash": "1af57a9c4e9e8bc6710c9ee97029dede499939f7c176aa0c9ad0a66b5f6855bf",
-          "status": "fail"
-        },
-        "fixed": {
-          "file": "rope-lashing.fixed.json",
-          "scenario_hash": "201cd82b3879fd878f9b40dc98a51ffb835a6cf1eb1d83c0aecba95396a91892",
-          "status": "pass"
+          "scenario_hash": "7aeb3e5f1b0925652c5f61d4cd913ec9cd68a473cd8cef9ea1c914ad268a02c2",
+          "status": "pass",
+          "explorer": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=2.2.2"
         }
       }
     },
@@ -81,6 +34,7 @@
       "summary": "Two tall cabinets standing free behind the headboard: in a sharp curve at 60 km/h they tip over. Two straps over each one keep them upright.",
       "event": {
         "kind": "sharp_curve",
+        "segments": null,
         "speed_kmh": 60.0,
         "road_surface": "dry",
         "fog": false,
@@ -90,13 +44,215 @@
       "variants": {
         "as_loaded": {
           "file": "sharp-curve.as_loaded.json",
-          "scenario_hash": "0cdfcf489c22566cbc146c328b559758e2c5222dc2e0bfdd870dd8535dd5d934",
-          "status": "fail"
+          "scenario_hash": "6d6991cc5f9127ec6a6b5e6f2b9b80813fca312aa40222c84b9abc3859e54040",
+          "status": "fail",
+          "explorer": "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=none&speed=60&road=curvy&weather=dry&event=sharp_curve"
         },
         "fixed": {
           "file": "sharp-curve.fixed.json",
-          "scenario_hash": "5a43e8e24fa4f1cb0e0663ba8feb9b840cb6a53476b70dc102af736b03c49954",
-          "status": "pass"
+          "scenario_hash": "c6c80fd93463bb03ff6dbac0690762d72345daa28d7e2f64f4d9bf34f4cc74b0",
+          "status": "pass",
+          "explorer": "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=top_over&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=2.2"
+        }
+      }
+    },
+    {
+      "id": "rope-lashing",
+      "title": "Rope lashing",
+      "summary": "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be tightened enough, so the stacks slide in a sudden lane change. Rope is also prohibited as cargo lashing (CONTRAN Resolution 945/2022). Anti-slip mats under the pallets and two ratchet straps per stack hold them.",
+      "event": {
+        "kind": "lane_change",
+        "segments": null,
+        "speed_kmh": 80.0,
+        "road_surface": "dry",
+        "fog": false,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "rope-lashing.as_loaded.json",
+          "scenario_hash": "cb7a135e66ab063e0f568004d9da4b27aadb293a8dcc32eaf495f2eb9a452032",
+          "status": "fail",
+          "explorer": "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=rope&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2"
+        },
+        "fixed": {
+          "file": "rope-lashing.fixed.json",
+          "scenario_hash": "a541a2a032736c10d61b70924322159da639415f6708415861da5f6891781f5d",
+          "status": "pass",
+          "explorer": "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=mat&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2"
+        }
+      }
+    },
+    {
+      "id": "steel-coil",
+      "title": "Steel coil",
+      "summary": "A 10 t steel coil lying across the bed with nothing in front of it: when the truck brakes on a wet road it rolls forward into the headboard. A cradle of two 20 cm chocks holds it.",
+      "event": {
+        "kind": "emergency_braking",
+        "segments": null,
+        "speed_kmh": 60.0,
+        "road_surface": "wet",
+        "fog": false,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "steel-coil.as_loaded.json",
+          "scenario_hash": "c14ec1085323a2d01bdac40b262d2de30a349696e1d747c87dcca32209e935e3",
+          "status": "fail",
+          "explorer": "body=flatbed&size=truck&cargo=steel_coil&position=gap&restraint=none&speed=60&road=straight&weather=wet&event=emergency_braking&moves=0_0.00_0.00"
+        },
+        "fixed": {
+          "file": "steel-coil.fixed.json",
+          "scenario_hash": "a2bef9d50ebd05c217d588e31e15f0173051ed4d683aa9decacf33a3736596c1",
+          "status": "pass",
+          "explorer": "body=flatbed&size=truck&cargo=steel_coil&position=gap&restraint=cradle&speed=60&road=straight&weather=wet&event=emergency_braking&moves=0_0.00_0.00"
+        }
+      }
+    },
+    {
+      "id": "weigh-station",
+      "title": "Weigh station",
+      "summary": "An 8 t machine chained near the back: it holds over the speed bump, but the rear axle carries 11.9 t, above the 10 t legal limit, and the steering axle is left with 2.1 t. Moved forward, over the middle of the wheelbase, both axles are within their limits.",
+      "event": {
+        "kind": "speed_bump",
+        "segments": null,
+        "speed_kmh": 20.0,
+        "road_surface": "dry",
+        "fog": false,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "weigh-station.as_loaded.json",
+          "scenario_hash": "8168f47a5eced2b5b007cef40f7fb764d258562fcdcb48d76d6afb6aa122cb7b",
+          "status": "fail",
+          "explorer": "body=flatbed&size=toco&cargo=machine&position=rear&restraint=chain&speed=20&road=urban&weather=dry&event=speed_bump&kg=8000&moves=0_-1.60_0.00"
+        },
+        "fixed": {
+          "file": "weigh-station.fixed.json",
+          "scenario_hash": "5e10c2f1886a32675389d3b2dc25694bccb6bc89486f216c06aa3d23da6517f2",
+          "status": "pass",
+          "explorer": "body=flatbed&size=toco&cargo=machine&position=rear&restraint=chain&speed=20&road=urban&weather=dry&event=speed_bump&kg=8000&moves=0_0.40_0.00"
+        }
+      }
+    },
+    {
+      "id": "box-truck",
+      "title": "Box truck",
+      "summary": "Six loose cartons at the back of a box truck: braking hard in the fog, they slide 2.6 m and slam into the front wall far harder than it is built to take. Stacked against the front wall with a load bar behind them, they stay put.",
+      "event": {
+        "kind": "emergency_braking",
+        "segments": null,
+        "speed_kmh": 50.0,
+        "road_surface": "dry",
+        "fog": true,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "box-truck.as_loaded.json",
+          "scenario_hash": "c4b7ba4d75f68a2a45bffb711e0208fb9056789392ef926f391a4015f681978e",
+          "status": "fail",
+          "explorer": "body=box&size=vuc&cargo=stacked_boxes&position=rear&restraint=none&speed=50&road=urban&weather=fog&event=emergency_braking&n=6"
+        },
+        "fixed": {
+          "file": "box-truck.fixed.json",
+          "scenario_hash": "24e72986cf2ab6a2d5f5ad363eda7eee1d457902e41552c61f4043e854d44a21",
+          "status": "pass",
+          "explorer": "body=box&size=vuc&cargo=stacked_boxes&position=stacked&restraint=blocking&speed=50&road=urban&weather=fog&event=emergency_braking&n=3"
+        }
+      }
+    },
+    {
+      "id": "dirt-road",
+      "title": "Dirt road",
+      "summary": "Pallets of sacks under three straps each: enough for an emergency stop on this dusty deck while the straps are tight. But the dirt road's vibration halves their tension, and the pallets slide when the truck brakes at the end. Diagonal straps, which hold by their strength rather than their tension, keep them in place.",
+      "event": {
+        "kind": "long_vibration",
+        "segments": null,
+        "speed_kmh": 40.0,
+        "road_surface": "gravel",
+        "fog": false,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "dirt-road.as_loaded.json",
+          "scenario_hash": "e865de4cd4c163ebe18f9cf5a669e844aebda0bb2dd3a4a582acd06715976cf8",
+          "status": "fail",
+          "explorer": "body=flatbed&size=toco&cargo=sacks&position=gap&restraint=top_over&speed=40&road=dirt&weather=dry&event=long_vibration&straps=3.3.3"
+        },
+        "fixed": {
+          "file": "dirt-road.fixed.json",
+          "scenario_hash": "cae5b988ac6c817557f468447307cf2bb7121f8c69135972007c48de3f21d16e",
+          "status": "pass",
+          "explorer": "body=flatbed&size=toco&cargo=sacks&position=gap&restraint=direct&speed=40&road=dirt&weather=dry&event=long_vibration"
+        }
+      }
+    },
+    {
+      "id": "anti-slip-mat",
+      "title": "Anti-slip mat",
+      "summary": "Plastic pallets on a plywood floor under two straps each: braking on a wet road, they slide, because plastic on plywood has a friction factor of only 0.2. On rubber anti-slip mats (0.6) the same two straps hold them.",
+      "event": {
+        "kind": "emergency_braking",
+        "segments": null,
+        "speed_kmh": 60.0,
+        "road_surface": "wet",
+        "fog": false,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "anti-slip-mat.as_loaded.json",
+          "scenario_hash": "2ae31263ac683a098210a5434021b8e06be5a3c13f2bed259974e1ba18681f20",
+          "status": "fail",
+          "explorer": "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=top_over&speed=60&road=straight&weather=wet&event=emergency_braking"
+        },
+        "fixed": {
+          "file": "anti-slip-mat.fixed.json",
+          "scenario_hash": "fa613b9cfe0dca8bb02cc206ff2b851ff7c719faf934d2d07a6106df6bc890fc",
+          "status": "pass",
+          "explorer": "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=mat&speed=60&road=straight&weather=wet&event=emergency_braking"
+        }
+      }
+    },
+    {
+      "id": "full-trip",
+      "title": "Full trip",
+      "summary": "Six crates of parts left unlashed because they are heavy, on a semi-trailer going down the mountain to the port in heavy rain: braking on the descent they creep forward, and the emergency stop at the end throws them on. Three straps per crate, as EN 12195-1 asks, hold them for the whole trip.",
+      "event": {
+        "kind": "full_trip",
+        "segments": [
+          "mountain_descent",
+          "speed_bump",
+          "emergency_braking"
+        ],
+        "speed_kmh": 60.0,
+        "road_surface": "heavy_rain",
+        "fog": false,
+        "curve_radius_m": 40.0,
+        "grade_percent": 8.0
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "full-trip.as_loaded.json",
+          "scenario_hash": "ba9952d5032986d5b5dc58d2a18334d861d2decbeb61aef2a36e2ced6fada908",
+          "status": "fail",
+          "explorer": "body=flatbed&size=semi&cargo=crate&position=gap&restraint=none&speed=60&road=mountain&weather=heavy_rain&event=full_trip&n=6"
+        },
+        "fixed": {
+          "file": "full-trip.fixed.json",
+          "scenario_hash": "41f4c77cf3e1bdb2b5334fbbb46f0e6ae7a43dad7cabb8a81c870498a0b7abad",
+          "status": "pass",
+          "explorer": "body=flatbed&size=semi&cargo=crate&position=gap&restraint=top_over&speed=60&road=mountain&weather=heavy_rain&event=full_trip&n=6&straps=3.3.3.3.3.3"
         }
       }
     }
