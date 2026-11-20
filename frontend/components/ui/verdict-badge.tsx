@@ -5,13 +5,13 @@ type Verdict = "pass" | "fail" | "neutral";
 const styles: Record<Verdict, string> = {
   pass: "bg-pass-tint text-pass",
   fail: "bg-fail-tint text-fail",
-  neutral: "bg-surface text-muted-foreground",
+  neutral: "bg-surface text-gray",
 };
 
 function Icon({ verdict }: { verdict: Verdict }) {
   const common = {
-    width: 14,
-    height: 14,
+    width: 12,
+    height: 12,
     viewBox: "0 0 14 14",
     fill: "none",
     stroke: "currentColor",
@@ -54,7 +54,7 @@ export function VerdictBadge({
   return (
     <span
       className={cn(
-        "type-small inline-flex h-7 items-center gap-1.5 rounded-full px-3 font-medium",
+        "inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-[0.8125rem] font-medium",
         styles[verdict],
         className,
       )}

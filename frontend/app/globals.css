@@ -10,12 +10,11 @@
 :root {
   --paper: #f8f8f3;
   --ink: #191918;
-  --muted-ink: #636361;
+  --gray: #636361;
   --surface: #e9e9e4;
-  --hairline: #d6d6cf;
+  --hairline: #deded8;
   --control-border: #8a8a86;
   --amber: #f2a100;
-  --amber-ink: #8f5200;
   --fail: #b42318;
   --fail-tint: #fbe9e7;
   --pass: #136f33;
@@ -32,24 +31,24 @@
   --secondary: var(--surface);
   --secondary-foreground: var(--ink);
   --muted: var(--surface);
-  --muted-foreground: var(--muted-ink);
+  --muted-foreground: var(--gray);
   --accent: var(--surface);
   --accent-foreground: var(--ink);
   --destructive: var(--fail);
   --border: var(--hairline);
   --input: var(--control-border);
   --ring: var(--ink);
-  --radius: 0.5rem;
+  --radius: 0.25rem;
 }
 
 @theme inline {
   --color-paper: var(--paper);
   --color-ink: var(--ink);
+  --color-gray: var(--gray);
   --color-surface: var(--surface);
   --color-hairline: var(--hairline);
   --color-control: var(--control-border);
   --color-amber: var(--amber);
-  --color-amber-ink: var(--amber-ink);
   --color-fail: var(--fail);
   --color-fail-tint: var(--fail-tint);
   --color-pass: var(--pass);
@@ -74,17 +73,14 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-instrument-serif);
-  --font-heading: var(--font-instrument-serif);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-newsreader);
+  --font-mono: var(--font-fragment-mono);
+  --font-heading: var(--font-newsreader);
 
-  --container-reading: 40rem;
-  --container-wide: 80rem;
-
-  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-sm: var(--radius);
   --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) * 1.5);
+  --radius-lg: calc(var(--radius) * 2);
 }
 
 @layer base {
@@ -99,7 +95,7 @@
   body {
     @apply bg-background text-foreground;
     font-size: 1.0625rem;
-    line-height: 1.6;
+    line-height: 1.5;
   }
   :focus-visible {
     outline: 2px solid var(--ink);
@@ -112,78 +108,81 @@
   }
 }
 
-/* Type scale */
-@utility type-display {
+/* Type scale: small on purpose. Nothing on the site is larger than 28px. */
+@utility type-hero {
   font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: clamp(2.75rem, 7vw + 1rem, 5.5rem);
-  line-height: 1.02;
-  letter-spacing: -0.01em;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 0.6vw + 1.3rem, 1.75rem);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--ink);
 }
-@utility type-h2 {
+@utility type-hero-sub {
   font-family: var(--font-serif);
   font-weight: 400;
-  font-size: clamp(2rem, 3vw + 1.25rem, 3.25rem);
-  line-height: 1.08;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: var(--gray);
 }
-@utility type-h3 {
+@utility type-heading {
   font-family: var(--font-serif);
-  font-weight: 400;
+  font-weight: 500;
   font-size: 1.5rem;
   line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
-@utility type-lead {
-  font-size: clamp(1.125rem, 0.5vw + 1rem, 1.3125rem);
+@utility type-card-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 1.1875rem;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+@utility type-body {
+  font-size: 1.0625rem;
   line-height: 1.5;
+  color: var(--gray);
 }
 @utility type-small {
   font-size: 0.875rem;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 @utility type-label {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   line-height: 1.3;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted-ink);
-}
-@utility type-stat {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: clamp(2.5rem, 4vw + 1rem, 4rem);
-  line-height: 1;
+  color: var(--gray);
 }
 
-/* Layout */
-@utility shell {
+/* Layout: a centered reading column and a centered wide block. */
+@utility col {
   margin-inline: auto;
   width: 100%;
-  max-width: var(--container-wide);
-  padding-inline: 1.25rem;
+  max-width: 47.5rem; /* 760px; 688px of content */
+  padding-inline: 1rem;
   @media (width >= 48rem) {
-    padding-inline: 2rem;
-  }
-  @media (width >= 80rem) {
-    padding-inline: 3rem;
+    padding-inline: 2.25rem;
   }
 }
-@utility section-y {
-  padding-block: 6rem;
-  @media (width >= 48rem) {
-    padding-block: 10rem;
-  }
+@utility wide {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 73rem; /* 1168px; 1136px of content */
+  padding-inline: 1rem;
 }
 
 /* Enter animation: applied by <RevealOnScroll />, only to blocks that start below the viewport. */
 [data-reveal].reveal-pending {
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(8px);
 }
 [data-reveal].reveal-run {
   transition:
-    opacity 500ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    opacity 600ms ease-out,
+    transform 600ms ease-out;
 }
 
 /* Hero subtitle: hidden until the typing starts; shown anyway if the script never runs. */
@@ -196,55 +195,22 @@
     opacity: 1;
   }
 }
-.typed-caret {
-  position: relative;
-  display: inline-block;
-  width: 0;
-  height: 1em;
-  vertical-align: -0.12em;
-}
-.typed-caret::after {
+/*
+ * The caret is an empty inline box drawn after the typed text. It takes no width and, unlike an
+ * inline-block, adds no line-break opportunity, so the lines wrap exactly as the full text does.
+ */
+.typed-text::after {
   content: "";
-  position: absolute;
-  inset-block: 0;
-  left: 1px;
-  width: 2px;
-  background: var(--ink);
+  margin-right: -2px;
+  border-right: 2px solid var(--gray);
 }
-.typed-caret[data-done="true"]::after {
-  animation: typed-caret-blink 1s steps(2, jump-none) 3 forwards;
+.typed-text[data-done="true"]::after {
+  animation: typed-caret-blink 1.1s steps(1, jump-none) infinite;
 }
 @keyframes typed-caret-blink {
-  from {
-    opacity: 1;
+  50% {
+    border-color: transparent;
   }
-  to {
-    opacity: 0;
-  }
-}
-
-/* Accordion visual cross-fade */
-.fade-in {
-  animation: fade-in 200ms ease-out both;
-}
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-}
-
-/* The 3D canvas must not trap vertical touch scrolling. */
-.scene-canvas canvas {
-  touch-action: pan-y !important;
-}
-
-/* Duotone treatment for placeholder imagery: ink on surface. */
-.duotone {
-  background: var(--surface);
-}
-.duotone img {
-  filter: grayscale(1) contrast(1.05);
-  mix-blend-mode: multiply;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -257,9 +223,6 @@
   }
   .typed-fallback {
     opacity: 1;
-    animation: none;
-  }
-  .fade-in {
     animation: none;
   }
 }
