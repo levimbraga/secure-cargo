@@ -86,4 +86,11 @@ describe("explain", () => {
     expect(reason.values.after).toBeLessThan(0.75 * (reason.values.before ?? 0));
     expect(reason.values.inertia).toBeGreaterThan(reason.values.friction ?? Infinity);
   });
+
+  it("takes friction from instants when the unit stands on the floor", () => {
+    const result = run("emergency-braking", "as_loaded");
+    const reason = explain(result, result.keyframes);
+    // 900 kg on plywood (0.45) under one 300 daN strap: at least the weight's 4 kN.
+    expect(reason.values.friction).toBeGreaterThan(3.9);
+  });
 });

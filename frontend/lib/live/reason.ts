@@ -51,9 +51,15 @@ export function worstBalance(
   let worst = { inertia: 0, friction: 0, frame: 0 };
   let margin = -Infinity;
   if (!unit) return worst;
+  // Instants when the unit stands on the floor with at least half its weight. When it bounces
+  // (after hitting the unit in front, over a pothole) the floor force is not what braking
+  // fights, and friction would read far lower than it was.
+  const weight = (unit.mass_kg ?? 0) * GRAVITY;
+  const standing = doc.frames.some((frame) => (frame.units[unitIndex]?.n ?? 0) >= 0.5 * weight);
   doc.frames.forEach((frame, index) => {
     const pose = frame.units[unitIndex];
     if (!pose) return;
+    if (standing && (pose.n ?? 0) < 0.5 * weight) return;
     const forces = unitForces(
       unit.mass_kg ?? 0,
       unit.friction_coefficient ?? 0,
