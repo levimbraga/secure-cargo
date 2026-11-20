@@ -89,11 +89,15 @@ class Scene:
     has_headboard: bool
 
 
-def build_scene(scenario: Scenario, *, surface_friction_cap: float | None = None) -> Scene:
+def build_scene(
+    scenario: Scenario, *, surface_friction_cap: float | None = None, visual: bool = False
+) -> Scene:
     """Generate the MJCF document for a scenario.
 
     ``surface_friction_cap`` is the upper limit the trip conditions put on cargo friction
-    (a dirty deck); ``None`` means the material table applies unchanged.
+    (a dirty deck); ``None`` means the material table applies unchanged. ``visual`` adds what
+    MuJoCo's own renderer needs to make a readable picture (a checkered ground, colours, a
+    light, translucent cargo); it does not touch anything the physics uses.
     """
     bed = scenario.bed
     root = ET.Element("mujoco", model=f"securecargo-{scenario.id}")
@@ -276,12 +280,74 @@ def build_scene(scenario: Scenario, *, surface_friction_cap: float | None = None
             )
             _pair(contact, upper.geom, lower.geom, friction.coefficient)
 
+    if visual:
+        _add_visuals(root)
     ET.indent(root)
     return Scene(
         xml=ET.tostring(root, encoding="unicode"),
         units=tuple(units),
         lashings=tuple(lashings),
         has_headboard=bed.headboard is not None,
+    )
+
+
+def _add_visuals(root: ET.Element) -> None:
+    """Appearance for MuJoCo's renderer: the classic checkered ground and translucent bodies."""
+    visual = ET.SubElement(root, "visual")
+    ET.SubElement(visual, "global", offwidth="1280", offheight="800")
+    ET.SubElement(
+        visual, "headlight", ambient="0.45 0.45 0.45", diffuse="0.5 0.5 0.5", specular="0 0 0"
+    )
+    ET.SubElement(visual, "map", force="0.0002")  # length of a force arrow per newton
+    ET.SubElement(visual, "scale", contactwidth="0.12", contactheight="0.03", forcewidth="0.035")
+    ET.SubElement(visual, "rgba", contactforce="0.85 0.1 0.1 1", contactpoint="0.95 0.65 0 1")
+    asset = ET.SubElement(root, "asset")
+    ET.SubElement(
+        asset,
+        "texture",
+        type="skybox",
+        builtin="gradient",
+        rgb1="0.93 0.93 0.9",
+        rgb2="0.75 0.77 0.8",
+        width="256",
+        height="256",
+    )
+    ET.SubElement(
+        asset,
+        "texture",
+        name="checker",
+        type="2d",
+        builtin="checker",
+        rgb1="0.82 0.82 0.79",
+        rgb2="0.7 0.7 0.67",
+        width="512",
+        height="512",
+    )
+    # One checker square is one metre of road.
+    ET.SubElement(
+        asset, "material", name="checker", texture="checker", texrepeat="2 2", texuniform="true"
+    )
+    colours = {"unit_geom:": "0.83 0.69 0.48 0.45", "bed_": "0.62 0.64 0.66 1"}
+    for geom in root.iter("geom"):
+        name = geom.get("name", "")
+        if name == ROAD_GEOM:
+            geom.set("material", "checker")
+            continue
+        for prefix, rgba in colours.items():
+            if name.startswith(prefix):
+                geom.set("rgba", rgba)
+    for tendon in root.iter("spatial"):
+        tendon.set("width", "0.02")
+        tendon.set("rgba", "0.95 0.63 0 1")
+    worldbody = root.find("worldbody")
+    assert worldbody is not None
+    ET.SubElement(
+        worldbody,
+        "light",
+        pos="-3 -4 9",
+        dir="0.3 0.4 -1",
+        diffuse="0.6 0.6 0.6",
+        castshadow="true",
     )
 
 

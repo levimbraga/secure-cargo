@@ -126,3 +126,12 @@ def test_the_static_index_lists_every_run() -> None:
         assert entry["variants"]["fixed"]["status"] == "pass"
         for variant in VARIANTS:
             assert (STATIC_DIR / entry["variants"][variant]["file"]).is_file()
+
+
+def test_every_run_has_its_raw_mujoco_render() -> None:
+    # Written by scripts/render_demo_videos.py with MuJoCo's own renderer.
+    for demo in DEMOS:
+        for variant in VARIANTS:
+            video = STATIC_DIR / "video" / f"{demo.id}.{variant}.mp4"
+            assert video.is_file() and video.with_suffix(".jpg").is_file()
+            assert 20_000 < video.stat().st_size < 400_000
