@@ -2,19 +2,24 @@ import Image, { type StaticImageData } from "next/image";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
+import type { DemoId } from "@/lib/demo";
 import braking from "@/public/media/scenario-braking.jpg";
 import curve from "@/public/media/scenario-curve.jpg";
 import rope from "@/public/media/scenario-rope.jpg";
 import weighStation from "@/public/media/scenario-weigh-station.jpg";
 
-const SCENARIOS: { id: "braking" | "weighStation" | "rope" | "curve"; image: StaticImageData }[] = [
-  { id: "braking", image: braking },
-  { id: "weighStation", image: weighStation },
-  { id: "rope", image: rope },
-  { id: "curve", image: curve },
+const SCENARIOS: {
+  id: "braking" | "weighStation" | "rope" | "curve";
+  demo: DemoId;
+  image: StaticImageData;
+}[] = [
+  { id: "braking", demo: "emergency-braking", image: braking },
+  { id: "weighStation", demo: "weigh-station", image: weighStation },
+  { id: "rope", demo: "rope-lashing", image: rope },
+  { id: "curve", demo: "sharp-curve", image: curve },
 ];
 
-/** Four demo scenarios as duotone photo cards. Until they exist in the app, each opens `/app`. */
+/** Four demo scenarios as duotone photo cards. Each opens its replay in the app. */
 export function Scenarios() {
   const t = useTranslations("Landing.scenarios");
 
@@ -22,7 +27,7 @@ export function Scenarios() {
     <ul className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 md:gap-x-4 lg:grid-cols-4">
       {SCENARIOS.map((scenario) => (
         <li key={scenario.id}>
-          <Link href="/app" className="group block">
+          <Link href={`/app/scenarios/${scenario.demo}`} className="group block">
             <Image
               src={scenario.image}
               alt=""
