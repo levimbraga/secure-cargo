@@ -31,10 +31,10 @@ The project is being built in phases during the hackathon. What exists today:
 
 - `backend/` — FastAPI service with `GET /health` (reports the API and MuJoCo versions), a storage
   interface with SQLite and in-memory backends, and a linux/amd64 Docker image.
-- `frontend/` — Next.js app with the landing page at `/` (including a 3D replay of a braking event, for now
-  a hand-made placeholder animation), the app shell at `/app` (shows the API health), and an English /
-  Brazilian Portuguese language switcher.
-- `docs/design.md` — the design system: tokens, type, components, motion and the keyframes contract.
+- `frontend/` — Next.js app with the landing page at `/`, the app shell at `/app` (shows the API health), and
+  an English / Brazilian Portuguese language switcher.
+- `docs/design.md` — the design system: tokens, type, layout, components, imagery and motion, plus the
+  keyframes contract for the future 3D replay.
 - `backend/worker/` — Cloudflare Worker that starts the API container on demand and forwards requests to it.
 - CI on every push to `main`.
 
@@ -63,9 +63,9 @@ backend/            FastAPI service
   worker/           Cloudflare Worker that routes requests to the API container
 frontend/           Next.js app
   app/[locale]/     pages (landing at /, app at /app)
-  components/       UI components (landing sections, 3D scene, base components)
-  content/          keyframes for the 3D scene, landing-page figures
-  scripts/          placeholder keyframes generator, media renderer
+  components/       UI components (site chrome, landing sections, base components)
+  content/          placeholder keyframes for the future 3D replay
+  scripts/          photo treatment, placeholder keyframes generator
   i18n/             locale routing
   messages/         en.json (default) and pt-BR.json — every UI string lives here
 .github/workflows/  CI
@@ -113,18 +113,17 @@ uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pyt
 pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
-### Landing-page media
+### Landing-page photographs
 
-The poster, the phone video and the scenario stills are rendered from the project's own 3D scene. To
-regenerate them, run the dev server and, in another terminal:
+The photographs are free-license images (see [Photo credits](#photo-credits)) turned into black and white
+with grain, or into duotones, by a script. To regenerate them from the originals:
 
 ```bash
 cd frontend
-node scripts/generate-placeholder-keyframes.mjs
-CHROME_PATH=/path/to/chrome node scripts/render-media.mjs
+node scripts/process-photos.mjs /path/to/originals
 ```
 
-This needs `ffmpeg` and a Chromium or Chrome binary.
+This needs `ffmpeg`. The originals are not in this repository.
 
 ### Backend container
 
@@ -169,6 +168,21 @@ Hack Brasil allows and recommends AI tools. This project is built with
 under the direction and review of the repository owner. At runtime, the product uses the Claude API only to
 analyze cargo photos (and optionally to word explanations); the physics simulation, the rule checks and the
 planner are deterministic code.
+
+## Photo credits
+
+The photographs on the site come from [Unsplash](https://unsplash.com) and are used under the
+[Unsplash License](https://unsplash.com/license). They were cropped and converted to black and white or
+duotone, with grain added.
+
+| Image | Photographer | Source |
+| ----- | ------------ | ------ |
+| Hero (cargo straps) | [Haberdoedas](https://unsplash.com/@haberdoedas) | [photo](https://unsplash.com/photos/a-truck-with-a-bunch-of-wires-on-the-back-of-it-520ffcaITVM) |
+| Loading dock | [Hannes Egler](https://unsplash.com/@egla) | [photo](https://unsplash.com/photos/closeup-photo-of-parking-lot-nT4k2JDtwTQ) |
+| Emergency braking | [Riley Crawford](https://unsplash.com/@ricrawfo) | [photo](https://unsplash.com/photos/white-truck-on-gray-road-during-daytime-99HLgU4IHLY) |
+| Weigh station | [iridial](https://unsplash.com/@iridial_) | [photo](https://unsplash.com/photos/three-tires-on-a-large-vehicle-0fiAHT8u48Y) |
+| Rope lashing | [Mugabi Owen](https://unsplash.com/@spenz_official) | [photo](https://unsplash.com/photos/thick-rope-tied-with-a-knot-on-metal-bar-KZC9qnKD_-4) |
+| Sharp curve | [Zoshua Colah](https://unsplash.com/@zoshuacolah) | [photo](https://unsplash.com/photos/truck-on-a-winding-mountain-road-black-and-white-wmgLXFpLvqo) |
 
 ## License
 
