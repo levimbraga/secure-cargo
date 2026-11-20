@@ -23,6 +23,8 @@ load certificate plus a dashboard for carriers and cargo insurers.
 
 Built for [Hack Brasil 2026](https://hackbrasil.com), Logistics & Automation track.
 
+**Live:** <https://securecargo.app> · API health: <https://api.securecargo.app/health>
+
 ## Status
 
 The project is being built in phases during the hackathon. What exists today:
@@ -119,11 +121,12 @@ The image is pinned to linux/amd64, the platform Cloudflare Containers run.
 
 ## Deployment
 
-- **Frontend** — Vercel builds the `frontend/` directory on every push to `main`. The API base URL is the
-  `NEXT_PUBLIC_API_URL` environment variable of the Vercel project.
+- **Frontend** — Vercel builds the `frontend/` directory on every push to `main` and serves it at
+  `securecargo.app`. The API base URL is the `NEXT_PUBLIC_API_URL` environment variable of the Vercel project.
 - **Backend** — the Docker image runs on [Cloudflare Containers](https://developers.cloudflare.com/containers/)
-  behind the Worker in `backend/worker/`. The container starts on the first request and stops after ten
-  minutes without traffic, so the first call after a pause takes a few seconds longer.
+  behind the Worker in `backend/worker/`, at `api.securecargo.app`. The container starts on the first request
+  and stops after ten minutes without traffic, so the first call after a pause takes a few seconds longer.
+  The landing page sends a background request to `/health` to start it before the visitor opens the app.
 
 Deploying the backend needs Docker running locally and a Wrangler login (`pnpm exec wrangler login`):
 
