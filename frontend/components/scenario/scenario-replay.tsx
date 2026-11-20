@@ -45,6 +45,11 @@ const VIEW: Record<DemoId, CameraView> = {
   "weigh-station": "hero",
   "rope-lashing": "rear",
   "sharp-curve": "rear",
+  "steel-coil": "hero",
+  "box-truck": "hero",
+  "dirt-road": "hero",
+  "anti-slip-mat": "hero",
+  "full-trip": "hero",
 };
 
 export type ScenarioReplayProps = {

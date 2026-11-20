@@ -12,7 +12,11 @@ import { GRAVITY, unitForces } from "@/lib/replay";
 export type ReasonKey =
   | "slides"
   | "slidesIntoHeadboard"
+  | "slidesIntoWall"
+  | "slidesAfterLoosening"
   | "slidesLoose"
+  | "rolls"
+  | "rollsIntoHeadboard"
   | "tips"
   | "leavesBed"
   | "lashingOverloaded"
@@ -20,7 +24,10 @@ export type ReasonKey =
   | "headboardOverloaded"
   | "axleOverloaded"
   | "holds"
-  | "holdsBarely";
+  | "holdsBarely"
+  | "holdsUpright"
+  | "holdsUprightBarely"
+  | "holdsTall";
 
 export type Reason = {
   key: ReasonKey;
@@ -92,6 +99,31 @@ export function tippingBalance(doc: KeyframesDoc, unitIndex: number): { overturn
 
 const kN = (newtons: number) => newtons / 1000;
 
+/** Height over the narrower side of the base above which a unit counts as tall. */
+const TALL_RATIO = 1.5;
+
+/** A tall unit may tip before it slides, so its tipping margin is worth stating. */
+function isTall(doc: KeyframesDoc, unitIndex: number): boolean {
+  const unit = doc.units[unitIndex];
+  if (!unit) return false;
+  const [length, width, height] = unit.size_m;
+  return height > TALL_RATIO * Math.min(length, width);
+}
+
+/** Tension of a unit's straps when the event starts, and their lowest before the given frame [N]. */
+function strapLoosening(doc: KeyframesDoc, unitId: string | null, beforeFrame: number): { start: number; low: number } {
+  const straps = doc.straps.flatMap((strap, index) => (strap.unit_id === unitId ? [index] : []));
+  if (!straps.length) return { start: 0, low: 0 };
+  const total = (frame: number) =>
+    straps.reduce((sum, index) => sum + (doc.frames[frame]?.straps[index]?.tension_n ?? 0), 0) / straps.length;
+  let low = total(0);
+  for (let frame = 0; frame <= beforeFrame && frame < doc.frames.length; frame++) low = Math.min(low, total(frame));
+  return { start: total(0), low };
+}
+
+/** Share of their tension the straps must lose before it counts as loosening. */
+const LOOSENED_SHARE = 0.75;
+
 export function explain(result: ResultLike, doc: KeyframesDoc): Reason {
   const { findings } = result.verdict;
   const find = (code: Finding["code"]) => findings.find((item) => item.code === code && item.severity === "fail");
@@ -99,6 +131,7 @@ export function explain(result: ResultLike, doc: KeyframesDoc): Reason {
 
   const axle = find("axle_overloaded");
   const tilted = find("unit_tilted");
+  const rolled = find("unit_rolled");
   const left = find("unit_left_bed");
   const slid = find("unit_slid");
   const hit = find("unit_hit_headboard");
@@ -114,17 +147,44 @@ export function explain(result: ResultLike, doc: KeyframesDoc): Reason {
       values: { overturning: kN(balance.overturning), restoring: kN(balance.restoring), tilt: tilted.value },
     };
   }
+  if (rolled) {
+    // A cylinder on its side has nothing but what stands in front of it: it rolls at any braking.
+    const balance = worstBalance(doc, indexOf(rolled.unit_id));
+    const hitToo = findings.some((item) => item.code === "unit_hit_headboard" && item.unit_id === rolled.unit_id);
+    return {
+      key: hitToo ? "rollsIntoHeadboard" : "rolls",
+      subject: rolled.unit_id,
+      values: { inertia: kN(balance.inertia), slide: rolled.value * 100 },
+    };
+  }
   if (slid || hit) {
     // Explain the unit that moved the most.
     const moved = [...result.units].sort((a, b) => b.max_slide_m - a.max_slide_m)[0];
     const unitId = moved?.id ?? slid?.unit_id ?? hit?.unit_id ?? null;
     const balance = worstBalance(doc, indexOf(unitId));
-    const values = {
+    const values: Record<string, number> = {
       inertia: kN(balance.inertia),
       friction: kN(balance.friction),
       slide: (moved?.max_slide_m ?? 0) * 100,
     };
     if (left) return { key: "leavesBed", subject: unitId, values };
+    // The wall gave way to more than it is rated for: that is the consequence that matters.
+    if (headboard) {
+      return {
+        key: "slidesIntoWall",
+        subject: unitId,
+        values: { ...values, force: kN(headboard.value), capacity: kN(headboard.limit) },
+      };
+    }
+    // Straps that lost their tension before the slide (vibration) are why friction fell short.
+    const straps = strapLoosening(doc, unitId, balance.frame);
+    if (straps.start > 0 && straps.low < LOOSENED_SHARE * straps.start) {
+      return {
+        key: "slidesAfterLoosening",
+        subject: unitId,
+        values: { ...values, before: kN(straps.start), after: kN(straps.low) },
+      };
+    }
     if (balance.inertia <= balance.friction) return { key: "slidesLoose", subject: unitId, values };
     return { key: hit ? "slidesIntoHeadboard" : "slides", subject: unitId, values };
   }
@@ -144,19 +204,34 @@ export function explain(result: ResultLike, doc: KeyframesDoc): Reason {
     return { key: "axleOverloaded", subject: axle.axle_group_id, values: { load: axle.value / 1000, limit: axle.limit / 1000 } };
   }
 
-  // Nothing failed: show the unit that came closest to sliding.
-  let closest = { inertia: 0, friction: 0, frame: 0 };
-  let subject: string | null = null;
+  // Nothing failed. Say which way the load came closest to failing: the unit and the mode
+  // (sliding or tipping) with the largest share of its limit used.
+  const barely = result.verdict.status === "warning";
+  let governing = { index: -1, mode: "slide" as "slide" | "tip", ratio: -Infinity };
   doc.units.forEach((unit, index) => {
-    const balance = worstBalance(doc, index);
-    if (subject === null || balance.inertia - balance.friction > closest.inertia - closest.friction) {
-      closest = balance;
-      subject = unit.id;
+    const slide = worstBalance(doc, index);
+    const tip = tippingBalance(doc, index);
+    const slideRatio = slide.friction > 0 ? slide.inertia / slide.friction : 0;
+    const tipRatio = tip.restoring > 0 ? tip.overturning / tip.restoring : 0;
+    // Lashed units can exceed friction without moving; tipping only counts for tall units.
+    const candidates: ["slide" | "tip", number][] = [["slide", slideRatio]];
+    if (isTall(doc, index)) candidates.push(["tip", tipRatio]);
+    for (const [mode, ratio] of candidates) {
+      if (ratio > governing.ratio) governing = { index, mode, ratio };
     }
   });
-  return {
-    key: result.verdict.status === "warning" ? "holdsBarely" : "holds",
-    subject,
-    values: { inertia: kN(closest.inertia), friction: kN(closest.friction) },
-  };
+  const unitIndex = Math.max(governing.index, 0);
+  const subject = doc.units[unitIndex]?.id ?? null;
+  const slide = worstBalance(doc, unitIndex);
+  const tip = tippingBalance(doc, unitIndex);
+  const moments = { overturning: kN(tip.overturning), restoring: kN(tip.restoring) };
+  const forces = { inertia: kN(slide.inertia), friction: kN(slide.friction) };
+  if (governing.mode === "tip") {
+    return { key: barely ? "holdsUprightBarely" : "holdsUpright", subject, values: { ...moments, ...forces } };
+  }
+  if (isTall(doc, unitIndex)) {
+    // Sliding governs, but a tall unit's tipping margin is worth stating too.
+    return { key: "holdsTall", subject, values: { ...forces, ...moments } };
+  }
+  return { key: barely ? "holdsBarely" : "holds", subject, values: forces };
 }

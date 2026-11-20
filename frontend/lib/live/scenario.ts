@@ -10,6 +10,7 @@ export const EVENT_KINDS = [
   "speed_bump",
   "mountain_descent",
   "long_vibration",
+  "full_trip",
 ] as const;
 export type EventKind = (typeof EVENT_KINDS)[number];
 
@@ -23,6 +24,8 @@ export type TripEventInput = {
   fog: boolean;
   curve_radius_m: number | null;
   grade_percent: number | null;
+  /** Full trip only: its events in order; null for the default trip. */
+  segments?: EventKind[] | null;
 };
 
 export type AnchorPoint = { id: string; position_m: Vec3; rated_capacity_n: number | null };

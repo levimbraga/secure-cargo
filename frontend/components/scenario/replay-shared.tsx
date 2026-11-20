@@ -38,10 +38,17 @@ const MARKERS = [
   "pothole",
   "vibration_start",
   "pulse_start",
+  "segment_mountain_descent",
+  "segment_speed_bump",
+  "segment_emergency_braking",
+  "segment_lane_change",
+  "segment_sharp_curve",
+  "segment_pothole",
+  "segment_long_vibration",
 ] as const;
 type Marker = (typeof MARKERS)[number];
 
-const UNIT_KINDS = ["pallet", "crate", "machine", "stack", "cabinet"] as const;
+const UNIT_KINDS = ["pallet", "crate", "machine", "stack", "cabinet", "coil", "carton", "sacks", "pipe", "drum"] as const;
 type UnitKind = (typeof UNIT_KINDS)[number];
 
 /** The words and number formats of a run, in the visitor's language. */
@@ -172,7 +179,8 @@ export function useReplayText() {
     const unit = nameOf(finding.unit_id);
     switch (finding.code) {
       case "unit_slid":
-        return t("findings.unit_slid", { unit, distance: number(finding.value * 100) });
+      case "unit_rolled":
+        return t(`findings.${finding.code}`, { unit, distance: number(finding.value * 100) });
       case "unit_tilted":
         return t("findings.unit_tilted", { unit, angle: number(finding.value) });
       case "axle_overloaded":
@@ -192,7 +200,9 @@ export function useReplayText() {
 
   /** Name of a marker of the event on the timeline. */
   function markerLabel(kind: string): string {
-    return (MARKERS as readonly string[]).includes(kind) ? t(`markers.${kind as Marker}`) : kind;
+    // A segment of a full trip is "segment:<event>".
+    const key = kind.replace(/^segment:/, "segment_");
+    return (MARKERS as readonly string[]).includes(key) ? t(`markers.${key as Marker}`) : kind;
   }
 
   return {

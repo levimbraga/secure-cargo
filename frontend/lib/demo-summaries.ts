@@ -1,27 +1,16 @@
 /**
- * Summaries of the eight demo runs, read from the static files at build time.
+ * Summaries of the demo runs, without keyframes, read from the static files at build time.
  *
- * For server components only: importing this from a client component would ship every
- * keyframe to the browser. Pages pass the small summaries down as props; the keyframes are
- * fetched by the replay when it mounts.
+ * For server components only. Pages pass the small summaries down as props; the keyframes are
+ * fetched by the replay when it mounts. `public/demo/summaries.json` is written by
+ * `backend/scripts/precompute_demo.py`.
  */
-import brakingAsLoaded from "../public/demo/emergency-braking.as_loaded.json";
-import brakingFixed from "../public/demo/emergency-braking.fixed.json";
-import ropeAsLoaded from "../public/demo/rope-lashing.as_loaded.json";
-import ropeFixed from "../public/demo/rope-lashing.fixed.json";
-import curveAsLoaded from "../public/demo/sharp-curve.as_loaded.json";
-import curveFixed from "../public/demo/sharp-curve.fixed.json";
-import weighAsLoaded from "../public/demo/weigh-station.as_loaded.json";
-import weighFixed from "../public/demo/weigh-station.fixed.json";
+import summaries from "../public/demo/summaries.json";
 
-import { type DemoId, type DemoRun, type RunSummary, summarize, type TripEvent, type Variant } from "./demo";
+import type { DemoId, RunSummary, TripEvent, Variant } from "./demo";
 
-const RUNS: Record<DemoId, Record<Variant, unknown>> = {
-  "emergency-braking": { as_loaded: brakingAsLoaded, fixed: brakingFixed },
-  "weigh-station": { as_loaded: weighAsLoaded, fixed: weighFixed },
-  "rope-lashing": { as_loaded: ropeAsLoaded, fixed: ropeFixed },
-  "sharp-curve": { as_loaded: curveAsLoaded, fixed: curveFixed },
-};
+type StoredSummary = RunSummary & { event: TripEvent };
+const RUNS = summaries as unknown as Record<string, StoredSummary>;
 
 export type DemoSummary = {
   id: DemoId;
@@ -29,17 +18,20 @@ export type DemoSummary = {
   runs: Record<Variant, RunSummary>;
 };
 
+function run(id: DemoId, variant: Variant): RunSummary {
+  const stored = RUNS[`${id}.${variant}`];
+  if (!stored) throw new Error(`No summary for ${id}.${variant}: run backend/scripts/precompute_demo.py`);
+  const summary: Partial<StoredSummary> = { ...stored };
+  delete summary.event;
+  return summary as RunSummary;
+}
+
 export function demoSummary(id: DemoId): DemoSummary {
-  const asLoaded = RUNS[id].as_loaded as DemoRun;
-  const fixed = RUNS[id].fixed as DemoRun;
+  const event = RUNS[`${id}.as_loaded`]?.event;
+  if (!event) throw new Error(`No summary for ${id}`);
   return {
     id,
-    event: {
-      kind: asLoaded.event.kind,
-      speed_kmh: asLoaded.event.speed_kmh,
-      road_surface: asLoaded.event.road_surface,
-      fog: asLoaded.event.fog,
-    },
-    runs: { as_loaded: summarize(asLoaded), fixed: summarize(fixed) },
+    event: { kind: event.kind, speed_kmh: event.speed_kmh, road_surface: event.road_surface, fog: event.fog },
+    runs: { as_loaded: run(id, "as_loaded"), fixed: run(id, "fixed") },
   };
 }

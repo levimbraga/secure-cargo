@@ -10,6 +10,10 @@ export type LiveUnitResult = {
   max_slide_m: number;
   final_slide_m: number;
   max_tilt_deg: number;
+  /** Largest angle the unit turned, about any axis [deg]. */
+  max_rotation_deg: number;
+  /** A cylinder lying on its side. */
+  can_roll: boolean;
   peak_friction_use: number | null;
   hit_headboard: boolean;
   peak_headboard_force_n: number;
@@ -59,7 +63,20 @@ export function buildVerdict(
     if (unit.left_bed) {
       findings.push(finding("unit_left_bed", "fail", unit.max_slide_m, 0, `Unit ${unit.id} left the truck bed.`, ids));
     }
-    if (unit.max_slide_m > thresholds.slide_warning_m) {
+    const rolled =
+      unit.can_roll && unit.max_rotation_deg > thresholds.roll_fail_deg && unit.max_slide_m > thresholds.slide_fail_m;
+    if (rolled) {
+      findings.push(
+        finding(
+          "unit_rolled",
+          "fail",
+          unit.max_slide_m,
+          thresholds.slide_fail_m,
+          `Unit ${unit.id} rolled ${(unit.max_slide_m * 100).toFixed(1)} cm.`,
+          ids,
+        ),
+      );
+    } else if (unit.max_slide_m > thresholds.slide_warning_m) {
       const failed = unit.max_slide_m > thresholds.slide_fail_m;
       findings.push(
         finding(

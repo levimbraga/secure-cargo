@@ -186,6 +186,7 @@ export function applyControls(
       // Curve radius and grade belong to the authored event; another event uses the defaults.
       curve_radius_m: sameKind ? event.curve_radius_m : null,
       grade_percent: sameKind ? event.grade_percent : null,
+      segments: sameKind ? (event.segments ?? null) : null,
     },
   };
 }

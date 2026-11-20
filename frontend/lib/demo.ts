@@ -1,5 +1,5 @@
 /**
- * The demo scenarios: four loads, each simulated "as loaded" and "fixed".
+ * The demo scenarios: the gallery's loads, each simulated "as loaded" and "fixed".
  *
  * The backend writes one JSON file per run to `public/demo/` (see `backend/scripts/precompute_demo.py`).
  * The site replays those files, so the demo does not depend on the API being up.
@@ -7,7 +7,18 @@
 
 import { type KeyframesDoc, parseKeyframes } from "./keyframes";
 
-export const DEMO_IDS = ["emergency-braking", "weigh-station", "rope-lashing", "sharp-curve"] as const;
+/** The gallery's examples, in its order (backend/app/demo/gallery.py). */
+export const DEMO_IDS = [
+  "emergency-braking",
+  "sharp-curve",
+  "rope-lashing",
+  "steel-coil",
+  "weigh-station",
+  "box-truck",
+  "dirt-road",
+  "anti-slip-mat",
+  "full-trip",
+] as const;
 export type DemoId = (typeof DEMO_IDS)[number];
 
 export const VARIANTS = ["as_loaded", "fixed"] as const;
@@ -22,6 +33,7 @@ export type Status = "pass" | "warning" | "fail";
 export type FindingCode =
   | "unit_slid"
   | "unit_tilted"
+  | "unit_rolled"
   | "unit_left_bed"
   | "unit_hit_headboard"
   | "headboard_overloaded"

@@ -120,13 +120,23 @@
       "emergency-braking": "Frenagem de emergência",
       "weigh-station": "Balança",
       "rope-lashing": "Amarração com corda",
-      "sharp-curve": "Curva fechada"
+      "sharp-curve": "Curva fechada",
+      "steel-coil": "Bobina de aço",
+      "box-truck": "Caminhão baú",
+      "dirt-road": "Estrada de terra",
+      "anti-slip-mat": "Tapete antiderrapante",
+      "full-trip": "Viagem completa"
     },
     "events": {
       "emergency-braking": "Freada de emergência a {speed} km/h, pista seca",
       "weigh-station": "Lombada a {speed} km/h, freando",
       "rope-lashing": "Troca brusca de faixa a {speed} km/h",
-      "sharp-curve": "Curva fechada a {speed} km/h"
+      "sharp-curve": "Curva fechada a {speed} km/h",
+      "steel-coil": "Freada de emergência a {speed} km/h, pista molhada",
+      "box-truck": "Freada de emergência a {speed} km/h com neblina",
+      "dirt-road": "Estrada de terra a {speed} km/h, depois uma freada de emergência",
+      "anti-slip-mat": "Freada de emergência a {speed} km/h, pista molhada",
+      "full-trip": "Descendo a serra até o porto a {speed} km/h, chuva forte"
     },
     "sentences": {
       "emergency-braking": {
@@ -144,6 +154,26 @@
       "sharp-curve": {
         "as_loaded": "Soltos, os armários tombam e caem do caminhão.",
         "fixed": "Com duas cintas cada, os armários ficam em pé."
+      },
+      "steel-coil": {
+        "as_loaded": "Do jeito que foi carregada, a bobina rola para a frente até o painel frontal.",
+        "fixed": "Num berço de dois calços, a bobina não se mexe."
+      },
+      "box-truck": {
+        "as_loaded": "As caixas soltas deslizam o baú inteiro e batem com força na parede frontal.",
+        "fixed": "Empilhadas contra a parede frontal, com uma barra de travamento atrás, as caixas ficam no lugar."
+      },
+      "dirt-road": {
+        "as_loaded": "A vibração afrouxa as cintas, e os paletes deslizam quando o caminhão freia.",
+        "fixed": "Com cintas diagonais nos cantos, os paletes não se mexem."
+      },
+      "anti-slip-mat": {
+        "as_loaded": "No assoalho nu, os paletes plásticos deslizam para a frente na freada.",
+        "fixed": "Sobre tapetes antiderrapantes, as mesmas duas cintas seguram os paletes."
+      },
+      "full-trip": {
+        "as_loaded": "Sem amarração, os caixotes avançam na descida e deslizam de vez na freada final.",
+        "fixed": "Com três cintas por caixote, nada se mexe durante a viagem inteira."
       }
     },
     "explanations": {
@@ -152,8 +182,8 @@
         "fixed": "Os mesmos paletes com duas cintas cada, o número que a norma EN 12195-1 pede com o fator de segurança. O atrito segura com folga."
       },
       "weigh-station": {
-        "as_loaded": "Uma máquina pesada presa com correntes na traseira e dois caixotes. Nada se mexe na lombada, mas o peso da máquina fica atrás do eixo traseiro.",
-        "fixed": "A mesma carga com a máquina perto da frente e os caixotes atrás. O peso fica dividido entre os dois eixos."
+        "as_loaded": "Uma máquina de 8 t presa com correntes perto da traseira. Nada se mexe na lombada, mas quase todo o peso vai para o eixo traseiro e o eixo dianteiro fica leve.",
+        "fixed": "A mesma máquina mais para a frente, no meio do entre-eixos. O peso fica dividido entre os dois eixos."
       },
       "rope-lashing": {
         "as_loaded": "Pilhas sobre paletes plásticos, cada uma presa com duas cordas. A corda estica e não dá para apertar como uma cinta com catraca, e as regras brasileiras não permitem corda como amarração de carga.",
@@ -162,6 +192,26 @@
       "sharp-curve": {
         "as_loaded": "Dois armários altos sem amarração. A curva empurra os dois de lado com mais força do que a base estreita aguenta.",
         "fixed": "Duas cintas sobre cada armário apertam o volume contra o assoalho e não deixam tombar."
+      },
+      "steel-coil": {
+        "as_loaded": "Uma bobina de 10 t deitada de través na carroceria, com o furo para o lado e nada na frente. Um cilindro não precisa vencer o atrito para se mover: a freada faz ele rolar.",
+        "fixed": "A mesma bobina num berço: um calço de 20 cm de cada lado. Seria preciso frear a 0,88 g para ela passar por cima de um calço; na pista molhada o caminhão freia a 0,64 g."
+      },
+      "box-truck": {
+        "as_loaded": "Seis caixas deixadas no fundo do baú, sem nada em volta. Papelão sobre compensado tem fator de atrito de só 0,3, e com neblina o motorista freia tarde e forte.",
+        "fixed": "As mesmas caixas empilhadas em duas camadas contra a parede frontal, com uma barra de travamento atrás. A parede segura o que o atrito não segura, bem dentro da capacidade dela."
+      },
+      "dirt-road": {
+        "as_loaded": "Paletes de sacaria com três cintas cada. Basta neste assoalho empoeirado enquanto as cintas estão tensas, mas horas de vibração cortam a tensão pela metade antes da freada final.",
+        "fixed": "Quatro cintas diagonais dos cantos de cada palete até a carroceria. Elas seguram pela resistência, não pela tensão, então afrouxar não faz diferença."
+      },
+      "anti-slip-mat": {
+        "as_loaded": "Três pilhas em paletes plásticos, duas cintas cada, sobre o assoalho de compensado. Plástico sobre compensado tem fator de atrito de 0,2, então as cintas teriam de apertar muito.",
+        "fixed": "Os mesmos paletes e cintas, sobre tapetes de borracha antiderrapantes, com fator de atrito de 0,6."
+      },
+      "full-trip": {
+        "as_loaded": "Seis caixotes de 1,5 t numa carreta, sem amarração porque são pesados. O peso não ajuda: o atrito cresce com ele, e a inércia também.",
+        "fixed": "Três cintas sobre cada caixote, o número que a EN 12195-1 pede. Elas seguram na descida, na lombada e na freada de emergência."
       }
     },
     "variant": {
@@ -196,7 +246,14 @@
       "speed_bump": "Lombada",
       "pothole": "Buraco",
       "vibration_start": "Começa a vibração",
-      "pulse_start": "Começa o pulso de teste"
+      "pulse_start": "Começa o pulso de teste",
+      "segment_mountain_descent": "Descida de serra",
+      "segment_speed_bump": "Trecho com lombada",
+      "segment_emergency_braking": "Freada de emergência",
+      "segment_lane_change": "Trecho com troca de faixa",
+      "segment_sharp_curve": "Trecho com curva",
+      "segment_pothole": "Trecho com buraco",
+      "segment_long_vibration": "Estrada ruim"
     },
     "rows": {
       "title": "Resultado",
@@ -230,11 +287,12 @@
       "unit_tilted": "{unit} inclinou {angle}°.",
       "unit_left_bed": "{unit} caiu do caminhão.",
       "unit_hit_headboard": "{unit} bateu no painel frontal.",
-      "headboard_overloaded": "O painel frontal recebeu mais força do que suporta.",
+      "headboard_overloaded": "O painel ou a parede frontal recebeu mais força do que suporta.",
       "lashing_overloaded": "Uma amarração de {unit} chegou a {percent} da capacidade.",
       "lashing_broke": "Uma amarração de {unit} rompeu.",
       "lashing_went_slack": "Uma amarração de {unit} afrouxou.",
-      "axle_overloaded": "O eixo {axle, select, front {dianteiro} other {traseiro}} carrega {load} t. O limite legal é {limit} t."
+      "axle_overloaded": "O eixo {axle, select, front {dianteiro} tractor {do cavalo} trailer {da carreta} other {traseiro}} carrega {load} t. O limite legal é {limit} t.",
+      "unit_rolled": "{unit} rolou {distance} cm."
     },
     "units": {
       "pallet": "Palete {number}",
@@ -242,13 +300,18 @@
       "machine": "A máquina",
       "stack": "Pilha {number}",
       "cabinet": "Armário {number}",
-      "other": "Volume {id}"
+      "other": "Volume {id}",
+      "coil": "Bobina {number}",
+      "carton": "Caixa {number}",
+      "sacks": "Sacaria {number}",
+      "pipe": "Tubo {number}",
+      "drum": "Tambor {number}"
     },
     "method": "Como isso é calculado",
     "others": "Outros cenários",
     "list": {
-      "label": "Cenários de demonstração",
-      "title": "Quatro cargas, cada uma simulada como foi carregada e corrigida."
+      "label": "Exemplos",
+      "title": "Nove cargas, cada uma simulada como foi carregada e corrigida."
     },
     "view": {
       "label": "Visão",
@@ -343,11 +406,19 @@
       "lashingOverloaded": "Uma amarração carrega {force} kN, mais que a capacidade dela, {capacity} kN.",
       "lashingBroke": "Uma amarração rompe: {force} kN contra uma resistência à ruptura de {capacity} kN.",
       "headboardOverloaded": "A carga empurra o painel frontal com {force} kN; ele aguenta {capacity} kN.",
-      "axleOverloaded": "O eixo {axle, select, front {dianteiro} other {traseiro}} carrega {load} t; o limite legal é {limit} t.",
+      "axleOverloaded": "O eixo {axle, select, front {dianteiro} tractor {do cavalo} trailer {da carreta} other {traseiro}} carrega {load} t; o limite legal é {limit} t.",
       "holds": "Atrito {friction} kN ≥ inércia {inertia} kN: nada se move.",
       "holdsLashed": "Inércia {inertia} kN > atrito {friction} kN, e as amarrações seguram a diferença: nada se move.",
       "holdsBarely": "Atrito {friction} kN ≥ inércia {inertia} kN: a carga segura, com pouca folga.",
-      "holdsBarelyLashed": "Inércia {inertia} kN > atrito {friction} kN: as amarrações seguram a carga, com pouca folga."
+      "holdsBarelyLashed": "Inércia {inertia} kN > atrito {friction} kN: as amarrações seguram a carga, com pouca folga.",
+      "slidesIntoWall": "Inércia {inertia} kN > atrito {friction} kN: {unit} desliza {slide} cm e bate na parede frontal com {force} kN; ela aguenta {capacity} kN.",
+      "slidesAfterLoosening": "A vibração afrouxou as cintas de {before} kN para {after} kN; depois, inércia {inertia} kN > atrito {friction} kN: {unit} desliza {slide} cm.",
+      "rolls": "Nada impede uma carga redonda de rolar: com {inertia} kN de inércia, {unit} rola {slide} cm.",
+      "rollsIntoHeadboard": "Nada impede uma carga redonda de rolar: com {inertia} kN de inércia, {unit} rola {slide} cm até o painel frontal.",
+      "holdsUpright": "Momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} fica em pé, e nada desliza.",
+      "holdsUprightBarely": "Momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} fica em pé, com pouca folga.",
+      "holdsTall": "Atrito {friction} kN ≥ inércia {inertia} kN, e momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} não desliza nem tomba.",
+      "holdsTallLashed": "Inércia {inertia} kN > atrito {friction} kN, e as amarrações seguram a diferença; momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} não desliza nem tomba."
     },
     "live": {
       "badge": "Ao vivo, não certificado",
@@ -395,7 +466,8 @@
       "pothole": "Buraco",
       "speed_bump": "Lombada",
       "mountain_descent": "Descida de serra",
-      "long_vibration": "Vibração prolongada"
+      "long_vibration": "Vibração prolongada",
+      "full_trip": "Viagem completa"
     },
     "surfaces": {
       "dry": "Seca",

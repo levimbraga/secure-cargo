@@ -5,7 +5,7 @@
  */
 
 import type { AxleLoad, Finding } from "@/lib/demo";
-import type { KeyframesDoc, KeyframeStrap, Vec3 } from "@/lib/keyframes";
+import type { CylinderAxis, KeyframesDoc, KeyframeStrap, UnitShape, Vec3 } from "@/lib/keyframes";
 
 export type DirectionCheck = {
   direction: "forward" | "rearward" | "sideways";
@@ -35,6 +35,11 @@ export type LiveUnit = {
   position_m: Vec3;
   friction_coefficient: number;
   friction_source: string;
+  shape: UnitShape;
+  axis: CylinderAxis | null;
+  inner_diameter_m: number | null;
+  /** 0 (X) or 1 (Y) for a cylinder lying on its side: it can roll. */
+  lying_axis: 0 | 1 | null;
 };
 
 export type LiveLashing = {
@@ -72,6 +77,7 @@ export type LiveThresholds = {
   slide_fail_m: number;
   tilt_warning_deg: number;
   tilt_fail_deg: number;
+  roll_fail_deg: number;
   lashing_warning_ratio: number;
   lashing_fail_ratio: number;
   headboard_capacity_n: number | null;
@@ -89,6 +95,8 @@ export type LiveModel = {
     floor_geom: string;
     headboard_geom: string | null;
     road_geom: string;
+    /** Geoms whose name starts with it are blocks (chocks, beams, cradles). */
+    block_geom_prefix: string;
   };
   bed: Required<KeyframesDoc["bed"]>;
   units: LiveUnit[];

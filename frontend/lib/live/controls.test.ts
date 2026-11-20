@@ -37,8 +37,9 @@ describe("lab controls", () => {
     expect(authoredPretension(braking.scenario)).toBe(3000);
     expect(authoredMat(braking.scenario)).toBe(false);
     expect(authoredMat(demo("rope-lashing", "fixed").scenario)).toBe(true);
-    // The machine is chained, so only the two crates count: three straps each.
-    expect(authoredStrapsPerUnit(demo("weigh-station", "fixed").scenario)).toBe(3);
+    // The machine is only chained: no strap goes over it.
+    expect(authoredStrapsPerUnit(demo("weigh-station", "fixed").scenario)).toBe(null);
+    expect(authoredStrapsPerUnit(demo("full-trip", "fixed").scenario)).toBe(3);
   });
 
   it("find the anchor pairs over a unit", () => {
@@ -68,11 +69,11 @@ describe("lab controls", () => {
   });
 
   it("leave units held by direct lashings alone", () => {
-    const station = demo("weigh-station", "fixed");
-    const controls = { ...defaultControls(station.event), strapsPerUnit: 1 };
-    const { scenario } = applyControls(station.scenario, station.event, controls);
-    expect(scenario.lashings.filter((lashing) => lashing.routing === "direct")).toHaveLength(4);
-    expect(scenario.lashings.filter((lashing) => lashing.routing === "top_over")).toHaveLength(2);
+    const sacks = demo("dirt-road", "fixed");
+    const controls = { ...defaultControls(sacks.event), strapsPerUnit: 1 };
+    const { scenario } = applyControls(sacks.scenario, sacks.event, controls);
+    expect(scenario.lashings.filter((lashing) => lashing.routing === "direct")).toHaveLength(12);
+    expect(scenario.lashings.filter((lashing) => lashing.routing === "top_over")).toHaveLength(0);
   });
 
   it("keep rope as rope and never tension a lashing beyond its capacity", () => {

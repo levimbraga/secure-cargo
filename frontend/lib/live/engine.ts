@@ -72,12 +72,13 @@ type Views = {
   tendonLengthspring: F64;
 };
 
-const CONTACT_KIND = ["rail", "floor", "road", "headboard", "unit"] as const;
+const CONTACT_KIND = ["rail", "floor", "road", "headboard", "unit", "block"] as const;
 const RAIL = 0;
 const FLOOR = 1;
 const ROAD = 2;
 const HEADBOARD = 3;
 const UNIT = 4;
+const BLOCK = 5;
 
 function round(value: number, digits: number): number {
   // The backend rounds the same way; "+ 0" turns -0 into 0.
@@ -140,6 +141,10 @@ export class LiveRun {
   private readonly leftBed: Uint8Array;
   private readonly peakTension: F64;
   private readonly minUpright: F64;
+  /** xmat column whose Z component gives the tilt: 8 (own Z axis), or 6 / 7 for a lying cylinder's axis. */
+  private readonly tiltColumn: Int32Array;
+  private readonly startQuat: F64;
+  private readonly minQuatDot: F64;
   private trackingError = 0;
   private readonly prescribedVelocity = [0, 0, 0];
   private readonly prescribedPosition = [0, 0, 0];
@@ -226,6 +231,10 @@ export class LiveRun {
     this.kindOfGeom[this.floorGeom] = FLOOR;
     this.kindOfGeom[id(mjOBJ_GEOM, names.road_geom)] = ROAD;
     if (this.headboardGeom >= 0) this.kindOfGeom[this.headboardGeom] = HEADBOARD;
+    for (let geom = 0; geom < model.ngeom; geom++) {
+      const name = mujoco.mj_id2name(model, mjOBJ_GEOM.value, geom);
+      if (name?.startsWith(names.block_geom_prefix)) this.kindOfGeom[geom] = BLOCK;
+    }
     live.units.forEach((unit, index) => {
       const geom = id(mjOBJ_GEOM, unit.geom);
       this.unitOfGeom[geom] = index;
@@ -311,6 +320,15 @@ export class LiveRun {
     this.stoodOnFloor = new Uint8Array(this.count);
     this.leftBed = new Uint8Array(this.count);
     this.minUpright = new Float64Array(this.count).fill(1);
+    // Tilt is the angle of the unit's own Z axis from vertical. A cylinder lying on its side
+    // turns about its axis when it rolls, which is not a tilt: for it the tilt is how far its
+    // axis leaves the horizontal (the Z component of that axis: xmat column 6 for X, 7 for Y).
+    this.tiltColumn = Int32Array.from(live.units, (unit) => (unit.lying_axis === null ? 8 : 6 + unit.lying_axis));
+    this.startQuat = new Float64Array(4 * this.count);
+    this.unitIds.forEach((body, index) => {
+      for (let k = 0; k < 4; k++) this.startQuat[4 * index + k] = this.views.xquat[4 * body + k] as number;
+    });
+    this.minQuatDot = new Float64Array(this.count).fill(1);
     this.floorForceSum = new Float64Array(this.count);
 
     this.readContacts();
@@ -364,7 +382,7 @@ export class LiveRun {
     this.mujoco.mj_step(model, data);
     this.ensureViews();
 
-    const { xpos, xmat } = this.views;
+    const { xpos, xmat, xquat } = this.views;
     const bed = 3 * this.bedId;
     const halfLength = this.live.bed.length_m / 2;
     const halfWidth = this.live.bed.width_m / 2;
@@ -378,8 +396,15 @@ export class LiveRun {
       const dz = rz - (this.start[3 * index + 2] as number);
       this.maxSlide[index] = Math.max(this.maxSlide[index] as number, Math.hypot(dx, dy));
       // xmat[8] is the Z component of the unit's own Z axis: the cosine of its tilt.
-      const upright = xmat[9 * (this.unitIds[index] as number) + 8] as number;
+      const unitBody = this.unitIds[index] as number;
+      const column = this.tiltColumn[index] as number;
+      const axisUp = xmat[9 * unitBody + column] as number;
+      const upright = column === 8 ? axisUp : Math.sqrt(Math.max(1 - axisUp * axisUp, 0));
       this.minUpright[index] = Math.min(this.minUpright[index] as number, upright);
+      // |q0 . q| is the cosine of half the angle the unit turned since the start.
+      let dot = 0;
+      for (let k = 0; k < 4; k++) dot += (this.startQuat[4 * index + k] as number) * (xquat[4 * unitBody + k] as number);
+      this.minQuatDot[index] = Math.min(this.minQuatDot[index] as number, Math.abs(dot));
       if (Math.abs(rx) > halfLength || Math.abs(ry) > halfWidth || dz < -0.05) this.leftBed[index] = 1;
     }
 
@@ -742,6 +767,9 @@ export class LiveRun {
         size_m: unit.size_m,
         mass_kg: unit.mass_kg,
         friction_coefficient: unit.friction_coefficient,
+        shape: unit.shape,
+        axis: unit.axis,
+        inner_diameter_m: unit.inner_diameter_m,
       })),
       straps: live.lashings.map((lashing) => lashing.strap),
       events: live.profile.markers,
@@ -771,6 +799,11 @@ export class LiveRun {
         max_slide_m: round(this.maxSlide[index] as number, 5),
         final_slide_m: round(Math.hypot(dx, dy), 5),
         max_tilt_deg: round((Math.acos(upright) * 180) / Math.PI, 3),
+        max_rotation_deg: round(
+          (2 * Math.acos(Math.min(Math.max(this.minQuatDot[index] as number, 0), 1)) * 180) / Math.PI,
+          3,
+        ),
+        can_roll: unit.lying_axis !== null,
         peak_friction_use: this.stoodOnFloor[index]
           ? round(Math.min(this.frictionUse[index] as number, 1), 3)
           : null,

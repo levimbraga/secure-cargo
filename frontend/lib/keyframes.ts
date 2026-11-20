@@ -10,15 +10,33 @@ export type Vec3 = [number, number, number];
 /** [w, x, y, z] */
 export type Quat = [number, number, number, number];
 
+export type UnitShape = "box" | "cylinder";
+/** Direction of a cylinder's axis in the bed frame. */
+export type CylinderAxis = "x" | "y" | "z";
 export type KeyframeUnit = {
   id: string;
+  /** For a cylinder, the box around it: the two sides across the axis are its diameter. */
   size_m: Vec3;
   /** Version 2 only. */
   mass_kg?: number;
   /** Friction factor against the bed floor. Version 2 only. */
   friction_coefficient?: number;
+  /** Missing in older documents: a box. */
+  shape?: UnitShape;
+  axis?: CylinderAxis | null;
+  /** A hollow cylinder's inner diameter (a coil's eye) [m]. */
+  inner_diameter_m?: number | null;
 };
-export type ContactKind = "floor" | "headboard" | "rail" | "unit" | "road";
+export type BodyType = "flatbed" | "box" | "curtain_sider";
+/** Something fixed to the bed that stops cargo by contact: a chock, a beam, a cradle side. */
+export type KeyframeBlock = {
+  id: string;
+  kind: "chock" | "beam" | "cradle";
+  size_m: Vec3;
+  /** Centre of the bottom face, bed frame [m]. */
+  position_m: Vec3;
+};
+export type ContactKind = "floor" | "headboard" | "rail" | "unit" | "road" | "block";
 /** A contact point of the physics engine: x, y, z in the bed frame [m], normal force [N], what is touched. */
 export type KeyframeContact = [number, number, number, number, ContactKind];
 /**
@@ -63,6 +81,10 @@ export type KeyframesDoc = {
     floor_height_m: number;
     headboard_height_m: number;
     side_rail_height_m?: number;
+    /** Missing in older documents: a flatbed. */
+    body?: BodyType;
+    rear_wall_height_m?: number;
+    blocks?: KeyframeBlock[];
   };
   units: KeyframeUnit[];
   straps: KeyframeStrap[];

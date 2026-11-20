@@ -41,7 +41,7 @@ function ProgressBar({ busy, label }: { busy: boolean; label: string }) {
 }
 
 /** The reason behind a verdict as one sentence with its numbers. */
-function useReasonSentence(): (reason: Reason) => string {
+export function useReasonSentence(): (reason: Reason) => string {
   const t = useTranslations("Lab.reason");
   const format = useFormatter();
   const { nameOf } = useReplayText();
@@ -53,11 +53,42 @@ function useReasonSentence(): (reason: Reason) => string {
     const unit = nameOf(reason.subject);
     const inertia = fixed(value("inertia"), 1);
     const friction = fixed(value("friction"), 1);
+    const slide = fixed(value("slide"), value("slide") >= 10 ? 0 : 1);
+    const overturning = fixed(value("overturning"), 1);
+    const restoring = fixed(value("restoring"), 1);
     switch (reason.key) {
       case "slides":
       case "slidesIntoHeadboard":
       case "slidesLoose":
-        return t(reason.key, { inertia, friction, unit, slide: fixed(value("slide"), value("slide") >= 10 ? 0 : 1) });
+        return t(reason.key, { inertia, friction, unit, slide });
+      case "slidesIntoWall":
+        return t("slidesIntoWall", {
+          inertia,
+          friction,
+          unit,
+          slide,
+          force: fixed(value("force"), 0),
+          capacity: fixed(value("capacity"), 1),
+        });
+      case "slidesAfterLoosening":
+        return t("slidesAfterLoosening", {
+          before: fixed(value("before"), 1),
+          after: fixed(value("after"), 1),
+          inertia,
+          friction,
+          unit,
+          slide,
+        });
+      case "rolls":
+      case "rollsIntoHeadboard":
+        return t(reason.key, { inertia, unit, slide });
+      case "holdsUpright":
+      case "holdsUprightBarely":
+        return t(reason.key, { overturning, restoring, unit });
+      case "holdsTall":
+        return value("inertia") > value("friction")
+          ? t("holdsTallLashed", { inertia, friction, overturning, restoring, unit })
+          : t("holdsTall", { inertia, friction, overturning, restoring, unit });
       case "leavesBed":
         // A unit that fell without sliding first (it tipped over the edge) has no force balance.
         return value("inertia") > 0 ? t("leavesBed", { inertia, friction, unit }) : t("leavesBedPlain", { unit });
