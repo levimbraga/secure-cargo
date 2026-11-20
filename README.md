@@ -33,16 +33,22 @@ The project is being built in phases during the hackathon. What exists today:
   image. Endpoints:
   - `POST /simulate` — a load scenario plus a trip event in; verdict, per-unit slide and tilt, peak lashing
     forces and 30 fps keyframes out. Deterministic, cached by the hash of the inputs.
-  - `GET /scenarios/demo` — the four demo scenarios, each "as loaded" and "fixed".
+  - `GET /scenarios/demo` — the nine gallery examples, each "as loaded" and "fixed".
+  - `GET /explorer?<configuration>` and `POST /explorer/draft` — the explorer: one choice per dimension
+    (body, truck, cargo, position, securing, speed, road, weather, event) or an edited load draft, turned
+    into a scenario, a trip event and the live model the browser steps.
   - `POST /mjcf` and `GET /scenarios/{id}/mjcf` — the exact MJCF the server simulates for a scenario and
     event, with its run plan (bed motion for every 2 ms step, lashing parameters, thresholds, rule
     checks), so that a second MuJoCo can repeat the run. `?format=xml` returns the MJCF alone.
   - `GET /health` — API and MuJoCo versions.
 - **Physics core** — a MuJoCo simulation of the truck bed, cargo units and lashings under seven trip
   events (emergency braking, lane change, sharp curve, pothole, speed bump, mountain descent, long
-  vibration) on five road surfaces. It is validated against the closed-form calculations of EN 12195-1:
+  vibration) and full trips made of several of them, on five road surfaces. Cargo can be boxes or
+  cylinders (coils roll, drums stand), held by straps, chains, rope, chocks, beams or a coil cradle, on a
+  flatbed, a box truck or a curtain-sider of four sizes (VUC, toco, truck, semi-trailer). It is validated against the closed-form calculations of EN 12195-1:
   the number of straps the formula asks for is where the simulation flips from fail to pass, and the
-  sliding threshold agrees within 0.3 %. See [docs/validation.md](docs/validation.md) for the tables and
+  sliding threshold agrees within 0.3 %; a coil's rolling rate and the braking at which it climbs a chock
+  agree within 1.1 %. See [docs/validation.md](docs/validation.md) for the tables and
   [docs/physics-model.md](docs/physics-model.md) for the model and the source of every number.
 - `frontend/` — Next.js app with the landing page at `/`, the app at `/app` and a replay of each demo
   scenario at `/app/scenarios/<id>`, in English and Brazilian Portuguese: as loaded / fixed toggle; a 3D
@@ -56,17 +62,22 @@ The project is being built in phases during the hackathon. What exists today:
   surface, the event, the straps per unit, their pretension, the mass or the anti-slip mat re-runs the
   simulation at once; a cargo unit can be pushed by hand to feel the lashing hold it. Every result shows
   the verdict, the reason in one sentence with the forces, and the EN 12195-1 check. Browser results
-  are labelled "live, not certified": on the eight demo runs they equal the server's to the last rounded
+  are labelled "live, not certified": on the eighteen demo runs they equal the server's to the last rounded
   digit ([docs/validation.md](docs/validation.md), "Browser vs. server"), and a test in headless Chromium
   keeps it that way. Without WebAssembly, or on a device that is too slow, the page uses the server's
   simulation instead.
+- **Explorer** at `/app/explorer` — any combination of the dimensions above, simulated live in the
+  browser, with a top-down load editor: drag units on the bed, tap one to add a strap, and watch the axle
+  loads and the centre of mass move. The configuration and the edits travel in the URL, so any load is a
+  link. It also takes a load draft from outside (a photo analysis, a saved inspection).
+- **Gallery** at `/app/examples` — nine examples, each as loaded and fixed, with MuJoCo's own render and the
+  coverage matrix ([docs/coverage.md](docs/coverage.md)) of which example shows each option.
 - `docs/design.md` — the design system: tokens, type, layout, components, imagery and motion, plus the
   keyframes contract for the 3D replay.
 - `backend/worker/` — Cloudflare Worker that starts the API container on demand and forwards requests to it.
 - CI on every push to `main`.
 
-Next: the gallery of examples, the explorer with the load editor, photo analysis, the planner and the
-certificate.
+Next: photo analysis with accounts and quotas, the planner and the certificate.
 
 ## Stack
 
@@ -90,7 +101,7 @@ backend/            FastAPI service
   rules/            axle loads (CONTRAN checks come next)
   planner/          load advisor and lashing planner
   perception/       photo -> cargo and strap suggestions
-  scenarios/demo/   the four demo scenarios as JSON fixtures
+  scenarios/demo/   the nine gallery examples as JSON fixtures (built from app/demo/gallery.py)
   scripts/          fixture generator, static demo precompute
   tests/
   worker/           Cloudflare Worker that routes requests to the API container
