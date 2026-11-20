@@ -17,11 +17,9 @@ export default function AppPage({ params }: PageProps<"/[locale]/app">) {
   return (
     <>
       <SiteNav variant="minimal" />
-      <main className="shell flex-1 py-14 md:py-24">
-        <div className="max-w-reading">
-          <HealthStatus />
-          <p className="type-small mt-12 text-muted-foreground">{t("note")}</p>
-        </div>
+      <main className="col flex-1 pt-14 md:pt-20">
+        <HealthStatus />
+        <p className="type-small mt-10 text-gray">{t("note")}</p>
       </main>
     </>
   );

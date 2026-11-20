@@ -17,10 +17,10 @@ const VERDICT = { loading: "neutral", online: "pass", offline: "fail" } as const
 
 function Row({ label, value }: { label: string; value?: string }) {
   return (
-    <div className="flex h-14 items-center justify-between gap-6 border-t border-hairline">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-mono tabular-nums">
-        {value ?? <span aria-hidden className="block h-4 w-16 rounded-sm bg-surface" />}
+    <div className="flex min-h-11 items-center justify-between gap-6 border-t border-hairline py-2.5">
+      <dt className="text-gray">{label}</dt>
+      <dd className="text-right font-mono text-[0.9375rem] break-all text-ink">
+        {value ?? <span aria-hidden className="block h-3.5 w-14 rounded-sm bg-surface" />}
       </dd>
     </div>
   );
@@ -58,28 +58,33 @@ export function HealthStatus() {
     <section>
       <SectionLabel>{t("label")}</SectionLabel>
       <div aria-live="polite">
-        <h1 className="type-h2 mt-3 text-balance">{t(`states.${state.kind}.sentence`)}</h1>
-        <VerdictBadge verdict={VERDICT[state.kind]} className="mt-5">
+        <h1 className="type-hero mt-5 text-balance">{t(`states.${state.kind}.sentence`)}</h1>
+        <VerdictBadge verdict={VERDICT[state.kind]} className="mt-4">
           {t(`states.${state.kind}.badge`)}
         </VerdictBadge>
       </div>
 
-      {state.kind === "offline" ? (
-        <div className="mt-8 flex flex-col items-start gap-5 border-t border-hairline pt-6">
-          <p role="alert">{t(`errors.${state.code}`)}</p>
+      {state.kind === "offline" && (
+        <div className="mt-7 flex flex-col items-start gap-4">
+          <p role="alert" className="type-body">
+            {t(`errors.${state.code}`)}
+          </p>
           <button type="button" onClick={retry} className={pill({ variant: "secondary" })}>
             {t("retry")}
           </button>
         </div>
-      ) : (
-        <dl className="mt-8 border-b border-hairline">
-          <Row label={t("rows.status")} value={health?.status} />
-          <Row label={t("rows.version")} value={health?.version} />
-          <Row label={t("rows.mujocoVersion")} value={health?.mujocoVersion} />
-        </dl>
       )}
 
-      <p className="mt-4 font-mono text-sm break-all text-muted-foreground">{API_URL}/health</p>
+      <dl className="mt-9 border-b border-hairline">
+        {state.kind !== "offline" && (
+          <>
+            <Row label={t("rows.status")} value={health?.status} />
+            <Row label={t("rows.version")} value={health?.version} />
+            <Row label={t("rows.mujocoVersion")} value={health?.mujocoVersion} />
+          </>
+        )}
+        <Row label={t("rows.endpoint")} value={`${API_URL.replace(/^https?:\/\//, "")}/health`} />
+      </dl>
     </section>
   );
 }
