@@ -10,11 +10,13 @@
     "types": "wrangler types",
     "typecheck": "wrangler types && tsc --noEmit",
     "check": "wrangler deploy --dry-run",
-    "test": "vitest run"
+    "test": "vitest run",
+    "seed:demo": "tsx seed/demo.ts"
   },
   "packageManager": "pnpm@12.3.4",
   "devDependencies": {
     "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^4.1.12",
     "wrangler": "^4.165.0"
