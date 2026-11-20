@@ -17,8 +17,41 @@
 	"workers_dev": true,
 	"vars": {
 		// Browser origins allowed to call the API (comma-separated). Passed to the container.
-		"CORS_ORIGINS": "https://securecargo.app,https://www.securecargo.app,http://localhost:3000"
+		"CORS_ORIGINS": "https://securecargo.app,https://www.securecargo.app,http://localhost:3000",
+		// Site origin, for links in invitation emails.
+		"SITE_URL": "https://securecargo.app"
 	},
+	// Secrets (never in the repo; `wrangler secret put`, locally in .dev.vars):
+	//   CLERK_SECRET_KEY, CLERK_PUBLISHABLE_KEY, PLATFORM_ADMIN_EMAILS (comma-separated).
+	// Records: organizations, users, inspections, results, usage (migrations/).
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "securecargo",
+			"database_id": "9382939a-e9ac-43b9-b59d-27ad37028382",
+			"migrations_dir": "migrations"
+		}
+	],
+	// Inspection photos (EXIF stripped). Private: served only through authorized routes.
+	"r2_buckets": [
+		{
+			"binding": "PHOTOS",
+			"bucket_name": "securecargo-photos"
+		}
+	],
+	// Per-IP limits for anonymous endpoints (Workers rate limiting; period must be 10 or 60 s).
+	"ratelimits": [
+		{
+			"name": "ANON_RATE_LIMITER",
+			"namespace_id": "1001",
+			"simple": { "limit": 10, "period": 60 }
+		},
+		{
+			"name": "PHYSICS_RATE_LIMITER",
+			"namespace_id": "1002",
+			"simple": { "limit": 60, "period": 60 }
+		}
+	],
 	// Identifies the deployed Worker version; used to give every deploy a fresh container.
 	"version_metadata": {
 		"binding": "VERSION"

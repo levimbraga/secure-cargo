@@ -49,6 +49,7 @@ docker-compose.override.yml
 .wrangler/
 .dev.vars
 .dev.vars.*
+!.dev.vars.example
 
 # Editors and OS
 .DS_Store
