@@ -114,6 +114,7 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
   // Unknown until the page runs in a browser; then whether it can draw 3D at all.
   const [webgl, setWebgl] = useState<boolean | null>(null);
   const [visible, setVisible] = useState(false);
+  const [seen, setSeen] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [shownTime, setShownTime] = useState(0);
   const time = useRef(0);
@@ -170,6 +171,7 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
       ([entry]) => {
         onScreen.current = Boolean(entry?.isIntersecting);
         setVisible(onScreen.current);
+        if (onScreen.current) setSeen(true);
         start.current();
       },
       { threshold: 0.35 },
@@ -288,8 +290,10 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
       <source src={`${clip}.mp4`} type="video/mp4" />
     </video>
   );
-  // Without WebGL the engine's own video takes the place of the 3D scene.
+  // Without WebGL the engine's own video takes the place of the 3D scene. With it, the scene
+  // (and three.js) is only set up once the frame has been on screen.
   const showScene = Boolean(doc && derived && webgl);
+  const mountScene = showScene && seen;
   const sceneFallback = (text: string) =>
     webgl === false || failed ? (
       <div className="absolute inset-0">
@@ -343,7 +347,7 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
           aria-label={t("replay.label")}
           className="relative aspect-[4/3] w-full overflow-hidden rounded bg-surface sm:aspect-[16/10]"
         >
-          {showScene && doc && derived ? (
+          {mountScene && doc && derived ? (
             <ReplayBoundary fallback={sceneFallback(t("replay.unsupported"))}>
               <KeyframePlayer
                 doc={doc}
@@ -355,11 +359,15 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
                 overlay={overlay}
                 format={labelFormat}
                 active={visible}
+                playing={playing}
+                revision={shownTime}
               />
               <div ref={overlay} className="pointer-events-none absolute inset-0 overflow-hidden" />
             </ReplayBoundary>
           ) : (
-            sceneFallback(failed ? t("replay.error") : webgl === false ? t("replay.unsupported") : t("replay.loading"))
+            sceneFallback(
+              failed ? t("replay.error") : webgl === false ? t("replay.unsupported") : t("replay.loading"),
+            )
           )}
           {/* Speed of the truck and what it is doing, read from the keyframes. */}
           {sample && (

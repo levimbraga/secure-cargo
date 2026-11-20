@@ -47,6 +47,10 @@ export type KeyframePlayerProps = {
   format: LabelFormat;
   /** Render frames only while the scene is on screen. */
   active?: boolean;
+  /** While playing the scene renders every frame; otherwise only when something changes. */
+  playing: boolean;
+  /** Changes whenever the replay time changes while paused (scrubbing), to draw a new frame. */
+  revision: number;
   /** Keep the last frame readable from the canvas, for captures. */
   capture?: boolean;
 };
@@ -62,6 +66,8 @@ export default function KeyframePlayer({
   overlay,
   format,
   active = true,
+  playing,
+  revision,
   capture = false,
 }: KeyframePlayerProps) {
   const realistic = mode === "realistic";
@@ -75,7 +81,8 @@ export default function KeyframePlayer({
       shadows={realistic ? "soft" : false}
       scene={{ environmentIntensity: 0.55 }}
       dpr={[1, 2]}
-      frameloop={active ? "always" : "never"}
+      // Idle costs nothing: frames are drawn while playing, and on demand otherwise.
+      frameloop={!active ? "never" : playing ? "always" : "demand"}
       gl={{ antialias: true, alpha: true, preserveDrawingBuffer: capture }}
       camera={{ fov: 30, near: 0.5, far: 160 }}
       // OrbitControls turns touch gestures off on the canvas; this class keeps vertical page
@@ -84,7 +91,16 @@ export default function KeyframePlayer({
     >
       <Lighting mode={mode} />
       <CameraRig view={view} />
-      <Stage doc={doc} series={series} impacts={impacts} time={time} mode={mode} overlay={overlay} format={format} />
+      <Stage
+        doc={doc}
+        series={series}
+        impacts={impacts}
+        time={time}
+        mode={mode}
+        overlay={overlay}
+        format={format}
+        revision={revision}
+      />
     </Canvas>
   );
 }
@@ -97,7 +113,16 @@ function Stage({
   mode,
   overlay,
   format,
-}: Pick<KeyframePlayerProps, "doc" | "series" | "impacts" | "time" | "mode" | "overlay" | "format">) {
+  revision,
+}: Pick<
+  KeyframePlayerProps,
+  "doc" | "series" | "impacts" | "time" | "mode" | "overlay" | "format" | "revision"
+>) {
+  const invalidate = useThree((state) => state.invalidate);
+  // A new replay time, a new view or a pointer over the scene each ask for a fresh frame.
+  useEffect(() => {
+    invalidate();
+  }, [invalidate, revision, mode, doc]);
   // The instant being drawn, shared by every part of the scene.
   const live = useRef<Live>({ t: 0, sample: sampleFrame(doc, 0), distance: 0, height: 0, activeStrap: -1 });
   const world = useRef<Group>(null);
@@ -121,9 +146,13 @@ function Stage({
     const braking = -ax / GRAVITY;
     const sideways = ay / GRAVITY;
     const current = motion.current;
+    const unsettled =
+      Math.abs(braking * PITCH_RAD_PER_G - current.pitch) + Math.abs(sideways * ROLL_RAD_PER_G - current.roll);
     current.pitch += (braking * PITCH_RAD_PER_G - current.pitch) * k;
     current.roll += (sideways * ROLL_RAD_PER_G - current.roll) * k;
     current.lag += (braking * CAMERA_LAG_M_PER_G - current.lag) * k;
+    // When paused, keep drawing until the body has settled into its new attitude.
+    if (unsettled > 1e-4) invalidate();
 
     body.current?.position.setY(floorHeight + state.height);
     // Rotation about the truck's width: a negative angle lowers the front.
@@ -140,7 +169,9 @@ function Stage({
         ref={world}
         onPointerMissed={() => {
           live.current.activeStrap = -1;
+          invalidate();
         }}
+        onPointerMove={() => invalidate()}
       >
         <Road live={live} mode={mode} />
         <group ref={wheels}>
@@ -171,6 +202,7 @@ function CameraRig({ view }: { view: CameraView }) {
   const camera = useThree((state) => state.camera);
   const canvas = useThree((state) => state.gl.domElement);
   const aspect = useThree((state) => state.size.width / state.size.height);
+  const invalidate = useThree((state) => state.invalidate);
   const controls = useRef<OrbitControls | null>(null);
   const touched = useRef(false);
 
@@ -186,7 +218,8 @@ function CameraRig({ view }: { view: CameraView }) {
     );
     camera.lookAt(...TARGET);
     controls.current?.update();
-  }, [aspect, camera, view]);
+    invalidate();
+  }, [aspect, camera, view, invalidate]);
 
   useEffect(() => {
     const orbit = new OrbitControls(camera, canvas);
@@ -201,15 +234,18 @@ function CameraRig({ view }: { view: CameraView }) {
     const onStart = () => {
       touched.current = true;
     };
+    const onChange = () => invalidate();
     orbit.addEventListener("start", onStart);
+    orbit.addEventListener("change", onChange);
     orbit.update();
     controls.current = orbit;
     return () => {
       orbit.removeEventListener("start", onStart);
+      orbit.removeEventListener("change", onChange);
       orbit.dispose();
       controls.current = null;
     };
-  }, [camera, canvas]);
+  }, [camera, canvas, invalidate]);
 
   useFrame(() => controls.current?.update());
   return null;
