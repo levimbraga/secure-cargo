@@ -75,6 +75,15 @@ Demo access: "Enter as demo driver" / "Enter as demo insurer" on the sign-in pag
 organization "Demo Insurer" (a few drivers, inspections from the sample photos and gallery examples: passes,
 fails, fixes). Demo accounts spend nothing except analyzing a new photo of their own, from a small shared quota.
 
+### Auth and backend split (decided 2026-11-20)
+- **Clerk** holds identities, organizations, org roles (`org:admin` → `org_admin`, `org:member` → `member`) and
+  invitations. Sign-in: Google and email link. Demo buttons: the Worker mints a Clerk sign-in token for a seeded
+  demo user and the page redeems it (`ticket` strategy).
+- **The Worker (`backend/worker`, TypeScript + Hono) is the application backend:** it verifies the Clerk session
+  JWT, enforces authorization, owns D1 (`migrations/`), R2, quotas, the budget cap and (Phase 6) the Anthropic
+  call. The FastAPI container is a stateless physics engine reached only through the Worker. The authorization
+  tests run in Vitest against the same SQL migrations on `node:sqlite`.
+
 ### Authorization (enforced in the backend on every endpoint, each rule tested)
 - a member reads and changes only inspections they authored;
 - an org_admin reads every inspection of their organization;
