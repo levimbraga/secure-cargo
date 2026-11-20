@@ -226,3 +226,11 @@
     animation: none;
   }
 }
+
+/*
+ * 3D scene: OrbitControls turns every touch gesture off on its canvas. One finger still has to
+ * scroll the page past the scene; dragging sideways turns the camera.
+ */
+.scene-canvas canvas {
+  touch-action: pan-y !important;
+}

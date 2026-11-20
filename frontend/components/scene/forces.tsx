@@ -15,6 +15,7 @@ import {
 
 import { strapPath, type Vec3 } from "@/lib/keyframes";
 import { tensionColor, unitForces } from "@/lib/replay";
+import { type Point, spreadMarkers } from "@/lib/unit-details";
 
 import { COLOR, FORCE_MIN, FORCE_SCALE, type SceneProps, three } from "./shared";
 
@@ -302,12 +303,40 @@ export type LabelFormat = {
   kilonewtons: (newtons: number) => string;
   inertia: string;
   friction: string;
+  /** Accessible name of the marker of a unit in the phone layout: "Pallet 2: show the forces". */
+  unitMarker?: (unitIndex: number) => string;
 };
+
+/** Side of the tap target of a unit marker [CSS px]; the visible disc inside it is smaller. */
+export const MARKER_SIZE = 44;
+
+const TEXT_LABEL =
+  "absolute top-0 left-0 hidden rounded-sm bg-paper/90 px-1 py-px font-mono text-[0.6875rem] leading-tight whitespace-nowrap text-ink";
+const MARKER =
+  "absolute top-0 left-0 hidden size-11 items-center justify-center rounded-full select-none";
+const MARKER_DISC =
+  "flex size-6 items-center justify-center rounded-full border font-mono text-[0.75rem] leading-none tabular-nums";
+/** Colours of the disc: [not selected, selected] for a unit that holds, then for one that slips. */
+const MARKER_TONE = {
+  holding: ["border-ink bg-paper text-ink", "border-ink bg-ink text-paper"],
+  slipping: ["border-fail bg-paper text-fail", "border-fail bg-fail text-paper"],
+} as const;
+
+/** A hairline from a marker that had to move aside to the unit it belongs to. */
+const MARKER_LEADER = "pointer-events-none absolute top-1/2 left-1/2 hidden h-px origin-left";
+/** A marker moved by less than this still sits on its unit and needs no line [CSS px]. */
+const LEADER_MIN = 6;
+
+type Marker = { root: HTMLElement; disc: HTMLSpanElement; leader: HTMLSpanElement; tone: string };
 
 /**
  * Text that follows things in the scene, as plain HTML over the canvas: the force of the
  * lashing under the pointer and, in the engineering view, the tension of every lashing and
  * the two forces on every unit.
+ *
+ * On a phone (`compact`) the engineering view has no room for that text: each unit gets one
+ * numbered marker with a 44 px tap target instead, and the page shows the numbers of the
+ * selected unit in a panel (`UnitPanel`).
  */
 export function Labels({
   doc,
@@ -316,48 +345,112 @@ export function Labels({
   overlay,
   format,
   anchor,
+  compact = false,
+  selectedUnit = null,
+  onSelectUnit,
 }: SceneProps & {
   overlay: RefObject<HTMLDivElement | null>;
   format: LabelFormat;
   /** The group the cargo is drawn in: label positions are given in its frame. */
   anchor: RefObject<Group | null>;
+  compact?: boolean;
+  selectedUnit?: number | null;
+  onSelectUnit?: (unitIndex: number) => void;
 }) {
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
-  const nodes = useRef<{ straps: HTMLSpanElement[]; units: HTMLSpanElement[] }>({ straps: [], units: [] });
+  const invalidate = useThree((state) => state.invalidate);
+  const nodes = useRef<{ straps: HTMLSpanElement[]; units: HTMLSpanElement[]; markers: Marker[] }>({
+    straps: [],
+    units: [],
+    markers: [],
+  });
   const scratch = useMemo(() => new Vector3(), []);
   const engineering = mode === "engineering";
+  const markers = engineering && compact;
+  const interactive = onSelectUnit !== undefined;
+  const select = useRef(onSelectUnit);
+  useEffect(() => {
+    select.current = onSelectUnit;
+  });
 
   useEffect(() => {
     const container = overlay.current;
     if (!container) return;
-    const make = () => {
+    const text = () => {
       const span = document.createElement("span");
-      span.className =
-        "absolute top-0 left-0 hidden rounded-sm bg-paper/90 px-1 py-px font-mono text-[0.6875rem] leading-tight whitespace-nowrap text-ink";
+      span.className = TEXT_LABEL;
+      // The same numbers are in the charts and the result rows, as text a screen reader gets.
+      span.setAttribute("aria-hidden", "true");
       container.appendChild(span);
       return span;
     };
-    const created = { straps: doc.straps.map(make), units: doc.units.map(make) };
+    const marker = (index: number): Marker => {
+      // A button when the page listens for the tap, a plain number otherwise.
+      const root = document.createElement(interactive ? "button" : "span");
+      root.className = `${MARKER} ${interactive ? "pointer-events-auto touch-manipulation" : ""}`;
+      root.dataset.unit = String(index);
+      if (root instanceof HTMLButtonElement) {
+        root.type = "button";
+        root.addEventListener("click", () => select.current?.(index));
+      } else {
+        root.setAttribute("aria-hidden", "true");
+      }
+      const leader = document.createElement("span");
+      leader.className = `${MARKER_LEADER} bg-ink`;
+      const disc = document.createElement("span");
+      disc.className = `relative ${MARKER_DISC} ${MARKER_TONE.holding[0]}`;
+      disc.textContent = String(index + 1);
+      root.append(leader, disc);
+      container.appendChild(root);
+      return { root, disc, leader, tone: MARKER_TONE.holding[0] };
+    };
+    const created = {
+      straps: doc.straps.map(text),
+      units: markers ? [] : doc.units.map(text),
+      markers: markers ? doc.units.map((_, index) => marker(index)) : [],
+    };
     nodes.current = created;
+    // New labels are hidden until a frame places them.
+    invalidate();
     return () => {
       [...created.straps, ...created.units].forEach((span) => span.remove());
-      nodes.current = { straps: [], units: [] };
+      created.markers.forEach(({ root }) => root.remove());
+      nodes.current = { straps: [], units: [], markers: [] };
     };
-  }, [doc, overlay]);
+  }, [doc, overlay, markers, interactive, invalidate]);
 
-  const place = (span: HTMLSpanElement, position: Vec3, text: string) => {
+  // Names and state of the markers, for assistive technology.
+  useEffect(() => {
+    if (!interactive) return;
+    nodes.current.markers.forEach(({ root }, index) => {
+      const name = format.unitMarker?.(index) ?? String(index + 1);
+      if (root.getAttribute("aria-label") !== name) root.setAttribute("aria-label", name);
+      root.setAttribute("aria-expanded", String(index === selectedUnit));
+    });
+  });
+  // The selected marker is drawn inverted: that needs a frame when the replay is paused.
+  useEffect(() => {
+    invalidate();
+  }, [invalidate, selectedUnit]);
+
+  /** Where a point of the cargo frame is on the canvas [CSS px], or `null` behind the camera. */
+  const project = (position: Vec3): Point | null => {
     scratch.set(...three(position));
     if (anchor.current) scratch.applyMatrix4(anchor.current.matrixWorld);
     scratch.project(camera);
-    if (scratch.z > 1) {
+    if (scratch.z > 1) return null;
+    return { x: ((scratch.x + 1) / 2) * size.width, y: ((1 - scratch.y) / 2) * size.height };
+  };
+
+  const place = (span: HTMLSpanElement, position: Vec3, text: string) => {
+    const point = project(position);
+    if (!point) {
       span.style.display = "none";
       return;
     }
-    const x = ((scratch.x + 1) / 2) * size.width;
-    const y = ((1 - scratch.y) / 2) * size.height;
     span.style.display = "block";
-    span.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -130%)`;
+    span.style.transform = `translate(${point.x.toFixed(1)}px, ${point.y.toFixed(1)}px) translate(-50%, -130%)`;
     if (span.textContent !== text) span.textContent = text;
   };
 
@@ -365,7 +458,8 @@ export function Labels({
     const { sample, activeStrap } = live.current;
     nodes.current.straps.forEach((span, index) => {
       const strap = doc.straps[index];
-      if (!strap || !(engineering || index === activeStrap)) {
+      // With markers, only the lashing under the pointer keeps its text.
+      if (!strap || !((engineering && !markers) || index === activeStrap)) {
         span.style.display = "none";
         return;
       }
@@ -397,6 +491,45 @@ export function Labels({
       // Neighbouring units are close together: every other label sits a little higher.
       const lift = 0.5 + (index % 2) * 0.32;
       place(span, [pose.p[0], pose.p[1], pose.p[2] + unit.size_m[2] / 2 + lift], text);
+    });
+
+    // One marker on the middle of each unit, moved apart where two tap targets would overlap.
+    const list = nodes.current.markers;
+    if (list.length === 0) return;
+    const centres = list.map((_, index) => {
+      const pose = sample.units[index];
+      return pose ? project(pose.p) : null;
+    });
+    const points = spreadMarkers(centres, MARKER_SIZE, size);
+    list.forEach((marker, index) => {
+      const point = points[index];
+      const centre = centres[index];
+      const unit = doc.units[index];
+      const pose = sample.units[index];
+      if (!point || !centre || !unit || !pose) {
+        marker.root.style.display = "none";
+        return;
+      }
+      marker.root.style.display = "flex";
+      marker.root.style.transform = `translate(${(point.x - MARKER_SIZE / 2).toFixed(1)}px, ${(point.y - MARKER_SIZE / 2).toFixed(1)}px)`;
+      // A marker that moved aside points back at its unit.
+      const dx = centre.x - point.x;
+      const dy = centre.y - point.y;
+      const reach = Math.hypot(dx, dy);
+      marker.leader.style.display = reach >= LEADER_MIN ? "block" : "none";
+      if (reach >= LEADER_MIN) {
+        marker.leader.style.width = `${reach.toFixed(1)}px`;
+        marker.leader.style.transform = `rotate(${Math.atan2(dy, dx).toFixed(3)}rad)`;
+      }
+      // Red, like the arrow, while the motion asks for more than friction can give.
+      const forces = unitForces(unit.mass_kg ?? 0, unit.friction_coefficient ?? 0, pose.normal, sample.bedAccel);
+      const slipping = forces.inertiaMagnitude >= FORCE_MIN && forces.inertiaMagnitude > forces.frictionLimit;
+      const tone = MARKER_TONE[slipping ? "slipping" : "holding"][index === selectedUnit ? 1 : 0];
+      if (marker.tone !== tone) {
+        marker.tone = tone;
+        marker.disc.className = `relative ${MARKER_DISC} ${tone}`;
+        marker.leader.className = `${MARKER_LEADER} ${slipping ? "bg-fail" : "bg-ink"}`;
+      }
     });
   });
 

@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // MuJoCo's Emscripten loader, copied from node_modules by scripts/copy-mujoco.mjs.
+    "public/mujoco/**",
+    "test-results/**",
+    "playwright-report/**",
   ]),
 ]);
 

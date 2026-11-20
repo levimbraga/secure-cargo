@@ -228,7 +228,8 @@ MuJoCo's own render; three charts; the result rows; the findings.
   has been; a red ring opens where a unit hits the headboard.
 
 **Realistic view** (default). Physically based materials, light from a studio environment generated in
-the browser, one sun with soft shadows, ACES tone mapping. A two-axle truck with a plank deck, pallets
+the browser, one sun with soft shadows, ACES tone mapping (on phones and weak GPUs: no shadow maps and
+no environment, see the budget below). A two-axle truck with a plank deck, pallets
 with cartons under stretch film, crates, plastic pallets, a machine on a skid, sheet-steel cabinets,
 ratchet straps, chains and rope. All of it is built in code: nothing is downloaded, and every unit fills
 exactly the box the simulation used. Bed and headboard have the simulated dimensions.
@@ -236,6 +237,20 @@ exactly the box the simulation used. Bed and headboard have the simulated dimens
 **Engineering view.** The look of a physics debugger: checkered ground (1 m squares), translucent
 bodies with their axes, the solver's contact points with their normal forces, the tension of every
 lashing and the two forces on every unit as numbers, and the axes of the bed frame.
+
+**Engineering view on a phone** (viewport at most 480px wide; wider screens keep the text labels
+above). There is no room for a line of text per lashing and per unit, so the scene carries one
+**numbered marker per unit** and nothing else: a 24px disc (paper with an ink border; ink when its
+panel is open; red, like the inertia arrow, while inertia exceeds the friction available) inside a
+44 × 44px tap target, on the middle of the unit. Tap targets never overlap: a marker that would
+cover another moves up or aside and a hairline points back at its unit. The markers are buttons,
+in the order of the units, named "Pallet 2: show the forces". Tapping one opens a **panel directly
+under the scene** (surface fill, 4px radius, no border): the disc and the name of the unit, a
+44px close button, and rows in `type-small` with mono values for inertia (m·a), friction
+available (μ·N), floor force, slide so far, and each lashing as tension of capacity in daN with the
+share. The numbers follow the replay clock. Tapping the marker again, the close button or Escape
+closes it; the close button returns the focus to the marker. The lashing under the pointer still
+shows its force in both views.
 
 **MuJoCo's own render.** Under the scene, a short clip of the same run drawn by MuJoCo's renderer
 (`backend/scripts/render_demo_videos.py`): the frames are taken during the run that produces the
@@ -252,7 +267,22 @@ one click away.
 
 **Playback.** 0.25×, 0.5×, 1× and "Auto" (default): normal speed, slowed to 0.25× from just before the
 load starts to move until a second after. The replay starts by itself the first time the scene is on
-screen, except with `prefers-reduced-motion: reduce`, and renders only while it is on screen.
+screen, except with `prefers-reduced-motion: reduce`.
+
+**Mobile performance budget** (the replay and the live lab share it; the pieces are
+`lib/quality.ts`, `lib/use-quality.ts`, `lib/use-scene-visibility.ts` and the player itself).
+
+| Rule                       | How                                                                                     |
+| -------------------------- | --------------------------------------------------------------------------------------- |
+| Mount only when visible    | The canvas and its WebGL context are created the first time the frame is within 200px of the viewport. Scrolled away, the canvas stays but draws nothing (`frameloop="never"`). |
+| Render on demand           | Every frame while playing; when paused, only when the time, the view, the camera or a selection changes. |
+| Pixel ratio                | At most 1.5 device pixels per CSS pixel, at both quality levels.                        |
+| Quality `high` / `low`     | `pickQuality` returns `low` for a software renderer, a mobile GPU (Mali, Adreno, PowerVR, Apple GPU behind a touch screen, …), a touch screen under 768px, 4 cores or fewer, or 4 GB or less. `low` has no shadow maps and no environment map: the same sun, a sky light, and one flat contact shadow under the truck. |
+| Hidden tab                 | On `visibilitychange` the clock stops and the canvas draws nothing; both go on when the tab is back, if the replay was playing. |
+
+ACES tone mapping is part of the material shaders, not a pass, and multisampling is cheap on
+tile-based phone GPUs: both stay on at `low`. There is no post-processing at either level.
+One finger scrolls the page over the scene (`touch-action: pan-y`); dragging sideways turns the camera.
 
 **Without WebGL** (or if the scene fails) MuJoCo's clip takes the place of the scene; the sentence, the
 verdict, the timeline, the charts and the numbers are plain HTML and keep working.

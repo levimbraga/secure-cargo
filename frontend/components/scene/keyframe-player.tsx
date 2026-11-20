@@ -6,16 +6,22 @@ import { type Group, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import { type KeyframesDoc, sampleFrame, type Vec3 } from "@/lib/keyframes";
+import { type Quality, QUALITY_SETTINGS } from "@/lib/quality";
 import { GRAVITY, type Impact, type Series, seriesAt } from "@/lib/replay";
+import { useQuality } from "@/lib/use-quality";
+import { usePageVisible } from "@/lib/use-scene-visibility";
 
 import { AxisTriad, Units } from "./cargo";
-import { Lighting, Road } from "./environment";
+import { ContactShadow, Lighting, Road } from "./environment";
 import { Contacts, ForceArrows, ImpactFlash, type LabelFormat, Labels, Lashings } from "./forces";
 import type { Live, ViewMode } from "./shared";
 import { TruckBody, Wheels } from "./truck";
 
 export type CameraView = "hero" | "side" | "rear" | "top";
-export type { LabelFormat, ViewMode };
+export type { LabelFormat, Quality, ViewMode };
+
+/** At most this wide [CSS px], the engineering view uses numbered markers instead of text labels. */
+export const COMPACT_LABELS_MAX_WIDTH = 480;
 
 const VIEW_DIRECTION: Record<CameraView, Vec3> = {
   hero: [-0.42, 0.4, 1],
@@ -53,6 +59,17 @@ export type KeyframePlayerProps = {
   revision: number;
   /** Keep the last frame readable from the canvas, for captures. */
   capture?: boolean;
+  /** Rendering quality. Default: picked for this device (`useQuality`). */
+  quality?: Quality;
+  /**
+   * Phone labelling of the engineering view: one numbered marker per unit instead of text.
+   * Default: when the canvas is at most `COMPACT_LABELS_MAX_WIDTH` wide.
+   */
+  compactLabels?: boolean;
+  /** Index of the unit whose marker is drawn as selected (its details are open), or `null`. */
+  selectedUnit?: number | null;
+  /** A unit marker was tapped or activated from the keyboard. Without it the markers are not buttons. */
+  onSelectUnit?: (unitIndex: number) => void;
 };
 
 /** Replays a keyframes document as a 3D scene of a flatbed truck. */
@@ -69,27 +86,41 @@ export default function KeyframePlayer({
   playing,
   revision,
   capture = false,
+  quality,
+  compactLabels,
+  selectedUnit = null,
+  onSelectUnit,
 }: KeyframePlayerProps) {
   const realistic = mode === "realistic";
+  const detected = useQuality();
+  const level = quality ?? detected;
+  const settings = QUALITY_SETTINGS[level];
+  // A hidden tab draws nothing, whatever the page asks for.
+  const pageVisible = usePageVisible();
+  const awake = active && pageVisible;
 
   return (
     <Canvas
-      // The two views use different renderer settings: start a fresh canvas for each.
-      key={mode}
-      // ACES tone mapping and soft shadows for the realistic view; plain colours otherwise.
+      // The views and the quality levels use different renderer settings: a fresh canvas for each.
+      key={`${mode}:${level}`}
+      // ACES tone mapping for the realistic view (part of the material shaders, not a pass);
+      // plain colours otherwise.
       flat={!realistic}
-      shadows={realistic ? "soft" : false}
+      // Soft shadow maps only at high quality: phones and weak GPUs get a flat contact shadow.
+      shadows={realistic && settings.shadows ? "soft" : false}
       scene={{ environmentIntensity: 0.55 }}
-      dpr={[1, 2]}
-      // Idle costs nothing: frames are drawn while playing, and on demand otherwise.
-      frameloop={!active ? "never" : playing ? "always" : "demand"}
-      gl={{ antialias: true, alpha: true, preserveDrawingBuffer: capture }}
+      dpr={[1, settings.maxDpr]}
+      // Idle costs nothing: frames are drawn while playing, on demand when paused, and never
+      // while the scene is off screen or the tab is hidden.
+      frameloop={!awake ? "never" : playing ? "always" : "demand"}
+      gl={{ antialias: settings.antialias, alpha: true, preserveDrawingBuffer: capture }}
       camera={{ fov: 30, near: 0.5, far: 160 }}
       // OrbitControls turns touch gestures off on the canvas; this class keeps vertical page
       // scrolling (see `.scene-canvas` in globals.css).
       className="scene-canvas"
+      data-quality={level}
     >
-      <Lighting mode={mode} />
+      <Lighting mode={mode} quality={level} />
       <CameraRig view={view} />
       <Stage
         doc={doc}
@@ -100,6 +131,10 @@ export default function KeyframePlayer({
         overlay={overlay}
         format={format}
         revision={revision}
+        contactShadow={realistic && !settings.shadows}
+        compactLabels={compactLabels}
+        selectedUnit={selectedUnit}
+        onSelectUnit={onSelectUnit}
       />
     </Canvas>
   );
@@ -114,11 +149,30 @@ function Stage({
   overlay,
   format,
   revision,
+  contactShadow,
+  compactLabels,
+  selectedUnit,
+  onSelectUnit,
 }: Pick<
   KeyframePlayerProps,
-  "doc" | "series" | "impacts" | "time" | "mode" | "overlay" | "format" | "revision"
->) {
+  | "doc"
+  | "series"
+  | "impacts"
+  | "time"
+  | "mode"
+  | "overlay"
+  | "format"
+  | "revision"
+  | "compactLabels"
+  | "selectedUnit"
+  | "onSelectUnit"
+> & {
+  /** Draw the flat shadow under the truck that stands in for shadow maps. */
+  contactShadow: boolean;
+}) {
   const invalidate = useThree((state) => state.invalidate);
+  const width = useThree((state) => state.size.width);
+  const compact = compactLabels ?? width <= COMPACT_LABELS_MAX_WIDTH;
   // A new replay time, a new view or a pointer over the scene each ask for a fresh frame.
   useEffect(() => {
     invalidate();
@@ -174,6 +228,7 @@ function Stage({
         onPointerMove={() => invalidate()}
       >
         <Road live={live} mode={mode} />
+        {contactShadow && <ContactShadow bed={doc.bed} />}
         <group ref={wheels}>
           <Wheels bed={doc.bed} mode={mode} />
         </group>
@@ -193,7 +248,15 @@ function Stage({
           )}
         </group>
       </group>
-      <Labels {...scene} overlay={overlay} format={format} anchor={body} />
+      <Labels
+        {...scene}
+        overlay={overlay}
+        format={format}
+        anchor={body}
+        compact={compact}
+        selectedUnit={selectedUnit}
+        onSelectUnit={onSelectUnit}
+      />
     </>
   );
 }

@@ -7,6 +7,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Charts, type ChartsLabels } from "@/components/scenario/charts";
 import { ReplayBoundary, supportsWebGL } from "@/components/scenario/replay-boundary";
 import type { CameraView, LabelFormat, ViewMode } from "@/components/scene/keyframe-player";
+import { UnitPanel, type UnitPanelLabels } from "@/components/scene/unit-panel";
 import { DataRow } from "@/components/ui/data-row";
 import { pill } from "@/components/ui/pill";
 import { SectionLabel } from "@/components/ui/section-label";
@@ -32,6 +33,9 @@ import {
   SPEEDS,
 } from "@/lib/replay";
 import { REPOSITORY_URL } from "@/lib/site";
+import { unitDetails } from "@/lib/unit-details";
+import { useMediaQuery } from "@/lib/use-media-query";
+import { useSceneVisibility } from "@/lib/use-scene-visibility";
 
 // three.js is only needed once the replay is on screen, and never on the server.
 const KeyframePlayer = dynamic(() => import("@/components/scene/keyframe-player"), { ssr: false });
@@ -41,6 +45,8 @@ const READOUT_INTERVAL_MS = 80;
 /** Accelerations below this are shown as "steady". */
 const STEADY_G = 0.02;
 const MODES: ViewMode[] = ["realistic", "engineering"];
+/** Phones: the engineering view shows numbered markers and a panel instead of text labels. */
+const COMPACT = "(max-width: 480px)";
 
 /** Sideways events read best from behind the truck; the others from its side. */
 const VIEW: Record<DemoId, CameraView> = {
@@ -113,9 +119,10 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
   const [failed, setFailed] = useState(false);
   // Unknown until the page runs in a browser; then whether it can draw 3D at all.
   const [webgl, setWebgl] = useState<boolean | null>(null);
-  const [visible, setVisible] = useState(false);
-  const [seen, setSeen] = useState(false);
   const [playing, setPlaying] = useState(false);
+  // The unit whose numbers are open in the panel under the scene (phone layout only).
+  const [selectedUnit, setSelectedUnit] = useState<number | null>(null);
+  const compact = useMediaQuery(COMPACT);
   const [shownTime, setShownTime] = useState(0);
   const time = useRef(0);
   const started = useRef(false);
@@ -163,26 +170,20 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
     return () => controller.abort();
   }, [id]);
 
-  // The scene only renders frames while it is on screen.
-  useEffect(() => {
-    const node = frame.current;
-    if (!node) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        onScreen.current = Boolean(entry?.isIntersecting);
-        setVisible(onScreen.current);
-        if (onScreen.current) setSeen(true);
-        start.current();
-      },
-      { threshold: 0.35 },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+  // The canvas is created once the frame is in or near the viewport, and draws only while
+  // some of it is on screen and the tab is visible.
+  const visibility = useSceneVisibility(frame, {
+    onScreenChange: (watched) => {
+      onScreen.current = watched;
+      start.current();
+    },
+  });
+  const { pageVisible } = visibility;
 
   // The clock of the replay. The scene reads `time` every frame; React state follows slowly.
+  // It stands still while the tab is hidden and goes on when the tab is back.
   useEffect(() => {
-    if (!playing) {
+    if (!playing || !pageVisible) {
       video.current?.pause();
       return;
     }
@@ -210,7 +211,7 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
     };
     request = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(request);
-  }, [playing, duration, speed, critical]);
+  }, [playing, pageVisible, duration, speed, critical]);
 
   function seek(seconds: number) {
     time.current = seconds;
@@ -253,6 +254,7 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
     kilonewtons: (newtons) => `${number(newtons / 1000, 1)} kN`,
     inertia: "m·a",
     friction: "μ·N",
+    unitMarker: (index) => t("details.open", { unit: nameOf(doc?.units[index]?.id ?? null) }),
   };
   const chartLabels: ChartsLabels = {
     acceleration: t("charts.acceleration"),
@@ -293,7 +295,41 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
   // Without WebGL the engine's own video takes the place of the 3D scene. With it, the scene
   // (and three.js) is only set up once the frame has been on screen.
   const showScene = Boolean(doc && derived && webgl);
-  const mountScene = showScene && seen;
+  const mountScene = showScene && visibility.seen;
+  // The panel of a unit: only where its markers are, in the engineering view on a phone.
+  const openUnit = compact && mode === "engineering" && mountScene ? selectedUnit : null;
+  const openDetails = doc && sample && openUnit !== null ? unitDetails(doc, sample, openUnit) : null;
+  const panelLabels: UnitPanelLabels | null =
+    doc && openUnit !== null
+      ? {
+          region: t("details.region", { unit: nameOf(doc.units[openUnit]?.id ?? null) }),
+          title: nameOf(doc.units[openUnit]?.id ?? null),
+          close: t("details.close"),
+          inertia: t("details.inertia"),
+          friction: t("details.friction"),
+          floor: t("details.floor"),
+          slide: t("details.slide"),
+          lashing: (index) => t("details.lashing", { number: index }),
+          tension: (tension, capacity) =>
+            capacity === null
+              ? t("details.tensionOnly", { force: number(tension / 10, 0) })
+              : t("details.tension", {
+                  force: number(tension / 10, 0),
+                  capacity: number(capacity / 10, 0),
+                  percent: percent(tension / capacity),
+                }),
+          noLashing: t("details.noLashing"),
+          kilonewtons: (newtons) => `${number(newtons / 1000, 1)} kN`,
+          centimetres: (metres) => `${number(metres * 100, 1)} cm`,
+        }
+      : null;
+
+  function closePanel() {
+    const marker = overlay.current?.querySelector<HTMLElement>(`[data-unit="${selectedUnit}"]`);
+    setSelectedUnit(null);
+    // Back to the marker that opened the panel, so the keyboard does not lose its place.
+    marker?.focus();
+  }
   const sceneFallback = (text: string) =>
     webgl === false || failed ? (
       <div className="absolute inset-0">
@@ -340,28 +376,38 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
         </div>
       </div>
 
-      <figure className="mt-4">
+      <figure
+        className="mt-4"
+        onKeyDown={(event) => {
+          // Escape on a marker closes the panel it opened.
+          if (event.key === "Escape" && openUnit !== null) closePanel();
+        }}
+      >
         <div
           ref={frame}
-          role="img"
-          aria-label={t("replay.label")}
           className="relative aspect-[4/3] w-full overflow-hidden rounded bg-surface sm:aspect-[16/10]"
         >
           {mountScene && doc && derived ? (
             <ReplayBoundary fallback={sceneFallback(t("replay.unsupported"))}>
-              <KeyframePlayer
-                doc={doc}
-                series={derived.series}
-                impacts={derived.impacts}
-                time={time}
-                mode={mode}
-                view={VIEW[id]}
-                overlay={overlay}
-                format={labelFormat}
-                active={visible}
-                playing={playing}
-                revision={shownTime}
-              />
+              {/* The drawing is one image to a screen reader; the markers over it are buttons. */}
+              <div role="img" aria-label={t("replay.label")} className="absolute inset-0">
+                <KeyframePlayer
+                  doc={doc}
+                  series={derived.series}
+                  impacts={derived.impacts}
+                  time={time}
+                  mode={mode}
+                  view={VIEW[id]}
+                  overlay={overlay}
+                  format={labelFormat}
+                  active={visibility.active}
+                  playing={playing}
+                  revision={shownTime}
+                  compactLabels={compact}
+                  selectedUnit={openUnit}
+                  onSelectUnit={(index) => setSelectedUnit((current) => (current === index ? null : index))}
+                />
+              </div>
               <div ref={overlay} className="pointer-events-none absolute inset-0 overflow-hidden" />
             </ReplayBoundary>
           ) : (
@@ -378,6 +424,9 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
             </dl>
           )}
         </div>
+        {openUnit !== null && openDetails && panelLabels && (
+          <UnitPanel number={openUnit + 1} details={openDetails} labels={panelLabels} onClose={closePanel} />
+        )}
         <figcaption className="type-label mt-2">
           {t("replay.source", {
             version: run.engine.mujoco_version,
@@ -453,7 +502,7 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
             className="inline-block h-1 w-10 shrink-0 rounded-full"
             style={{ background: "linear-gradient(to right, #8a8a86, #f2a100, #b42318)" }}
           />
-          {t("legend.tension")}. {t("legend.hint")}
+          {t("legend.tension")}. {compact ? t("legend.hintCompact") : t("legend.hint")}
         </li>
       </ul>
 

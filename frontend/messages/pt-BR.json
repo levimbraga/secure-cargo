@@ -272,10 +272,24 @@
       "friction": "Atrito disponível: coeficiente de atrito × força do assoalho",
       "scale": "setas em escala, 1 m = 10 kN",
       "tension": "Cor da amarração: frouxa, metade da capacidade, na capacidade",
-      "hint": "Aponte para uma amarração para ler a força."
+      "hint": "Aponte para uma amarração para ler a força.",
+      "hintCompact": "Na visão de engenharia, toque em um número para ler as forças daquele volume."
     },
     "labels": {
       "ofCapacity": "{percent} da capacidade"
+    },
+    "details": {
+      "open": "{unit}: mostrar as forças",
+      "region": "{unit}: forças neste instante",
+      "close": "Fechar",
+      "inertia": "Inércia (m·a)",
+      "friction": "Atrito disponível (μ·N)",
+      "floor": "Força do assoalho",
+      "slide": "Deslizamento até agora",
+      "lashing": "Amarração {number}",
+      "tension": "{force} de {capacity} daN · {percent}",
+      "tensionOnly": "{force} daN",
+      "noLashing": "Este volume não tem amarração."
     },
     "raw": {
       "title": "Renderização bruta do MuJoCo",

@@ -272,10 +272,24 @@
       "friction": "Friction available: friction factor × floor force",
       "scale": "arrows to scale, 1 m = 10 kN",
       "tension": "Lashing colour: slack, half of capacity, at capacity",
-      "hint": "Point at a lashing to read its force."
+      "hint": "Point at a lashing to read its force.",
+      "hintCompact": "In the engineering view, tap a number to read the forces on that unit."
     },
     "labels": {
       "ofCapacity": "{percent} of capacity"
+    },
+    "details": {
+      "open": "{unit}: show the forces",
+      "region": "{unit}: forces at this instant",
+      "close": "Close",
+      "inertia": "Inertia (m·a)",
+      "friction": "Friction available (μ·N)",
+      "floor": "Floor force",
+      "slide": "Slide so far",
+      "lashing": "Lashing {number}",
+      "tension": "{force} of {capacity} daN · {percent}",
+      "tensionOnly": "{force} daN",
+      "noLashing": "No lashing on this unit."
     },
     "raw": {
       "title": "Raw MuJoCo render",
