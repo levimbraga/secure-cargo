@@ -1,0 +1,63 @@
+{
+  "Metadata": {
+    "title": "Carga Segura — Amarração de carga testada com física",
+    "description": "Confira antes da viagem se a carga do caminhão está bem distribuída e bem amarrada: foto, simulação física e um plano de amarração que segue as regras brasileiras."
+  },
+  "Header": {
+    "brand": "Carga Segura",
+    "home": "Página inicial do Carga Segura",
+    "openApp": "Abrir app"
+  },
+  "LanguageSwitcher": {
+    "label": "Idioma",
+    "en": "English",
+    "pt-BR": "Português (Brasil)",
+    "enShort": "EN",
+    "pt-BRShort": "PT"
+  },
+  "Landing": {
+    "eyebrow": "IA física para o transporte rodoviário de cargas",
+    "title": "Carga Segura — Amarração de carga testada com física",
+    "lead": "Tire uma foto da carroceria. O Carga Segura simula frenagens bruscas, curvas e buracos e mostra como posicionar e amarrar a carga para ela não sair do lugar.",
+    "cta": "Abrir o app",
+    "stepsTitle": "Como funciona",
+    "steps": {
+      "perceive": {
+        "title": "Perceber",
+        "body": "Uma foto identifica os volumes e as cintas que já estão no lugar. Você confirma ou edita."
+      },
+      "simulate": {
+        "title": "Simular",
+        "body": "Um motor de física leva a carga pela viagem: frenagens, curvas, buracos e condições da estrada."
+      },
+      "plan": {
+        "title": "Planejar",
+        "body": "Você recebe um plano de posicionamento e amarração que atende às regras brasileiras e a todos os eventos simulados."
+      }
+    }
+  },
+  "App": {
+    "title": "App Carga Segura",
+    "lead": "O fluxo do motorista chega nas próximas fases. Por enquanto, esta página verifica a conexão com o servidor de simulação.",
+    "health": {
+      "title": "Servidor de simulação",
+      "endpoint": "Endereço",
+      "loading": "Verificando o servidor…",
+      "online": "No ar",
+      "offline": "Indisponível",
+      "status": "Status",
+      "version": "Versão da API",
+      "mujocoVersion": "Motor de física (MuJoCo)",
+      "retry": "Tentar de novo",
+      "errors": {
+        "unreachable": "Não foi possível falar com o servidor. Confira sua conexão ou tente de novo em instantes.",
+        "bad_status": "O servidor respondeu com um erro.",
+        "bad_payload": "O servidor respondeu em um formato inesperado."
+      }
+    }
+  },
+  "Footer": {
+    "disclaimer": "O Carga Segura é uma ferramenta de apoio à decisão, não uma certificação de engenharia.",
+    "source": "Código-fonte"
+  }
+}

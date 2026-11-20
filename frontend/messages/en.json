@@ -1,0 +1,63 @@
+{
+  "Metadata": {
+    "title": "SecureCargo — Physics-tested cargo securement",
+    "description": "Check before the trip whether a truck's cargo is well distributed and properly secured: photo, physics simulation and a lashing plan that follows Brazilian rules."
+  },
+  "Header": {
+    "brand": "SecureCargo",
+    "home": "SecureCargo home",
+    "openApp": "Open app"
+  },
+  "LanguageSwitcher": {
+    "label": "Language",
+    "en": "English",
+    "pt-BR": "Português (Brasil)",
+    "enShort": "EN",
+    "pt-BRShort": "PT"
+  },
+  "Landing": {
+    "eyebrow": "Physical AI for road freight",
+    "title": "SecureCargo — Physics-tested cargo securement",
+    "lead": "Take a photo of the truck bed. SecureCargo simulates hard braking, curves and potholes, then shows how to place and lash the cargo so it stays put.",
+    "cta": "Open the app",
+    "stepsTitle": "How it works",
+    "steps": {
+      "perceive": {
+        "title": "Perceive",
+        "body": "A photo identifies the cargo units and the straps already in place. You confirm or edit."
+      },
+      "simulate": {
+        "title": "Simulate",
+        "body": "A physics engine runs the load through the trip: braking, cornering, potholes and road conditions."
+      },
+      "plan": {
+        "title": "Plan",
+        "body": "You get a placement and lashing plan that passes Brazilian rules and every simulated event."
+      }
+    }
+  },
+  "App": {
+    "title": "SecureCargo app",
+    "lead": "The driver flow arrives in the next phases. For now this page checks the connection to the simulation server.",
+    "health": {
+      "title": "Simulation server",
+      "endpoint": "Endpoint",
+      "loading": "Checking the server…",
+      "online": "Online",
+      "offline": "Unavailable",
+      "status": "Status",
+      "version": "API version",
+      "mujocoVersion": "Physics engine (MuJoCo)",
+      "retry": "Try again",
+      "errors": {
+        "unreachable": "Could not reach the server. Check your connection or try again in a moment.",
+        "bad_status": "The server answered with an error.",
+        "bad_payload": "The server answered in an unexpected format."
+      }
+    }
+  },
+  "Footer": {
+    "disclaimer": "SecureCargo is a decision-support tool, not an engineering certification.",
+    "source": "Source code"
+  }
+}
