@@ -26,22 +26,18 @@ import {
   type LabControls,
   maxStrapsPerUnit,
 } from "./controls";
-import { LiveRun, LiveRunError } from "./engine";
-import type { LiveModel } from "./model";
-import { loadMujoco, webAssemblySupported } from "./mujoco";
+import { browserRunner, engineOf } from "./browser-run";
+import type { LiveRun } from "./engine";
 import { explain, type Reason } from "./reason";
+import { type FallbackReason, RunnerError, type RunSource } from "./runner";
 import type { Scenario } from "./scenario";
 
-/** Wall time of one slice of simulation before the page gets a turn [ms]. */
-const SLICE_MS = 12;
 /** A change of controls waits this long for the next one before asking the API [ms]. */
 const DEBOUNCE_MS = 180;
-/** A browser run slower than this moves the following runs to the server [ms]. */
-export const SLOW_RUN_MS = 2500;
 
-export type LabSource = "browser" | "server";
-/** Why runs come from the server instead of the browser. */
-export type FallbackReason = "no_wasm" | "load_failed" | "slow";
+export { SLOW_RUN_MS } from "./runner";
+export type { FallbackReason };
+export type LabSource = RunSource;
 export type LabError = "load_failed" | "api_unreachable" | "unstable";
 
 export type LabRun = {
@@ -82,27 +78,6 @@ export type LiveLab = {
   engine: RefObject<LiveRun | null>;
 };
 
-function nextTurn(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 0));
-}
-
-function browserSummary(live: LiveModel, run: LiveRun): { summary: RunSummary; doc: KeyframesDoc } {
-  const result = run.result();
-  return {
-    doc: result.keyframes,
-    summary: {
-      duration_s: result.duration_s,
-      engine: { mujoco_version: result.engine.mujoco_version, timestep_s: result.engine.timestep_s },
-      profile: result.profile,
-      verdict: result.verdict,
-      units: result.units,
-      margins: result.margins,
-      axle_loads: live.axle_loads,
-      en_12195_1: live.en_12195_1,
-    },
-  };
-}
-
 export function useLiveLab(id: DemoId, variant: Variant): LiveLab {
   const [base, setBase] = useState<{ key: string; run: BaseRun; other: Scenario } | null>(null);
   const [changes, setChanges] = useState<{ key: string; controls: LabControls } | null>(null);
@@ -112,7 +87,8 @@ export function useLiveLab(id: DemoId, variant: Variant): LiveLab {
   const [error, setError] = useState<LabError | null>(null);
   const [fallback, setFallback] = useState<FallbackReason | null>(null);
   const engine = useRef<LiveRun | null>(null);
-  const fallbackNow = useRef<FallbackReason | null>(null);
+  // One runner per page: once the device proved too slow, it stays on the server.
+  const runner = useRef(browserRunner());
 
   const key = `${id}.${variant}`;
   const current = base?.key === key ? base : null;
@@ -151,74 +127,27 @@ export function useLiveLab(id: DemoId, variant: Variant): LiveLab {
       setBusy(false);
     };
 
-    const onServer = async () => {
-      const started = performance.now();
-      // The scenario as authored was already simulated by the server: no request needed.
-      const result = authored ? current.run.server : await simulateOnServer(input.scenario, input.event, signal);
-      if (signal.aborted) return;
-      const previous = engine.current;
-      engine.current = null;
-      previous?.dispose();
-      finish("server", result, result.keyframes, performance.now() - started);
-    };
-
-    const inBrowser = async (): Promise<boolean> => {
-      if (!webAssemblySupported()) {
-        fallbackNow.current = "no_wasm";
-        return false;
-      }
-      let mujoco;
-      try {
-        mujoco = await loadMujoco();
-      } catch {
-        fallbackNow.current = "load_failed";
-        return false;
-      }
-      const live = authored
-        ? await fetchStaticLiveModel(id, variant, signal)
-        : await fetchLiveModel(input.scenario, input.event, signal);
-      if (signal.aborted) return true;
-
-      const started = performance.now();
-      const next = new LiveRun(mujoco, live);
-      try {
-        while (!next.advance(SLICE_MS)) {
-          setProgress(next.progress);
-          await nextTurn();
-          if (signal.aborted) {
-            next.dispose();
-            return true;
-          }
-        }
-        const { summary, doc } = browserSummary(live, next);
-        const runMs = performance.now() - started;
-        const previous = engine.current;
-        engine.current = next;
-        previous?.dispose();
-        finish("browser", summary, doc, runMs);
-        // Too slow to explore with: the next runs come from the server.
-        if (runMs > SLOW_RUN_MS) {
-          fallbackNow.current = "slow";
-          setFallback("slow");
-        }
-      } catch (cause) {
-        next.dispose();
-        throw cause;
-      }
-      return true;
-    };
-
     const start = async () => {
       setBusy(true);
       setProgress(0);
       try {
-        if (fallbackNow.current === null && (await inBrowser())) return;
-        if (signal.aborted) return;
-        setFallback(fallbackNow.current);
-        await onServer();
+        const outcome = await runner.current.run({
+          live: () =>
+            authored ? fetchStaticLiveModel(id, variant, signal) : fetchLiveModel(input.scenario, input.event, signal),
+          // The scenario as authored was already simulated by the server: no request needed.
+          server: async () => (authored ? current.run.server : simulateOnServer(input.scenario, input.event, signal)),
+          signal,
+          onProgress: setProgress,
+        });
+        if (!outcome) return;
+        const previous = engine.current;
+        engine.current = engineOf(outcome.engine);
+        if (previous !== engine.current) previous?.dispose();
+        setFallback(runner.current.fallback);
+        finish(outcome.source, outcome.summary, outcome.doc, outcome.runMs);
       } catch (cause) {
         if (signal.aborted) return;
-        setError(cause instanceof LiveRunError ? "unstable" : "api_unreachable");
+        setError(cause instanceof RunnerError ? cause.code : "api_unreachable");
         setBusy(false);
       }
     };
