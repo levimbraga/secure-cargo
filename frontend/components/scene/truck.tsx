@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { BoxGeometry, CanvasTexture, ExtrudeGeometry, RepeatWrapping, Shape, SRGBColorSpace } from "three";
+import {
+  BoxGeometry,
+  CanvasTexture,
+  EdgesGeometry,
+  ExtrudeGeometry,
+  RepeatWrapping,
+  Shape,
+  SRGBColorSpace,
+} from "three";
 
 import type { KeyframesDoc } from "@/lib/keyframes";
 
@@ -91,7 +99,81 @@ function deckTexture(): CanvasTexture {
  * middle of the bed floor.
  */
 export function TruckBody({ bed, mode }: { bed: Bed; mode: ViewMode }) {
-  return mode === "realistic" ? <RealisticBody bed={bed} /> : <EngineeringBody bed={bed} />;
+  return (
+    <>
+      {mode === "realistic" ? <RealisticBody bed={bed} /> : <EngineeringBody bed={bed} />}
+      <Walls bed={bed} mode={mode} />
+      <Blocks bed={bed} mode={mode} />
+    </>
+  );
+}
+
+/**
+ * Side walls and rear doors of a box body, curtains of a curtain-sider, low side rails of a
+ * flatbed: all with the simulation's dimensions. They are see-through, so the cargo stays in
+ * view; a curtain is drawn as fabric because it restrains nothing.
+ */
+function Walls({ bed, mode }: { bed: Bed; mode: ViewMode }) {
+  const { length_m: length, width_m: width } = bed;
+  const body = bed.body ?? "flatbed";
+  const sides = bed.side_rail_height_m ?? 0;
+  const rear = bed.rear_wall_height_m ?? 0;
+  const tall = Math.max(bed.headboard_height_m, rear, sides);
+  const engineering = mode === "engineering";
+  const panel = engineering ? "#aeb2b6" : "#f1f1ec";
+  const roof = useMemo(() => new EdgesGeometry(new BoxGeometry(length, 0.001, width)), [length, width]);
+  useEffect(() => () => roof.dispose(), [roof]);
+  return (
+    <group>
+      {sides > 0 &&
+        [-1, 1].map((side) => (
+          <Slab
+            key={side}
+            size={[length, sides, 0.05]}
+            position={[0, sides / 2, side * (width / 2 + 0.03)]}
+            color={panel}
+            opacity={side > 0 ? 0.16 : 0.3}
+          />
+        ))}
+      {rear > 0 && (
+        <Slab size={[0.05, rear, width]} position={[-length / 2 - 0.03, rear / 2, 0]} color={panel} opacity={0.22} />
+      )}
+      {body === "curtain_sider" &&
+        [-1, 1].map((side) => (
+          <mesh key={side} position={[0, tall / 2, side * (width / 2 + 0.03)]}>
+            <boxGeometry args={[length, tall, 0.02]} />
+            <meshStandardMaterial color="#2e5c8a" transparent opacity={side > 0 ? 0.14 : 0.28} roughness={0.9} depthWrite={false} />
+          </mesh>
+        ))}
+      {body !== "flatbed" && (
+        // Roof frame of the body.
+        <lineSegments position={[0, tall, 0]} geometry={roof}>
+          <lineBasicMaterial color={engineering ? COLOR.ink : "#8d9194"} />
+        </lineSegments>
+      )}
+    </group>
+  );
+}
+
+/** Chocks, beams and cradle sides fixed to the bed (they stop cargo by contact). */
+function Blocks({ bed, mode }: { bed: Bed; mode: ViewMode }) {
+  return (
+    <group>
+      {(bed.blocks ?? []).map((block) => {
+        const [x, y] = block.position_m;
+        const [sx, sy, sz] = block.size_m;
+        const position: [number, number, number] = [x, sz / 2, -y];
+        return mode === "engineering" ? (
+          <Slab key={block.id} size={[sx, sz, sy]} position={position} color="#8a6a43" opacity={0.75} />
+        ) : (
+          <mesh key={block.id} position={position} castShadow receiveShadow>
+            <boxGeometry args={[sx, sz, sy]} />
+            <meshStandardMaterial color={block.kind === "cradle" ? "#5b4126" : "#9b7648"} roughness={0.85} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
 }
 
 function EngineeringBody({ bed }: { bed: Bed }) {

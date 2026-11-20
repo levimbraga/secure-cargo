@@ -4,9 +4,11 @@ import { useFrame } from "@react-three/fiber";
 import { type ReactNode, useEffect, useMemo, useRef } from "react";
 import {
   BoxGeometry,
+  type BufferGeometry as Geometry,
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
+  CylinderGeometry,
   EdgesGeometry,
   type Group,
   Line,
@@ -17,7 +19,7 @@ import {
 } from "three";
 
 import { unitName } from "@/lib/demo";
-import { displacement, toThreeQuaternion, type Vec3 } from "@/lib/keyframes";
+import { displacement, type KeyframeUnit, toThreeQuaternion, type Vec3 } from "@/lib/keyframes";
 
 import type { UnitHandlers } from "./push";
 import { COLOR, type SceneProps, three } from "./shared";
@@ -91,7 +93,7 @@ export function Units({
         const start = doc.frames[0]?.units[index];
         return (
           <group key={unit.id}>
-            {start && <Ghost size={unit.size_m} position={three(start.p)} quaternion={toThreeQuaternion(start.q)} />}
+            {start && <Ghost unit={unit} position={three(start.p)} quaternion={toThreeQuaternion(start.q)} />}
             {trailLines[index] && <primitive object={trailLines[index]} />}
             <group
               ref={(node) => {
@@ -100,12 +102,16 @@ export function Units({
               {...unitHandlers?.(index)}
             >
               {mode === "realistic" ? (
-                <CargoModel kind={unitName(unit.id).kind} size={unit.size_m} />
+                isCylinder(unit) ? (
+                  <RoundCargo unit={unit} kind={unitName(unit.id).kind} />
+                ) : (
+                  <CargoModel kind={unitName(unit.id).kind} size={unit.size_m} />
+                )
               ) : (
-                <TranslucentBox size={unit.size_m} />
+                <TranslucentBox unit={unit} />
               )}
               <Outline
-                size={unit.size_m}
+                unit={unit}
                 visible={mode === "engineering"}
                 materialRef={(node) => {
                   edges.current[index] = node;
@@ -124,17 +130,97 @@ function boxArgs(size: Vec3): [number, number, number] {
   return [size[0], size[2], size[1]];
 }
 
+function isCylinder(unit: KeyframeUnit): boolean {
+  return unit.shape === "cylinder" && Boolean(unit.axis);
+}
+
+/** Diameter and length of a cylindrical unit, from the box around it. */
+function cylinderSize(unit: KeyframeUnit): { diameter: number; length: number } {
+  const axis = unit.axis === "x" ? 0 : unit.axis === "y" ? 1 : 2;
+  const across = unit.size_m.filter((_, index) => index !== axis);
+  return { diameter: across[0] ?? 0, length: unit.size_m[axis] ?? 0 };
+}
+
+/**
+ * Rotation that turns a three.js cylinder (axis on three's Y, the simulation's Z) onto the
+ * unit's axis: the simulation's X is three's X, its Y is three's -Z.
+ */
+function cylinderRotation(unit: KeyframeUnit): [number, number, number] {
+  if (unit.axis === "x") return [0, 0, Math.PI / 2];
+  if (unit.axis === "y") return [Math.PI / 2, 0, 0];
+  return [0, 0, 0];
+}
+
+/** The shape of a unit as the simulation sees it: a box, or the cylinder inside it. */
+function unitGeometry(unit: KeyframeUnit): Geometry {
+  if (!isCylinder(unit)) return new BoxGeometry(...boxArgs(unit.size_m));
+  const { diameter, length } = cylinderSize(unit);
+  const geometry = new CylinderGeometry(diameter / 2, diameter / 2, length, 32);
+  const [rx, , rz] = cylinderRotation(unit);
+  if (rx) geometry.rotateX(rx);
+  if (rz) geometry.rotateZ(rz);
+  return geometry;
+}
+
+/** A coil, a drum or a pipe, filling exactly the cylinder the simulation used. */
+function RoundCargo({ unit, kind }: { unit: KeyframeUnit; kind: string }) {
+  const { diameter, length } = cylinderSize(unit);
+  const radius = diameter / 2;
+  const eye = (unit.inner_diameter_m ?? 0) / 2;
+  const rotation = cylinderRotation(unit);
+  if (kind === "drum") {
+    return (
+      <group rotation={rotation}>
+        <mesh castShadow receiveShadow>
+          <cylinderGeometry args={[radius, radius, length, 32]} />
+          <meshStandardMaterial color="#2c5d93" metalness={0.45} roughness={0.45} />
+        </mesh>
+        {[-0.3, 0.3].map((share) => (
+          <mesh key={share} position={[0, share * length, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <torusGeometry args={[radius, 0.012, 6, 32]} />
+            <meshStandardMaterial color="#1f4470" metalness={0.5} roughness={0.4} />
+          </mesh>
+        ))}
+      </group>
+    );
+  }
+  const steel = kind === "pipe" ? "#7c8184" : "#9ea3a6";
+  const inner = eye > 0 ? eye : kind === "pipe" ? radius * 0.85 : 0;
+  return (
+    <group rotation={rotation}>
+      <mesh castShadow receiveShadow>
+        <cylinderGeometry args={[radius, radius, length, 40, 1, inner > 0]} />
+        <meshStandardMaterial color={steel} metalness={0.8} roughness={0.35} />
+      </mesh>
+      {inner > 0 && (
+        <>
+          <mesh>
+            <cylinderGeometry args={[inner, inner, length, 32, 1, true]} />
+            <meshStandardMaterial color="#3a3d3f" metalness={0.6} roughness={0.5} side={2} />
+          </mesh>
+          {[-1, 1].map((end) => (
+            <mesh key={end} position={[0, (end * length) / 2, 0]} rotation={[(end * -Math.PI) / 2, 0, 0]}>
+              <ringGeometry args={[inner, radius, 40]} />
+              <meshStandardMaterial color="#868b8e" metalness={0.7} roughness={0.4} />
+            </mesh>
+          ))}
+        </>
+      )}
+    </group>
+  );
+}
+
 /** Dashed outline of where a unit stood when the event started. */
 function Ghost({
-  size,
+  unit,
   position,
   quaternion,
 }: {
-  size: Vec3;
+  unit: KeyframeUnit;
   position: Vec3;
   quaternion: [number, number, number, number];
 }) {
-  const geometry = useMemo(() => new EdgesGeometry(new BoxGeometry(...boxArgs(size))), [size]);
+  const geometry = useMemo(() => new EdgesGeometry(unitGeometry(unit), 30), [unit]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   const lines = useRef<LineSegments>(null);
   useEffect(() => {
@@ -149,15 +235,15 @@ function Ghost({
 
 /** Edges of a unit. In the realistic view they only appear, in red, once the unit has moved. */
 function Outline({
-  size,
+  unit,
   visible,
   materialRef,
 }: {
-  size: Vec3;
+  unit: KeyframeUnit;
   visible: boolean;
   materialRef: (node: LineBasicMaterial | null) => void;
 }) {
-  const geometry = useMemo(() => new EdgesGeometry(new BoxGeometry(...boxArgs(size))), [size]);
+  const geometry = useMemo(() => new EdgesGeometry(unitGeometry(unit), 30), [unit]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   const material = useRef<LineBasicMaterial | null>(null);
   const lines = useRef<LineSegments>(null);
@@ -179,15 +265,16 @@ function Outline({
   );
 }
 
-function TranslucentBox({ size }: { size: Vec3 }) {
+function TranslucentBox({ unit }: { unit: KeyframeUnit }) {
+  const geometry = useMemo(() => unitGeometry(unit), [unit]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
   return (
     <>
-      <mesh>
-        <boxGeometry args={boxArgs(size)} />
+      <mesh geometry={geometry}>
         <meshLambertMaterial color={COLOR.wood} transparent opacity={0.42} depthWrite={false} />
       </mesh>
       {/* The unit's own axes: X red, Y green, Z blue, in the simulation's convention. */}
-      <AxisTriad length={Math.min(...size) * 0.45} />
+      <AxisTriad length={Math.min(...unit.size_m) * 0.45} />
     </>
   );
 }
@@ -328,13 +415,15 @@ function CargoModel({ kind, size }: { kind: string; size: Vec3 }): ReactNode {
   const cartons = useMemo(() => gridTexture("#c9a26b", "#8d6a3c"), []);
   const crates = useMemo(() => gridTexture("#c53a2b", "#7d1f15", "#e9c64a"), []);
   const planks = useMemo(() => gridTexture("#c2a172", "#7a5a34"), []);
+  const sacks = useMemo(() => gridTexture("#e7e0cf", "#b8ad92"), []);
   useEffect(
     () => () => {
       cartons.dispose();
       crates.dispose();
       planks.dispose();
+      sacks.dispose();
     },
-    [cartons, crates, planks],
+    [cartons, crates, planks, sacks],
   );
   const [length, width, height] = size;
   const base = -height / 2;
@@ -344,6 +433,29 @@ function CargoModel({ kind, size }: { kind: string; size: Vec3 }): ReactNode {
       <>
         <Pallet size={size} color="#b08a57" y={base} />
         <Goods size={size} texture={cartons} wrapped />
+      </>
+    );
+  }
+  if (kind === "sacks") {
+    return (
+      <>
+        <Pallet size={size} color="#a98452" y={base} />
+        <Goods size={size} texture={sacks} wrapped />
+      </>
+    );
+  }
+  if (kind === "carton") {
+    return (
+      <>
+        <mesh castShadow receiveShadow>
+          <boxGeometry args={boxArgs(size)} />
+          <meshStandardMaterial color="#c9a26b" roughness={0.85} />
+        </mesh>
+        {/* Packing tape over the top and down the ends. */}
+        <mesh position={[0, height / 2 + 0.002, 0]}>
+          <boxGeometry args={[length + 0.004, 0.004, 0.07]} />
+          <meshStandardMaterial color="#d9c49a" roughness={0.5} />
+        </mesh>
       </>
     );
   }
