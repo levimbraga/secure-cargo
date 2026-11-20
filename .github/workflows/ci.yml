@@ -48,7 +48,7 @@ jobs:
         run: docker run --rm securecargo-api:ci python -c "import mujoco; print('mujoco', mujoco.__version__)"
 
   worker:
-    name: API Worker (types)
+    name: API Worker (types, authorization tests)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -67,6 +67,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Type-check
         run: pnpm typecheck
+      - name: Test
+        run: pnpm test
 
   frontend:
     name: Frontend (lint, types, tests, build)

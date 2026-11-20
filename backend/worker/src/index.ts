@@ -1,116 +1,78 @@
 /**
- * Thin Worker in front of the SecureCargo API.
+ * Worker in front of api.securecargo.app.
  *
- * The FastAPI + MuJoCo service runs in a Cloudflare Container. Every request is routed to one
- * named container instance, which is started on demand and stopped after a period without
- * traffic (scale to zero).
+ * - The application API (auth, organizations, inspections, quotas, admin) runs here, next to
+ *   D1 and R2 (`app.ts`), so lists and dashboards never wake the container.
+ * - Everything else (physics: /health, /simulate, /mjcf, /scenarios, /explorer) goes to the
+ *   FastAPI container. Anonymous POSTs to it are rate-limited by IP.
  *
- * The instance name includes the Worker version. A deploy does not restart a Durable Object
- * whose container is still running, so without this the previous code, image and environment
- * would keep serving until the container went idle. With it, each deploy gets a fresh instance
- * and the previous one stops by itself after the inactivity timeout.
+ * The container instance name includes the Worker version. A deploy does not restart a Durable
+ * Object whose container is still running, so without this the previous code, image and
+ * environment would keep serving until the container went idle. With it, each deploy gets a
+ * fresh instance and the previous one stops by itself after the inactivity timeout.
  */
-import { DurableObject } from "cloudflare:workers";
+import { createApp, isAppRoute } from "./app";
+import { createClerkIdentity } from "./identity";
+import { parseEmailList } from "./principal";
 
-const CONTAINER_PORT = 8080;
-const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
-const READINESS_POLL_MS = 200;
-const READINESS_TIMEOUT_MS = 60_000;
+export { ApiContainer } from "./container";
 
-export class ApiContainer extends DurableObject<Env> {
-	private starting: Promise<void> | undefined;
-	private monitoring: Promise<void> | undefined;
+let cached: { key: string; app: ReturnType<typeof createApp> } | undefined;
 
-	constructor(ctx: DurableObjectState, env: Env) {
-		super(ctx, env);
-		const container = ctx.container;
-		if (container?.running) {
-			// The Durable Object restarted (for example after a deploy) while its container kept
-			// running: the inactivity timeout and the exit monitor have to be set up again.
-			void ctx.blockConcurrencyWhile(() =>
-				container.setInactivityTimeout(INACTIVITY_TIMEOUT_MS),
-			);
-			this.observeExit(container);
-		}
-	}
-
-	async fetch(request: Request): Promise<Response> {
-		const container = this.ctx.container;
-		if (!container) {
-			throw new Error("No container is configured for ApiContainer");
-		}
-
-		// Concurrent requests during a cold start share one startup attempt.
-		this.starting ??= this.startAndWaitUntilReady(container).finally(() => {
-			this.starting = undefined;
-		});
-		await this.starting;
-
-		const url = new URL(request.url);
-		url.protocol = "http:";
-		url.host = "container";
-		const forwarded = new Request(url, request);
-		forwarded.headers.delete("host");
-		return container.getTcpPort(CONTAINER_PORT).fetch(forwarded);
-	}
-
-	private async startAndWaitUntilReady(container: Container): Promise<void> {
-		if (!container.running) {
-			container.start({
-				image: container.images.api,
-				// 1/4 vCPU and 1 GiB: enough to import MuJoCo and serve the API.
-				instance: "basic",
-				// The API makes no outbound calls yet.
-				enableInternet: false,
-				env: {
-					SECURECARGO_CORS_ORIGINS: this.env.CORS_ORIGINS,
-				},
-			});
-		}
-		this.observeExit(container);
-		await container.setInactivityTimeout(INACTIVITY_TIMEOUT_MS);
-
-		// `running` only means that startup was requested; wait for the HTTP server itself.
-		const port = container.getTcpPort(CONTAINER_PORT);
-		const deadline = Date.now() + READINESS_TIMEOUT_MS;
-		while (Date.now() < deadline) {
-			try {
-				const response = await port.fetch("http://container/health", {
-					signal: AbortSignal.timeout(1000),
-				});
-				await response.body?.cancel();
-				if (response.ok) return;
-			} catch {
-				// The port is not listening yet.
-			}
-			await scheduler.wait(READINESS_POLL_MS);
-		}
-		throw new Error(`Container was not ready on port ${CONTAINER_PORT} in time`);
-	}
-
-	private observeExit(container: Container): void {
-		if (this.monitoring) return;
-		this.monitoring = container
-			.monitor()
-			.then(() => console.log("API container exited"))
-			.catch((error: unknown) => console.error("API container failed:", error))
-			.finally(() => {
-				this.monitoring = undefined;
-			});
-		this.ctx.waitUntil(this.monitoring);
-	}
+function application(env: Env): ReturnType<typeof createApp> {
+	// Build once per isolate; the key changes only if the configuration does.
+	const key = `${env.CLERK_PUBLISHABLE_KEY}|${env.CORS_ORIGINS}|${env.PLATFORM_ADMIN_EMAILS}`;
+	if (cached?.key === key) return cached.app;
+	const corsOrigins = env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean);
+	const app = createApp({
+		db: env.DB,
+		identity: createClerkIdentity({
+			secretKey: env.CLERK_SECRET_KEY,
+			publishableKey: env.CLERK_PUBLISHABLE_KEY,
+			authorizedParties: corsOrigins,
+		}),
+		platformAdminEmails: parseEmailList(env.PLATFORM_ADMIN_EMAILS),
+		corsOrigins,
+		siteUrl: env.SITE_URL,
+		limitAnonymous: async (k) => (await env.ANON_RATE_LIMITER.limit({ key: k })).success,
+	});
+	cached = { key, app };
+	return app;
 }
 
+/** Physics endpoints that run a simulation or build a model: limited per IP for anonymous callers. */
+const LIMITED_PHYSICS = new Set(["/simulate", "/mjcf", "/explorer/draft"]);
+
 export default {
-	async fetch(request, env): Promise<Response> {
+	async fetch(request, env, ctx): Promise<Response> {
+		const url = new URL(request.url);
+		if (isAppRoute(url.pathname)) {
+			return application(env).fetch(request, env, ctx);
+		}
+		if (request.method === "POST" && LIMITED_PHYSICS.has(url.pathname)) {
+			const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+			const { success } = await env.PHYSICS_RATE_LIMITER.limit({ key: `physics:${ip}` });
+			if (!success) {
+				return Response.json(
+					{ detail: { code: "rate_limited", message: "Too many simulations. Wait a minute and try again." } },
+					{ status: 429, headers: corsHeaders(request, env) },
+				);
+			}
+		}
 		try {
 			return await env.API_CONTAINER.getByName(`api-${env.VERSION.id}`).fetch(request);
 		} catch (error) {
 			console.error("Could not reach the API container:", error);
 			return Response.json(
 				{ code: "api_unavailable", message: "The API is starting or unavailable. Try again." },
-				{ status: 503, headers: { "Retry-After": "5" } },
+				{ status: 503, headers: { "Retry-After": "5", ...corsHeaders(request, env) } },
 			);
 		}
 	},
 } satisfies ExportedHandler<Env>;
+
+function corsHeaders(request: Request, env: Env): Record<string, string> {
+	const origin = request.headers.get("Origin") ?? "";
+	const allowed = env.CORS_ORIGINS.split(",").map((o) => o.trim());
+	return allowed.includes(origin) ? { "Access-Control-Allow-Origin": origin, Vary: "Origin" } : {};
+}
