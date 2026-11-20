@@ -106,16 +106,20 @@ far from noise.
 
 ## Performance
 
-Measured in the API's Docker image limited to a quarter of a CPU core (the size of the production
-container), CPU time per run:
+CPU time per run, as reported by `POST /simulate` (`cpu_time_s`) on the production container
+(Cloudflare Containers, instance type `basic`: a quarter of a vCPU), measured on 2026-11-20 with three
+uncached runs each:
 
-| Run | CPU time |
-|---|---|
-| The eight demo runs (3.2 to 5.4 s of simulated time) | 0.32 to 0.51 s |
-| Longest event, mountain descent (7.7 s simulated), 3 units and 9 lashings | 0.78 s |
+| Run | CPU time | Wall time of the request |
+|---|---|---|
+| The eight demo runs (3.2 to 5.4 s of simulated time) | 0.20 to 0.39 s | 0.6 to 1.6 s |
+| Every event kind on the heaviest demo load (3 units, 10 lashings) | 0.20 to 0.62 s | 1.0 to 2.7 s |
+| Longest event: mountain descent, 7.7 s of simulated time | 0.62 s | 2.7 s |
+| A cached result | none | 0.3 s |
 
-`POST /simulate` reports the CPU time of every run as `cpu_time_s`, and a test keeps the demo runs under
-one second (`tests/test_api_simulate.py`).
+Wall time is longer than CPU time because the instance has a quarter of a core. A cold start of the
+container adds about ten seconds once; the site replays the precomputed demo files, so visitors do not
+wait for it. A test keeps the demo runs under one second of CPU (`tests/test_api_simulate.py`).
 
 ## Known limits
 
