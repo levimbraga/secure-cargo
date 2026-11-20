@@ -23,6 +23,7 @@ COPY physics ./physics
 COPY rules ./rules
 COPY planner ./planner
 COPY perception ./perception
+COPY scenarios ./scenarios
 
 # Fail the build early if the physics engine cannot be imported in this image.
 RUN python -c "import mujoco; print('mujoco', mujoco.__version__)"
