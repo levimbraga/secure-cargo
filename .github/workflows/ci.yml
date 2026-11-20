@@ -94,3 +94,16 @@ jobs:
         run: pnpm test
       - name: Build
         run: pnpm build
+      # Browser against server: the live lab steps every demo run with MuJoCo WebAssembly in
+      # headless Chromium and must match the server's precomputed result.
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Browser parity (MuJoCo WebAssembly vs. server)
+        run: pnpm e2e
+      - name: Upload traces
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-traces
+          path: frontend/test-results
+          retention-days: 7
