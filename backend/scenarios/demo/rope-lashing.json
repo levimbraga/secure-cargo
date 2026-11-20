@@ -1,7 +1,7 @@
 {
   "id": "rope-lashing",
   "title": "Rope lashing",
-  "summary": "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be tightened enough, so the stacks slide in a sudden lane change. Rope is also prohibited as cargo lashing (CONTRAN Resolution 945/2022). Three ratchet straps per stack hold them.",
+  "summary": "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be tightened enough, so the stacks slide in a sudden lane change. Rope is also prohibited as cargo lashing (CONTRAN Resolution 945/2022). Anti-slip mats under the pallets and two ratchet straps per stack hold them.",
   "event": {
     "kind": "lane_change",
     "speed_kmh": 80.0,
@@ -465,7 +465,7 @@
   "fixed": {
     "schema_version": 1,
     "id": "rope-lashing-fixed",
-    "name": "Stacks under ratchet straps",
+    "name": "Stacks on anti-slip mats under ratchet straps",
     "bed": {
       "length_m": 6.2,
       "width_m": 2.4,
@@ -780,7 +780,7 @@
           0.0,
           0.0
         ],
-        "material": "plastic_pallet",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -798,7 +798,7 @@
           0.0,
           0.0
         ],
-        "material": "plastic_pallet",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -816,7 +816,7 @@
           0.0,
           0.0
         ],
-        "material": "plastic_pallet",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       }
@@ -839,21 +839,6 @@
       },
       {
         "id": "stack-1-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "stack-1",
-        "anchor_ids": [
-          "L11",
-          "R11"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "stack-1-s3",
         "kind": "strap",
         "routing": "top_over",
         "unit_id": "stack-1",
@@ -888,21 +873,6 @@
         "routing": "top_over",
         "unit_id": "stack-2",
         "anchor_ids": [
-          "L7",
-          "R7"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "stack-2-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "stack-2",
-        "anchor_ids": [
           "L8",
           "R8"
         ],
@@ -929,21 +899,6 @@
       },
       {
         "id": "stack-3-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "stack-3",
-        "anchor_ids": [
-          "L3",
-          "R3"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "stack-3-s3",
         "kind": "strap",
         "routing": "top_over",
         "unit_id": "stack-3",

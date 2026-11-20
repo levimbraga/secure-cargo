@@ -15,12 +15,12 @@
       "variants": {
         "as_loaded": {
           "file": "emergency-braking.as_loaded.json",
-          "scenario_hash": "a7a1047c5d287edf1714449d386a6b6a297f224d3cd72ebbb81137b75f64474c",
+          "scenario_hash": "35f584ce8eabc1c9c306a9049f4e41306ad86bd269998fac8995dc080944b882",
           "status": "fail"
         },
         "fixed": {
           "file": "emergency-braking.fixed.json",
-          "scenario_hash": "086a368c032994451cab021a81472547d0ae9f69b2519c2438280ec7ef04ce5d",
+          "scenario_hash": "6ac3e484e00c4d5be4832ea90ea3cb6d706204ec48a29709e5b19740e2f27c40",
           "status": "pass"
         }
       }
@@ -40,12 +40,12 @@
       "variants": {
         "as_loaded": {
           "file": "weigh-station.as_loaded.json",
-          "scenario_hash": "fc15347df2ee404a97af20a3656426fabd0ffc5b924653f4ab3fd6ea97b1a587",
+          "scenario_hash": "f5ce350d4a3209e70eed75ce15af6f637d298cbca817a45d85101964e71a8b22",
           "status": "fail"
         },
         "fixed": {
           "file": "weigh-station.fixed.json",
-          "scenario_hash": "768d15b10737003d6c4bc333003e2cebd7f69dbbf881298ec1ebe98d5550c610",
+          "scenario_hash": "5ff749a700b1dc357f23ae491ec1a687e791e09690687c60b2da9c8a456fdf95",
           "status": "pass"
         }
       }
@@ -53,7 +53,7 @@
     {
       "id": "rope-lashing",
       "title": "Rope lashing",
-      "summary": "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be tightened enough, so the stacks slide in a sudden lane change. Rope is also prohibited as cargo lashing (CONTRAN Resolution 945/2022). Three ratchet straps per stack hold them.",
+      "summary": "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be tightened enough, so the stacks slide in a sudden lane change. Rope is also prohibited as cargo lashing (CONTRAN Resolution 945/2022). Anti-slip mats under the pallets and two ratchet straps per stack hold them.",
       "event": {
         "kind": "lane_change",
         "speed_kmh": 80.0,
@@ -65,12 +65,12 @@
       "variants": {
         "as_loaded": {
           "file": "rope-lashing.as_loaded.json",
-          "scenario_hash": "7aec32f84732a3d03f41c4a0097ee1a0c891e1974e86aa555770bd22adf281e5",
+          "scenario_hash": "1af57a9c4e9e8bc6710c9ee97029dede499939f7c176aa0c9ad0a66b5f6855bf",
           "status": "fail"
         },
         "fixed": {
           "file": "rope-lashing.fixed.json",
-          "scenario_hash": "c3e88eb6c295db12354d5d0650a27ccaaee855d75599e033709ace530416e0a4",
+          "scenario_hash": "201cd82b3879fd878f9b40dc98a51ffb835a6cf1eb1d83c0aecba95396a91892",
           "status": "pass"
         }
       }
@@ -90,12 +90,12 @@
       "variants": {
         "as_loaded": {
           "file": "sharp-curve.as_loaded.json",
-          "scenario_hash": "a5ad2d28a8861ad06b36980b67221effdff815d50eb40dc2b052daa76c27e1be",
+          "scenario_hash": "0cdfcf489c22566cbc146c328b559758e2c5222dc2e0bfdd870dd8535dd5d934",
           "status": "fail"
         },
         "fixed": {
           "file": "sharp-curve.fixed.json",
-          "scenario_hash": "92e2f572e36e9838b87238e09cdd16a85cb623004137b949bb1cebab50ed4f2e",
+          "scenario_hash": "5a43e8e24fa4f1cb0e0663ba8feb9b840cb6a53476b70dc102af736b03c49954",
           "status": "pass"
         }
       }

@@ -7,6 +7,9 @@ so they can be regenerated after a schema change:
 
 The truck is a two-axle rigid truck ("toco") with a 6.2 m flatbed. Its tare and axle
 positions are illustrative values for the demo, not data of a specific model.
+
+Every "fixed" version carries the number of lashings EN 12195-1 asks for with its safety
+factor, in every direction (``rules/en12195.py``); a test keeps it that way.
 """
 
 import json
@@ -177,7 +180,7 @@ def weigh_station() -> DemoScenario:
             unit(f"crate-{index + 1}", "Crate of parts", (1.2, 1.0, 1.0), 1500, x, wood)
             for index, x in enumerate(crate_xs)
         ]
-        return [machine, *crates], [*corner_chains(machine), *straps(crates, 2, **STRAP)]
+        return [machine, *crates], [*corner_chains(machine), *straps(crates, 3, **STRAP)]
 
     as_loaded = load(-1.6, (0.4, 2.0))
     fixed = load(1.2, (-0.8, -2.4))
@@ -196,26 +199,41 @@ def weigh_station() -> DemoScenario:
 
 
 def rope_lashing() -> DemoScenario:
-    plastic = CargoMaterial.PLASTIC_PALLET
-    stacks = [
-        unit(f"stack-{index + 1}", "Crates on a plastic pallet", (1.2, 1.0, 1.3), 800, x, plastic)
-        for index, x in enumerate((1.6, 0.0, -1.6))
-    ]
+    def stacks(material: CargoMaterial) -> list[CargoUnit]:
+        return [
+            unit(
+                f"stack-{index + 1}",
+                "Crates on a plastic pallet",
+                (1.2, 1.0, 1.3),
+                800,
+                x,
+                material,
+            )
+            for index, x in enumerate((1.6, 0.0, -1.6))
+        ]
+
+    tied = stacks(CargoMaterial.PLASTIC_PALLET)
+    # The fix puts a rubber anti-slip mat under each pallet (friction 0.6 instead of 0.2):
+    # on bare plastic the standard would ask for six straps per stack.
+    on_mats = stacks(CargoMaterial.RUBBER_MAT)
     return DemoScenario(
         id="rope-lashing",
         title="Rope lashing",
         summary=(
             "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be "
             "tightened enough, so the stacks slide in a sudden lane change. Rope is also "
-            "prohibited as cargo lashing (CONTRAN Resolution 945/2022). Three ratchet straps "
-            "per stack hold them."
+            "prohibited as cargo lashing (CONTRAN Resolution 945/2022). Anti-slip mats under "
+            "the pallets and two ratchet straps per stack hold them."
         ),
         event=TripEvent(kind=EventKind.LANE_CHANGE, speed_kmh=80),
         as_loaded=scenario(
-            "rope-lashing-as-loaded", "Stacks tied with rope", stacks, straps(stacks, 2, **ROPE)
+            "rope-lashing-as-loaded", "Stacks tied with rope", tied, straps(tied, 2, **ROPE)
         ),
         fixed=scenario(
-            "rope-lashing-fixed", "Stacks under ratchet straps", stacks, straps(stacks, 3, **STRAP)
+            "rope-lashing-fixed",
+            "Stacks on anti-slip mats under ratchet straps",
+            on_mats,
+            straps(on_mats, 2, **STRAP),
         ),
     )
 

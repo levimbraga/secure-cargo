@@ -463,6 +463,21 @@
         "routing": "top_over",
         "unit_id": "crate-1",
         "anchor_ids": [
+          "L8",
+          "R8"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "crate-1-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "crate-1",
+        "anchor_ids": [
           "L9",
           "R9"
         ],
@@ -489,6 +504,21 @@
       },
       {
         "id": "crate-2-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "crate-2",
+        "anchor_ids": [
+          "L12",
+          "R12"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "crate-2-s3",
         "kind": "strap",
         "routing": "top_over",
         "unit_id": "crate-2",
@@ -957,6 +987,21 @@
         "routing": "top_over",
         "unit_id": "crate-1",
         "anchor_ids": [
+          "L5",
+          "R5"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "crate-1-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "crate-1",
+        "anchor_ids": [
           "L6",
           "R6"
         ],
@@ -983,6 +1028,21 @@
       },
       {
         "id": "crate-2-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "crate-2",
+        "anchor_ids": [
+          "L1",
+          "R1"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "crate-2-s3",
         "kind": "strap",
         "routing": "top_over",
         "unit_id": "crate-2",

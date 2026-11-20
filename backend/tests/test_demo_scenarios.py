@@ -9,6 +9,7 @@ from app.demo import DemoScenario, load_demo_scenarios
 from app.demo.fixtures import DEMO_ORDER, VARIANTS
 from physics.results import SimulationResult
 from physics.run import run_event, scenario_hash
+from rules.en12195 import check_scenario
 from scripts import build_demo_fixtures
 
 DEMOS = load_demo_scenarios()
@@ -43,6 +44,46 @@ def test_each_demo_fails_for_the_reason_it_illustrates() -> None:
     assert reasons["weigh-station"] == {"axle_overloaded"}  # the load itself holds
     assert "unit_slid" in reasons["rope-lashing"]
     assert {"unit_tilted", "unit_left_bed"} <= reasons["sharp-curve"]
+
+
+@pytest.mark.parametrize("demo", DEMOS, ids=DEMO_ORDER)
+def test_the_fixed_version_meets_en_12195_1_with_its_safety_factor(demo: DemoScenario) -> None:
+    checks = check_scenario(demo.fixed)
+
+    assert [check.meets_standard for check in checks] == [True] * len(demo.fixed.units)
+    for check in checks:
+        if check.method == "top_over":
+            assert check.required_lashings is not None
+            assert check.installed_lashings >= check.required_lashings
+
+
+def test_the_as_loaded_versions_fall_short_of_the_standard_where_the_lashing_is_the_problem() -> (
+    None
+):
+    meets = {
+        demo.id: all(check.meets_standard for check in check_scenario(demo.as_loaded))
+        for demo in DEMOS
+    }
+
+    # At the weigh station the lashing is fine; the load is in the wrong place.
+    assert meets == {
+        "emergency-braking": False,
+        "weigh-station": True,
+        "rope-lashing": False,
+        "sharp-curve": False,
+    }
+
+
+def test_the_fixed_runs_report_their_margins() -> None:
+    for demo in DEMOS:
+        margins = run_event(demo.fixed, demo.event).margins
+
+        assert margins.max_slide_m < margins.slide_limit_m / 10
+        assert margins.peak_lashing_force_ratio is not None
+        assert margins.peak_lashing_force_ratio < 0.5
+        assert margins.lashing_capacity_reserve == pytest.approx(
+            1 - margins.peak_lashing_force_ratio, abs=1e-4
+        )
 
 
 def test_the_fixed_version_carries_the_same_cargo() -> None:
