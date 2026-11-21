@@ -31,7 +31,7 @@ import { INVOICE_PROMPT_VERSION, type InvoiceCall, type InvoiceReading } from ".
 import { sha256Hex, stripMetadata, toBase64, UnsupportedImage } from "./perception/metadata";
 import { type PhotoAnalysis, PROMPT_VERSION } from "./perception/schema";
 import { analysisAllowance } from "./quota";
-import { type BatteryLike, COUNTRIES, STORED, activeView, verdictState } from "./verdict";
+import { type BatteryLike, COUNTRIES, type Country, STORED, activeView, parseCountry, verdictState } from "./verdict";
 
 export interface PhotoStore {
 	put(key: string, bytes: Uint8Array, contentType: string): Promise<void>;
@@ -511,8 +511,8 @@ export function registerFlow(
 	app.put("/inspections/:id/country", authenticated, async (c) => {
 		const inspection = await writable(c);
 		const body = await jsonBody(c);
-		const country = body.country === "US" ? "US" : body.country === "BR" ? "BR" : null;
-		if (!country) fail(422, "invalid_country", "Expected BR or US.");
+		const country = parseCountry(body.country);
+		if (!country) fail(422, "invalid_country", "Expected BR, US or EU.");
 		const fields: Record<string, unknown> = { country };
 		for (const kind of KINDS) {
 			const scenario = await scenarioOf(inspection.id, kind);
@@ -523,10 +523,11 @@ export function registerFlow(
 			const object = await deps.photos.get(scenario.battery_ref);
 			if (!object) continue;
 			const battery = JSON.parse(new TextDecoder().decode(object.bytes)) as BatteryJson;
-			if (!battery.rules) {
+			if (!battery.rules?.[country]) {
+				// Stored before this country's rules existed: only the rules run (no simulation).
 				const checks = await physics().checks?.(draft);
 				if (!checks?.rules) fail(503, "api_unavailable", "The rules engine is not reachable.");
-				battery.rules = checks.rules;
+				battery.rules = { ...(battery.rules ?? {}), ...checks.rules };
 			}
 			battery.country = country;
 			battery.draft = { ...((battery.draft as Record<string, unknown>) ?? {}), country };
@@ -560,9 +561,9 @@ export function registerFlow(
 	});
 }
 
-/** The country of a draft: US when it says so, Brazil otherwise (and for every older draft). */
-export function countryOf(draft: unknown): "BR" | "US" {
-	return (draft as { country?: unknown } | null)?.country === "US" ? "US" : "BR";
+/** The country of a draft: US or EU when it says so, Brazil otherwise (and for older drafts). */
+export function countryOf(draft: unknown): Country {
+	return parseCountry((draft as { country?: unknown } | null)?.country) ?? "BR";
 }
 
 /** The stored verdict: pass (approved), warning (holds, out of compliance), fail (does not hold). */

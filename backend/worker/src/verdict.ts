@@ -3,8 +3,8 @@
  * and `frontend/lib/inspection/verdict.ts` (each with the same tests).
  *
  * - approved: every situation holds and every legal rule passes;
- * - holds_noncompliant: every situation holds, a rule fails (CONTRAN 945, CONTRAN 882 axle,
- *   payload, gross weight or dimension limits);
+ * - holds_noncompliant: every situation holds, a rule fails (the securing checks, the axle,
+ *   payload, gross weight or dimension limits of the battery's country: BR, US or EU);
  * - fails: some situation fails for a physical reason. An axle overload is a rule, not physics.
  *
  * Stored in `inspections.verdict` as pass / warning / fail.
@@ -30,12 +30,17 @@ export interface BatteryLike {
 	axle_loads?: unknown[];
 	/** Whose rules the verdict uses (since 2026-11-21; absent: BR). */
 	country?: string | null;
-	/** Both countries' rule checks (`rules/country.py`); absent on older batteries. */
+	/** Every country's rule checks (`rules/country.py`); absent on older batteries. */
 	rules?: Record<string, { securing?: CheckLike[]; checklist?: Record<string, CheckLike[]> | null }> | null;
 }
 
-export type Country = "BR" | "US";
-export const COUNTRIES: readonly Country[] = ["BR", "US"];
+export type Country = "BR" | "US" | "EU";
+export const COUNTRIES: readonly Country[] = ["BR", "US", "EU"];
+
+/** A country code from a request or a draft; anything else is null. */
+export function parseCountry(value: unknown): Country | null {
+	return value === "BR" || value === "US" || value === "EU" ? value : null;
+}
 
 /**
  * The battery as its country's rules see it: the securing checks in `contran_945`'s place and that

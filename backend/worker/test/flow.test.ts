@@ -292,6 +292,31 @@ describe("country (US mode)", () => {
 		expect(stored.draft.country).toBe("US");
 		expect(physics.calls).toEqual(["/battery"]); // no second simulation, no AI call
 	});
+
+	it("fetches only the EU rule set for a battery stored before EU mode, and simulates nothing", async () => {
+		const physics = countryPhysics();
+		const eu = { securing: [{ code: "eu_sideways", status: "fail", deficiency: "dangerous" }], checklist: { weight: [], protection: [], dimensions: [] } };
+		physics.checks = async () => {
+			physics.calls.push("/battery/checks");
+			return { rules: { ...rules, EU: eu } };
+		};
+		const ctx = setup({ flow: { photos: memoryStore(), analyzer: fakeAnalyzer(), physics, samples: { pallets: SAMPLE } } });
+		const id = ((await (await ctx.call("POST", "/inspections", as.alice, {})).json()) as { id: string }).id;
+		await ctx.call("PUT", `/inspections/${id}/draft`, as.alice, { draft: draftFor([900, 900]), cargo_weight_kg: 1800 });
+		await ctx.call("POST", `/inspections/${id}/simulate`, as.alice);
+		const switched = (await (await ctx.call("PUT", `/inspections/${id}/country`, as.alice, { country: "EU" })).json()) as { verdict: string; country: string };
+		expect(switched).toMatchObject({ country: "EU", verdict: "warning" });
+		const stored = (await (await ctx.call("GET", `/inspections/${id}/battery/as_loaded`, as.alice)).json()) as {
+			country: string;
+			rules: Record<string, unknown>;
+			verdicts: Record<string, { state: string }>;
+		};
+		expect(stored.country).toBe("EU");
+		expect(Object.keys(stored.rules).sort()).toEqual(["BR", "EU", "US"]);
+		expect(stored.verdicts.EU?.state).toBe("holds_noncompliant");
+		expect(stored.verdicts.US?.state).toBe("approved");
+		expect(physics.calls).toEqual(["/battery", "/battery/checks"]);
+	});
 });
 
 describe("simulation and fix", () => {
