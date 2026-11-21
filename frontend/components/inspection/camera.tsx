@@ -97,7 +97,7 @@ export function GuidedCamera({ shot, onPhoto, onClose }: { shot: Shot; onPhoto: 
         </button>
       </div>
       <div className="relative min-h-0 flex-1 overflow-hidden">
-        {!failed && <video ref={video} playsInline muted className="absolute inset-0 size-full object-cover" />}
+        {!failed && <video ref={video} playsInline muted className="absolute inset-0 size-full object-contain" />}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
           <Silhouette shot={shot} className="w-full max-w-md text-paper/90 drop-shadow" />
         </div>
