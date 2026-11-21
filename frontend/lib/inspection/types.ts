@@ -116,6 +116,8 @@ export type RuleCheck = {
   unit_ids: string[];
   values?: Record<string, number>;
   message: string;
+  /** EU only: the roadside deficiency class of a failing check (Directive 2014/47/EU Annex III). */
+  deficiency?: "minor" | "major" | "dangerous" | null;
 };
 
 /** One item of the checklist themes besides CONTRAN 945 (`backend/rules/checklist.py`). */
@@ -172,7 +174,7 @@ export type Battery = {
   contran_945: (ContranCheck | RuleCheck)[];
   /** Absent on batteries stored before 2026-11-21. */
   checklist?: Checklist | null;
-  /** Whose rules the verdict uses, and both countries' rule checks (since US mode, 2026-11-21). */
+  /** Whose rules the verdict uses, and every country's rule checks (since US mode, 2026-11-21). */
   country?: Country;
   rules?: Partial<Record<Country, RuleSet>> | null;
   cpu_time_s?: number;
@@ -204,7 +206,8 @@ export function activeBattery(battery: Battery, country?: Country | null): Batte
   return { ...battery, country: chosen, contran_945: rules.securing, checklist: rules.checklist };
 }
 
-/** Whether a battery can be shown under a country's rules without asking the API. */
+/** Whether a battery can be shown under a country's rules without asking the API (a battery
+ * stored before EU mode has no EU rule set: the API adds it, simulating nothing). */
 export function hasRules(battery: Battery, country: Country): boolean {
   return country === "BR" || Boolean(battery.rules?.[country]);
 }

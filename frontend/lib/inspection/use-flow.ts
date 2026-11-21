@@ -356,7 +356,7 @@ export function useInspectionFlow() {
     const styles = stylesOf(size);
     if (styles.length === 1) {
       // A US preset with one body (a dry van, a flatbed): no body question.
-      patch({ truck: { ...current, size, style: styles[0] as TruckChoice["style"], truck_id: null }, step: "weight" });
+      patch({ truck: { ...current, size, style: styles[0] as TruckChoice["style"], body_code: null, truck_id: null }, step: "weight" });
       void buildPerception();
       return;
     }
@@ -364,9 +364,10 @@ export function useInspectionFlow() {
     patch({ truck: { ...current, size, style: styles.includes(style) ? style : (styles[0] as TruckChoice["style"]), truck_id: null }, truckStage: "body" });
   }
 
-  function chooseStyle(style: TruckChoice["style"]) {
+  /** A body card; in EU mode a curtain-sider card carries its EN 12642 code (L or XL). */
+  function chooseStyle(style: TruckChoice["style"], code: TruckChoice["body_code"] = null) {
     const current = latest.current.truck;
-    patch({ truck: { size: current?.size ?? guess?.size ?? "toco", ...current, style, truck_id: null }, step: "weight" });
+    patch({ truck: { size: current?.size ?? guess?.size ?? "toco", ...current, style, body_code: code, truck_id: null }, step: "weight" });
     void buildPerception();
   }
 

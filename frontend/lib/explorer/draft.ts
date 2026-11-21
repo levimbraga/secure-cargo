@@ -48,6 +48,8 @@ export type LoadDraft = {
     bed_length_m?: number;
     headboard_height_m?: number;
     anchors_per_side?: number;
+    /** EN 12642 code of the body (EU mode): an XL curtain-sider's curtains are side walls. */
+    body_code?: "L" | "XL" | null;
   };
   trip: { speed_kmh: number; road: Road; weather: Weather; event: ExplorerEvent };
   restraint: Restraint;
@@ -206,6 +208,31 @@ export const AXLE_LIMIT_KG: Record<AxleGroup["kind"], number> = {
 };
 
 const LB_KG = 0.45359237;
+const EU_SIZES = new Set(["eu_7_5t", "eu_18t", "eu_26t", "eu_semi_136", "eu_flatbed_136"]);
+const EU_ARTICULATED = new Set(["eu_semi_136", "eu_flatbed_136"]);
+// EU mode (`backend/rules/eu_weights.py`, `group_limits_kg`): a rigid's front axle 10 t, its driving
+// axle 11.5 t or driving tandem 19 t (EU presets, air) / 18 t; a trailer's tri-axle 24 t (1.31 m) or
+// 21 t (Brazil's 1.25 m); a Brazilian or US semi's kingpin group as a motor-vehicle tandem.
+// An EU articulated preset's kingpin group: the load that keeps the 4x2 tractor's steer (10 t) and
+// driving axle (11.5 t) legal.
+const EU_TO_STEER = 0.55 / 3.7;
+function euLimitKg(group: AxleGroup, size: string | undefined, front: boolean): number {
+  const eu = Boolean(size && EU_SIZES.has(size));
+  if (front && group.id === "tractor" && size && EU_ARTICULATED.has(size)) {
+    return 2400 + Math.min((10_000 - 5000) / EU_TO_STEER, (11_500 - 2400) / (1 - EU_TO_STEER));
+  }
+  if (front && group.id !== "tractor") return 10_000;
+  switch (group.kind) {
+    case "single_2_tyres":
+    case "single_4_tyres":
+      return 11_500;
+    case "tandem_2_axles":
+      if (group.id === "trailer") return size?.startsWith("us_") ? 16_000 : 18_000;
+      return eu ? 19_000 : 18_000;
+    case "tandem_3_axles":
+      return eu ? 24_000 : 21_000;
+  }
+}
 const US_SIZES = new Set(["us_box", "us_straight", "us_flatbed_48", "us_dry_van_53", "us_step_deck"]);
 // US mode (`backend/rules/us_weights.py`, `group_limits_kg`): 20,000 lb on one axle, 34,000 lb on
 // a tandem, a Brazilian triple at the bridge formula's 42,000 lb (its axles are 98 in apart).
@@ -231,12 +258,12 @@ function usLimitKg(group: AxleGroup, size: string | undefined): number {
 
 /**
  * Load on each axle group: tare plus the cargo, shared by a moment balance (beam statics), against
- * the limits of the country's rules (Brazil: CONTRAN 882; US: 23 CFR 658.17).
+ * the limits of the country's rules (Brazil: CONTRAN 882; US: 23 CFR 658.17; EU: 96/53/EC).
  */
 export function axleLoads(
   vehicle: ExplorerScenario["vehicle"],
   units: Footprint[],
-  country: "BR" | "US" = "BR",
+  country: Country = "BR",
   size?: string,
 ): AxleLoad[] {
   if (!vehicle) return [];
@@ -255,7 +282,8 @@ export function axleLoads(
   ].map(([group, cargo]) => {
     const axle = group as AxleGroup;
     const loadKg = axle.tare_load_kg + (cargo as number);
-    const limitKg = country === "US" ? usLimitKg(axle, size) : AXLE_LIMIT_KG[axle.kind];
+    const limitKg =
+      country === "US" ? usLimitKg(axle, size) : country === "EU" ? euLimitKg(axle, size, axle === front) : AXLE_LIMIT_KG[axle.kind];
     return { id: axle.id, kind: axle.kind, loadKg, limitKg, ratio: loadKg / limitKg };
   });
 }

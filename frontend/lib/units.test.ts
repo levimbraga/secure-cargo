@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { fromSearch, toQuery } from "./explorer/config";
+import { type AxleGroup, axleLoads, type Footprint } from "./explorer/draft";
+import { geoCountry } from "./geo";
 import { activeBattery, type Battery, hasRules } from "./inspection/types";
 import { verdictOf } from "./inspection/verdict";
 import { feetInches, kgToLb, mph, units } from "./units";
@@ -68,5 +70,64 @@ describe("the same battery under two countries' rules", () => {
     const old = { ...battery, rules: undefined, country: undefined } as Battery;
     expect(hasRules(old, "US")).toBe(false);
     expect(activeBattery(old, "US").country).toBe("BR");
+  });
+});
+
+describe("EU mode", () => {
+  it("stays metric and writes lashing capacities in daN, as on an EU label", () => {
+    const eu = units("EU", number);
+    expect(eu.weight(9000)).toBe("9.0 t");
+    expect(eu.speed(80)).toBe("80 km/h");
+    expect(eu.capacity(25_000)).toBe("2,500 daN");
+    expect(units("BR", number).capacity(25_000)).toBe("25.0 kN");
+  });
+
+  it("puts the country and the body code in the explorer's address", () => {
+    const config = fromSearch("body=curtain_sider&size=eu_semi_136&country=EU&code=XL");
+    expect(config).toMatchObject({ country: "EU", body_code: "XL", size: "eu_semi_136" });
+    expect(toQuery(config)).toContain("&country=EU&code=XL");
+    expect(fromSearch("code=XXL").body_code).toBeNull();
+  });
+
+  it("starts visitors from the 27 member states in EU mode", () => {
+    expect(geoCountry("DE")).toBe("EU");
+    expect(geoCountry("PT")).toBe("EU");
+    expect(geoCountry("GB")).toBe("BR");
+    expect(geoCountry("US")).toBe("US");
+    expect(geoCountry("BR")).toBe("BR");
+  });
+
+  it("names the worst roadside class first", () => {
+    const battery = {
+      situations: [{ id: "emergency_braking", findings: [] }],
+      contran_945: [],
+      country: "EU",
+      rules: {
+        EU: {
+          securing: [
+            { code: "eu_forward", status: "fail", deficiency: "major" as const },
+            { code: "eu_sideways", status: "fail", deficiency: "dangerous" as const },
+          ],
+          checklist: { weight: [], protection: [], dimensions: [] },
+        },
+      },
+    };
+    const verdict = verdictOf(battery);
+    expect(verdict.state).toBe("holds_noncompliant");
+    expect(verdict.problem).toMatchObject({ code: "eu_sideways", deficiency: "dangerous" });
+  });
+
+  it("checks axle loads against 96/53/EC on an EU articulated preset", () => {
+    const vehicle = {
+      axle_groups: [
+        { id: "tractor", kind: "tandem_2_axles" as const, position_x_m: 5.2, tare_load_kg: 4400 },
+        { id: "trailer", kind: "tandem_3_axles" as const, position_x_m: -2.6, tare_load_kg: 4800 },
+      ] as [AxleGroup, AxleGroup],
+      payload_kg: 25000,
+    };
+    const loads = axleLoads(vehicle, [{ x: 0, y: 0, mass: 25000 } as Footprint], "EU", "eu_semi_136");
+    expect(loads[1]?.limitKg).toBe(24_000);
+    expect(loads.every((load) => load.ratio <= 1)).toBe(true);
+    expect(axleLoads(vehicle, [{ x: 0, y: 0, mass: 25000 } as Footprint], "BR")[1]?.limitKg).toBe(25_500);
   });
 });

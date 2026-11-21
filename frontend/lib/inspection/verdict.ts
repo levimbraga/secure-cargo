@@ -3,8 +3,8 @@
  * and the Worker's `src/verdict.ts` (each with the same tests).
  *
  * - `approved`: every situation holds and every legal rule passes;
- * - `holds_noncompliant`: every situation holds, but a rule fails (CONTRAN 945, the axle,
- *   payload, gross weight or dimension limits of CONTRAN 882);
+ * - `holds_noncompliant`: every situation holds, but a rule fails (the securing checks, the axle,
+ *   payload, gross weight or dimension limits of the battery's country: BR, US or EU);
  * - `fails`: some situation fails for a physical reason. An axle overload is a rule, not
  *   physics, so the page is never red when every situation holds.
  */
@@ -15,10 +15,21 @@ export type VerdictState = "approved" | "holds_noncompliant" | "fails";
 
 export type MainProblem =
   | { kind: "physics"; code: string; situation: string; unitId: string | null }
-  | { kind: "rule"; code: string; unitId: string | null; article: string | null; theme: "securing" | "weight" | "dimensions" | "protection" };
+  | {
+      kind: "rule";
+      code: string;
+      unitId: string | null;
+      article: string | null;
+      theme: "securing" | "weight" | "dimensions" | "protection";
+      /** EU: the roadside deficiency class of the failing check (Directive 2014/47/EU Annex III). */
+      deficiency?: Deficiency | null;
+    };
+
+export type Deficiency = "minor" | "major" | "dangerous";
+const DEFICIENCY_RANK: Record<string, number> = { minor: 1, major: 2, dangerous: 3 };
 
 type SituationLike = { id: string; severity?: number; findings?: Finding[] | { code?: string; severity?: string; unit_id?: string | null }[] };
-type CheckLike = { code: string; status: string; article?: string; unit_ids?: string[] };
+type CheckLike = { code: string; status: string; article?: string; unit_ids?: string[]; deficiency?: Deficiency | null };
 type ItemLike = { code: string; kind: "rule" | "advice"; status: string; article?: string; unit_ids?: string[] };
 type ChecklistLike = { weight?: ItemLike[]; protection?: ItemLike[]; dimensions?: ItemLike[] };
 export type BatteryLike = {
@@ -60,9 +71,19 @@ function firstRuleFailure(input: BatteryLike): MainProblem | null {
   // The battery's country's rules, when it carries both countries' (the Worker and Python do the same).
   const rules = input.rules?.[input.country ?? "BR"];
   const battery = rules ? { ...input, contran_945: rules.securing, checklist: rules.checklist } : input;
-  const contran = battery.contran_945.find((check) => check.status === "fail");
+  // The worst roadside class first (EU); otherwise the order of the articles.
+  const contran = battery.contran_945
+    .filter((check) => check.status === "fail")
+    .reduce<CheckLike | null>((best, check) => (!best || (DEFICIENCY_RANK[check.deficiency ?? ""] ?? 0) > (DEFICIENCY_RANK[best.deficiency ?? ""] ?? 0) ? check : best), null);
   if (contran) {
-    return { kind: "rule", code: contran.code, unitId: contran.unit_ids?.[0] ?? null, article: contran.article ?? null, theme: "securing" };
+    return {
+      kind: "rule",
+      code: contran.code,
+      unitId: contran.unit_ids?.[0] ?? null,
+      article: contran.article ?? null,
+      theme: "securing",
+      deficiency: contran.deficiency ?? null,
+    };
   }
   const checklist = battery.checklist;
   if (checklist) {

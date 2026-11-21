@@ -28,11 +28,11 @@ import type { Country } from "@/lib/country";
 import { ExplorerError, fetchConfigLoad, fetchDraftLoad, type LoadedExplorer } from "./client";
 import { choose, type Dimension, type ExplorerConfig, fromSearch, toQuery } from "./config";
 
-/** The address with the country's rules in it (`country=US`; Brazil is the default). */
+/** The address with the country's rules in it (`country=US` or `EU`; Brazil is the default). */
 function withCountry(address: string, country: Country): string {
   const [query, hash = ""] = address.split("#");
   const params = (query ?? "").replace(/^\?/, "").split("&").filter((part) => part && !part.startsWith("country="));
-  if (country === "US") params.push("country=US");
+  if (country !== "BR") params.push(`country=${country}`);
   return `${params.length ? `?${params.join("&")}` : ""}${hash ? `#${hash}` : ""}`;
 }
 import { editsToConfig, encodeDraft, type ExplorerLoad, type LoadDraft, parseDraft } from "./draft";
@@ -63,7 +63,7 @@ export type ExplorerState = {
   error: string | null;
   fallback: FallbackReason | null;
   engine: RefObject<LiveRun | null>;
-  choose: <K extends Dimension | "speed_kmh" | "count" | "mass_kg">(dimension: K, value: ExplorerConfig[K]) => void;
+  choose: <K extends Dimension | "speed_kmh" | "count" | "mass_kg" | "body_code">(dimension: K, value: ExplorerConfig[K]) => void;
   /** Whose rules and units are shown; switching it runs no simulation. */
   country: Country;
   setCountry: (country: Country) => void;
@@ -115,7 +115,7 @@ export function useExplorer(initial: Source): ExplorerState {
   const config = source.kind === "config" ? source.config : fromSearch("");
   // Whose rules and units the page shows. Switching it changes no physics: no new simulation.
   const [country, setCountry] = useState<Country>(() =>
-    source.kind === "config" ? source.config.country : source.draft.country === "US" ? "US" : "BR",
+    source.kind === "config" ? source.config.country : (source.draft.country ?? "BR"),
   );
 
   const simulate = useCallback(async (next: LoadedExplorer, signal: AbortSignal) => {
@@ -234,14 +234,14 @@ export function useExplorer(initial: Source): ExplorerState {
   );
 
   const chooseValue = useCallback(
-    <K extends Dimension | "speed_kmh" | "count" | "mass_kg">(dimension: K, value: ExplorerConfig[K]) => {
+    <K extends Dimension | "speed_kmh" | "count" | "mass_kg" | "body_code">(dimension: K, value: ExplorerConfig[K]) => {
       setSource((current) => {
         // A draft from outside keeps its units: the truck, the trip and the securing change.
         if (current.kind === "draft") {
           const { draft: outside } = current;
           const trip = ["speed_kmh", "road", "weather", "event"].includes(dimension);
           if (trip) return { kind: "draft", draft: { ...outside, trip: { ...outside.trip, [dimension]: value } } };
-          if (dimension === "body" || dimension === "size") {
+          if (dimension === "body" || dimension === "size" || dimension === "body_code") {
             return { kind: "draft", draft: { ...outside, truck: { ...outside.truck, [dimension]: value } } };
           }
           if (dimension === "restraint") return { kind: "draft", draft: { ...outside, restraint: value as LoadDraft["restraint"] } };
@@ -253,7 +253,7 @@ export function useExplorer(initial: Source): ExplorerState {
         const from =
           keepsLayout && current.kind === "config" && base && draft ? (editsToConfig(config, base, draft) ?? config) : config;
         const kept =
-          dimension === "speed_kmh" || dimension === "count" || dimension === "mass_kg"
+          dimension === "speed_kmh" || dimension === "count" || dimension === "mass_kg" || dimension === "body_code"
             ? { ...from, [dimension]: value, ...(dimension === "count" ? { moves: [], straps: null } : {}) }
             : choose(from, dimension as Dimension, value as ExplorerConfig[Dimension]);
         return { kind: "config", config: kept };

@@ -3,6 +3,7 @@ import createMiddleware from "next-intl/middleware";
 import { NextRequest, type NextResponse } from "next/server";
 
 import { routing } from "./i18n/routing";
+import { geoCountry } from "./lib/geo";
 
 const intl = createMiddleware(routing);
 
@@ -25,14 +26,14 @@ function verifyRewrite(request: NextRequest): NextRequest {
 }
 
 /**
- * US mode's default: a new visitor's country from Vercel's IP country header, kept for 30 days
- * in `sc_geo` (US or BR only). The page reads it once, for English visitors without a choice of
- * their own (`lib/country.ts`). No other location data is kept.
+ * The country-switch default: a new visitor's country from Vercel's IP country header, kept for
+ * 30 days in `sc_geo` (US, EU or BR only). The page reads it once, for English visitors without a
+ * choice of their own (`lib/country.ts`). No other location data is kept.
  */
 function withGeo(request: NextRequest, response: NextResponse): NextResponse {
   const country = request.headers.get("x-vercel-ip-country");
   if (country && !request.cookies.has("sc_geo")) {
-    response.cookies.set("sc_geo", country === "US" ? "US" : "BR", { path: "/", maxAge: 60 * 60 * 24 * 30, sameSite: "lax", secure: true });
+    response.cookies.set("sc_geo", geoCountry(country), { path: "/", maxAge: 60 * 60 * 24 * 30, sameSite: "lax", secure: true });
   }
   return response;
 }

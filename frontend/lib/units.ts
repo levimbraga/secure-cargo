@@ -1,6 +1,6 @@
 /**
- * Units for the page: metric in Brazil, US customary in US mode (lb, ft/in, mph, lbf), with the
- * metric value next to it where it helps. Everything inside stays SI (kg, m, km/h, N); only what
+ * Units for the page: metric in Brazil and the EU (EU lashings in daN, as on their labels), US
+ * customary in US mode (lb, ft/in, mph, lbf), with the metric value next to it where it helps. Everything inside stays SI (kg, m, km/h, N); only what
  * is shown changes. The number formatting follows the page's language (1,234.5 or 1.234,5).
  */
 
@@ -47,6 +47,8 @@ export type Units = {
   speed: (kmh: number) => string;
   /** A force: "15,000 lbf (66.7 kN)" / "66.7 kN". */
   force: (newtons: number, options?: { metric?: boolean }) => string;
+  /** A lashing device's capacity or tension as marked: "2,500 daN" (EU), "5,620 lbf", "25.0 kN". */
+  capacity: (newtons: number) => string;
   /** A moment: "12.0 kN·m" / "8,851 lbf·ft". */
   moment: (newtonMetres: number) => string;
   /** The unit of an entry field. */
@@ -61,6 +63,7 @@ export type Units = {
 
 export function units(country: Country, number: Number): Units {
   const us = country === "US";
+  const eu = country === "EU";
   const tonnes = (kg: number) => `${number(kg / 1000, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} t`;
   const metres = (m: number) => `${number(m, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m`;
   const kn = (n: number) => `${number(n / 1000, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kN`;
@@ -85,6 +88,8 @@ export function units(country: Country, number: Number): Units {
     speed: (kmh) => (us ? `${number(mph(kmh))} mph` : `${number(kmh)} km/h`),
     force: (newtons, options = {}) =>
       us ? `${number(Math.round(newtons / LBF_N))} lbf${options.metric === false ? "" : ` (${kn(newtons)})`}` : kn(newtons),
+    capacity: (newtons) =>
+      eu ? `${number(Math.round(newtons / 10))} daN` : us ? `${number(Math.round(newtons / LBF_N))} lbf` : kn(newtons),
     moment: (nm) => (us ? `${number(Math.round(nm / LBF_FT_NM))} lbf·ft` : `${number(nm / 1000, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kN·m`),
     weightUnit: us ? "lb" : "kg",
     lengthUnit: us ? "ft" : "m",

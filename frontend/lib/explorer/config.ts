@@ -5,13 +5,18 @@
  * the key of the static cache in `public/demo/explorer/index.json`.
  */
 
-import type { Country } from "@/lib/country";
+import { type Country, isCountry } from "@/lib/country";
 
 export const BODIES = ["flatbed", "box", "curtain_sider"] as const;
 export const BR_SIZES = ["vuc", "three_quarter", "toco", "truck", "semi"] as const;
 /** US presets (US mode, `notes/us-rules.md` section 4): typical values, not a specific model. */
 export const US_SIZES = ["us_box", "us_straight", "us_flatbed_48", "us_dry_van_53", "us_step_deck"] as const;
-export const SIZES = [...BR_SIZES, ...US_SIZES] as const;
+/** EU presets (EU mode, `notes/eu-rules.md` section 4): typical values, not a specific model. */
+export const EU_SIZES = ["eu_7_5t", "eu_18t", "eu_26t", "eu_semi_136", "eu_flatbed_136"] as const;
+export const SIZES = [...BR_SIZES, ...US_SIZES, ...EU_SIZES] as const;
+/** EN 12642 body codes (EU mode): `code` in the address. */
+export const BODY_CODES = ["L", "XL"] as const;
+export type BodyCode = (typeof BODY_CODES)[number];
 export const CARGOES = [
   "wood_pallet",
   "plastic_pallet",
@@ -71,6 +76,8 @@ export type ExplorerConfig = {
   moves: UnitMove[];
   /** Whose rules the load is checked against (changes no physics). */
   country: Country;
+  /** The body's EN 12642 code (an XL curtain-sider's curtains are walls); null: not given. */
+  body_code: BodyCode | null;
 };
 
 /** The dimensions with a selector, in the order the page shows them. */
@@ -101,6 +108,7 @@ export const DEFAULT_CONFIG: ExplorerConfig = {
   straps: null,
   moves: [],
   country: "BR",
+  body_code: null,
 };
 
 /** Two decimals, without a sign on zero, exactly as the server writes them. */
@@ -132,6 +140,7 @@ export function toQuery(config: ExplorerConfig): string {
     ]);
   }
   if (config.country !== "BR") parts.push(["country", config.country]);
+  if (config.body_code) parts.push(["code", config.body_code]);
   return parts.map(([key, value]) => `${key}=${value}`).join("&");
 }
 
@@ -177,7 +186,8 @@ export function fromSearch(search: string): ExplorerConfig {
     mass_kg: integer(get("kg"), 10, 30_000),
     straps: strapList && strapList.every((value) => value !== null) ? (strapList as number[]) : null,
     moves,
-    country: get("country") === "US" ? "US" : "BR",
+    country: isCountry(get("country")) ? (get("country") as Country) : "BR",
+    body_code: (BODY_CODES as readonly string[]).includes(get("code") ?? "") ? (get("code") as BodyCode) : null,
   };
 }
 

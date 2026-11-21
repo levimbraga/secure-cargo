@@ -6,6 +6,7 @@
  * Signed in, the Worker runs everything itself and saves it (`/inspections/:id/...`).
  */
 
+import type { Country } from "@/lib/country";
 import { API_URL } from "@/lib/api";
 import { AppApiError, readError } from "@/lib/app-api";
 import type { LoadDraft } from "@/lib/explorer/draft";
@@ -105,7 +106,7 @@ export function flowCalls(request: <T>(path: string, init?: RequestInit) => Prom
     fix: (id: string) => post<Plan>(`/inspections/${encodeURIComponent(id)}/fix`),
     battery: (id: string, kind: "as_loaded" | "fixed") => request<Battery>(`/inspections/${encodeURIComponent(id)}/battery/${kind}`),
     /** Check the saved load against the other country's rules (no simulation). */
-    setCountry: (id: string, country: "BR" | "US") =>
+    setCountry: (id: string, country: Country) =>
       request<{ country: string; verdict: string | null }>(`/inspections/${encodeURIComponent(id)}/country`, { method: "PUT", body: JSON.stringify({ country }) }),
   };
 }
