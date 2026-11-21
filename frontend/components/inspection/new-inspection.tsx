@@ -74,9 +74,10 @@ export function NewInspection() {
             <li
               key={step}
               aria-current={index === current ? "step" : undefined}
-              className={`type-label ${index === current ? "text-ink" : index < current ? "text-gray" : "text-gray/60"}`}
+              // Contrast stays AA for every step: the current one is ink and underlined, the others gray.
+              className={`type-label ${index === current ? "text-ink underline decoration-1 underline-offset-4" : "text-gray"}`}
             >
-              {index + 1}. {t(`steps.${step}`)}
+              {index < current ? "✓" : `${index + 1}.`} {t(`steps.${step}`)}
             </li>
           ))}
         </ol>

@@ -109,19 +109,21 @@ function OrgOverview({ orgName }: { orgName: string }) {
 }
 
 function Tile({ label, value, note, tone, href }: { label: string; value: number | string; note?: string; tone?: "pass" | "warn" | "fail"; href?: string }) {
-  const body = (
-    <>
-      <dt className="type-small text-gray">{label}</dt>
+  // A <dl> may only hold <div> groups of <dt>/<dd>: a linked tile is a div with a link stretched over it.
+  return (
+    <div className={cn("relative bg-paper p-4", href && "hover:bg-surface/50")}>
+      <dt className="type-small text-gray">
+        {href ? (
+          <Link href={href} className="after:absolute after:inset-0">
+            {label}
+          </Link>
+        ) : (
+          label
+        )}
+      </dt>
       <dd className={cn("mt-2 font-mono text-[1.75rem] leading-none", tone === "pass" && "text-pass", tone === "warn" && "text-warn", tone === "fail" && "text-fail")}>{value}</dd>
       {note && <dd className="type-small mt-2 text-gray">{note}</dd>}
-    </>
-  );
-  return href ? (
-    <Link href={href} className="block bg-paper p-4 hover:bg-surface/50">
-      {body}
-    </Link>
-  ) : (
-    <div className="bg-paper p-4">{body}</div>
+    </div>
   );
 }
 

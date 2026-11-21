@@ -10,7 +10,10 @@ import { AUTH_ENABLED } from "@/lib/auth-config";
  */
 export default async function AppLayout({ children, params }: LayoutProps<"/[locale]/app">) {
   const { locale } = await params;
-  if (!AUTH_ENABLED) return <SignedOutMeProvider>{children}</SignedOutMeProvider>;
+  // The app's pages fill at least the screen, so the footer starts below it and does not jump
+  // down when signed-in content arrives (it was most of the pages' layout shift).
+  const page = <div className="flex min-h-svh flex-col">{children}</div>;
+  if (!AUTH_ENABLED) return <SignedOutMeProvider>{page}</SignedOutMeProvider>;
   const prefix = locale === "pt-BR" ? "/pt-BR" : "";
   return (
     <ClerkProvider
@@ -34,7 +37,7 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
         },
       }}
     >
-      <MeProvider>{children}</MeProvider>
+      <MeProvider>{page}</MeProvider>
     </ClerkProvider>
   );
 }
