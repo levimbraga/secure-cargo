@@ -21,8 +21,8 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.explorer import BuildError, build_draft
-from app.explorer.build import CARGO, TRUCKS, strap_room
-from app.explorer.config import MAX_STRAPS_PER_UNIT, Cargo, Restraint, Size
+from app.explorer.build import CARGO, strap_room, truck_spec
+from app.explorer.config import MAX_STRAPS_PER_UNIT, Cargo, Restraint
 from app.explorer.draft import DraftTruck, DraftUnit, LoadDraft
 from app.scenario import UnitShape
 
@@ -160,10 +160,10 @@ def _restraint(analysis: PhotoAnalysis) -> Restraint:
 
 
 def _place(
-    units: list[AnalysisUnit], size: Size, warnings: list[Warning]
+    units: list[AnalysisUnit], draft_truck: DraftTruck, warnings: list[Warning]
 ) -> dict[int, tuple[float, float, tuple[float, float, float]]]:
     """Footprint centres of the floor units, packed from the front in their lanes."""
-    truck = TRUCKS[size]
+    truck = truck_spec(draft_truck)
     half_l, half_w = truck.length_m / 2, truck.width_m / 2
     placed: dict[int, tuple[float, float, tuple[float, float, float]]] = {}
     boxes: list[tuple[float, float, float, float]] = []  # x_low, x_high, y_low, y_high
@@ -244,7 +244,7 @@ def analysis_to_draft(
     if len(floor) + len(stacked) < len(analysis.units):
         warnings.append("stack_dropped")
 
-    placed = _place(floor, truck.size, warnings)
+    placed = _place(floor, truck, warnings)
     sizes: dict[int, tuple[float, float, float]] = {n: p[2] for n, p in placed.items()}
     tops: dict[int, int] = {}
     kept_stacked: list[AnalysisUnit] = []
@@ -329,7 +329,7 @@ def _placeholder(truck: DraftTruck) -> DraftUnit:
     return DraftUnit(
         id="unit-1",
         cargo=Cargo.CRATE,
-        x_m=_grid(TRUCKS[truck.size].length_m / 2 - length / 2),
+        x_m=_grid(truck_spec(truck).length_m / 2 - length / 2),
         y_m=0.0,
         mass_kg=None,
     )

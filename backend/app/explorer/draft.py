@@ -10,6 +10,7 @@ floor): ``x_m``/``y_m`` are the centre of the unit's footprint. A unit that stan
 names it in ``on``; its height follows from the stack.
 """
 
+from enum import StrEnum
 from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -32,9 +33,49 @@ class _Model(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
 
+class BodyStyle(StrEnum):
+    """The body the driver picks on the truck cards; each one is simulated as a ``BodyType``.
+
+    The rails of an open body and the rack of a tall-rack body are not rated restraints, so all
+    three open styles are simulated as a flatbed with a headboard (``notes/physics-sources.md``,
+    "Body styles"); the styles differ in the headboard height they suggest and in the drawing.
+    """
+
+    OPEN_LOW_SIDES = "open_low_sides"  # "carroceria aberta": low wooden or steel side rails
+    OPEN_TALL_RACK = "open_tall_rack"  # open body with a tall rack ("grade alta")
+    PLATFORM = "platform"  # flat platform, no side rails
+    BOX = "box"  # closed van ("baú")
+    CURTAIN_SIDER = "curtain_sider"  # "sider"
+
+
+STYLE_BODY: dict[BodyStyle, BodyType] = {
+    BodyStyle.OPEN_LOW_SIDES: BodyType.FLATBED,
+    BodyStyle.OPEN_TALL_RACK: BodyType.FLATBED,
+    BodyStyle.PLATFORM: BodyType.FLATBED,
+    BodyStyle.BOX: BodyType.BOX,
+    BodyStyle.CURTAIN_SIDER: BodyType.CURTAIN_SIDER,
+}
+
+
 class DraftTruck(_Model):
+    """The truck. ``style`` and the measurements come from the truck cards or "My trucks".
+
+    ``headboard_height_m`` is None when nobody gave it: the simulation then uses the body's
+    usual headboard and CONTRAN 945 art. 8 is reported as "to confirm", never as failed.
+    """
+
     body: BodyType = BodyType.FLATBED
     size: Size = Size.TOCO
+    style: BodyStyle | None = None
+    bed_length_m: float | None = Field(default=None, ge=2.0, le=15.0)
+    headboard_height_m: float | None = Field(default=None, gt=0, le=4.0)
+    anchors_per_side: int | None = Field(default=None, ge=2, le=40)
+
+    @model_validator(mode="after")
+    def _style_matches(self) -> Self:
+        if self.style is not None and STYLE_BODY[self.style] is not self.body:
+            raise ValueError(f"a {self.style.value} body is simulated as {STYLE_BODY[self.style]}")
+        return self
 
 
 class DraftTrip(_Model):

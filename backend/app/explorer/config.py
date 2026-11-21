@@ -19,6 +19,7 @@ class Size(StrEnum):
     """Truck sizes of the Brazilian market (axle groups per CONTRAN Resolution 882/2021)."""
 
     VUC = "vuc"  # urban cargo vehicle, two axles
+    THREE_QUARTER = "three_quarter"  # "3/4": light two-axle truck, between a VUC and a toco
     TOCO = "toco"  # two-axle rigid truck, single rear axle with dual tyres
     TRUCK = "truck"  # three-axle rigid truck, tandem rear axles
     SEMI = "semi"  # tractor and three-axle semi-trailer

@@ -6,7 +6,7 @@ typical Brazilian truck; the list with sources and assumptions is in the workspa
 """
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from pydantic import ValidationError
 
@@ -84,6 +84,20 @@ TRUCKS: dict[Size, TruckSpec] = {
             id="rear", kind=AxleGroupKind.SINGLE_4_TYRES, position_x_m=-0.6, tare_load_kg=1600
         ),
         payload_kg=4000,
+    ),
+    # A "3/4": a light two-axle truck between the VUC and the toco (illustrative values).
+    Size.THREE_QUARTER: TruckSpec(
+        length_m=5.2,
+        width_m=2.3,
+        floor_height_m=1.1,
+        wall_height_m=2.3,
+        front=AxleGroup(
+            id="front", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=3.5, tare_load_kg=2300
+        ),
+        rear=AxleGroup(
+            id="rear", kind=AxleGroupKind.SINGLE_4_TYRES, position_x_m=-0.7, tare_load_kg=1900
+        ),
+        payload_kg=5000,
     ),
     # The truck of the four original demos.
     Size.TOCO: TruckSpec(
@@ -421,12 +435,30 @@ def _layout(
 # --- Draft -> scenario ------------------------------------------------------------------
 
 
+def truck_spec(truck: DraftTruck) -> TruckSpec:
+    """The truck of a draft: its size's usual truck, with the bed length the driver saved.
+
+    The axle groups stay where they are on the usual truck (a longer bed hangs further behind
+    the rear axle), so a saved length may differ from the usual one by a quarter at most.
+    """
+    spec = TRUCKS[truck.size]
+    if truck.bed_length_m is None:
+        return spec
+    length = min(max(truck.bed_length_m, spec.length_m * 0.75), spec.length_m * 1.25)
+    return replace(spec, length_m=round(length, 3))
+
+
 def build_draft(
     draft: LoadDraft, *, scenario_id: str = "explorer", name: str = ""
 ) -> tuple[Scenario, TripEvent]:
     """The scenario and trip event of a load draft."""
-    truck = TRUCKS[draft.truck.size]
-    bed = _bed(draft.truck.body, truck)
+    truck = truck_spec(draft.truck)
+    bed = _bed(
+        draft.truck.body,
+        truck,
+        headboard_m=draft.truck.headboard_height_m,
+        anchors_per_side=draft.truck.anchors_per_side,
+    )
     restraint = draft.restraint
 
     units: list[CargoUnit] = []
@@ -521,21 +553,27 @@ def strap_room(scenario: Scenario, unit_id: str) -> int:
     )
 
 
-def _anchors(truck: TruckSpec) -> list[AnchorPoint]:
-    return side_anchor_points(
-        length_m=truck.length_m, width_m=truck.width_m, spacing_m=ANCHOR_SPACING_M
-    )
+def _anchors(truck: TruckSpec, per_side: int | None = None) -> list[AnchorPoint]:
+    """Lashing points along both edges; a saved truck gives how many there are per side."""
+    spacing = ANCHOR_SPACING_M if per_side is None else max(truck.length_m / per_side, 0.3)
+    return side_anchor_points(length_m=truck.length_m, width_m=truck.width_m, spacing_m=spacing)
 
 
-def _bed(body: BodyType, truck: TruckSpec) -> TruckBed:
-    anchors = _anchors(truck)
+def _bed(
+    body: BodyType,
+    truck: TruckSpec,
+    *,
+    headboard_m: float | None = None,
+    anchors_per_side: int | None = None,
+) -> TruckBed:
+    anchors = _anchors(truck, anchors_per_side)
     if body is BodyType.FLATBED:
         return TruckBed(
             length_m=truck.length_m,
             width_m=truck.width_m,
             floor_height_m=truck.floor_height_m,
             floor_material=FloorMaterial.PLYWOOD_LAMINATE,
-            headboard=Headboard(height_m=FLATBED_HEADBOARD_M),
+            headboard=Headboard(height_m=headboard_m or FLATBED_HEADBOARD_M),
             anchor_points=anchors,
         )
     rated = min(
