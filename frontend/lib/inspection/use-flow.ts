@@ -411,10 +411,14 @@ export function useInspectionFlow() {
 
   /** `title`: what the lists show, e.g. "3 × Steel pipe" (written in the user's language). */
   async function toResult(title?: string) {
-    const { perception, truck, weightSource, totalKg, range, perUnit } = latest.current;
+    const { perception, truck, weightSource, totalKg, range, perUnit, sample } = latest.current;
     const kg = simulatedWeight(weightSource ?? "measured", totalKg, range);
     if (!perception || !truck || !kg) return;
-    const draft = withWeights({ ...perception.draft, truck: draftTruck(truck) }, kg, perUnit);
+    // An unchanged sample keeps its own weights, so its stored results still apply.
+    const asSample = sample && !perUnit && sampleApplies(sample, truck, kg) && same(perception.draft.units.map((u) => u.id), sample.perception.draft.units.map((u) => u.id));
+    const draft = asSample
+      ? { ...sample.perception.draft, truck: draftTruck(truck) }
+      : withWeights({ ...perception.draft, truck: draftTruck(truck) }, kg, perUnit);
     patch({ draft, confirmed: {}, plan: null });
     fetchDraftLoad(draft)
       .then(({ load }) => patch({ load }))

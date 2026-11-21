@@ -1135,7 +1135,7 @@
       }
     },
     "changes": {
-      "straps": "{unit}: {from} → {to} cintas sobre ela.",
+      "straps": "{unit}: de {from} para {to, plural, one {# cinta} other {# cintas}} por cima.",
       "restraint": "Amarre a carga com {to} em vez de {from}.",
       "closeGaps": "Empurre a carga {distance} cm para a frente, contra a cabeceira: sem espaço para correr, a cabeceira a segura.",
       "closeGapsAxles": "Empurre a carga {distance} cm para a frente, até onde os limites dos eixos permitem.",
@@ -1428,7 +1428,8 @@
         "restraint": "Não temos certeza das cintas: {why}",
         "unsure": "pouca confiança",
         "cutOff": "O volume {units} encosta na borda da foto: parte da carga pode estar fora dela.",
-        "dropped": "{count, plural, one {# volume} other {# volumes}} da foto não couberam no plano."
+        "dropped": "{count, plural, one {# volume} other {# volumes}} da foto não couberam no plano.",
+        "more": "e mais {count} itens com pouca confiança: confira na correção."
       },
       "correct": "Leitura errada? Corrigir"
     },

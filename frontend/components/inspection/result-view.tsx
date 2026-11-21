@@ -277,7 +277,7 @@ function ReadingSummary({
       </div>
       {flags.length > 0 && (
         <ul className="mt-3 space-y-1" data-testid="low-confidence">
-          {flags.map((flag) => (
+          {(flags.length > 3 ? [...flags.slice(0, 2), t("flags.more", { count: flags.length - 2 })] : flags).map((flag) => (
             <li key={flag} className="type-small flex gap-2 text-warn">
               <span aria-hidden>!</span>
               <span>{flag}</span>
@@ -334,8 +334,15 @@ export function useChangeSentence() {
   return (change: Change): string => {
     const cm = (m: number | undefined) => format.number(Math.abs((m ?? 0) * 100), { maximumFractionDigits: 0 });
     switch (change.code) {
-      case "straps":
-        return t("changes.straps", { unit: nameOf(change.unit_id), from: Number(change.before ?? 0), to: Number(change.after ?? 0) });
+      case "straps": {
+        const ids = (change as Change & { unit_ids?: string[] }).unit_ids ?? [change.unit_id];
+        return t("changes.straps", {
+          unit: ids.map((id) => nameOf(id)).join(", "),
+          from: Number(change.before ?? 0),
+          to: Number(change.after ?? 0),
+          count: ids.length,
+        });
+      }
       case "restraint":
         return t("changes.restraint", {
           from: lower(restraint(`restraint.${String(change.before)}` as never)),
@@ -360,9 +367,22 @@ export function useChangeSentence() {
   };
 }
 
-function ChangeList({ changes, title }: { changes: Change[]; title: string }) {
+/** Straps added the same way on several units read as one step. */
+function groupChanges(changes: Change[]): (Change & { unit_ids?: string[] })[] {
+  const out: (Change & { unit_ids?: string[] })[] = [];
+  for (const change of changes) {
+    const previous = out[out.length - 1];
+    if (change.code === "straps" && previous?.code === "straps" && previous.before === change.before && previous.after === change.after) {
+      previous.unit_ids = [...(previous.unit_ids ?? [previous.unit_id ?? ""]), change.unit_id ?? ""];
+    } else out.push({ ...change });
+  }
+  return out;
+}
+
+function ChangeList({ changes: all, title }: { changes: Change[]; title: string }) {
   const sentence = useChangeSentence();
   const t = useTranslations("Driver.fix");
+  const changes = groupChanges(all);
   if (!changes.length) return null;
   return (
     <section className="mt-8">

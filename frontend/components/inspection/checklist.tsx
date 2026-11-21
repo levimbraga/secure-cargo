@@ -76,7 +76,7 @@ function Theme({ id, title, marks, children, open = false }: { id: string; title
   const warning = marks.filter((m) => m === "warn" || m === "advice").length;
   const summary: Mark = failing ? "fail" : warning ? "warn" : "pass";
   return (
-    <details className="group border-b border-hairline" open={open || failing > 0} data-theme={id} data-summary={summary}>
+    <details className="group border-b border-hairline" open={open} data-theme={id} data-summary={summary}>
       <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 py-3 [&::-webkit-details-marker]:hidden">
         <MarkIcon mark={summary} />
         <span className="min-w-0 flex-1">
@@ -174,17 +174,17 @@ export function Checklist({
               fix={t(`contran.${check.code}.fix`)}
             />
           ))}
-          {en.map((check) => (
+          {groupEn(en).map(({ check, ids }) => (
             <Item
-              key={check.unit_id}
-              testId={`en-${check.unit_id}`}
+              key={ids.join("-")}
+              testId={`en-${ids[0]}`}
               mark={check.meets_standard === null ? "na" : check.meets_standard ? "pass" : "fail"}
               title={
                 check.meets_standard === null
-                  ? t("en.notAssessed", { unit: nameOf(check.unit_id) })
+                  ? t("en.notAssessed", { unit: units(ids) })
                   : check.required_lashings !== null
-                    ? t("en.straps", { unit: nameOf(check.unit_id), installed: check.installed_lashings, required: check.required_lashings })
-                    : t(check.meets_standard ? "en.meets" : "en.fails", { unit: nameOf(check.unit_id) })
+                    ? t("en.straps", { unit: units(ids), installed: check.installed_lashings, required: check.required_lashings })
+                    : t(check.meets_standard ? "en.meets" : "en.fails", { unit: units(ids) })
               }
               detail={t("en.explain")}
               article="EN 12195-1"
@@ -314,6 +314,22 @@ export function Checklist({
       </div>
     </section>
   );
+}
+
+/** Units with the same EN 12195-1 answer, as one line ("Unit 1, Unit 2: 1 strap; asks for 2"). */
+function groupEn(checks: Battery["en_12195_1"]) {
+  const groups: { check: Battery["en_12195_1"][number]; ids: string[] }[] = [];
+  for (const check of checks) {
+    const same = groups.find(
+      (g) =>
+        g.check.meets_standard === check.meets_standard &&
+        g.check.installed_lashings === check.installed_lashings &&
+        g.check.required_lashings === check.required_lashings,
+    );
+    if (same) same.ids.push(check.unit_id);
+    else groups.push({ check, ids: [check.unit_id] });
+  }
+  return groups;
 }
 
 function HeadboardInput({ initial, onSubmit }: { initial: number; onSubmit: (heightM: number) => void }) {

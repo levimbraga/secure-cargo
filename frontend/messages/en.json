@@ -1135,7 +1135,7 @@
       }
     },
     "changes": {
-      "straps": "{unit}: {from} → {to} straps over it.",
+      "straps": "{unit}: {from} → {to, plural, one {# strap} other {# straps}} {count, plural, one {over it} other {over each}}.",
       "restraint": "Secure the load with {to} instead of {from}.",
       "closeGaps": "Push the load {distance} cm forward against the headboard: with no room to travel, the headboard stops it.",
       "closeGapsAxles": "Push the load {distance} cm forward, as far as the axle limits allow.",
@@ -1428,7 +1428,8 @@
         "restraint": "Not sure about the straps: {why}",
         "unsure": "low confidence",
         "cutOff": "Unit {units} touches the edge of the photo: part of the load may be outside it.",
-        "dropped": "{count, plural, one {# unit} other {# units}} from the photo did not fit on the plan."
+        "dropped": "{count, plural, one {# unit} other {# units}} from the photo did not fit on the plan.",
+        "more": "and {count} more things we are not sure of: check them in “Correct it”."
       },
       "correct": "Wrong reading? Correct it"
     },
