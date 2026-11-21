@@ -145,8 +145,18 @@ export async function runBattery(call: ContainerCall, draft: unknown, withRecomm
 	return battery;
 }
 
+interface Candidate {
+	name: string;
+	draft: unknown;
+	changes: unknown[];
+	/** The optional steps it takes ("move", "straps", "mat", "direct", ...). */
+	steps?: string[];
+}
+
 interface Candidates {
-	candidates: { name: string; draft: unknown; changes: unknown[] }[];
+	candidates: Candidate[];
+	/** Candidates with fewer steps, for the minimality check once one passes. */
+	subsets?: Candidate[];
 	infeasible: "overweight" | null;
 	values: Record<string, number>;
 }
@@ -174,13 +184,56 @@ export async function runPlan(call: ContainerCall, draft: unknown): Promise<Plan
 		return { draft, changes: [change], verified: false, rounds: 0, battery: original };
 	}
 	let last: PlanJson | null = null;
+	let holding: PlanJson | null = null;
 	let rounds = 0;
+	let winner: { candidate: Candidate; plan: PlanJson } | null = null;
 	for (const candidate of options.candidates) {
 		rounds += 1;
 		const battery = await runBattery(call, candidate.draft, false);
 		last = { draft: candidate.draft, changes: candidate.changes, verified: passesRules(battery), rounds, battery };
-		if (last.verified) return last;
+		if (last.verified) {
+			winner = { candidate, plan: last };
+			break;
+		}
+		if (!holding && verdictState(battery) !== "fails") holding = last;
 	}
+	if (winner) return minimal(call, winner, [...options.candidates, ...(options.subsets ?? [])], rounds);
 	if (!last) throw new ApiError(502, "plan_failed", "The planner found no candidate.");
-	return last;
+	// Nothing both holds and complies: the best is a load that at least arrives intact.
+	return holding ?? last;
+}
+
+/** A step of the winner that is not needed is dropped: its subset is proven instead. */
+async function minimal(
+	call: ContainerCall,
+	winner: { candidate: Candidate; plan: PlanJson },
+	all: Candidate[],
+	rounds: number,
+): Promise<PlanJson> {
+	const tried = new Set<string>();
+	let best = winner;
+	for (let improved = true; improved; ) {
+		improved = false;
+		const steps = best.candidate.steps ?? [];
+		for (const step of steps) {
+			const fewer = steps.filter((s) => s !== step);
+			const smaller = all.find((c) => c !== best.candidate && sameSteps(c.steps ?? [], fewer));
+			if (!smaller) continue;
+			const key = JSON.stringify(smaller.draft);
+			if (tried.has(key)) continue;
+			tried.add(key);
+			rounds += 1;
+			const battery = await runBattery(call, smaller.draft, false);
+			if (passesRules(battery)) {
+				best = { candidate: smaller, plan: { draft: smaller.draft, changes: smaller.changes, verified: true, rounds, battery } };
+				improved = true;
+				break;
+			}
+		}
+	}
+	return { ...best.plan, rounds };
+}
+
+function sameSteps(a: string[], b: string[]): boolean {
+	return a.length === b.length && a.every((step) => b.includes(step));
 }

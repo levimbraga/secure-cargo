@@ -563,12 +563,18 @@ class Candidate(_Model):
     name: str
     draft: LoadDraft
     changes: list[Change]
+    steps: list[str] = Field(default_factory=list, description="The optional steps it takes.")
 
 
 class Candidates(_Model):
-    """The planner's candidates, cheapest first, for a proof run elsewhere (in parallel)."""
+    """The planner's candidates in the order to prove them, for a proof run elsewhere.
+
+    ``candidates`` are tried in order, at most ``MAX_ROUNDS``; ``subsets`` are the candidates
+    with fewer steps than the first ones, for the minimality check after one passes.
+    """
 
     candidates: list[Candidate]
+    subsets: list[Candidate] = Field(default_factory=list)
     infeasible: Literal["overweight"] | None = None
     values: dict[str, float] = Field(default_factory=dict)
 
@@ -601,13 +607,47 @@ def candidates(draft: LoadDraft) -> Candidates:
             infeasible="overweight",
             values={"mass_kg": heavy[0], "payload_kg": heavy[1]},
         )
-    options = [c for c in _candidates(draft) if _on_paper(c)] or _candidates(draft)
-    return Candidates(
-        candidates=[
-            Candidate(name=c.name, draft=c.draft, changes=c.changes + _edge_protectors(c.draft))
-            for c in options[:MAX_ROUNDS]
-        ]
-    )
+    order = proof_candidates(_candidates(draft))
+    tried = order[:MAX_ROUNDS]
+    keys = {c.draft.model_dump_json() for c in tried}
+    subsets = [
+        c
+        for c in order[MAX_ROUNDS:]
+        if c.draft.model_dump_json() not in keys and any(set(c.steps) < set(t.steps) for t in tried)
+    ]
+
+    def public(c: _Candidate) -> Candidate:
+        return Candidate(
+            name=c.name,
+            draft=c.draft,
+            changes=c.changes + _edge_protectors(c.draft),
+            steps=list(c.steps),
+        )
+
+    return Candidates(candidates=[public(c) for c in tried], subsets=[public(c) for c in subsets])
+
+
+def proof_candidates(options: list[_Candidate]) -> list[_Candidate]:
+    """The order to prove candidates in.
+
+    The ones that hold on paper, cheapest first. When none does (EN 12195-1 cannot be met by
+    friction, say), the strongest first: they are the ones that may still hold in simulation,
+    and the minimality check then drops what they do not need.
+    """
+    on_paper = [c for c in options if _on_paper(c)]
+    if on_paper:
+        return on_paper + [c for c in options if c not in on_paper]
+    return list(reversed(options))
+
+
+def _rules_ok(candidate: _Candidate) -> bool:
+    """Every CONTRAN 945 check and every axle group within its limit (no simulation)."""
+    try:
+        scenario, _ = build_draft(candidate.draft)
+    except BuildError:
+        return False
+    rules = check_contran_945(scenario, anchored_on_wood=candidate.draft.anchored_on_wood)
+    return all(c.status != "fail" for c in rules) and _axles_legal(scenario)
 
 
 def _holds(storage: Storage, draft: LoadDraft, order: tuple[Situation, ...]) -> bool:
@@ -633,26 +673,30 @@ def plan(storage: Storage, draft: LoadDraft) -> Plan:
             rounds=0,
             battery=original,
         )
-    options = _candidates(draft)
-    on_paper = [c for c in options if _on_paper(c)] or options
+    on_paper = proof_candidates(_candidates(draft))
     order = _proof_order(original)
     tried: dict[str, bool] = {}
 
     def holds(candidate: _Candidate) -> bool:
+        """It holds in every situation, and breaks no rule (checked first, on paper)."""
         key = candidate.draft.model_dump_json()
         if key not in tried:
-            tried[key] = _holds(storage, candidate.draft, order)
+            tried[key] = _rules_ok(candidate) and _holds(storage, candidate.draft, order)
         return tried[key]
 
     rounds = 0
     winner: _Candidate | None = None
+    physics_only: _Candidate | None = None
     for candidate in on_paper[:MAX_ROUNDS]:
         rounds += 1
         if holds(candidate):
             winner = candidate
             break
+        if physics_only is None and _holds(storage, candidate.draft, order):
+            physics_only = candidate  # cached run: it holds, but breaks a rule
     if winner is None:
-        last = on_paper[min(len(on_paper), MAX_ROUNDS) - 1]
+        # Nothing both holds and complies: the best is a load that at least arrives intact.
+        last = physics_only or on_paper[min(len(on_paper), MAX_ROUNDS) - 1]
         return Plan(
             draft=last.draft,
             changes=last.changes,

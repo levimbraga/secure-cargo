@@ -121,3 +121,37 @@ describe("the verdict of a battery in parallel", () => {
 		expect(battery.recommendation).toEqual({ changes: ["balance"] });
 	});
 });
+
+describe("the minimal fix in parallel", () => {
+	it("drops a step the winner does not need", async () => {
+		const pass = {};
+		const fail = { emergency_braking: "fail" as const };
+		const call: ContainerCall = async (path, body, instance) => {
+			const { draft, situation } = body as { draft: { verdicts: Verdicts; name?: string }; situation?: string };
+			if (path === "/battery/checks") {
+				return Response.json({ draft, scenario: {}, axle_loads: [], en_12195_1: [], contran_945: [{ status: "pass" }], recommendation: null });
+			}
+			if (path === "/plan/candidates") {
+				return Response.json({
+					infeasible: null,
+					values: {},
+					// Listed with the bigger set first on purpose: the proof must still end smaller.
+					candidates: [{ name: "move+direct", draft: { verdicts: pass, name: "move+direct" }, changes: ["move", "direct"], steps: ["move", "direct"] }],
+					subsets: [
+						{ name: "move", draft: { verdicts: fail, name: "move" }, changes: ["move"], steps: ["move"] },
+						{ name: "direct", draft: { verdicts: pass, name: "direct" }, changes: ["direct"], steps: ["direct"] },
+					],
+				});
+			}
+			const status = (draft.verdicts as Verdicts)[situation as keyof Verdicts] ?? "pass";
+			return Response.json({
+				situation: { id: situation ?? instance, status, passed: status !== "fail", severity: 0, findings: status === "fail" ? [{ code: "unit_slid", severity: "fail" }] : [] },
+				result: {},
+			});
+		};
+		const plan = await runPlan(call, { verdicts: fail });
+		expect(plan.verified).toBe(true);
+		expect(plan.changes).toEqual(["direct"]);
+		expect(plan.rounds).toBe(2); // the winner, then "direct" alone (dropping "move")
+	});
+});
