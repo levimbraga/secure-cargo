@@ -187,8 +187,8 @@ export function createApp(deps: AppDeps): Hono<Env> {
 
 	// ---- me ---------------------------------------------------------------------------------
 
-	app.get("/me", authenticated, async (c) => {
-		const p = c.get("principal");
+	/** Who the caller is: user, organization and role, policies, alert count, analysis allowance. */
+	async function meOf(p: Principal) {
 		const manager = p.orgId !== null && p.orgRole === "org_admin";
 		const [user, org, analysis, policies] = await Promise.all([
 			db
@@ -205,14 +205,16 @@ export function createApp(deps: AppDeps): Hono<Env> {
 			orgPolicies(db, p.orgId),
 		]);
 		const alerts = org && manager ? await alertCount(db, p, org.id, policies.alert_after_hours) : null;
-		return c.json({
+		return {
 			user: { id: p.userId, email: user?.email ?? null, name: user?.name ?? null, is_demo: p.isDemo },
 			org: org ? { id: org.id, name: org.name, type: org.type, role: p.orgRole, is_demo: org.is_demo === 1, policies, alerts } : null,
 			is_platform_admin: p.isPlatformAdmin,
 			blocked: p.blocked,
 			analysis,
-		});
-	});
+		};
+	}
+
+	app.get("/me", authenticated, async (c) => c.json(await meOf(c.get("principal"))));
 
 	// ---- inspections ------------------------------------------------------------------------
 
@@ -627,10 +629,12 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		const current = readCookie(c.req.header("Cookie"), DEMO_COOKIE);
 		const previous = current ? await verifyDemoToken(current, deps.demoSecret) : null;
 		const session = newDemoSession(as, previous);
-		if (!(await demoPrincipal(db, session))) fail(503, "demo_unavailable", "The demo accounts are not set up yet.");
+		const principal = await demoPrincipal(db, session);
+		if (!principal) fail(503, "demo_unavailable", "The demo accounts are not set up yet.");
 		c.header("Set-Cookie", demoCookie(await signDemoToken(session, deps.demoSecret)));
 		c.header("Cache-Control", "no-store");
-		return c.json({ role: as, expires_at: new Date(session.exp * 1000).toISOString() });
+		// The same answer as /me, so the page needs no second round trip.
+		return c.json({ role: as, expires_at: new Date(session.exp * 1000).toISOString(), me: await meOf(principal) });
 	});
 
 	app.post("/demo/logout", (c) => {

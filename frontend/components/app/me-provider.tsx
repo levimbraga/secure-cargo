@@ -66,7 +66,8 @@ function useDemoSession(enabled: boolean) {
       credentials: "include",
     });
     if (!response.ok) throw await readError(response);
-    const me = await requestWithToken<Me>(noToken, "/me");
+    // The session's answer carries the same body as /me: no second round trip.
+    const { me } = (await response.json()) as { me: Me };
     setDemoMe(me);
   }, []);
 
