@@ -12,7 +12,9 @@
  * fresh instance and the previous one stops by itself after the inactivity timeout.
  */
 import { createApp, isAppRoute } from "./app";
-import type { PhotoStore, Physics, SamplePhoto } from "./flow";
+import { type ContainerCall, runBattery, runPlan } from "./fanout";
+import type { PhotoStore, SamplePhoto } from "./flow";
+import { ApiError } from "./http";
 import { createClerkIdentity } from "./identity";
 import { analyzePhotos, DEFAULT_MODEL } from "./perception/claude";
 import samples from "./perception/samples.json";
@@ -40,7 +42,7 @@ function application(env: Env): ReturnType<typeof createApp> {
 		siteUrl: env.SITE_URL,
 		limitAnonymous: async (k) => (await env.ANON_RATE_LIMITER.limit({ key: k })).success,
 		photos: r2PhotoStore(env.PHOTOS),
-		physics: containerPhysics(env),
+		physics: { battery: (draft) => runBattery(containerCall(env), draft), plan: (draft) => runPlan(containerCall(env), draft) },
 		analyzer: env.ANTHROPIC_API_KEY
 			? { model, analyze: (photos) => analyzePhotos(env.ANTHROPIC_API_KEY as string, photos, model) }
 			: null,
@@ -72,6 +74,9 @@ export default {
 				);
 			}
 		}
+		if (request.method === "POST" && (url.pathname === "/battery" || url.pathname === "/plan")) {
+			return publicPhysics(request, env, url.pathname);
+		}
 		try {
 			return await env.API_CONTAINER.getByName(`api-${env.VERSION.id}`).fetch(request);
 		} catch (error) {
@@ -100,16 +105,36 @@ function r2PhotoStore(bucket: R2Bucket): PhotoStore {
 	};
 }
 
-/** The Worker's own calls to the physics container (battery, planner). */
-function containerPhysics(env: Env): Physics {
-	return (path, body) =>
-		env.API_CONTAINER.getByName(`api-${env.VERSION.id}`).fetch(
+/** The Worker's own calls to a physics container instance: the main one, or a named one. */
+function containerCall(env: Env): ContainerCall {
+	return (path, body, instance) =>
+		env.API_CONTAINER.getByName(`api-${env.VERSION.id}${instance ? `-${instance}` : ""}`).fetch(
 			new Request(`https://api.internal${path}`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(body),
 			}),
 		);
+}
+
+/** Public `POST /battery` and `POST /plan` (sample photos, signed out): run in parallel too. */
+async function publicPhysics(request: Request, env: Env, path: "/battery" | "/plan"): Promise<Response> {
+	const headers = { ...corsHeaders(request, env), "Content-Type": "application/json" };
+	try {
+		const body = (await request.json()) as { draft?: unknown };
+		if (!body || typeof body !== "object" || !body.draft) {
+			throw new ApiError(422, "invalid_body", "Expected {draft}.");
+		}
+		const call = containerCall(env);
+		const answer = path === "/battery" ? await runBattery(call, body.draft) : await runPlan(call, body.draft);
+		return new Response(JSON.stringify(answer), { headers });
+	} catch (error) {
+		if (error instanceof ApiError) {
+			return new Response(JSON.stringify({ detail: { code: error.code, message: error.message } }), { status: error.status, headers });
+		}
+		console.error(`${path} failed:`, error);
+		return new Response(JSON.stringify({ detail: { code: "internal_error", message: "Something went wrong." } }), { status: 500, headers });
+	}
 }
 
 function corsHeaders(request: Request, env: Env): Record<string, string> {

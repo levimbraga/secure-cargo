@@ -126,22 +126,25 @@ export function createApp(deps: AppDeps): Hono<Env> {
 
 	app.get("/me", authenticated, async (c) => {
 		const p = c.get("principal");
-		const user = await db
-			.prepare("SELECT id, email, name, is_demo FROM users WHERE id = ?")
-			.bind(p.userId)
-			.first<{ id: string; email: string | null; name: string | null; is_demo: number }>();
-		const org = p.orgId
-			? await db
-					.prepare("SELECT id, name, type, is_demo FROM organizations WHERE id = ?")
-					.bind(p.orgId)
-					.first<{ id: string; name: string; type: string; is_demo: number }>()
-			: null;
+		const [user, org, analysis] = await Promise.all([
+			db
+				.prepare("SELECT id, email, name, is_demo FROM users WHERE id = ?")
+				.bind(p.userId)
+				.first<{ id: string; email: string | null; name: string | null; is_demo: number }>(),
+			p.orgId
+				? db
+						.prepare("SELECT id, name, type, is_demo FROM organizations WHERE id = ?")
+						.bind(p.orgId)
+						.first<{ id: string; name: string; type: string; is_demo: number }>()
+				: Promise.resolve(null),
+			analysisAllowance(db, p),
+		]);
 		return c.json({
 			user: { id: p.userId, email: user?.email ?? null, name: user?.name ?? null, is_demo: p.isDemo },
 			org: org ? { id: org.id, name: org.name, type: org.type, role: p.orgRole, is_demo: org.is_demo === 1 } : null,
 			is_platform_admin: p.isPlatformAdmin,
 			blocked: p.blocked,
-			analysis: await analysisAllowance(db, p),
+			analysis,
 		});
 	});
 

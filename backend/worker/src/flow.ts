@@ -16,6 +16,7 @@
 import type { Context, Hono, MiddlewareHandler } from "hono";
 
 import { canWriteInspection, type Principal } from "./authz";
+import type { BatteryJson, PlanJson } from "./fanout";
 import { type Db, newId, now } from "./db";
 import { fail, forbidden, jsonBody } from "./http";
 import type { AnalysisCall, PhotoInput } from "./perception/claude";
@@ -28,8 +29,11 @@ export interface PhotoStore {
 	get(key: string): Promise<{ bytes: Uint8Array; contentType: string } | null>;
 }
 
-/** A POST to the physics container (only the Worker can reach it). */
-export type Physics = (path: "/battery" | "/plan", body: unknown) => Promise<Response>;
+/** The battery and the planner, run on the physics containers (`fanout.ts`). */
+export interface Physics {
+	battery(draft: unknown): Promise<BatteryJson>;
+	plan(draft: unknown): Promise<PlanJson>;
+}
 
 export interface Analyzer {
 	model: string;
@@ -259,21 +263,9 @@ export function registerFlow(
 			.first<{ id: string; draft_json: string; battery_ref: string | null }>();
 	}
 
-	async function callPhysics(path: "/battery" | "/plan", draft: unknown): Promise<BatteryJson & PlanJson> {
+	function physics(): Physics {
 		if (!deps.physics) fail(503, "api_unavailable", "The physics engine is not reachable.");
-		let response: Response;
-		try {
-			response = await deps.physics(path, { draft });
-		} catch (error) {
-			console.error("Physics call failed:", error);
-			fail(503, "api_unavailable", "The physics engine is starting or unavailable. Try again.");
-		}
-		if (response.status === 422) {
-			const detail = ((await response.json().catch(() => ({}))) as { detail?: { code?: string; message?: string } }).detail;
-			fail(422, detail?.code ?? "invalid_load", detail?.message ?? "This load cannot be simulated.");
-		}
-		if (!response.ok) fail(503, "api_unavailable", "The physics engine is starting or unavailable. Try again.");
-		return (await response.json()) as BatteryJson & PlanJson;
+		return deps.physics;
 	}
 
 	async function storeBattery(inspectionId: string, scenarioId: string, kind: string, battery: BatteryJson) {
@@ -307,7 +299,7 @@ export function registerFlow(
 		const inspection = await writable(c);
 		const scenario = await scenarioOf(inspection.id, "as_loaded");
 		if (!scenario) fail(409, "not_confirmed", "Confirm the load before simulating it.");
-		const battery = await callPhysics("/battery", JSON.parse(scenario.draft_json));
+		const battery = await physics().battery(JSON.parse(scenario.draft_json));
 		await storeBattery(inspection.id, scenario.id, "as_loaded", battery);
 		await touch(inspection.id, {
 			status: "simulated",
@@ -323,7 +315,7 @@ export function registerFlow(
 		const inspection = await writable(c);
 		const scenario = await scenarioOf(inspection.id, "as_loaded");
 		if (!scenario) fail(409, "not_confirmed", "Confirm the load before fixing it.");
-		const plan = await callPhysics("/plan", JSON.parse(scenario.draft_json));
+		const plan = await physics().plan(JSON.parse(scenario.draft_json));
 		if (!plan.battery) fail(502, "plan_failed", "The planner did not return a battery.");
 		const at = now();
 		const fixedId = newId("scn");
@@ -354,30 +346,6 @@ export function registerFlow(
 		if (!object) fail(404, "not_found", "No battery stored yet.");
 		return c.body(object.bytes as Uint8Array<ArrayBuffer>, 200, { "Content-Type": "application/json", "Cache-Control": "private, no-store" });
 	});
-}
-
-/** The parts of the physics answers the Worker reads (the rest is passed through as is). */
-interface BatteryJson {
-	passed: number;
-	total: number;
-	status: "pass" | "warning" | "fail";
-	situations: {
-		id: string;
-		status: "pass" | "warning" | "fail";
-		findings: unknown[];
-		margins: unknown;
-		event: unknown;
-		trip: unknown;
-		severity: number;
-		scenario_hash: string;
-	}[];
-	contran_945: { status: string }[];
-}
-interface PlanJson {
-	draft: unknown;
-	changes: unknown[];
-	verified: boolean;
-	battery: BatteryJson | null;
 }
 
 /** "pass" only when every situation passes and no CONTRAN 945 rule is broken. */

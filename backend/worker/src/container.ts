@@ -12,6 +12,9 @@ import { INTERNAL_HEADER, newInternalToken, toContainerRequest } from "./interna
 
 const CONTAINER_PORT = 8080;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
+// The per-situation instances of the battery (`fanout.ts`) are kept for less time: memory is
+// billed while an instance runs, and a battery wakes seven of them.
+const SITUATION_INACTIVITY_TIMEOUT_MS = 3 * 60 * 1000;
 const READINESS_POLL_MS = 200;
 const READINESS_TIMEOUT_MS = 60_000;
 const TOKEN_KEY = "internal_token";
@@ -22,14 +25,17 @@ export class ApiContainer extends DurableObject<Env> {
 	/** The token the running container was started with (kept in storage across restarts). */
 	private token: string | undefined;
 
+	private readonly idleMs: number;
+
 	constructor(ctx: DurableObjectState, env: Env) {
 		super(ctx, env);
+		this.idleMs = ctx.id.name?.includes("-s-") ? SITUATION_INACTIVITY_TIMEOUT_MS : INACTIVITY_TIMEOUT_MS;
 		const container = ctx.container;
 		if (container?.running) {
 			// The Durable Object restarted (for example after a deploy) while its container kept
 			// running: the inactivity timeout and the exit monitor have to be set up again.
 			void ctx.blockConcurrencyWhile(() =>
-				container.setInactivityTimeout(INACTIVITY_TIMEOUT_MS),
+				container.setInactivityTimeout(this.idleMs),
 			);
 			this.observeExit(container);
 		}
@@ -78,7 +84,7 @@ export class ApiContainer extends DurableObject<Env> {
 			});
 		}
 		this.observeExit(container);
-		await container.setInactivityTimeout(INACTIVITY_TIMEOUT_MS);
+		await container.setInactivityTimeout(this.idleMs);
 
 		// `running` only means that startup was requested; wait for the HTTP server itself.
 		const port = container.getTcpPort(CONTAINER_PORT);

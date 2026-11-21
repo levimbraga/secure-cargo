@@ -1,6 +1,7 @@
 /** The inspection flow: photos, analysis (cache, quota, kill switch), weights, battery and fix. */
 import { describe, expect, it } from "vitest";
 
+import type { BatteryJson } from "../src/fanout";
 import type { Analyzer, Physics, PhotoStore, SamplePhoto } from "../src/flow";
 import type { PhotoInput } from "../src/perception/claude";
 import { sanitizeAnalysis } from "../src/perception/schema";
@@ -76,14 +77,18 @@ const BATTERY = {
 
 function fakePhysics(): Physics & { calls: string[] } {
 	const calls: string[] = [];
-	const physics = (async (path: string) => {
-		calls.push(path);
-		if (path === "/battery") return Response.json(BATTERY);
-		const passing = { ...BATTERY, passed: 7, status: "pass", contran_945: [{ code: "four_terminals", status: "pass" }] };
-		return Response.json({ draft: { version: 1 }, changes: [{ code: "straps" }], verified: true, rounds: 1, battery: passing });
-	}) as Physics & { calls: string[] };
-	physics.calls = calls;
-	return physics;
+	return {
+		calls,
+		async battery() {
+			calls.push("/battery");
+			return BATTERY as unknown as BatteryJson;
+		},
+		async plan() {
+			calls.push("/plan");
+			const passing = { ...BATTERY, passed: 7, status: "pass", contran_945: [{ code: "four_terminals", status: "pass" }] };
+			return { draft: { version: 1 }, changes: [{ code: "straps" }], verified: true, rounds: 1, battery: passing as unknown as BatteryJson };
+		},
+	};
 }
 
 const SAMPLE: SamplePhoto = {

@@ -53,8 +53,16 @@ export async function resolvePrincipal(
 	}
 
 	if (claims.orgId && claims.orgRole) {
-		const org = await db.prepare("SELECT id FROM organizations WHERE id = ?").bind(claims.orgId).first();
-		if (!org) {
+		// One read tells whether the organization and this membership are already mirrored; the
+		// writes happen only the first time (or when the role changed), not on every request.
+		const known = await db
+			.prepare(
+				`SELECT (SELECT 1 FROM organizations WHERE id = ?) AS org,
+				        (SELECT role FROM memberships WHERE user_id = ? AND org_id = ?) AS role`,
+			)
+			.bind(claims.orgId, claims.userId, claims.orgId)
+			.first<{ org: number | null; role: string | null }>();
+		if (!known?.org) {
 			const fetched = await identity.getOrganization(claims.orgId);
 			await db
 				.prepare(
@@ -63,13 +71,15 @@ export async function resolvePrincipal(
 				.bind(claims.orgId, fetched?.name ?? "Organization", fetched?.type ?? "carrier", at)
 				.run();
 		}
-		await db
-			.prepare(
-				`INSERT INTO memberships (user_id, org_id, role, created_at) VALUES (?, ?, ?, ?)
-				 ON CONFLICT (user_id, org_id) DO UPDATE SET role = excluded.role`,
-			)
-			.bind(claims.userId, claims.orgId, claims.orgRole, at)
-			.run();
+		if (known?.role !== claims.orgRole) {
+			await db
+				.prepare(
+					`INSERT INTO memberships (user_id, org_id, role, created_at) VALUES (?, ?, ?, ?)
+					 ON CONFLICT (user_id, org_id) DO UPDATE SET role = excluded.role`,
+				)
+				.bind(claims.userId, claims.orgId, claims.orgRole, at)
+				.run();
+		}
 	}
 
 	const email = user.email?.toLowerCase() ?? null;

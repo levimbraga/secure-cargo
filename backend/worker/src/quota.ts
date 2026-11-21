@@ -109,27 +109,32 @@ export async function analysisAllowance(
 	principal: Principal,
 	at: Date = new Date(),
 ): Promise<AnalysisAllowance> {
-	const settings = await readSettings(db);
-	const user = await db
-		.prepare("SELECT daily_analysis_quota AS q FROM users WHERE id = ?")
-		.bind(principal.userId)
-		.first<{ q: number | null }>();
-	const org = principal.orgId
-		? await db
-				.prepare("SELECT daily_analysis_quota AS q FROM organizations WHERE id = ?")
-				.bind(principal.orgId)
-				.first<{ q: number | null }>()
-		: null;
+	// Independent reads, in parallel: this runs on every /me.
+	const [settings, user, org, spend, usedToday] = await Promise.all([
+		readSettings(db),
+		db
+			.prepare("SELECT daily_analysis_quota AS q FROM users WHERE id = ?")
+			.bind(principal.userId)
+			.first<{ q: number | null }>(),
+		principal.orgId
+			? db
+					.prepare("SELECT daily_analysis_quota AS q FROM organizations WHERE id = ?")
+					.bind(principal.orgId)
+					.first<{ q: number | null }>()
+			: Promise.resolve(null),
+		monthSpendUsd(db, at),
+		analysesToday(db, principal, at),
+	]);
 	const dailyQuota = principal.isDemo
 		? settings.demoSharedDailyQuota
 		: effectiveDailyQuota(user?.q ?? null, org?.q ?? null, settings.defaultDailyQuota);
 	return decideAnalysis({
 		blocked: principal.blocked,
 		killSwitch: settings.killSwitch,
-		monthSpendUsd: await monthSpendUsd(db, at),
+		monthSpendUsd: spend,
 		monthlyCapUsd: settings.monthlyCapUsd,
 		isDemo: principal.isDemo,
-		usedToday: await analysesToday(db, principal, at),
+		usedToday,
 		dailyQuota,
 	});
 }
