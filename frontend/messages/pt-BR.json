@@ -807,7 +807,7 @@
       "none": "Não simulada"
     },
     "fixedTo": "corrigida: passa",
-    "situations": "Passa em {passed} de {total}",
+    "situations": "Aguenta {passed} de {total}",
     "change": {
       "straps": "{unit}: {from} → {to} cintas",
       "restraint": "Amarração: {from} → {to}",
