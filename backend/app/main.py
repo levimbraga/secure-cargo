@@ -8,12 +8,13 @@ import mujoco
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, ConfigDict
 
 from app import __version__
 from app.config import Settings, get_settings
 from app.demo import load_demo_scenarios
 from app.demo.fixtures import Variant
-from app.explorer import BuildError, ExplorerConfig, build, build_draft
+from app.explorer import BuildError, DraftTruck, ExplorerConfig, build, build_draft
 from app.inspection.battery import run_battery
 from app.schemas import (
     DemoScenariosResponse,
@@ -27,6 +28,7 @@ from app.schemas import (
 )
 from app.simulation_service import simulate_cached
 from app.storage import create_storage
+from perception.draft import PerceptionDraft, PhotoAnalysis, Weight, analysis_to_draft
 from physics.live import build_live_model
 from physics.simulate import SimulationError
 from planner.plan import BatteryResponse, Plan, Recommendation, plan, recommend
@@ -188,6 +190,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             live=build_live_model(scenario, event),
         )
 
+    @app.post("/perception/draft", response_model=PerceptionDraft, tags=["inspection"])
+    def perception_draft(body: PerceptionRequest) -> PerceptionDraft:
+        """A photo analysis on the confirmed truck, as the load draft the editor shows.
+
+        Weights come only from ``weight`` (the user's): without it the units have none.
+        """
+        return analysis_to_draft(body.analysis, body.truck, body.weight)
+
     @app.post(
         "/battery",
         response_model=BatteryResponse,
@@ -232,6 +242,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise _unprocessable("simulation_unstable", str(error)) from error
 
     return app
+
+
+class PerceptionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    analysis: PhotoAnalysis
+    truck: DraftTruck
+    weight: Weight | None = None
 
 
 def _unprocessable(code: str, message: str) -> HTTPException:

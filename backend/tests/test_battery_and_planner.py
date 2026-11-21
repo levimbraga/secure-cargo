@@ -29,7 +29,9 @@ def test_the_battery_has_the_seven_standard_situations() -> None:
         "long_vibration",
     )
     trips = {s.id: s.trip for s in SITUATIONS}
-    assert trips["emergency_braking"].speed_kmh == 80 and trips["emergency_braking"].weather == "dry"
+    assert (
+        trips["emergency_braking"].speed_kmh == 80 and trips["emergency_braking"].weather == "dry"
+    )
     assert trips["lane_change"].speed_kmh == 80
     assert trips["sharp_curve"].speed_kmh == 60
     assert trips["mountain_descent"].weather == "heavy_rain"
@@ -52,7 +54,9 @@ def test_the_battery_is_cached_by_input() -> None:
     storage = create_storage("memory://")
     first = run_battery(storage, _draft("default"))
     again = run_battery(storage, _draft("default"))
-    assert [s.scenario_hash for s in first.situations] == [s.scenario_hash for s in again.situations]
+    assert [s.scenario_hash for s in first.situations] == [
+        s.scenario_hash for s in again.situations
+    ]
     assert again.cpu_time_s < first.cpu_time_s
 
 
@@ -68,7 +72,7 @@ def test_the_recommendation_follows_the_rules_without_simulating() -> None:
 
 def test_an_overloaded_axle_moves_the_load() -> None:
     fixed, changes = recommend(_draft("weigh-station.as_loaded"))
-    assert [c.code for c in changes][0] == "balance_axles"
+    assert changes[0].code == "balance_axles"
     assert fixed.units[0].x_m > _draft("weigh-station.as_loaded").units[0].x_m
 
 
