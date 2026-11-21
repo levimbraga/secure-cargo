@@ -43,7 +43,9 @@ Product flow (direction set on 2026-11-20):
 4. **Fix it:** the planner. 5. **Certificate.**
 
 Supported dimensions (every one must appear in the gallery):
-- Truck body: flatbed, box truck, curtain-sider. Size: VUC, toco, truck, semi (axles/limits per CONTRAN 882).
+- Truck body (physics): flatbed, box truck, curtain-sider; the driver picks one of five body styles that map to
+  them: open with low sides, open with a tall rack, platform (flatbeds), box truck, curtain-sider (2026-11-21).
+  Size: VUC, 3/4, toco, truck, semi (axles and limits per CONTRAN 882).
 - Cargo: wood pallet, plastic pallet, crate, drum, steel coil, machine, tall cabinet, sacks, long pipes,
   stacked boxes.
 - Position: against the headboard, with a gap, at the rear, to one side, stacked.
@@ -106,6 +108,28 @@ Only real photo analysis spends credits. Quota: 5 analyses per day per user (ove
 org). Monthly cap US$80 computed from the `usage` table; at the cap or with the kill switch on, analysis answers
 `demo_mode` and the UI offers the sample photos. Results cached by photo hash (a repeated photo is never
 re-billed). Anonymous endpoints rate-limited by IP. Secrets only in Cloudflare/Vercel secret stores.
+
+## Driver result experience (refocus of 2026-11-21; details in the workspace CLAUDE.md)
+Perception accuracy is parked; the product must be complete, intuitive and correct for whatever perception
+returns. Flow on a phone, one question per screen: guided capture (silhouette overlay, client-side quality
+checks: blur, dark, cut off, too far) → truck cards (size, then body style, our own SVG side views with the axle
+count; saved trucks first; the AI preselects) → weight (kg, read from the DANFE invoice, or "I don't know" =
+an estimated range, simulated at its upper bound and labelled "weight estimated") → straight to the result.
+- **Verdict, three states, the same in every list, dashboard and certificate:** `approved` (every situation
+  holds and every rule passes), `holds_noncompliant` (every situation holds, a rule fails: CONTRAN 945, axle or
+  total weight limits of CONTRAN 882, or the legal dimensions), `fails` (any situation fails for a physical
+  reason: slide, tip, roll, hit the headboard, lashing overload; an axle overload is a rule, not physics).
+  Stored in `inspections.verdict` as pass / warning / fail. Never red when every situation holds.
+- **Checklist by theme:** securing (CONTRAN 945), weight and axles (CONTRAN 882), trip physics (7 situations),
+  protection (anti-slip mat, edge protectors, headboard height), dimensions. Art. 8 is never failed on a
+  headboard height nobody gave: it is "to confirm" until the saved truck, the AI or the driver gives one.
+- **Minimal fix:** candidates in order of effort (move units → add straps → anti-slip mat → diagonals → edge
+  protectors), each unneeded step dropped after a re-check without it; never "push against the headboard" and
+  "switch to diagonals" together when one is enough.
+- **Re-inspection:** "I fixed it: take a new photo" creates a new inspection linked to the first
+  (`reinspection_of`); the first becomes "fixed and proven" only when the new one is approved.
+- **My trucks** (`trucks` table, per user), **sharing** (a public token link to a summary page without the driver's
+  name unless the organization allows it, plus a WhatsApp intent).
 
 ## Hackathon rules the code must respect
 - Public GitHub repository created after 2026-11-04 21:00 (Brasília), all commits from then on.
