@@ -803,7 +803,7 @@
       "none": "Not simulated"
     },
     "fixedTo": "fixed: passes",
-    "situations": "{passed} of {total}",
+    "situations": "Passes {passed} of {total}",
     "change": {
       "straps": "{unit}: {from} → {to} straps",
       "restraint": "Restraint: {from} → {to}",

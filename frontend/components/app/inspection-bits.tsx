@@ -58,8 +58,13 @@ export function InspectionListItem({ inspection }: { inspection: InspectionSumma
           <span className="type-small mt-0.5 block truncate text-gray">
             {dates.short(inspection.created_at)} · {truck(inspection.truck_body, inspection.truck_size)}
           </span>
-          <span className="mt-1.5 block">
+          <span className="mt-1.5 flex flex-wrap items-center gap-2">
             <InspectionVerdict inspection={inspection} />
+            {inspection.situations_total !== null && (
+              <span className="type-small text-gray">
+                {t("situations", { passed: inspection.situations_passed ?? 0, total: inspection.situations_total })}
+              </span>
+            )}
           </span>
         </span>
       </Link>
