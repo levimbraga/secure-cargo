@@ -61,7 +61,7 @@ export function AuditTrail({ inspectionId }: { inspectionId: string }) {
       case "weight": {
         const w = value as { kg: number | null; source: string | null };
         const source = w.source && ["measured", "invoice", "estimated"].includes(w.source) ? t(`weightSource.${w.source as "measured"}`) : "";
-        return w.kg ? t("weightBy", { kg: w.kg.toLocaleString(), source }) : "—";
+        return w.kg ? t("weightBy", { kg: format.number(w.kg), source }) : "—";
       }
       default:
         return String(value);

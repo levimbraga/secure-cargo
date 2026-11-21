@@ -56,7 +56,7 @@ function useCertificateText(cert: Certificate | null) {
     [t("truck"), truckName],
     [
       t("cargo"),
-      `${cargoNames ? `${cargoNames} · ` : ""}${t("cargoLine", { weight: (c.cargo.weight_kg ?? 0).toLocaleString(), units: c.cargo.units, source })}`,
+      `${cargoNames ? `${cargoNames} · ` : ""}${t("cargoLine", { weight: format.number(c.cargo.weight_kg ?? 0), units: c.cargo.units, source })}`,
     ],
   ];
   return {

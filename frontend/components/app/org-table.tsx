@@ -1,11 +1,11 @@
 "use client";
 
 import { cn } from "cn";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { InspectionVerdict, useDates, useTruckLabel } from "@/components/app/inspection-bits";
+import { InspectionVerdict, useDates, useInspectionTitle, useTruckLabel } from "@/components/app/inspection-bits";
 import { useFailureLabel } from "@/components/app/manager-bits";
 import { useMe } from "@/components/app/me-provider";
 import { OrgShell } from "@/components/app/org-shell";
@@ -49,6 +49,8 @@ export function OrgTablePage() {
 /** `/app/org/inspections`: every inspection, filtered, searched, paged and exported. Filters live in the URL. */
 function OrgTable() {
   const t = useTranslations("Manager.table");
+  const format = useFormatter();
+  const titleOf = useInspectionTitle();
   const explorer = useTranslations("Explorer.options");
   const failureLabel = useFailureLabel();
   const params = useSearchParams();
@@ -191,12 +193,12 @@ function OrgTable() {
                   <td className={td}>{row.author_name ?? "—"}</td>
                   <td className={td}>
                     <Link href={`/app/inspection?id=${row.id}`} className="font-[450] text-ink hover:underline" onClick={(e) => e.stopPropagation()}>
-                      {row.title || "—"}
+                      {titleOf(row.title) || "—"}
                     </Link>
                     {row.reinspection_of && <span className="type-small ml-2 text-gray">{t("reinspection")}</span>}
                   </td>
                   <td className={cn(td, "text-gray")}>{truck(row.truck_body, row.truck_size, row.truck_json)}</td>
-                  <td className={cn(td, "text-right font-mono text-[0.875rem] whitespace-nowrap")}>{row.cargo_weight_kg ? `${row.cargo_weight_kg.toLocaleString()} kg` : "—"}</td>
+                  <td className={cn(td, "text-right font-mono text-[0.875rem] whitespace-nowrap")}>{row.cargo_weight_kg ? `${format.number(row.cargo_weight_kg)} kg` : "—"}</td>
                   <td className={td}>
                     <InspectionVerdict inspection={row} />
                   </td>

@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import { InspectionVerdict, truckOf, useDates, useTruckLabel } from "@/components/app/inspection-bits";
+import { InspectionVerdict, truckOf, useDates, useInspectionTitle, useTruckLabel } from "@/components/app/inspection-bits";
 import { useFailureLabel } from "@/components/app/manager-bits";
 import { OrgShell } from "@/components/app/org-shell";
 import { TruckArt } from "@/components/inspection/truck-art";
@@ -17,6 +17,7 @@ export function OrgAlertsPage() {
 /** `/app/org/alerts`: failed or out of compliance, with no proven fix after the organization's N hours. */
 function OrgAlerts() {
   const t = useTranslations("Manager.alerts");
+  const titleOf = useInspectionTitle();
   const m = useTranslations("Manager");
   const failures = useFailureLabel();
   const request = useAppApi();
@@ -59,7 +60,7 @@ function OrgAlerts() {
                   </span>
                   <span className="min-w-0">
                     <span className="flex items-center gap-2">
-                      <span className="truncate font-[450] text-ink">{alert.title}</span>
+                      <span className="truncate font-[450] text-ink">{titleOf(alert.title)}</span>
                       {choice && <TruckArt size={choice.size} style={choice.style} className="h-4 w-auto shrink-0 text-gray" />}
                     </span>
                     <span className="type-small mt-0.5 block text-gray">

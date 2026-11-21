@@ -1,12 +1,12 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AuditTrail } from "@/components/app/audit-trail";
 import { CertificatePanel } from "@/components/app/certificate-panel";
-import { InspectionVerdict, truckOf, useDates, useTruckLabel } from "@/components/app/inspection-bits";
+import { InspectionVerdict, truckOf, useDates, useInspectionTitle, useTruckLabel } from "@/components/app/inspection-bits";
 import { useMe } from "@/components/app/me-provider";
 import { ResultView } from "@/components/inspection/result-view";
 import { ShareButton } from "@/components/inspection/share";
@@ -32,6 +32,8 @@ type Results = { asLoaded: Battery | null; plan: Plan | null; before: Battery | 
  */
 export function InspectionView({ id }: { id: string }) {
   const t = useTranslations("Inspection");
+  const format = useFormatter();
+  const titleOf = useInspectionTitle();
   const driver = useTranslations("Driver");
   const { signedIn, ready, me } = useMe();
   const request = useAppApi();
@@ -101,7 +103,7 @@ export function InspectionView({ id }: { id: string }) {
         ← {t("back")}
       </Link>
       <p className="type-label mt-8">{t("label")}</p>
-      <h1 className="type-hero mt-5 text-balance">{inspection.title || t("untitled")}</h1>
+      <h1 className="type-hero mt-5 text-balance">{titleOf(inspection.title) || t("untitled")}</h1>
       <div className="mt-4">
         <InspectionVerdict inspection={inspection} />
       </div>
@@ -122,7 +124,7 @@ export function InspectionView({ id }: { id: string }) {
         <DataRow label={t("rows.created")}>{dates.long(inspection.created_at)}</DataRow>
         <DataRow label={t("rows.truck")}>{truck(inspection.truck_body, inspection.truck_size, inspection.truck_json) || "—"}</DataRow>
         <DataRow label={t("rows.weight")}>
-          {inspection.cargo_weight_kg ? t("weightKg", { weight: inspection.cargo_weight_kg.toLocaleString() }) : "—"}
+          {inspection.cargo_weight_kg ? t("weightKg", { weight: format.number(inspection.cargo_weight_kg) }) : "—"}
           {inspection.weight_source ? ` · ${t(`weightSource.${inspection.weight_source}`)}` : ""}
         </DataRow>
         <DataRow label={t("rows.status")}>{t(`status.${inspection.status}`)}</DataRow>

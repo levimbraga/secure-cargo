@@ -1,11 +1,12 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { TruckArt } from "@/components/inspection/truck-art";
 import { VerdictBadge } from "@/components/ui/verdict-badge";
 import { Link } from "@/i18n/navigation";
 import { type InspectionSummary, usePhotoSrc, type Verdict } from "@/lib/app-api";
+import { localTitle } from "@/lib/demo-titles";
 import { choiceOf, type TruckChoice } from "@/lib/inspection/trucks";
 
 /** The stored verdict as a badge: pass (approved), warning (out of compliance), fail. */
@@ -47,6 +48,13 @@ export function truckOf(inspection: Pick<InspectionSummary, "truck_body" | "truc
   return choiceOf(inspection.truck_size ? { body: (inspection.truck_body ?? "flatbed") as "flatbed", size: inspection.truck_size as "toco" } : null);
 }
 
+/** An inspection's title in the page's language (the seeded demo titles are translated). */
+export function useInspectionTitle() {
+  const locale = useLocale();
+  const titles = useTranslations("Scenario.titles");
+  return (title: string | null | undefined): string | null => (title ? localTitle(title, locale, (id) => titles(id as never)) : null);
+}
+
 export function useTruckLabel() {
   const t = useTranslations("Driver");
   return (body: string | null, size: string | null, truckJson?: string | null) => {
@@ -66,6 +74,7 @@ export function useDates() {
 
 /** One inspection in a phone-first list: photo, title, date and truck, verdict. The row is the link. */
 export function InspectionListItem({ inspection }: { inspection: InspectionSummary }) {
+  const titleOf = useInspectionTitle();
   const t = useTranslations("Inspection");
   const dates = useDates();
   const truck = useTruckLabel();
@@ -81,7 +90,7 @@ export function InspectionListItem({ inspection }: { inspection: InspectionSumma
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
-            <span className="block truncate font-[450] text-ink">{inspection.title || t("untitled")}</span>
+            <span className="block truncate font-[450] text-ink">{titleOf(inspection.title) || t("untitled")}</span>
             {truckOf(inspection) && (
               <TruckArt size={truckOf(inspection)!.size} style={truckOf(inspection)!.style} className="h-4 w-auto shrink-0 text-gray" />
             )}

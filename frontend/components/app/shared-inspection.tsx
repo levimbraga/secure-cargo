@@ -9,6 +9,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { useInspectionTitle } from "@/components/app/inspection-bits";
 import { StateBadge } from "@/components/inspection/result-view";
 import { TruckArt } from "@/components/inspection/truck-art";
 import { pill } from "@/components/ui/pill";
@@ -46,6 +47,7 @@ function SharedInspection({ token }: { token: string }) {
   const names = useTranslations("Driver");
   const flow = useTranslations("Flow");
   const format = useFormatter();
+  const titleOf = useInspectionTitle();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [missing, setMissing] = useState(false);
 
@@ -76,7 +78,7 @@ function SharedInspection({ token }: { token: string }) {
   return (
     <article data-testid="shared-inspection" data-state={state}>
       <p className="type-label">{t("label")}</p>
-      <h1 className="type-hero mt-4 text-balance">{summary.title || flow("steps.result")}</h1>
+      <h1 className="type-hero mt-4 text-balance">{titleOf(summary.title) || flow("steps.result")}</h1>
       <p className="type-small mt-2 text-gray">
         {format.dateTime(new Date(summary.created_at), { day: "2-digit", month: "short", year: "numeric" })}
         {summary.org_name ? ` · ${summary.org_name}` : ""}

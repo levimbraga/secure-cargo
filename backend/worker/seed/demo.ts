@@ -57,16 +57,22 @@ interface DemoPerson {
 }
 
 const PEOPLE: DemoPerson[] = [
-	{ key: "manager", firstName: "Marina", lastName: "(demo insurer)", email: "manager@demo.securecargo.app", role: "org:admin" },
-	{ key: "driver", firstName: "Rafael", lastName: "(demo driver)", email: "driver@demo.securecargo.app", role: "org:member" },
-	{ key: "driver2", firstName: "Joana", lastName: "(demo driver)", email: "driver2@demo.securecargo.app", role: "org:member" },
-	{ key: "driver3", firstName: "Tiago", lastName: "(demo driver)", email: "driver3@demo.securecargo.app", role: "org:member" },
+	{ key: "manager", firstName: "Marina", lastName: "(demo)", email: "manager@demo.securecargo.app", role: "org:admin" },
+	{ key: "driver", firstName: "Rafael", lastName: "(demo)", email: "driver@demo.securecargo.app", role: "org:member" },
+	{ key: "driver2", firstName: "Joana", lastName: "(demo)", email: "driver2@demo.securecargo.app", role: "org:member" },
+	{ key: "driver3", firstName: "Tiago", lastName: "(demo)", email: "driver3@demo.securecargo.app", role: "org:member" },
 ];
 const ORG = { name: "Demo Insurer", type: "insurer" as const };
 
 async function findOrCreateUser(person: DemoPerson): Promise<string> {
 	const { data } = await clerk.users.getUserList({ emailAddress: [person.email] });
-	if (data[0]) return data[0].id;
+	if (data[0]) {
+		// Names read the same in both languages ("Rafael (demo)"); keep Clerk in step with the seed.
+		if (data[0].firstName !== person.firstName || data[0].lastName !== person.lastName) {
+			await clerk.users.updateUser(data[0].id, { firstName: person.firstName, lastName: person.lastName });
+		}
+		return data[0].id;
+	}
 	const user = await clerk.users.createUser({
 		emailAddress: [person.email],
 		firstName: person.firstName,
