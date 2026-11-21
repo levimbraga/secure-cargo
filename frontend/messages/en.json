@@ -242,7 +242,7 @@
       },
       "eu-curtain-pallets": {
         "as_loaded": "The pallets slide through the curtain and off the trailer: a code L curtain holds nothing, a dangerous deficiency at a roadside check.",
-        "fixed": "With three straps over each pallet they hold in the curve and the load complies with Annex III."
+        "fixed": "On anti-slip mats, with two straps over each pallet, they hold in the curve and the load complies with Annex III."
       }
     },
     "explanations": {
@@ -299,8 +299,8 @@
         "fixed": "Each coil sits in a cradle and is chained through its eye with four chains, two forward and two back."
       },
       "eu-curtain-pallets": {
-        "as_loaded": "Eleven 1.5 t pallets against the headboard of a 13.6 m code L curtain-sider, with no lashing. Friction alone (μ 0.45) is less than the 0.5 g the EU rules ask for sideways.",
-        "fixed": "Three straps over each pallet press it down: friction and straps hold more than half its weight sideways (EN 12195-1)."
+        "as_loaded": "Eleven 700 kg pallets against the headboard of a 13.6 m code L curtain-sider, with no lashing. Friction alone (μ 0.45) is less than the 0.5 g the EU rules ask for sideways.",
+        "fixed": "Anti-slip mats (μ 0.6) and two straps over each pallet hold more than half its weight sideways and 0.8 of it forward with the headboard (EN 12195-1)."
       }
     },
     "variant": {

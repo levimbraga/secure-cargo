@@ -65,12 +65,12 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 | Option | Examples |
 |---|---|
 | none | box-truck, curtain-sider, eu-curtain-pallets, full-trip, potholed-road, sharp-curve, steel-coil |
-| top_over | anti-slip-mat, curtain-sider, dirt-road, emergency-braking, eu-curtain-pallets, full-trip, overloaded-strap, sharp-curve, us-steel-coils |
+| top_over | anti-slip-mat, curtain-sider, dirt-road, emergency-braking, full-trip, overloaded-strap, sharp-curve, us-steel-coils |
 | direct | dirt-road |
 | chain | potholed-road, weigh-station |
 | rope | rope-lashing |
 | blocking | box-truck |
-| mat | anti-slip-mat, rope-lashing |
+| mat | anti-slip-mat, eu-curtain-pallets, rope-lashing |
 | cradle | overloaded-strap, steel-coil |
 | cradle_chain | us-steel-coils |
 

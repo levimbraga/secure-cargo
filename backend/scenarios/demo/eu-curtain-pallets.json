@@ -1,7 +1,7 @@
 {
   "id": "eu-curtain-pallets",
   "title": "Pallets in a code L curtain-sider (EU rules)",
-  "summary": "Eleven 1.5 t pallets against the headboard of a 13.6 m code L curtain-sider, no lashing: in a sharp curve at 70 km/h they slide through the curtain and off the trailer. A code L curtain holds nothing (EN 12642), so a roadside check would class it a dangerous deficiency. With three straps over each pallet they hold and the load complies; a code XL body holds them only if the load fills its width.",
+  "summary": "Eleven 700 kg pallets against the headboard of a 13.6 m code L curtain-sider, no lashing: in a sharp curve at 70 km/h they slide through the curtain and off the trailer. A code L curtain holds nothing (EN 12642), so a roadside check would class it a dangerous deficiency. On anti-slip mats with two straps over each pallet they hold in all seven situations and the load complies; a code XL body holds them only if the load fills its width.",
   "event": {
     "kind": "sharp_curve",
     "segments": null,
@@ -672,7 +672,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           6.2,
           0.0,
@@ -693,7 +693,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           5.0,
           0.0,
@@ -714,7 +714,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           3.8,
           0.0,
@@ -735,7 +735,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           2.6,
           0.0,
@@ -756,7 +756,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           1.4,
           0.0,
@@ -777,7 +777,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           0.2,
           0.0,
@@ -798,7 +798,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           -1.0,
           0.0,
@@ -819,7 +819,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           -2.2,
           0.0,
@@ -840,7 +840,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           -3.4,
           0.0,
@@ -861,7 +861,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           -4.6,
           0.0,
@@ -882,7 +882,7 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           -5.8,
           0.0,
@@ -898,7 +898,7 @@
   "fixed": {
     "schema_version": 1,
     "id": "eu-curtain-pallets-fixed",
-    "name": "Eleven pallets, three straps each",
+    "name": "Eleven pallets on mats, two straps each",
     "bed": {
       "length_m": 13.6,
       "width_m": 2.48,
@@ -1556,13 +1556,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           6.2,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -1577,13 +1577,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           5.0,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -1598,13 +1598,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           3.8,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -1619,13 +1619,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           2.6,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -1640,13 +1640,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           1.4,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -1661,13 +1661,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           0.2,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -1682,13 +1682,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           -1.0,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -1703,13 +1703,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           -2.2,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -1724,13 +1724,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           -3.4,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -1745,13 +1745,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           -4.6,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       },
@@ -1766,13 +1766,13 @@
           1.0,
           1.1
         ],
-        "mass_kg": 1500.0,
+        "mass_kg": 700.0,
         "position_m": [
           -5.8,
           0.0,
           0.0
         ],
-        "material": "sawn_wood",
+        "material": "rubber_mat",
         "friction_coefficient": null,
         "stackable": true
       }
@@ -1795,21 +1795,6 @@
       },
       {
         "id": "pallet-1-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-1",
-        "anchor_ids": [
-          "L32",
-          "R32"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-1-s3",
         "kind": "strap",
         "routing": "top_over",
         "unit_id": "pallet-1",
@@ -1844,21 +1829,6 @@
         "routing": "top_over",
         "unit_id": "pallet-2",
         "anchor_ids": [
-          "L29",
-          "R29"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-2-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-2",
-        "anchor_ids": [
           "L30",
           "R30"
         ],
@@ -1885,21 +1855,6 @@
       },
       {
         "id": "pallet-3-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-3",
-        "anchor_ids": [
-          "L26",
-          "R26"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-3-s3",
         "kind": "strap",
         "routing": "top_over",
         "unit_id": "pallet-3",
@@ -1934,21 +1889,6 @@
         "routing": "top_over",
         "unit_id": "pallet-4",
         "anchor_ids": [
-          "L23",
-          "R23"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-4-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-4",
-        "anchor_ids": [
           "L24",
           "R24"
         ],
@@ -1975,21 +1915,6 @@
       },
       {
         "id": "pallet-5-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-5",
-        "anchor_ids": [
-          "L20",
-          "R20"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-5-s3",
         "kind": "strap",
         "routing": "top_over",
         "unit_id": "pallet-5",
@@ -2024,21 +1949,6 @@
         "routing": "top_over",
         "unit_id": "pallet-6",
         "anchor_ids": [
-          "L17",
-          "R17"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-6-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-6",
-        "anchor_ids": [
           "L18",
           "R18"
         ],
@@ -2065,21 +1975,6 @@
       },
       {
         "id": "pallet-7-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-7",
-        "anchor_ids": [
-          "L14",
-          "R14"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-7-s3",
         "kind": "strap",
         "routing": "top_over",
         "unit_id": "pallet-7",
@@ -2114,21 +2009,6 @@
         "routing": "top_over",
         "unit_id": "pallet-8",
         "anchor_ids": [
-          "L11",
-          "R11"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-8-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-8",
-        "anchor_ids": [
           "L12",
           "R12"
         ],
@@ -2155,21 +2035,6 @@
       },
       {
         "id": "pallet-9-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-9",
-        "anchor_ids": [
-          "L8",
-          "R8"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-9-s3",
         "kind": "strap",
         "routing": "top_over",
         "unit_id": "pallet-9",
@@ -2204,21 +2069,6 @@
         "routing": "top_over",
         "unit_id": "pallet-10",
         "anchor_ids": [
-          "L5",
-          "R5"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-10-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-10",
-        "anchor_ids": [
           "L6",
           "R6"
         ],
@@ -2249,21 +2099,6 @@
         "routing": "top_over",
         "unit_id": "pallet-11",
         "anchor_ids": [
-          "L2",
-          "R2"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-11-s3",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-11",
-        "anchor_ids": [
           "L3",
           "R3"
         ],
@@ -2276,7 +2111,7 @@
     ]
   },
   "explorer": {
-    "as_loaded": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=none&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=1500&country=EU",
-    "fixed": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=top_over&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=1500&straps=3.3.3.3.3.3.3.3.3.3.3&country=EU"
+    "as_loaded": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=none&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=700&country=EU",
+    "fixed": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=mat&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=700&straps=2.2.2.2.2.2.2.2.2.2.2&country=EU"
   }
 }

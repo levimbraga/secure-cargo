@@ -371,7 +371,7 @@
     {
       "id": "eu-curtain-pallets",
       "title": "Pallets in a code L curtain-sider (EU rules)",
-      "summary": "Eleven 1.5 t pallets against the headboard of a 13.6 m code L curtain-sider, no lashing: in a sharp curve at 70 km/h they slide through the curtain and off the trailer. A code L curtain holds nothing (EN 12642), so a roadside check would class it a dangerous deficiency. With three straps over each pallet they hold and the load complies; a code XL body holds them only if the load fills its width.",
+      "summary": "Eleven 700 kg pallets against the headboard of a 13.6 m code L curtain-sider, no lashing: in a sharp curve at 70 km/h they slide through the curtain and off the trailer. A code L curtain holds nothing (EN 12642), so a roadside check would class it a dangerous deficiency. On anti-slip mats with two straps over each pallet they hold in all seven situations and the load complies; a code XL body holds them only if the load fills its width.",
       "event": {
         "kind": "sharp_curve",
         "segments": null,
@@ -384,15 +384,15 @@
       "variants": {
         "as_loaded": {
           "file": "eu-curtain-pallets.as_loaded.json",
-          "scenario_hash": "92de628ee26cfdb08df4be732a6d1ec912b1f2d4b58a2c93a354edb4875c2a7e",
+          "scenario_hash": "628129173e73c2c547e52e6744e75aeeb23019447be8d0db3f1348ef10577d7e",
           "status": "fail",
-          "explorer": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=none&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=1500&country=EU"
+          "explorer": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=none&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=700&country=EU"
         },
         "fixed": {
           "file": "eu-curtain-pallets.fixed.json",
-          "scenario_hash": "dd7486aed1c6d085bbfa1a6d74d99e395739273cddcef9a38860976e195114f2",
+          "scenario_hash": "1706b8e8a9eec9fa7d7c5f14b6c697991b9aad581918360ef729921e4e257e8b",
           "status": "pass",
-          "explorer": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=top_over&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=1500&straps=3.3.3.3.3.3.3.3.3.3.3&country=EU"
+          "explorer": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=mat&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=700&straps=2.2.2.2.2.2.2.2.2.2.2&country=EU"
         }
       }
     }

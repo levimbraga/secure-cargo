@@ -242,7 +242,7 @@
       },
       "eu-curtain-pallets": {
         "as_loaded": "Os paletes escorregam pela lona e caem do semirreboque: lona código L não segura nada, deficiência perigosa numa fiscalização.",
-        "fixed": "Com três cintas por cima de cada palete, eles seguram na curva e a carga cumpre o Anexo III."
+        "fixed": "Sobre mantas antiderrapantes, com duas cintas por cima de cada palete, eles seguram na curva e a carga cumpre o Anexo III."
       }
     },
     "explanations": {
@@ -299,8 +299,8 @@
         "fixed": "Cada bobina fica num berço e é acorrentada pelo furo com quatro correntes, duas para a frente e duas para trás."
       },
       "eu-curtain-pallets": {
-        "as_loaded": "Onze paletes de 1,5 t encostados na parede frontal de um sider código L de 13,6 m, sem amarração. Só o atrito (μ 0,45) é menos que os 0,5 g que as regras europeias pedem para os lados.",
-        "fixed": "Três cintas por cima de cada palete o pressionam para baixo: atrito e cintas seguram mais da metade do peso para os lados (EN 12195-1)."
+        "as_loaded": "Onze paletes de 700 kg encostados na parede frontal de um sider código L de 13,6 m, sem amarração. Só o atrito (μ 0,45) é menos que os 0,5 g que as regras europeias pedem para os lados.",
+        "fixed": "Mantas antiderrapantes (μ 0,6) e duas cintas por cima de cada palete seguram mais da metade do peso para os lados e, com a parede frontal, 0,8 dele para a frente (EN 12195-1)."
       }
     },
     "variant": {

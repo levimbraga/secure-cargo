@@ -789,10 +789,6 @@
             {
               "example": "us-steel-coils",
               "variant": "as_loaded"
-            },
-            {
-              "example": "eu-curtain-pallets",
-              "variant": "fixed"
             }
           ]
         },
@@ -849,6 +845,10 @@
             },
             {
               "example": "anti-slip-mat",
+              "variant": "fixed"
+            },
+            {
+              "example": "eu-curtain-pallets",
               "variant": "fixed"
             }
           ]

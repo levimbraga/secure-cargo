@@ -3568,7 +3568,7 @@
      "unit_id": "pallet-1",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.00492,
+     "value": 11.53185,
      "limit": 0.0,
      "message": "Unit pallet-1 left the truck bed."
     },
@@ -3578,9 +3578,9 @@
      "unit_id": "pallet-1",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.00492,
+     "value": 11.53185,
      "limit": 0.05,
-     "message": "Unit pallet-1 slid 900.5 cm."
+     "message": "Unit pallet-1 slid 1153.2 cm."
     },
     {
      "code": "unit_tilted",
@@ -3588,9 +3588,9 @@
      "unit_id": "pallet-1",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 92.275,
+     "value": 93.485,
      "limit": 5.0,
-     "message": "Unit pallet-1 tilted 92.3 degrees."
+     "message": "Unit pallet-1 tilted 93.5 degrees."
     },
     {
      "code": "unit_left_bed",
@@ -3598,7 +3598,7 @@
      "unit_id": "pallet-2",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.05101,
+     "value": 11.06702,
      "limit": 0.0,
      "message": "Unit pallet-2 left the truck bed."
     },
@@ -3608,9 +3608,9 @@
      "unit_id": "pallet-2",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.05101,
+     "value": 11.06702,
      "limit": 0.05,
-     "message": "Unit pallet-2 slid 905.1 cm."
+     "message": "Unit pallet-2 slid 1106.7 cm."
     },
     {
      "code": "unit_tilted",
@@ -3618,9 +3618,9 @@
      "unit_id": "pallet-2",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 92.189,
+     "value": 93.721,
      "limit": 5.0,
-     "message": "Unit pallet-2 tilted 92.2 degrees."
+     "message": "Unit pallet-2 tilted 93.7 degrees."
     },
     {
      "code": "unit_left_bed",
@@ -3628,7 +3628,7 @@
      "unit_id": "pallet-3",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.05128,
+     "value": 10.49219,
      "limit": 0.0,
      "message": "Unit pallet-3 left the truck bed."
     },
@@ -3638,9 +3638,9 @@
      "unit_id": "pallet-3",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.05128,
+     "value": 10.49219,
      "limit": 0.05,
-     "message": "Unit pallet-3 slid 905.1 cm."
+     "message": "Unit pallet-3 slid 1049.2 cm."
     },
     {
      "code": "unit_tilted",
@@ -3648,9 +3648,9 @@
      "unit_id": "pallet-3",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 92.2,
+     "value": 92.574,
      "limit": 5.0,
-     "message": "Unit pallet-3 tilted 92.2 degrees."
+     "message": "Unit pallet-3 tilted 92.6 degrees."
     },
     {
      "code": "unit_left_bed",
@@ -3658,7 +3658,7 @@
      "unit_id": "pallet-4",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.0515,
+     "value": 10.32033,
      "limit": 0.0,
      "message": "Unit pallet-4 left the truck bed."
     },
@@ -3668,9 +3668,9 @@
      "unit_id": "pallet-4",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.0515,
+     "value": 10.32033,
      "limit": 0.05,
-     "message": "Unit pallet-4 slid 905.2 cm."
+     "message": "Unit pallet-4 slid 1032.0 cm."
     },
     {
      "code": "unit_tilted",
@@ -3678,9 +3678,9 @@
      "unit_id": "pallet-4",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 92.208,
+     "value": 92.963,
      "limit": 5.0,
-     "message": "Unit pallet-4 tilted 92.2 degrees."
+     "message": "Unit pallet-4 tilted 93.0 degrees."
     },
     {
      "code": "unit_left_bed",
@@ -3688,7 +3688,7 @@
      "unit_id": "pallet-5",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.33461,
+     "value": 10.12997,
      "limit": 0.0,
      "message": "Unit pallet-5 left the truck bed."
     },
@@ -3698,9 +3698,9 @@
      "unit_id": "pallet-5",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.33461,
+     "value": 10.12997,
      "limit": 0.05,
-     "message": "Unit pallet-5 slid 933.5 cm."
+     "message": "Unit pallet-5 slid 1013.0 cm."
     },
     {
      "code": "unit_tilted",
@@ -3708,9 +3708,9 @@
      "unit_id": "pallet-5",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 93.518,
+     "value": 93.232,
      "limit": 5.0,
-     "message": "Unit pallet-5 tilted 93.5 degrees."
+     "message": "Unit pallet-5 tilted 93.2 degrees."
     },
     {
      "code": "unit_left_bed",
@@ -3718,7 +3718,7 @@
      "unit_id": "pallet-6",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.33493,
+     "value": 9.96479,
      "limit": 0.0,
      "message": "Unit pallet-6 left the truck bed."
     },
@@ -3728,9 +3728,9 @@
      "unit_id": "pallet-6",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.33493,
+     "value": 9.96479,
      "limit": 0.05,
-     "message": "Unit pallet-6 slid 933.5 cm."
+     "message": "Unit pallet-6 slid 996.5 cm."
     },
     {
      "code": "unit_tilted",
@@ -3738,9 +3738,9 @@
      "unit_id": "pallet-6",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 93.495,
+     "value": 92.211,
      "limit": 5.0,
-     "message": "Unit pallet-6 tilted 93.5 degrees."
+     "message": "Unit pallet-6 tilted 92.2 degrees."
     },
     {
      "code": "unit_left_bed",
@@ -3748,7 +3748,7 @@
      "unit_id": "pallet-7",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.33558,
+     "value": 9.48326,
      "limit": 0.0,
      "message": "Unit pallet-7 left the truck bed."
     },
@@ -3758,9 +3758,9 @@
      "unit_id": "pallet-7",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.33558,
+     "value": 9.48326,
      "limit": 0.05,
-     "message": "Unit pallet-7 slid 933.6 cm."
+     "message": "Unit pallet-7 slid 948.3 cm."
     },
     {
      "code": "unit_tilted",
@@ -3768,9 +3768,9 @@
      "unit_id": "pallet-7",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 93.474,
+     "value": 92.081,
      "limit": 5.0,
-     "message": "Unit pallet-7 tilted 93.5 degrees."
+     "message": "Unit pallet-7 tilted 92.1 degrees."
     },
     {
      "code": "unit_left_bed",
@@ -3778,7 +3778,7 @@
      "unit_id": "pallet-8",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.33088,
+     "value": 9.68526,
      "limit": 0.0,
      "message": "Unit pallet-8 left the truck bed."
     },
@@ -3788,9 +3788,9 @@
      "unit_id": "pallet-8",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.33088,
+     "value": 9.68526,
      "limit": 0.05,
-     "message": "Unit pallet-8 slid 933.1 cm."
+     "message": "Unit pallet-8 slid 968.5 cm."
     },
     {
      "code": "unit_tilted",
@@ -3798,9 +3798,9 @@
      "unit_id": "pallet-8",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 93.462,
+     "value": 92.305,
      "limit": 5.0,
-     "message": "Unit pallet-8 tilted 93.5 degrees."
+     "message": "Unit pallet-8 tilted 92.3 degrees."
     },
     {
      "code": "unit_left_bed",
@@ -3808,7 +3808,7 @@
      "unit_id": "pallet-9",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.33674,
+     "value": 9.18277,
      "limit": 0.0,
      "message": "Unit pallet-9 left the truck bed."
     },
@@ -3818,9 +3818,9 @@
      "unit_id": "pallet-9",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.33674,
+     "value": 9.18277,
      "limit": 0.05,
-     "message": "Unit pallet-9 slid 933.7 cm."
+     "message": "Unit pallet-9 slid 918.3 cm."
     },
     {
      "code": "unit_tilted",
@@ -3828,9 +3828,9 @@
      "unit_id": "pallet-9",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 93.409,
+     "value": 93.028,
      "limit": 5.0,
-     "message": "Unit pallet-9 tilted 93.4 degrees."
+     "message": "Unit pallet-9 tilted 93.0 degrees."
     },
     {
      "code": "unit_left_bed",
@@ -3838,7 +3838,7 @@
      "unit_id": "pallet-10",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.34438,
+     "value": 9.30873,
      "limit": 0.0,
      "message": "Unit pallet-10 left the truck bed."
     },
@@ -3848,9 +3848,9 @@
      "unit_id": "pallet-10",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 9.34438,
+     "value": 9.30873,
      "limit": 0.05,
-     "message": "Unit pallet-10 slid 934.4 cm."
+     "message": "Unit pallet-10 slid 930.9 cm."
     },
     {
      "code": "unit_tilted",
@@ -3858,9 +3858,9 @@
      "unit_id": "pallet-10",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 94.116,
+     "value": 93.769,
      "limit": 5.0,
-     "message": "Unit pallet-10 tilted 94.1 degrees."
+     "message": "Unit pallet-10 tilted 93.8 degrees."
     },
     {
      "code": "unit_left_bed",
@@ -3868,7 +3868,7 @@
      "unit_id": "pallet-11",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 10.9292,
+     "value": 10.85767,
      "limit": 0.0,
      "message": "Unit pallet-11 left the truck bed."
     },
@@ -3878,9 +3878,9 @@
      "unit_id": "pallet-11",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 10.9292,
+     "value": 10.85767,
      "limit": 0.05,
-     "message": "Unit pallet-11 slid 1092.9 cm."
+     "message": "Unit pallet-11 slid 1085.8 cm."
     },
     {
      "code": "unit_tilted",
@@ -3888,9 +3888,9 @@
      "unit_id": "pallet-11",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 93.661,
+     "value": 93.44,
      "limit": 5.0,
-     "message": "Unit pallet-11 tilted 93.7 degrees."
+     "message": "Unit pallet-11 tilted 93.4 degrees."
     }
    ]
   },
@@ -3898,8 +3898,8 @@
    {
     "id": "pallet-1",
     "friction_coefficient": 0.45,
-    "max_slide_m": 9.00492,
-    "max_tilt_deg": 92.275,
+    "max_slide_m": 11.53185,
+    "max_tilt_deg": 93.485,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
@@ -3907,8 +3907,8 @@
    {
     "id": "pallet-2",
     "friction_coefficient": 0.45,
-    "max_slide_m": 9.05101,
-    "max_tilt_deg": 92.189,
+    "max_slide_m": 11.06702,
+    "max_tilt_deg": 93.721,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
@@ -3916,8 +3916,8 @@
    {
     "id": "pallet-3",
     "friction_coefficient": 0.45,
-    "max_slide_m": 9.05128,
-    "max_tilt_deg": 92.2,
+    "max_slide_m": 10.49219,
+    "max_tilt_deg": 92.574,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
@@ -3925,8 +3925,8 @@
    {
     "id": "pallet-4",
     "friction_coefficient": 0.45,
-    "max_slide_m": 9.0515,
-    "max_tilt_deg": 92.208,
+    "max_slide_m": 10.32033,
+    "max_tilt_deg": 92.963,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
@@ -3934,8 +3934,8 @@
    {
     "id": "pallet-5",
     "friction_coefficient": 0.45,
-    "max_slide_m": 9.33461,
-    "max_tilt_deg": 93.518,
+    "max_slide_m": 10.12997,
+    "max_tilt_deg": 93.232,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
@@ -3943,8 +3943,8 @@
    {
     "id": "pallet-6",
     "friction_coefficient": 0.45,
-    "max_slide_m": 9.33493,
-    "max_tilt_deg": 93.495,
+    "max_slide_m": 9.96479,
+    "max_tilt_deg": 92.211,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
@@ -3952,8 +3952,8 @@
    {
     "id": "pallet-7",
     "friction_coefficient": 0.45,
-    "max_slide_m": 9.33558,
-    "max_tilt_deg": 93.474,
+    "max_slide_m": 9.48326,
+    "max_tilt_deg": 92.081,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
@@ -3961,8 +3961,8 @@
    {
     "id": "pallet-8",
     "friction_coefficient": 0.45,
-    "max_slide_m": 9.33088,
-    "max_tilt_deg": 93.462,
+    "max_slide_m": 9.68526,
+    "max_tilt_deg": 92.305,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
@@ -3970,8 +3970,8 @@
    {
     "id": "pallet-9",
     "friction_coefficient": 0.45,
-    "max_slide_m": 9.33674,
-    "max_tilt_deg": 93.409,
+    "max_slide_m": 9.18277,
+    "max_tilt_deg": 93.028,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
@@ -3979,8 +3979,8 @@
    {
     "id": "pallet-10",
     "friction_coefficient": 0.45,
-    "max_slide_m": 9.34438,
-    "max_tilt_deg": 94.116,
+    "max_slide_m": 9.30873,
+    "max_tilt_deg": 93.769,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
@@ -3988,17 +3988,17 @@
    {
     "id": "pallet-11",
     "friction_coefficient": 0.45,
-    "max_slide_m": 10.9292,
-    "max_tilt_deg": 93.661,
+    "max_slide_m": 10.85767,
+    "max_tilt_deg": 93.44,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": true
    }
   ],
   "margins": {
-   "max_slide_m": 10.9292,
+   "max_slide_m": 11.53185,
    "slide_limit_m": 0.05,
-   "max_tilt_deg": 94.116,
+   "max_tilt_deg": 93.769,
    "peak_friction_use": 1.0,
    "peak_lashing_force_n": null,
    "peak_lashing_force_ratio": null,
@@ -4007,15 +4007,15 @@
   "axle_loads": [
    {
     "axle_group_id": "tractor",
-    "load_kg": 10323.1,
+    "load_kg": 7164.1,
     "limit_kg": 17000.0,
-    "ratio": 0.6072
+    "ratio": 0.4214
    },
    {
     "axle_group_id": "trailer",
-    "load_kg": 15376.9,
+    "load_kg": 9735.9,
     "limit_kg": 25500.0,
-    "ratio": 0.603
+    "ratio": 0.3818
    }
   ],
   "en_12195_1": [
@@ -4130,203 +4130,203 @@
   "units": [
    {
     "id": "pallet-1",
-    "friction_coefficient": 0.45,
-    "max_slide_m": 4e-05,
-    "max_tilt_deg": 0.002,
-    "peak_friction_use": 1.0,
-    "hit_headboard": false,
-    "left_bed": false
-   },
-   {
-    "id": "pallet-2",
-    "friction_coefficient": 0.45,
-    "max_slide_m": 8e-05,
-    "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.996,
-    "hit_headboard": false,
-    "left_bed": false
-   },
-   {
-    "id": "pallet-3",
-    "friction_coefficient": 0.45,
-    "max_slide_m": 0.00012,
-    "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.982,
-    "hit_headboard": false,
-    "left_bed": false
-   },
-   {
-    "id": "pallet-4",
-    "friction_coefficient": 0.45,
-    "max_slide_m": 0.00011,
+    "friction_coefficient": 0.6,
+    "max_slide_m": 7e-05,
     "max_tilt_deg": 0.003,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": false
    },
    {
-    "id": "pallet-5",
-    "friction_coefficient": 0.45,
-    "max_slide_m": 2e-05,
+    "id": "pallet-2",
+    "friction_coefficient": 0.6,
+    "max_slide_m": 0.0001,
+    "max_tilt_deg": 0.004,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-3",
+    "friction_coefficient": 0.6,
+    "max_slide_m": 0.00015,
     "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.552,
+    "peak_friction_use": 0.951,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-4",
+    "friction_coefficient": 0.6,
+    "max_slide_m": 0.0002,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 0.976,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-5",
+    "friction_coefficient": 0.6,
+    "max_slide_m": 0.00029,
+    "max_tilt_deg": 0.004,
+    "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "pallet-6",
-    "friction_coefficient": 0.45,
-    "max_slide_m": 2e-05,
-    "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.552,
+    "friction_coefficient": 0.6,
+    "max_slide_m": 0.00034,
+    "max_tilt_deg": 0.004,
+    "peak_friction_use": 0.72,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "pallet-7",
-    "friction_coefficient": 0.45,
-    "max_slide_m": 2e-05,
+    "friction_coefficient": 0.6,
+    "max_slide_m": 0.00029,
     "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.552,
+    "peak_friction_use": 0.992,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "pallet-8",
-    "friction_coefficient": 0.45,
-    "max_slide_m": 2e-05,
-    "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.552,
+    "friction_coefficient": 0.6,
+    "max_slide_m": 0.00021,
+    "max_tilt_deg": 0.003,
+    "peak_friction_use": 0.998,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "pallet-9",
-    "friction_coefficient": 0.45,
+    "friction_coefficient": 0.6,
     "max_slide_m": 2e-05,
     "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.552,
+    "peak_friction_use": 0.34,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "pallet-10",
-    "friction_coefficient": 0.45,
+    "friction_coefficient": 0.6,
     "max_slide_m": 2e-05,
     "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.552,
+    "peak_friction_use": 0.34,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "pallet-11",
-    "friction_coefficient": 0.45,
+    "friction_coefficient": 0.6,
     "max_slide_m": 2e-05,
     "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.552,
+    "peak_friction_use": 0.34,
     "hit_headboard": false,
     "left_bed": false
    }
   ],
   "margins": {
-   "max_slide_m": 0.00012,
+   "max_slide_m": 0.00034,
    "slide_limit_m": 0.05,
-   "max_tilt_deg": 0.003,
+   "max_tilt_deg": 0.004,
    "peak_friction_use": 1.0,
-   "peak_lashing_force_n": 3002.6,
-   "peak_lashing_force_ratio": 0.1201,
-   "lashing_capacity_reserve": 0.8799
+   "peak_lashing_force_n": 3006.9,
+   "peak_lashing_force_ratio": 0.1203,
+   "lashing_capacity_reserve": 0.8797
   },
   "axle_loads": [
    {
     "axle_group_id": "tractor",
-    "load_kg": 10323.1,
+    "load_kg": 7164.1,
     "limit_kg": 17000.0,
-    "ratio": 0.6072
+    "ratio": 0.4214
    },
    {
     "axle_group_id": "trailer",
-    "load_kg": 15376.9,
+    "load_kg": 9735.9,
     "limit_kg": 25500.0,
-    "ratio": 0.603
+    "ratio": 0.3818
    }
   ],
   "en_12195_1": [
    {
     "unit_id": "pallet-1",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    },
    {
     "unit_id": "pallet-2",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    },
    {
     "unit_id": "pallet-3",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    },
    {
     "unit_id": "pallet-4",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    },
    {
     "unit_id": "pallet-5",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    },
    {
     "unit_id": "pallet-6",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    },
    {
     "unit_id": "pallet-7",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    },
    {
     "unit_id": "pallet-8",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    },
    {
     "unit_id": "pallet-9",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    },
    {
     "unit_id": "pallet-10",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    },
    {
     "unit_id": "pallet-11",
     "method": "top_over",
-    "installed_lashings": 3,
-    "required_lashings": 3,
+    "installed_lashings": 2,
+    "required_lashings": 1,
     "meets_standard": true
    }
   ]
