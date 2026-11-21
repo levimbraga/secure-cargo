@@ -1571,7 +1571,7 @@
     "fix": {
       "title": "How to make it safe",
       "sentence": "The smallest set of changes, tried in order of effort: move the units, add straps, an anti-slip mat, diagonals, edge protectors. Any step that is not needed is left out.",
-      "recommended": "What to change",
+      "recommended": "What to change (tested)",
       "applied": "What was changed",
       "simulate": "Simulate with the fix",
       "reinspect": "I fixed it: take a new photo",
@@ -1582,7 +1582,10 @@
       "variant": "Which version",
       "as_loaded": "As loaded",
       "fixed": "With the fix",
-      "advice": "Advice: changes no physics, protects the straps and the cargo."
+      "advice": "Advice: changes no physics, protects the straps and the cargo.",
+      "finding": "Finding the smallest fix and testing it in the 7 situations…",
+      "find": "Find the fix",
+      "holdsOnly": "With these changes the load arrives intact, but it still breaks a rule: see the checklist of the fixed version."
     },
     "sim": {
       "open": "Open the simulation",

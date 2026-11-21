@@ -157,7 +157,7 @@ export function Checklist({
       </h2>
       <p className="type-small mt-1 text-gray">{t("sentence")}</p>
       <div className="mt-4 border-t border-hairline">
-        <Theme id="securing" title={t("themes.securing")} marks={[...contranMarks, ...en.map((c) => (c.meets_standard === false ? "fail" : "pass") as Mark)]}>
+        <Theme id="securing" title={t("themes.securing")} marks={[...contranMarks, ...en.map((c) => (c.meets_standard === false ? "advice" : "pass") as Mark)]}>
           {battery.contran_945.map((check) => (
             <Item
               key={check.code}
@@ -178,7 +178,8 @@ export function Checklist({
             <Item
               key={ids.join("-")}
               testId={`en-${ids[0]}`}
-              mark={check.meets_standard === null ? "na" : check.meets_standard ? "pass" : "fail"}
+              // EN 12195-1 is the standard behind the rule, not the rule: the simulation decides.
+              mark={check.meets_standard === null ? "na" : check.meets_standard ? "pass" : "advice"}
               title={
                 check.meets_standard === null
                   ? t("en.notAssessed", { unit: units(ids) })
@@ -187,7 +188,7 @@ export function Checklist({
                     : t(check.meets_standard ? "en.meets" : "en.fails", { unit: units(ids) })
               }
               detail={t("en.explain")}
-              article="EN 12195-1"
+              article={`EN 12195-1 · ${t("advice")}`}
               fix={t("en.fix")}
             />
           ))}

@@ -35,6 +35,7 @@ import { weightsComplete } from "./review";
 import { fetchSample, type Sample, type SampleData } from "./samples";
 import { choiceOf, draftTruck, type SavedTruck, sizeOfGuess, styleOfGuess, type TruckChoice } from "./trucks";
 import type { AnalysisAnswer, Battery, PerceptionDraft, Plan } from "./types";
+import { verdictOf } from "./verdict";
 import { estimateRange, simulatedWeight, type WeightRange, type WeightSource, withWeights } from "./weight";
 
 export type Step = "garage" | "photos" | "truck" | "weight" | "result" | "edit";
@@ -428,7 +429,7 @@ export function useInspectionFlow() {
 
   async function simulate(draft: LoadDraft, kg: number, title?: string) {
     const { inspectionId, sample, notes, weightSource, range, truck } = latest.current;
-    patch({ busy: "battery", startedAt: Date.now(), error: null, step: "result", battery: null, plan: null, shareUrl: null });
+    patch({ draft, busy: "battery", startedAt: Date.now(), error: null, step: "result", battery: null, plan: null, shareUrl: null });
     try {
       let battery: Battery;
       if (inspectionId) {
@@ -448,6 +449,8 @@ export function useInspectionFlow() {
         battery = await runBattery(draft);
       }
       patch({ battery, busy: null, startedAt: null });
+      // Not approved: the smallest fix is found and proven straight away.
+      if (verdictOf(battery).state !== "approved") void applyFix(draft);
     } catch (cause) {
       patch({ busy: null, startedAt: null, error: errorCode(cause) });
     }
@@ -495,8 +498,10 @@ export function useInspectionFlow() {
     await simulate(draft, editorTotal, title);
   }
 
-  async function applyFix() {
-    const { draft, inspectionId, sample, truck, totalKg } = latest.current;
+  /** `fromDraft`: the load just simulated (the state may not have caught up with it yet). */
+  async function applyFix(fromDraft?: LoadDraft) {
+    const { inspectionId, sample, truck, totalKg } = latest.current;
+    const draft = fromDraft ?? latest.current.draft;
     if (!draft) return;
     patch({ busy: "plan", startedAt: Date.now(), error: null });
     try {
@@ -613,7 +618,7 @@ export function useInspectionFlow() {
     edit,
     openEditor,
     confirm,
-    applyFix,
+    applyFix: () => applyFix(),
     share,
     setHeadboard,
     startReinspection,

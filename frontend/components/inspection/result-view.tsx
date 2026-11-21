@@ -116,15 +116,6 @@ export function ResultView({
   const format = useFormatter();
   const kg = (value: number) => format.number(Math.round(value));
 
-  // A fix that just arrived is shown at once.
-  const seenPlan = useRef(plan);
-  useEffect(() => {
-    if (plan && plan !== seenPlan.current && plan.battery) {
-      seenPlan.current = plan;
-      setVariant("fixed");
-    }
-  }, [plan]);
-
   const open = (id: SituationId) => {
     setSimulation(id);
     requestAnimationFrame(() => simRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
@@ -205,7 +196,24 @@ export function ResultView({
       <Checklist battery={shown} onOpenSituation={open} onHeadboard={variant === "as_loaded" ? onHeadboard : undefined} readOnly={readOnly} />
 
       {variant === "as_loaded" && !readOnly && (
-        <FixPanel battery={battery} plan={plan} fixing={fixing} startedAt={fixStartedAt} onApplyFix={onApplyFix} onReinspect={onReinspect} error={error} />
+        <FixPanel
+          battery={battery}
+          plan={plan}
+          fixing={fixing}
+          startedAt={fixStartedAt}
+          onApplyFix={onApplyFix}
+          onShowFixed={() => {
+            setVariant("fixed");
+            const worst = plan?.battery?.worst ?? null;
+            setSimulation(null);
+            requestAnimationFrame(() => {
+              if (worst) open(worst);
+              else window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+          }}
+          onReinspect={onReinspect}
+          error={error}
+        />
       )}
       {(readOnly || variant === "fixed") && plan && plan.changes.length > 0 && <ChangeList changes={plan.changes} title={t("fix.applied")} />}
     </div>
@@ -409,6 +417,7 @@ function FixPanel({
   fixing,
   startedAt,
   onApplyFix,
+  onShowFixed,
   onReinspect,
   error,
 }: {
@@ -417,6 +426,7 @@ function FixPanel({
   fixing: boolean;
   startedAt: number | null;
   onApplyFix?: () => void;
+  onShowFixed?: () => void;
   onReinspect?: () => void;
   error: string | null;
 }) {
@@ -430,7 +440,6 @@ function FixPanel({
       </section>
     );
   }
-  const changes = plan?.changes ?? battery.recommendation?.changes ?? [];
   const proven = plan?.verified && plan.battery;
   return (
     <section className="mt-14" aria-labelledby="fix-title" data-testid="fix-panel" data-needed="true">
@@ -438,23 +447,30 @@ function FixPanel({
         {t("title")}
       </h2>
       <p className="type-body mt-3 text-pretty">{t("sentence")}</p>
-      <ChangeList changes={changes} title={plan ? t("applied") : t("recommended")} />
+      {fixing && <Running startedAt={startedAt} label={t("finding")} />}
+      {plan && <ChangeList changes={plan.changes} title={t("recommended")} />}
       {plan && (
         <p className={`type-body mt-6 ${proven ? "text-pass" : "text-ink"}`} data-testid="fix-result">
-          {proven ? t("proven") : t("notProven", { passed: plan.battery ? physicsPassed(plan.battery) : 0, total: plan.battery?.situations.length ?? 7 })}
+          {proven
+            ? t("proven")
+            : plan.battery && verdictOf(plan.battery).state === "holds_noncompliant"
+              ? t("holdsOnly")
+              : t("notProven", { passed: plan.battery ? physicsPassed(plan.battery) : 0, total: plan.battery?.situations.length ?? 7 })}
         </p>
       )}
-      {fixing ? (
-        <Running startedAt={startedAt} label={flow("fix.running")} />
-      ) : (
+      {!fixing && (
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          {!plan && (
-            <button type="button" onClick={onApplyFix} className={pill({ className: "h-14 px-6 text-base" })} data-testid="apply-fix">
+          {plan?.battery ? (
+            <button type="button" onClick={onShowFixed} className={pill({ className: "h-14 px-6 text-base" })} data-testid="apply-fix">
               {t("simulate")}
+            </button>
+          ) : (
+            <button type="button" onClick={onApplyFix} className={pill({ className: "h-14 px-6 text-base" })} data-testid="find-fix">
+              {t("find")}
             </button>
           )}
           {onReinspect && (
-            <button type="button" onClick={onReinspect} className={pill({ variant: plan ? "primary" : "secondary", className: "h-14 px-6 text-base" })} data-testid="reinspect">
+            <button type="button" onClick={onReinspect} className={pill({ variant: "secondary", className: "h-14 px-6 text-base" })} data-testid="reinspect">
               {t("reinspect")}
             </button>
           )}

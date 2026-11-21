@@ -1571,7 +1571,7 @@
     "fix": {
       "title": "Como deixar segura",
       "sentence": "O menor conjunto de mudanças, testado em ordem de esforço: mover os volumes, mais cintas, manta antiderrapante, diagonais, cantoneiras. O que não for necessário fica de fora.",
-      "recommended": "O que mudar",
+      "recommended": "O que mudar (testado)",
       "applied": "O que foi mudado",
       "simulate": "Simular com a correção",
       "reinspect": "Corrigi: tirar nova foto",
@@ -1582,7 +1582,10 @@
       "variant": "Qual versão",
       "as_loaded": "Como carregada",
       "fixed": "Com a correção",
-      "advice": "Conselho: não muda a física, protege as cintas e a carga."
+      "advice": "Conselho: não muda a física, protege as cintas e a carga.",
+      "finding": "Procurando a menor correção e testando nas 7 situações…",
+      "find": "Encontrar a correção",
+      "holdsOnly": "Com essas mudanças a carga chega inteira, mas ainda fica fora de uma regra: veja o checklist da versão corrigida."
     },
     "sim": {
       "open": "Abrir a simulação",
