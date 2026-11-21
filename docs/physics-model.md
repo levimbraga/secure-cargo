@@ -40,8 +40,13 @@ trip event ─────► event profile ────────────
   cylinder up to `a / g = sqrt(2 R h − h²) / (R − h)`.
 - **Bodies.** A flatbed has a 1.2 m headboard. A box body has a front wall, side walls and rear doors; a
   curtain-sider has the front wall and rear doors, and its curtains do not restrain anything. The front
-  wall of both is rated at 0.4 × payload (EN 12642 code L, at most 5,000 daN); more than that is
-  `headboard_overloaded`.
+  wall of both is rated at 0.4 × payload, at most 5,000 daN; more than that is `headboard_overloaded`.
+  **Assumption:** that the wall is an EN 12642 code L wall. The standard itself (EN 12642:2016) is
+  paywalled and was not read; the figures come from two official guidelines that agree: the European
+  Commission's "Cargo securing for road transport: 2014 European best practices guidelines" (section 2.1,
+  the table of wall strengths, and 2.2 "Headboard": 0.4 P, at most 5 000 daN; curtains of a code L
+  curtain-sider count for 0 % of the payload) and the IRU's "International Guidelines on Safe Load
+  Securing for Road Transport" (2014, section 2.2). A real truck's wall may differ; the result says so.
 - Walls and blocks stand one contact margin (2 mm) outside their nominal faces, so cargo loaded right
   against them rests there with no force until something pushes it.
 - A **full trip** is several events in a row on the same surface and in the same weather; the truck slows

@@ -146,8 +146,10 @@ TRUCKS: dict[Size, TruckSpec] = {
     ),
 }
 FLATBED_HEADBOARD_M = 1.2
-# EN 12642 code L: the front wall of a box or curtain-sider body holds 0.4 P (P = payload),
-# at most 5,000 daN.
+# ASSUMPTION: the front wall of a box or curtain-sider body is an EN 12642 code L wall, rated for
+# 0.4 P (P = payload), at most 5,000 daN. EN 12642:2016 itself is paywalled; the figures are those
+# of the EU's 2014 cargo-securing guidelines (sections 2.1 and 2.2) and the IRU's 2014 guidelines
+# (section 2.2), which agree (checked 2026-11-21). A real truck's wall may be weaker or stronger.
 FRONT_WALL_SHARE_OF_PAYLOAD = 0.4
 FRONT_WALL_MAX_N = 50_000.0
 
