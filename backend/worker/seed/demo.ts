@@ -15,6 +15,7 @@
  * Names are fictional and the emails are on our own demo subdomain (no mailbox; nothing is ever sent to
  * them): no real personal data.
  */
+import { randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -70,7 +71,9 @@ async function findOrCreateUser(person: DemoPerson): Promise<string> {
 		emailAddress: [person.email],
 		firstName: person.firstName,
 		lastName: person.lastName,
-		skipPasswordRequirement: true,
+		// Password is the only sign-in method, so Clerk needs one: a random one nobody keeps.
+		// Demo accounts enter only through the sign-in tickets the Worker mints.
+		password: `${randomBytes(24).toString("base64url")}-Demo9`,
 		publicMetadata: { demo: true },
 	});
 	return user.id;
