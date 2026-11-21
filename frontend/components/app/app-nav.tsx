@@ -16,6 +16,7 @@ function useItems(): Item[] {
   const t = useTranslations("AppNav");
   const { me } = useMe();
   const items: Item[] = [{ href: "/app", label: t("inspections") }];
+  if (me) items.push({ href: "/app/trucks", label: t("trucks") });
   if (me?.org?.role === "org_admin" || (me?.is_platform_admin && me.org)) items.push({ href: "/app/org", label: t("org") });
   if (me?.is_platform_admin) items.push({ href: "/app/admin", label: t("admin") });
   items.push(

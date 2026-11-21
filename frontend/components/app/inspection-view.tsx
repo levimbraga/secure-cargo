@@ -4,9 +4,11 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { InspectionVerdict, useDates, useTruckLabel } from "@/components/app/inspection-bits";
+import { InspectionVerdict, truckOf, useDates, useTruckLabel } from "@/components/app/inspection-bits";
 import { useMe } from "@/components/app/me-provider";
 import { ResultView } from "@/components/inspection/result-view";
+import { ShareButton } from "@/components/inspection/share";
+import { verdictOf } from "@/lib/inspection/verdict";
 import { DataRow } from "@/components/ui/data-row";
 import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
@@ -20,7 +22,7 @@ export function InspectionFromQuery() {
   return <InspectionView key={id} id={id} />;
 }
 
-type Results = { asLoaded: Battery | null; plan: Plan | null };
+type Results = { asLoaded: Battery | null; plan: Plan | null; before: Battery | null };
 
 /**
  * One saved inspection: its photos, what was loaded, the battery of seven situations with the
@@ -28,7 +30,8 @@ type Results = { asLoaded: Battery | null; plan: Plan | null };
  */
 export function InspectionView({ id }: { id: string }) {
   const t = useTranslations("Inspection");
-  const { signedIn, ready } = useMe();
+  const driver = useTranslations("Driver");
+  const { signedIn, ready, me } = useMe();
   const request = useAppApi();
   const dates = useDates();
   const truck = useTruckLabel();
@@ -54,6 +57,10 @@ export function InspectionView({ id }: { id: string }) {
           return request<Battery>(`/inspections/${encodeURIComponent(id)}/battery/${kind}`).catch(() => null);
         };
         const [asLoaded, fixed] = await Promise.all([read("as_loaded"), read("fixed")]);
+        // A re-inspection shows the first inspection's result beside its own.
+        const before = value.reinspection_of
+          ? await request<Battery>(`/inspections/${encodeURIComponent(value.reinspection_of)}/battery/as_loaded`).catch(() => null)
+          : null;
         const fix = value.fixes[0];
         const fixedScenario = value.scenarios.find((s) => s.kind === "fixed");
         const plan: Plan | null =
@@ -66,7 +73,7 @@ export function InspectionView({ id }: { id: string }) {
                 battery: fixed,
               }
             : null;
-        if (!cancelled) setResults({ asLoaded, plan });
+        if (!cancelled) setResults({ asLoaded, plan, before });
       })
       .catch((error: unknown) => {
         if (!cancelled && error instanceof AppApiError) setMissing(true);
@@ -106,9 +113,10 @@ export function InspectionView({ id }: { id: string }) {
         <DataRow label={t("rows.author")}>{inspection.author_name ?? "—"}</DataRow>
         {inspection.org_name && <DataRow label={t("rows.organization")}>{inspection.org_name}</DataRow>}
         <DataRow label={t("rows.created")}>{dates.long(inspection.created_at)}</DataRow>
-        <DataRow label={t("rows.truck")}>{truck(inspection.truck_body, inspection.truck_size) || "—"}</DataRow>
+        <DataRow label={t("rows.truck")}>{truck(inspection.truck_body, inspection.truck_size, inspection.truck_json) || "—"}</DataRow>
         <DataRow label={t("rows.weight")}>
           {inspection.cargo_weight_kg ? t("weightKg", { weight: inspection.cargo_weight_kg.toLocaleString() }) : "—"}
+          {inspection.weight_source ? ` · ${t(`weightSource.${inspection.weight_source}`)}` : ""}
         </DataRow>
         <DataRow label={t("rows.status")}>{t(`status.${inspection.status}`)}</DataRow>
         {inspection.situations_total !== null && (
@@ -130,15 +138,65 @@ export function InspectionView({ id }: { id: string }) {
         </div>
       )}
 
+      {(inspection.reinspection_of || (inspection.reinspections?.length ?? 0) > 0) && (
+        <ul className="mt-6 space-y-1" data-testid="reinspection-links">
+          {inspection.reinspection_of && (
+            <li>
+              <Link href={`/app/inspection?id=${inspection.reinspection_of}`} className="type-small text-ink underline decoration-1 underline-offset-4">
+                {t("reinspectionOf")}
+              </Link>
+            </li>
+          )}
+          {inspection.reinspections?.map((child) => (
+            <li key={child.id}>
+              <Link href={`/app/inspection?id=${child.id}`} className="type-small text-ink underline decoration-1 underline-offset-4">
+                {t("reinspection", { verdict: child.verdict ? driver(`verdict.${child.verdict === "pass" ? "approved" : child.verdict === "warning" ? "holds_noncompliant" : "fails"}.badge`) : "—" })}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <div className="mt-14">
         {results === null ? (
           <p className="type-small text-gray">…</p>
         ) : results.asLoaded ? (
-          <ResultView battery={results.asLoaded} plan={results.plan} readOnly />
+          <ResultView
+            battery={results.asLoaded}
+            plan={results.plan}
+            readOnly
+            truck={truckOf(inspection)}
+            weightSource={inspection.weight_source ?? null}
+            range={inspection.weight_range_json ? JSON.parse(inspection.weight_range_json) : null}
+            before={results.before}
+            provenBy={
+              inspection.proven_by ? (
+                <Link href={`/app/inspection?id=${inspection.proven_by}`} className="type-small text-pass underline decoration-1 underline-offset-4" data-testid="proven-by">
+                  {driver("verdict.proven")}
+                </Link>
+              ) : null
+            }
+            share={
+              me && (inspection.author_id === me.user.id || me.org?.role === "org_admin") ? (
+                <ShareButton
+                  verdict={driver(`verdict.${verdictOf(results.asLoaded).state}.badge`)}
+                  getUrl={async () => {
+                    const { path } = await request<{ path: string }>(`/inspections/${encodeURIComponent(inspection.id)}/share`, { method: "POST" });
+                    return `${window.location.origin}${document.documentElement.lang === "pt-BR" ? "/pt-BR" : ""}${path}`;
+                  }}
+                />
+              ) : null
+            }
+          />
         ) : (
           <p className="type-body text-gray">{t("notSimulated")}</p>
         )}
       </div>
+      {me && inspection.author_id === me.user.id && results?.asLoaded && verdictOf(results.asLoaded).state !== "approved" && !inspection.proven_by && (
+        <Link href={`/app/new?reinspect=${inspection.id}`} className={pill({ className: "mt-8 h-12 px-5" })} data-testid="reinspect-link">
+          {driver("fix.reinspect")}
+        </Link>
+      )}
     </>
   );
 }
