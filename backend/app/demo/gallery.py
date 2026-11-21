@@ -206,4 +206,63 @@ GALLERY: tuple[GalleryExample, ...] = (
             "&weather=heavy_rain&event=full_trip&n=6&straps=3.3.3.3.3.3"
         ),
     ),
+    GalleryExample(
+        id="curtain-sider",
+        title="Curtain-sider",
+        summary=(
+            "Drums of oil standing against one side of a light (3/4) curtain-sider with nothing "
+            "over them: in a sharp curve at 60 km/h they slide across the deck, because the "
+            "curtain is weather protection, not a restraint. Two straps over each drum hold them "
+            "where they stand."
+        ),
+        as_loaded_name="Drums against the curtain, no lashing",
+        fixed_name="Drums under two straps each",
+        as_loaded=_config(
+            "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=none"
+            "&speed=60&road=curvy&event=sharp_curve"
+        ),
+        fixed=_config(
+            "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=top_over"
+            "&speed=60&road=curvy&event=sharp_curve"
+        ),
+    ),
+    GalleryExample(
+        id="potholed-road",
+        title="Potholed road",
+        summary=(
+            "Long steel pipes lying loose on a muddy deck, on a potholed road after rain: the "
+            "pothole throws them up, they roll and slide into the headboard. Chains, forward "
+            "and back on both sides of each pipe, hold them on any deck."
+        ),
+        as_loaded_name="Pipes lying loose",
+        fixed_name="Pipes chained",
+        as_loaded=_config(
+            "size=truck&cargo=long_pipes&position=gap&restraint=none&speed=60&road=potholed"
+            "&weather=mud&event=pothole"
+        ),
+        fixed=_config(
+            "size=truck&cargo=long_pipes&position=gap&restraint=chain&speed=60&road=potholed"
+            "&weather=mud&event=pothole"
+        ),
+    ),
+    GalleryExample(
+        id="overloaded-strap",
+        title="Overloaded strap",
+        summary=(
+            "A 10 t steel coil held only by two straps over the top, on a semi-trailer: in an "
+            "emergency stop from 80 km/h it rolls against the straps and pulls them past their "
+            "rated capacity. A cradle stops the roll, and the same two straps only keep it in "
+            "place."
+        ),
+        as_loaded_name="Coil under two straps",
+        fixed_name="Coil in a cradle, two straps",
+        as_loaded=_config(
+            "size=semi&cargo=steel_coil&position=gap&restraint=top_over&speed=80"
+            "&event=emergency_braking"
+        ),
+        fixed=_config(
+            "size=semi&cargo=steel_coil&position=gap&restraint=cradle&speed=80"
+            "&event=emergency_braking&straps=2"
+        ),
+    ),
 )

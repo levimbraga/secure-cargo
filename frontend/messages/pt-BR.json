@@ -164,7 +164,10 @@
       "box-truck": "Caminhão baú",
       "dirt-road": "Estrada de terra",
       "anti-slip-mat": "Tapete antiderrapante",
-      "full-trip": "Viagem completa"
+      "full-trip": "Viagem completa",
+      "curtain-sider": "Sider (lona)",
+      "potholed-road": "Estrada esburacada",
+      "overloaded-strap": "Cinta sobrecarregada"
     },
     "events": {
       "emergency-braking": "Freada de emergência a {speed} km/h, pista seca",
@@ -175,7 +178,10 @@
       "box-truck": "Freada de emergência a {speed} km/h com neblina",
       "dirt-road": "Estrada de terra a {speed} km/h, depois uma freada de emergência",
       "anti-slip-mat": "Freada de emergência a {speed} km/h, pista molhada",
-      "full-trip": "Descendo a serra até o porto a {speed} km/h, chuva forte"
+      "full-trip": "Descendo a serra até o porto a {speed} km/h, chuva forte",
+      "curtain-sider": "Curva fechada a {speed} km/h",
+      "potholed-road": "Buraco a {speed} km/h, carroceria com lama",
+      "overloaded-strap": "Frenagem de emergência a {speed} km/h, pista seca"
     },
     "sentences": {
       "emergency-braking": {
@@ -213,6 +219,18 @@
       "full-trip": {
         "as_loaded": "Sem amarração, os caixotes avançam na descida e deslizam de vez na freada final.",
         "fixed": "Com três cintas por caixote, nada se mexe durante a viagem inteira."
+      },
+      "curtain-sider": {
+        "as_loaded": "Sem nada por cima, os tambores deslizam pela carroceria na curva: a lona não os segura.",
+        "fixed": "Com duas cintas cada, os tambores ficam onde estão."
+      },
+      "potholed-road": {
+        "as_loaded": "O buraco joga os tubos soltos para cima; eles rolam e deslizam até o painel frontal.",
+        "fixed": "Acorrentados para a frente e para trás dos dois lados, os tubos não se mexem."
+      },
+      "overloaded-strap": {
+        "as_loaded": "A bobina rola contra as duas cintas e as puxa além da capacidade nominal.",
+        "fixed": "No berço a bobina não rola; as duas cintas só a mantêm no lugar."
       }
     },
     "explanations": {
@@ -251,6 +269,18 @@
       "full-trip": {
         "as_loaded": "Seis caixotes de 1,5 t numa carreta, sem amarração porque são pesados. O peso não ajuda: o atrito cresce com ele, e a inércia também.",
         "fixed": "Três cintas sobre cada caixote, o número que a EN 12195-1 pede. Elas seguram na descida, na lombada e na freada de emergência."
+      },
+      "curtain-sider": {
+        "as_loaded": "Oito tambores de 200 litros encostados num lado de um sider leve, sem amarração. A lona do sider protege do tempo: numa carroceria código L ela conta 0 % da carga útil como contenção.",
+        "fixed": "Os mesmos tambores com duas cintas por cima de cada um, pressionando-os contra o piso."
+      },
+      "potholed-road": {
+        "as_loaded": "Três tubos de aço de 6 m soltos numa carroceria com lama (atrito limitado a 0,2). O buraco os levanta, e tubos redondos rolam depois que se mexem.",
+        "fixed": "Quatro correntes em cada tubo, para a frente e para trás dos dois lados: seguram pela resistência, seja qual for o piso."
+      },
+      "overloaded-strap": {
+        "as_loaded": "Uma bobina de 10 t atravessada numa carreta sob duas cintas por cima. Nada à frente segura o rolamento, então as cintas o recebem.",
+        "fixed": "Dois calços de 20 cm seguram a bobina num berço; as mesmas duas cintas a prendem."
       }
     },
     "variant": {

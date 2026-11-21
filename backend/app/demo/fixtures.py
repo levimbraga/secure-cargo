@@ -20,6 +20,9 @@ DEMO_ORDER = (
     "dirt-road",
     "anti-slip-mat",
     "full-trip",
+    "curtain-sider",
+    "potholed-road",
+    "overloaded-strap",
 )
 
 Variant = Literal["as_loaded", "fixed"]

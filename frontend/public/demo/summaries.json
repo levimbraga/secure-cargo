@@ -2413,5 +2413,906 @@
     "meets_standard": true
    }
   ]
+ },
+ "curtain-sider.as_loaded": {
+  "event": {
+   "kind": "sharp_curve",
+   "segments": null,
+   "speed_kmh": 60.0,
+   "road_surface": "dry",
+   "fog": false,
+   "curve_radius_m": 60.0,
+   "grade_percent": null
+  },
+  "duration_s": 5.4,
+  "engine": {
+   "mujoco_version": "4.0.1",
+   "timestep_s": 0.002
+  },
+  "profile": {
+   "speed_kmh": 60.0,
+   "road_surface": "dry",
+   "tyre_friction": 0.756,
+   "curve_radius_m": 60.0,
+   "peak_forward_g": 0.0,
+   "peak_lateral_g": 0.472,
+   "peak_vertical_g": 0.0
+  },
+  "verdict": {
+   "status": "fail",
+   "findings": [
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "drum-1",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 1.16865,
+     "limit": 0.05,
+     "message": "Unit drum-1 slid 116.9 cm."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "drum-2",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 1.09026,
+     "limit": 0.05,
+     "message": "Unit drum-2 slid 109.0 cm."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "drum-3",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 1.1133,
+     "limit": 0.05,
+     "message": "Unit drum-3 slid 111.3 cm."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "drum-4",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 1.03361,
+     "limit": 0.05,
+     "message": "Unit drum-4 slid 103.4 cm."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "drum-5",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 1.13292,
+     "limit": 0.05,
+     "message": "Unit drum-5 slid 113.3 cm."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "drum-6",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 1.10212,
+     "limit": 0.05,
+     "message": "Unit drum-6 slid 110.2 cm."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "drum-7",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 1.05796,
+     "limit": 0.05,
+     "message": "Unit drum-7 slid 105.8 cm."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "drum-8",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 0.99887,
+     "limit": 0.05,
+     "message": "Unit drum-8 slid 99.9 cm."
+    }
+   ]
+  },
+  "units": [
+   {
+    "id": "drum-1",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 1.16865,
+    "max_tilt_deg": 0.494,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-2",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 1.09026,
+    "max_tilt_deg": 0.5,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-3",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 1.1133,
+    "max_tilt_deg": 0.62,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-4",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 1.03361,
+    "max_tilt_deg": 0.398,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-5",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 1.13292,
+    "max_tilt_deg": 0.424,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-6",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 1.10212,
+    "max_tilt_deg": 0.309,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-7",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 1.05796,
+    "max_tilt_deg": 0.399,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-8",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.99887,
+    "max_tilt_deg": 0.403,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   }
+  ],
+  "margins": {
+   "max_slide_m": 1.16865,
+   "slide_limit_m": 0.05,
+   "max_tilt_deg": 0.62,
+   "peak_friction_use": 1.0,
+   "peak_lashing_force_n": null,
+   "peak_lashing_force_ratio": null,
+   "lashing_capacity_reserve": null
+  },
+  "axle_loads": [
+   {
+    "axle_group_id": "front",
+    "load_kg": 2919.0,
+    "limit_kg": 6000.0,
+    "ratio": 0.4865
+   },
+   {
+    "axle_group_id": "rear",
+    "load_kg": 3281.0,
+    "limit_kg": 10000.0,
+    "ratio": 0.3281
+   }
+  ],
+  "en_12195_1": [
+   {
+    "unit_id": "drum-1",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "drum-2",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "drum-3",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "drum-4",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "drum-5",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "drum-6",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "drum-7",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "drum-8",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   }
+  ]
+ },
+ "curtain-sider.fixed": {
+  "event": {
+   "kind": "sharp_curve",
+   "segments": null,
+   "speed_kmh": 60.0,
+   "road_surface": "dry",
+   "fog": false,
+   "curve_radius_m": 60.0,
+   "grade_percent": null
+  },
+  "duration_s": 5.4,
+  "engine": {
+   "mujoco_version": "4.0.1",
+   "timestep_s": 0.002
+  },
+  "profile": {
+   "speed_kmh": 60.0,
+   "road_surface": "dry",
+   "tyre_friction": 0.756,
+   "curve_radius_m": 60.0,
+   "peak_forward_g": 0.0,
+   "peak_lateral_g": 0.472,
+   "peak_vertical_g": 0.0
+  },
+  "verdict": {
+   "status": "pass",
+   "findings": []
+  },
+  "units": [
+   {
+    "id": "drum-1",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00062,
+    "max_tilt_deg": 0.074,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-2",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00055,
+    "max_tilt_deg": 0.08,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-3",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00052,
+    "max_tilt_deg": 0.074,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-4",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00046,
+    "max_tilt_deg": 0.077,
+    "peak_friction_use": 0.993,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-5",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00067,
+    "max_tilt_deg": 0.074,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-6",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00058,
+    "max_tilt_deg": 0.08,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-7",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00158,
+    "max_tilt_deg": 0.061,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "drum-8",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00154,
+    "max_tilt_deg": 0.067,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   }
+  ],
+  "margins": {
+   "max_slide_m": 0.00158,
+   "slide_limit_m": 0.05,
+   "max_tilt_deg": 0.08,
+   "peak_friction_use": 1.0,
+   "peak_lashing_force_n": 3042.3,
+   "peak_lashing_force_ratio": 0.1217,
+   "lashing_capacity_reserve": 0.8783
+  },
+  "axle_loads": [
+   {
+    "axle_group_id": "front",
+    "load_kg": 2919.0,
+    "limit_kg": 6000.0,
+    "ratio": 0.4865
+   },
+   {
+    "axle_group_id": "rear",
+    "load_kg": 3281.0,
+    "limit_kg": 10000.0,
+    "ratio": 0.3281
+   }
+  ],
+  "en_12195_1": [
+   {
+    "unit_id": "drum-1",
+    "method": "top_over",
+    "installed_lashings": 2,
+    "required_lashings": 1,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "drum-2",
+    "method": "top_over",
+    "installed_lashings": 2,
+    "required_lashings": 1,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "drum-3",
+    "method": "top_over",
+    "installed_lashings": 2,
+    "required_lashings": 1,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "drum-4",
+    "method": "top_over",
+    "installed_lashings": 2,
+    "required_lashings": 1,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "drum-5",
+    "method": "top_over",
+    "installed_lashings": 2,
+    "required_lashings": 1,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "drum-6",
+    "method": "top_over",
+    "installed_lashings": 2,
+    "required_lashings": 1,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "drum-7",
+    "method": "top_over",
+    "installed_lashings": 2,
+    "required_lashings": 1,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "drum-8",
+    "method": "top_over",
+    "installed_lashings": 2,
+    "required_lashings": 1,
+    "meets_standard": true
+   }
+  ]
+ },
+ "potholed-road.as_loaded": {
+  "event": {
+   "kind": "pothole",
+   "segments": null,
+   "speed_kmh": 60.0,
+   "road_surface": "mud",
+   "fog": false,
+   "curve_radius_m": null,
+   "grade_percent": null
+  },
+  "duration_s": 2.5,
+  "engine": {
+   "mujoco_version": "4.0.1",
+   "timestep_s": 0.002
+  },
+  "profile": {
+   "speed_kmh": 60.0,
+   "road_surface": "mud",
+   "tyre_friction": 0.55,
+   "cargo_friction_cap": 0.2,
+   "reaction_time_s": 1.0,
+   "pothole_depth_m": 0.05,
+   "road_roughness_grms": 0.37,
+   "peak_forward_g": 0.35,
+   "peak_lateral_g": 0.0,
+   "peak_vertical_g": 3.172
+  },
+  "verdict": {
+   "status": "fail",
+   "findings": [
+    {
+     "code": "unit_rolled",
+     "severity": "fail",
+     "unit_id": "pipe-1",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 0.51432,
+     "limit": 0.05,
+     "message": "Unit pipe-1 rolled 51.4 cm."
+    },
+    {
+     "code": "unit_hit_headboard",
+     "severity": "fail",
+     "unit_id": "pipe-1",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 200818.1,
+     "limit": 0.0,
+     "message": "Unit pipe-1 slid into the headboard with 200.8 kN."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pipe-2",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 0.50425,
+     "limit": 0.05,
+     "message": "Unit pipe-2 slid 50.4 cm."
+    },
+    {
+     "code": "unit_hit_headboard",
+     "severity": "fail",
+     "unit_id": "pipe-2",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 200828.0,
+     "limit": 0.0,
+     "message": "Unit pipe-2 slid into the headboard with 200.8 kN."
+    },
+    {
+     "code": "unit_rolled",
+     "severity": "fail",
+     "unit_id": "pipe-3",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 0.51434,
+     "limit": 0.05,
+     "message": "Unit pipe-3 rolled 51.4 cm."
+    },
+    {
+     "code": "unit_hit_headboard",
+     "severity": "fail",
+     "unit_id": "pipe-3",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 200818.1,
+     "limit": 0.0,
+     "message": "Unit pipe-3 slid into the headboard with 200.8 kN."
+    }
+   ]
+  },
+  "units": [
+   {
+    "id": "pipe-1",
+    "friction_coefficient": 0.2,
+    "max_slide_m": 0.51432,
+    "max_tilt_deg": 0.134,
+    "peak_friction_use": 1.0,
+    "hit_headboard": true,
+    "left_bed": false
+   },
+   {
+    "id": "pipe-2",
+    "friction_coefficient": 0.2,
+    "max_slide_m": 0.50425,
+    "max_tilt_deg": 0.134,
+    "peak_friction_use": 1.0,
+    "hit_headboard": true,
+    "left_bed": false
+   },
+   {
+    "id": "pipe-3",
+    "friction_coefficient": 0.2,
+    "max_slide_m": 0.51434,
+    "max_tilt_deg": 0.134,
+    "peak_friction_use": 1.0,
+    "hit_headboard": true,
+    "left_bed": false
+   }
+  ],
+  "margins": {
+   "max_slide_m": 0.51434,
+   "slide_limit_m": 0.05,
+   "max_tilt_deg": 0.134,
+   "peak_friction_use": 1.0,
+   "peak_lashing_force_n": null,
+   "peak_lashing_force_ratio": null,
+   "lashing_capacity_reserve": null
+  },
+  "axle_loads": [
+   {
+    "axle_group_id": "front",
+    "load_kg": 4392.3,
+    "limit_kg": 6000.0,
+    "ratio": 0.732
+   },
+   {
+    "axle_group_id": "rear",
+    "load_kg": 6267.7,
+    "limit_kg": 17000.0,
+    "ratio": 0.3687
+   }
+  ],
+  "en_12195_1": [
+   {
+    "unit_id": "pipe-1",
+    "method": "not_assessed",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": null
+   },
+   {
+    "unit_id": "pipe-2",
+    "method": "not_assessed",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": null
+   },
+   {
+    "unit_id": "pipe-3",
+    "method": "not_assessed",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": null
+   }
+  ]
+ },
+ "potholed-road.fixed": {
+  "event": {
+   "kind": "pothole",
+   "segments": null,
+   "speed_kmh": 60.0,
+   "road_surface": "mud",
+   "fog": false,
+   "curve_radius_m": null,
+   "grade_percent": null
+  },
+  "duration_s": 2.5,
+  "engine": {
+   "mujoco_version": "4.0.1",
+   "timestep_s": 0.002
+  },
+  "profile": {
+   "speed_kmh": 60.0,
+   "road_surface": "mud",
+   "tyre_friction": 0.55,
+   "cargo_friction_cap": 0.2,
+   "reaction_time_s": 1.0,
+   "pothole_depth_m": 0.05,
+   "road_roughness_grms": 0.37,
+   "peak_forward_g": 0.35,
+   "peak_lateral_g": 0.0,
+   "peak_vertical_g": 3.172
+  },
+  "verdict": {
+   "status": "pass",
+   "findings": []
+  },
+  "units": [
+   {
+    "id": "pipe-1",
+    "friction_coefficient": 0.2,
+    "max_slide_m": 0.00526,
+    "max_tilt_deg": 0.158,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pipe-2",
+    "friction_coefficient": 0.2,
+    "max_slide_m": 0.0053,
+    "max_tilt_deg": 0.199,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pipe-3",
+    "friction_coefficient": 0.2,
+    "max_slide_m": 0.0052,
+    "max_tilt_deg": 0.157,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   }
+  ],
+  "margins": {
+   "max_slide_m": 0.0053,
+   "slide_limit_m": 0.05,
+   "max_tilt_deg": 0.199,
+   "peak_friction_use": 1.0,
+   "peak_lashing_force_n": 10335.0,
+   "peak_lashing_force_ratio": 0.2584,
+   "lashing_capacity_reserve": 0.7416
+  },
+  "axle_loads": [
+   {
+    "axle_group_id": "front",
+    "load_kg": 4392.3,
+    "limit_kg": 6000.0,
+    "ratio": 0.732
+   },
+   {
+    "axle_group_id": "rear",
+    "load_kg": 6267.7,
+    "limit_kg": 17000.0,
+    "ratio": 0.3687
+   }
+  ],
+  "en_12195_1": [
+   {
+    "unit_id": "pipe-1",
+    "method": "not_assessed",
+    "installed_lashings": 4,
+    "required_lashings": null,
+    "meets_standard": null
+   },
+   {
+    "unit_id": "pipe-2",
+    "method": "not_assessed",
+    "installed_lashings": 4,
+    "required_lashings": null,
+    "meets_standard": null
+   },
+   {
+    "unit_id": "pipe-3",
+    "method": "not_assessed",
+    "installed_lashings": 4,
+    "required_lashings": null,
+    "meets_standard": null
+   }
+  ]
+ },
+ "overloaded-strap.as_loaded": {
+  "event": {
+   "kind": "emergency_braking",
+   "segments": null,
+   "speed_kmh": 80.0,
+   "road_surface": "dry",
+   "fog": false,
+   "curve_radius_m": null,
+   "grade_percent": null
+  },
+  "duration_s": 4.172,
+  "engine": {
+   "mujoco_version": "4.0.1",
+   "timestep_s": 0.002
+  },
+  "profile": {
+   "speed_kmh": 80.0,
+   "road_surface": "dry",
+   "tyre_friction": 0.756,
+   "braking_limited_by": "tyre_road_friction",
+   "reaction_time_s": 1.0,
+   "peak_forward_g": 0.756,
+   "peak_lateral_g": 0.0,
+   "peak_vertical_g": 0.0
+  },
+  "verdict": {
+   "status": "fail",
+   "findings": [
+    {
+     "code": "unit_rolled",
+     "severity": "fail",
+     "unit_id": "coil-1",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 0.43595,
+     "limit": 0.05,
+     "message": "Unit coil-1 rolled 43.6 cm."
+    },
+    {
+     "code": "lashing_overloaded",
+     "severity": "fail",
+     "unit_id": "coil-1",
+     "lashing_id": "coil-1-s1",
+     "axle_group_id": null,
+     "value": 75547.4,
+     "limit": 25000.0,
+     "message": "Lashing coil-1-s1 reached 302 % of its rated capacity."
+    },
+    {
+     "code": "lashing_overloaded",
+     "severity": "warning",
+     "unit_id": "coil-1",
+     "lashing_id": "coil-1-s2",
+     "axle_group_id": null,
+     "value": 24598.0,
+     "limit": 22500.0,
+     "message": "Lashing coil-1-s2 reached 98 % of its rated capacity."
+    }
+   ]
+  },
+  "units": [
+   {
+    "id": "coil-1",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.43595,
+    "max_tilt_deg": 0.0,
+    "peak_friction_use": 0.675,
+    "hit_headboard": false,
+    "left_bed": false
+   }
+  ],
+  "margins": {
+   "max_slide_m": 0.43595,
+   "slide_limit_m": 0.05,
+   "max_tilt_deg": 0.0,
+   "peak_friction_use": 0.675,
+   "peak_lashing_force_n": 75547.4,
+   "peak_lashing_force_ratio": 3.0219,
+   "lashing_capacity_reserve": -2.0219
+  },
+  "axle_loads": [
+   {
+    "axle_group_id": "tractor",
+    "load_kg": 16000.0,
+    "limit_kg": 17000.0,
+    "ratio": 0.9412
+   },
+   {
+    "axle_group_id": "trailer",
+    "load_kg": 6000.0,
+    "limit_kg": 25500.0,
+    "ratio": 0.2353
+   }
+  ],
+  "en_12195_1": [
+   {
+    "unit_id": "coil-1",
+    "method": "not_assessed",
+    "installed_lashings": 2,
+    "required_lashings": null,
+    "meets_standard": null
+   }
+  ]
+ },
+ "overloaded-strap.fixed": {
+  "event": {
+   "kind": "emergency_braking",
+   "segments": null,
+   "speed_kmh": 80.0,
+   "road_surface": "dry",
+   "fog": false,
+   "curve_radius_m": null,
+   "grade_percent": null
+  },
+  "duration_s": 4.172,
+  "engine": {
+   "mujoco_version": "4.0.1",
+   "timestep_s": 0.002
+  },
+  "profile": {
+   "speed_kmh": 80.0,
+   "road_surface": "dry",
+   "tyre_friction": 0.756,
+   "braking_limited_by": "tyre_road_friction",
+   "reaction_time_s": 1.0,
+   "peak_forward_g": 0.756,
+   "peak_lateral_g": 0.0,
+   "peak_vertical_g": 0.0
+  },
+  "verdict": {
+   "status": "pass",
+   "findings": []
+  },
+  "units": [
+   {
+    "id": "coil-1",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00385,
+    "max_tilt_deg": 0.008,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   }
+  ],
+  "margins": {
+   "max_slide_m": 0.00385,
+   "slide_limit_m": 0.05,
+   "max_tilt_deg": 0.008,
+   "peak_friction_use": 1.0,
+   "peak_lashing_force_n": 7772.3,
+   "peak_lashing_force_ratio": 0.3109,
+   "lashing_capacity_reserve": 0.6891
+  },
+  "axle_loads": [
+   {
+    "axle_group_id": "tractor",
+    "load_kg": 16000.0,
+    "limit_kg": 17000.0,
+    "ratio": 0.9412
+   },
+   {
+    "axle_group_id": "trailer",
+    "load_kg": 6000.0,
+    "limit_kg": 25500.0,
+    "ratio": 0.2353
+   }
+  ],
+  "en_12195_1": [
+   {
+    "unit_id": "coil-1",
+    "method": "not_assessed",
+    "installed_lashings": 2,
+    "required_lashings": null,
+    "meets_standard": null
+   }
+  ]
  }
 }

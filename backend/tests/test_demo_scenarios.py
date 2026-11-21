@@ -16,7 +16,7 @@ DEMOS = load_demo_scenarios()
 STATIC_DIR = Path(__file__).resolve().parents[2] / "frontend" / "public" / "demo"
 
 
-def test_the_nine_must_examples_are_in_the_gallery_order() -> None:
+def test_the_gallery_examples_are_in_order() -> None:
     assert tuple(demo.id for demo in DEMOS) == DEMO_ORDER
     assert DEMO_ORDER == (
         "emergency-braking",
@@ -28,6 +28,9 @@ def test_the_nine_must_examples_are_in_the_gallery_order() -> None:
         "dirt-road",
         "anti-slip-mat",
         "full-trip",
+        "curtain-sider",
+        "potholed-road",
+        "overloaded-strap",
     )
 
 
@@ -82,9 +85,13 @@ def test_the_fixed_version_meets_en_12195_1_with_its_safety_factor(demo: DemoSce
     # Units held by blocking, stacked units and lying cylinders are outside the closed-form
     # check (None); every unit the standard covers meets it.
     assert False not in [check.meets_standard for check in checks]
+    # EN 12195-1 does not assess a coil in a cradle, cargo held by a box body's walls, or round
+    # pipes held by direct chains; the simulation decides those.
     assert True in [check.meets_standard for check in checks] or demo.id in (
         "steel-coil",
         "box-truck",
+        "potholed-road",
+        "overloaded-strap",
     )
     for check in checks:
         if check.method == "top_over":
@@ -112,6 +119,9 @@ def test_the_as_loaded_versions_fall_short_of_the_standard_where_the_lashing_is_
         "dirt-road": True,
         "anti-slip-mat": False,
         "full-trip": False,
+        "curtain-sider": False,
+        "potholed-road": False,
+        "overloaded-strap": False,
     }
 
 

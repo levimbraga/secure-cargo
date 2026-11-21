@@ -43,6 +43,9 @@ AZIMUTH = {
     "dirt-road": 62.0,
     "anti-slip-mat": 62.0,
     "full-trip": 55.0,
+    "curtain-sider": 28.0,
+    "potholed-road": 62.0,
+    "overloaded-strap": 62.0,
 }
 # Camera distance for the 6.2 m bed of a "toco"; longer beds are filmed from farther away.
 DISTANCE_M = 8.6

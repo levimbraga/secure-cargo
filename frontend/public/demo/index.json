@@ -255,6 +255,90 @@
           "explorer": "body=flatbed&size=semi&cargo=crate&position=gap&restraint=top_over&speed=60&road=mountain&weather=heavy_rain&event=full_trip&n=6&straps=3.3.3.3.3.3"
         }
       }
+    },
+    {
+      "id": "curtain-sider",
+      "title": "Curtain-sider",
+      "summary": "Drums of oil standing against one side of a light (3/4) curtain-sider with nothing over them: in a sharp curve at 60 km/h they slide across the deck, because the curtain is weather protection, not a restraint. Two straps over each drum hold them where they stand.",
+      "event": {
+        "kind": "sharp_curve",
+        "segments": null,
+        "speed_kmh": 60.0,
+        "road_surface": "dry",
+        "fog": false,
+        "curve_radius_m": 60.0,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "curtain-sider.as_loaded.json",
+          "scenario_hash": "23929644b09d156daca313bf1cc9d3ac757863fdbd5c2001c3855fc24f09369a",
+          "status": "fail",
+          "explorer": "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=none&speed=60&road=curvy&weather=dry&event=sharp_curve"
+        },
+        "fixed": {
+          "file": "curtain-sider.fixed.json",
+          "scenario_hash": "5f6713376e501f51c15f7c2bfdf181cc5c2c07270a48ce986659fffbd068a12b",
+          "status": "pass",
+          "explorer": "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=top_over&speed=60&road=curvy&weather=dry&event=sharp_curve"
+        }
+      }
+    },
+    {
+      "id": "potholed-road",
+      "title": "Potholed road",
+      "summary": "Long steel pipes lying loose on a muddy deck, on a potholed road after rain: the pothole throws them up, they roll and slide into the headboard. Chains, forward and back on both sides of each pipe, hold them on any deck.",
+      "event": {
+        "kind": "pothole",
+        "segments": null,
+        "speed_kmh": 60.0,
+        "road_surface": "mud",
+        "fog": false,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "potholed-road.as_loaded.json",
+          "scenario_hash": "ab02237791927d09b61ee0ec4437a4f00a1663c1f54c4df5df9f0535a85dc1e2",
+          "status": "fail",
+          "explorer": "body=flatbed&size=truck&cargo=long_pipes&position=gap&restraint=none&speed=60&road=potholed&weather=mud&event=pothole"
+        },
+        "fixed": {
+          "file": "potholed-road.fixed.json",
+          "scenario_hash": "ff101d6acbcd4e980e7a563260de9a754b0c2bf8c563355e82e4ce1dbc3c500f",
+          "status": "pass",
+          "explorer": "body=flatbed&size=truck&cargo=long_pipes&position=gap&restraint=chain&speed=60&road=potholed&weather=mud&event=pothole"
+        }
+      }
+    },
+    {
+      "id": "overloaded-strap",
+      "title": "Overloaded strap",
+      "summary": "A 10 t steel coil held only by two straps over the top, on a semi-trailer: in an emergency stop from 80 km/h it rolls against the straps and pulls them past their rated capacity. A cradle stops the roll, and the same two straps only keep it in place.",
+      "event": {
+        "kind": "emergency_braking",
+        "segments": null,
+        "speed_kmh": 80.0,
+        "road_surface": "dry",
+        "fog": false,
+        "curve_radius_m": null,
+        "grade_percent": null
+      },
+      "variants": {
+        "as_loaded": {
+          "file": "overloaded-strap.as_loaded.json",
+          "scenario_hash": "ef713978ad6959e1af9fa5a1a50627778eae7bcb78497da6557371a218a60df5",
+          "status": "fail",
+          "explorer": "body=flatbed&size=semi&cargo=steel_coil&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking"
+        },
+        "fixed": {
+          "file": "overloaded-strap.fixed.json",
+          "scenario_hash": "bae04a941fd4e5ba4102a625ef272036fd1d0bd7832f6e9c592ec52a14bee200",
+          "status": "pass",
+          "explorer": "body=flatbed&size=semi&cargo=steel_coil&position=gap&restraint=cradle&speed=80&road=straight&weather=dry&event=emergency_braking&straps=2"
+        }
+      }
     }
   ]
 }

@@ -8,7 +8,10 @@
     "box-truck",
     "dirt-road",
     "anti-slip-mat",
-    "full-trip"
+    "full-trip",
+    "curtain-sider",
+    "potholed-road",
+    "overloaded-strap"
   ],
   "dimensions": [
     {
@@ -80,6 +83,22 @@
             {
               "example": "full-trip",
               "variant": "fixed"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "fixed"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "fixed"
             }
           ]
         },
@@ -98,7 +117,16 @@
         },
         {
           "id": "curtain_sider",
-          "covered_by": []
+          "covered_by": [
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "fixed"
+            }
+          ]
         }
       ]
     },
@@ -114,6 +142,19 @@
             },
             {
               "example": "box-truck",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "three_quarter",
+          "covered_by": [
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
               "variant": "fixed"
             }
           ]
@@ -181,6 +222,14 @@
             {
               "example": "anti-slip-mat",
               "variant": "fixed"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "fixed"
             }
           ]
         },
@@ -193,6 +242,14 @@
             },
             {
               "example": "full-trip",
+              "variant": "fixed"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
               "variant": "fixed"
             }
           ]
@@ -251,7 +308,16 @@
         },
         {
           "id": "drum",
-          "covered_by": []
+          "covered_by": [
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "fixed"
+            }
+          ]
         },
         {
           "id": "steel_coil",
@@ -262,6 +328,14 @@
             },
             {
               "example": "steel-coil",
+              "variant": "fixed"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
               "variant": "fixed"
             }
           ]
@@ -307,7 +381,16 @@
         },
         {
           "id": "long_pipes",
-          "covered_by": []
+          "covered_by": [
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "fixed"
+            }
+          ]
         },
         {
           "id": "stacked_boxes",
@@ -390,6 +473,22 @@
             {
               "example": "full-trip",
               "variant": "fixed"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "fixed"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "fixed"
             }
           ]
         },
@@ -412,7 +511,16 @@
         },
         {
           "id": "side",
-          "covered_by": []
+          "covered_by": [
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "fixed"
+            }
+          ]
         },
         {
           "id": "stacked",
@@ -446,6 +554,14 @@
             {
               "example": "full-trip",
               "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
             }
           ]
         },
@@ -475,6 +591,14 @@
             {
               "example": "full-trip",
               "variant": "fixed"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "fixed"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
             }
           ]
         },
@@ -496,6 +620,10 @@
             },
             {
               "example": "weigh-station",
+              "variant": "fixed"
+            },
+            {
+              "example": "potholed-road",
               "variant": "fixed"
             }
           ]
@@ -536,6 +664,10 @@
           "covered_by": [
             {
               "example": "steel-coil",
+              "variant": "fixed"
+            },
+            {
+              "example": "overloaded-strap",
               "variant": "fixed"
             }
           ]
@@ -608,6 +740,22 @@
             {
               "example": "full-trip",
               "variant": "fixed"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "fixed"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "fixed"
             }
           ]
         },
@@ -628,6 +776,14 @@
             },
             {
               "example": "rope-lashing",
+              "variant": "fixed"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
               "variant": "fixed"
             }
           ]
@@ -671,6 +827,14 @@
             {
               "example": "anti-slip-mat",
               "variant": "fixed"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "fixed"
             }
           ]
         },
@@ -683,6 +847,14 @@
             },
             {
               "example": "sharp-curve",
+              "variant": "fixed"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
               "variant": "fixed"
             }
           ]
@@ -715,7 +887,16 @@
         },
         {
           "id": "potholed",
-          "covered_by": []
+          "covered_by": [
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "fixed"
+            }
+          ]
         },
         {
           "id": "urban",
@@ -785,6 +966,22 @@
             {
               "example": "dirt-road",
               "variant": "fixed"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "fixed"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "fixed"
             }
           ]
         },
@@ -824,7 +1021,16 @@
         },
         {
           "id": "mud",
-          "covered_by": []
+          "covered_by": [
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "fixed"
+            }
+          ]
         },
         {
           "id": "fog",
@@ -888,6 +1094,14 @@
               "example": "full-trip",
               "variant": "fixed",
               "via": "full_trip"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "fixed"
             }
           ]
         },
@@ -914,12 +1128,29 @@
             {
               "example": "sharp-curve",
               "variant": "fixed"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "fixed"
             }
           ]
         },
         {
           "id": "pothole",
-          "covered_by": []
+          "covered_by": [
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "fixed"
+            }
+          ]
         },
         {
           "id": "speed_bump",
@@ -1020,6 +1251,14 @@
             {
               "example": "full-trip",
               "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
             }
           ]
         },
@@ -1037,6 +1276,14 @@
           "covered_by": [
             {
               "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
               "variant": "as_loaded"
             }
           ]
@@ -1063,6 +1310,10 @@
             {
               "example": "full-trip",
               "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
             }
           ]
         },
@@ -1077,7 +1328,12 @@
         },
         {
           "id": "strap_overload",
-          "covered_by": []
+          "covered_by": [
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
+            }
+          ]
         },
         {
           "id": "axle_overload",

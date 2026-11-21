@@ -14,6 +14,9 @@ export const GALLERY_TITLE_IDS: Record<string, string> = {
   "Dirt road": "dirt-road",
   "Anti-slip mat": "anti-slip-mat",
   "Full trip": "full-trip",
+  "Curtain-sider": "curtain-sider",
+  "Potholed road": "potholed-road",
+  "Overloaded strap": "overloaded-strap",
 };
 
 export const SAMPLE_TITLES_PT: Record<string, string> = {

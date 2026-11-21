@@ -50,6 +50,9 @@ const VIEW: Record<DemoId, CameraView> = {
   "dirt-road": "hero",
   "anti-slip-mat": "hero",
   "full-trip": "hero",
+  "curtain-sider": "rear",
+  "potholed-road": "hero",
+  "overloaded-strap": "hero",
 };
 
 export type ScenarioReplayProps = {

@@ -164,7 +164,10 @@
       "box-truck": "Box truck",
       "dirt-road": "Dirt road",
       "anti-slip-mat": "Anti-slip mat",
-      "full-trip": "Full trip"
+      "full-trip": "Full trip",
+      "curtain-sider": "Curtain-sider",
+      "potholed-road": "Potholed road",
+      "overloaded-strap": "Overloaded strap"
     },
     "events": {
       "emergency-braking": "Emergency stop from {speed} km/h, dry road",
@@ -175,7 +178,10 @@
       "box-truck": "Emergency stop from {speed} km/h in fog",
       "dirt-road": "Dirt road at {speed} km/h, then an emergency stop",
       "anti-slip-mat": "Emergency stop from {speed} km/h, wet road",
-      "full-trip": "Down the mountain to the port at {speed} km/h, heavy rain"
+      "full-trip": "Down the mountain to the port at {speed} km/h, heavy rain",
+      "curtain-sider": "Sharp curve at {speed} km/h",
+      "potholed-road": "Pothole at {speed} km/h, muddy deck",
+      "overloaded-strap": "Emergency stop from {speed} km/h, dry road"
     },
     "sentences": {
       "emergency-braking": {
@@ -213,6 +219,18 @@
       "full-trip": {
         "as_loaded": "Unlashed, the crates creep forward on the descent and slide on at the final stop.",
         "fixed": "With three straps per crate, nothing moves for the whole trip."
+      },
+      "curtain-sider": {
+        "as_loaded": "With nothing over them, the drums slide across the deck in the curve: the curtain does not hold them.",
+        "fixed": "Under two straps each, the drums stay where they stand."
+      },
+      "potholed-road": {
+        "as_loaded": "The pothole throws the loose pipes up; they roll and slide into the headboard.",
+        "fixed": "Chained forward and back on both sides, the pipes stay put."
+      },
+      "overloaded-strap": {
+        "as_loaded": "The coil rolls against its two straps and pulls them past their rated capacity.",
+        "fixed": "In a cradle the coil cannot roll; the two straps just keep it in place."
       }
     },
     "explanations": {
@@ -251,6 +269,18 @@
       "full-trip": {
         "as_loaded": "Six 1.5 t crates on a semi-trailer, left without lashings because they are heavy. Weight does not help: friction grows with it, and so does inertia.",
         "fixed": "Three straps over each crate, the number EN 12195-1 asks for. They hold through the descent, the speed bump and the emergency stop."
+      },
+      "curtain-sider": {
+        "as_loaded": "Eight 200-litre drums against one side of a light curtain-sider, unlashed. A curtain-sider's curtain is weather protection: in a code L body it counts for 0 % of the payload as a restraint.",
+        "fixed": "The same drums with two top-over straps each, pressing them onto the deck."
+      },
+      "potholed-road": {
+        "as_loaded": "Three 6 m steel pipes lying loose on a muddy deck (friction capped at 0.2). The pothole lifts them, and round pipes roll once they move.",
+        "fixed": "Four chains on each pipe, forward and backward on both sides: they hold by their strength, whatever the deck."
+      },
+      "overloaded-strap": {
+        "as_loaded": "A 10 t coil lying across a semi-trailer under two top-over straps. Nothing in front of it stops the roll, so the straps take it.",
+        "fixed": "Two 20 cm chocks hold the coil in a cradle; the same two straps hold it down."
       }
     },
     "variant": {

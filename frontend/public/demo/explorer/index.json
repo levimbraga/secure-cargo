@@ -90,6 +90,36 @@
       "live": "live/full-trip.fixed.json",
       "run": "full-trip.fixed.json"
     },
+    "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=none&speed=60&road=curvy&weather=dry&event=sharp_curve": {
+      "file": "explorer/curtain-sider.as_loaded.json",
+      "live": "live/curtain-sider.as_loaded.json",
+      "run": "curtain-sider.as_loaded.json"
+    },
+    "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=top_over&speed=60&road=curvy&weather=dry&event=sharp_curve": {
+      "file": "explorer/curtain-sider.fixed.json",
+      "live": "live/curtain-sider.fixed.json",
+      "run": "curtain-sider.fixed.json"
+    },
+    "body=flatbed&size=truck&cargo=long_pipes&position=gap&restraint=none&speed=60&road=potholed&weather=mud&event=pothole": {
+      "file": "explorer/potholed-road.as_loaded.json",
+      "live": "live/potholed-road.as_loaded.json",
+      "run": "potholed-road.as_loaded.json"
+    },
+    "body=flatbed&size=truck&cargo=long_pipes&position=gap&restraint=chain&speed=60&road=potholed&weather=mud&event=pothole": {
+      "file": "explorer/potholed-road.fixed.json",
+      "live": "live/potholed-road.fixed.json",
+      "run": "potholed-road.fixed.json"
+    },
+    "body=flatbed&size=semi&cargo=steel_coil&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking": {
+      "file": "explorer/overloaded-strap.as_loaded.json",
+      "live": "live/overloaded-strap.as_loaded.json",
+      "run": "overloaded-strap.as_loaded.json"
+    },
+    "body=flatbed&size=semi&cargo=steel_coil&position=gap&restraint=cradle&speed=80&road=straight&weather=dry&event=emergency_braking&straps=2": {
+      "file": "explorer/overloaded-strap.fixed.json",
+      "live": "live/overloaded-strap.fixed.json",
+      "run": "overloaded-strap.fixed.json"
+    },
     "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking": {
       "file": "explorer/default.json",
       "live": "live/explorer-default.json"
