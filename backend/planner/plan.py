@@ -52,7 +52,10 @@ from rules.axle_loads import axle_loads
 from rules.contran945 import check_contran_945
 from rules.country import breaks_a_rule, rule_set, securing_checks
 from rules.en12195 import check_scenario
-from rules.fmcsa393 import aggregate_wll, min_tiedowns
+from rules.eu_annex3 import DIRECTIONS as EU_DIRECTIONS
+from rules.eu_annex3 import check_annex3
+from rules.eu_weights import group_limits_kg as eu_group_limits_kg
+from rules.fmcsa393 import RuleCheck, aggregate_wll, min_tiedowns
 from rules.us_weights import group_limits_kg
 
 # Simulated candidates at most; each costs up to one battery.
@@ -92,12 +95,35 @@ STEP_EFFORT: dict[str, int] = {
 }
 # The article behind a change, by country.
 ARTICLES: dict[str, dict[Country, str]] = {
-    "replace_rope": {Country.BR: "CONTRAN 945/2022 art. 4 §3"},
-    "reanchor": {Country.BR: "CONTRAN 945/2022 art. 6", Country.US: "49 CFR 393.104(c)"},
-    "balance_axles": {Country.BR: "CONTRAN 882/2021 art. 6", Country.US: "23 CFR 658.17"},
-    "close_gaps": {Country.BR: "CONTRAN 945/2022 art. 7", Country.US: "49 CFR 393.110(c)"},
-    "diagonal_sets": {Country.BR: "CONTRAN 945/2022 art. 4", Country.US: "49 CFR 393.106(d)"},
-    "straps": {Country.BR: "EN 12195-1; CONTRAN 945/2022 art. 5", Country.US: "49 CFR 393.110"},
+    "replace_rope": {
+        Country.BR: "CONTRAN 945/2022 art. 4 §3",
+        Country.EU: "Directive 2014/47/EU Annex III, Table 1 item 20.3.1",
+    },
+    "reanchor": {
+        Country.BR: "CONTRAN 945/2022 art. 6",
+        Country.US: "49 CFR 393.104(c)",
+        Country.EU: "Directive 2014/47/EU Annex III, Table 1 item 10.5.1; EN 12640",
+    },
+    "balance_axles": {
+        Country.BR: "CONTRAN 882/2021 art. 6",
+        Country.US: "23 CFR 658.17",
+        Country.EU: "Directive 96/53/EC Annex I",
+    },
+    "close_gaps": {
+        Country.BR: "CONTRAN 945/2022 art. 7",
+        Country.US: "49 CFR 393.110(c)",
+        Country.EU: "Directive 2014/47/EU Annex III, Table 1 item 20.1.1; EN 12195-1",
+    },
+    "diagonal_sets": {
+        Country.BR: "CONTRAN 945/2022 art. 4",
+        Country.US: "49 CFR 393.106(d)",
+        Country.EU: "Directive 2014/47/EU Annex III I.1; EN 12195-1",
+    },
+    "straps": {
+        Country.BR: "EN 12195-1; CONTRAN 945/2022 art. 5",
+        Country.US: "49 CFR 393.110",
+        Country.EU: "Directive 2014/47/EU Annex III I.1; EN 12195-1",
+    },
 }
 
 
@@ -173,15 +199,16 @@ class _Candidate:
 
 def _rule_fixes(draft: LoadDraft) -> tuple[LoadDraft, list[Change]]:
     changes: list[Change] = []
-    # Ropes are prohibited in Brazil; in the US they are allowed without knots (to confirm).
-    if draft.restraint is Restraint.ROPE and draft.country is Country.BR:
+    # Ropes are prohibited in Brazil and are not EN 12195 lashings in the EU; in the US they are
+    # allowed without knots (to confirm).
+    if draft.restraint is Restraint.ROPE and draft.country is not Country.US:
         draft = draft.model_copy(update={"restraint": Restraint.TOP_OVER})
         changes.append(
             Change(
                 code="replace_rope",
                 before="rope",
                 after="top_over",
-                article="CONTRAN 945/2022 art. 4 §3",
+                article=_article("replace_rope", draft),
                 message="Ropes are prohibited as cargo lashing: replace them with ratchet straps.",
             )
         )
@@ -250,7 +277,11 @@ def _limited_loads(scenario: Scenario, draft: LoadDraft) -> list[AxleLoad]:
     loads = axle_loads(scenario)
     if draft.country is Country.BR:
         return loads
-    limits = group_limits_kg(scenario, draft.truck.size)
+    limits = (
+        eu_group_limits_kg(scenario, draft.truck.size)
+        if draft.country is Country.EU
+        else group_limits_kg(scenario, draft.truck.size)
+    )
     if limits is None:
         return loads
     return [
@@ -474,6 +505,9 @@ def _enough_diagonals(draft: LoadDraft) -> LoadDraft:
         if current.country is Country.US:
             check = aggregate_wll(scenario)
             failing, ids = check.status == "fail", check.unit_ids
+        elif current.country is Country.EU:
+            eu = [c for c in _eu_directions(scenario, current) if c.status == "fail"]
+            failing, ids = bool(eu), [uid for c in eu for uid in c.unit_ids]
         else:
             contran = next(c for c in check_contran_945(scenario) if c.code == "safety_factor")
             failing, ids = contran.status == "fail", contran.unit_ids
@@ -535,9 +569,23 @@ def _required_top_over(draft: LoadDraft, restraint: Restraint) -> dict[str, int]
                         return None
                     straps[uid] += 1
                     short = True
+        if draft.country is Country.EU:
+            for uid in {uid for c in _eu_directions(scenario, trial) for uid in c.unit_ids}:
+                if uid not in straps:
+                    continue
+                if straps[uid] + 1 > room[uid]:
+                    return None
+                straps[uid] += 1
+                short = True
         if not short:
             return straps
     return None
+
+
+def _eu_directions(scenario: Scenario, draft: LoadDraft) -> list[RuleCheck]:
+    """The failing EU direction checks (Annex III I.1, the units they name)."""
+    codes = {f"eu_{d}" for d in EU_DIRECTIONS}
+    return [c for c in check_annex3(scenario, draft) if c.code in codes and c.status == "fail"]
 
 
 def _cargo_of(draft: LoadDraft) -> set[Cargo]:
@@ -889,8 +937,9 @@ def _rules_ok(candidate: _Candidate) -> bool:
         scenario, _ = build_draft(candidate.draft)
     except BuildError:
         return False
-    if candidate.draft.country is Country.US:
-        return not breaks_a_rule(rule_set(scenario, candidate.draft, Country.US))
+    if candidate.draft.country is not Country.BR:
+        country = candidate.draft.country
+        return not breaks_a_rule(rule_set(scenario, candidate.draft, country))
     rules = check_contran_945(scenario, anchored_on_wood=candidate.draft.anchored_on_wood)
     return all(c.status != "fail" for c in rules) and _axles_legal(scenario, candidate.draft)
 
