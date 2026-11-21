@@ -5,9 +5,9 @@
  */
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
 import { useCallback } from "react";
 
+import { useMe } from "@/components/app/me-provider";
 import { API_URL } from "@/lib/api";
 
 export type OrgRole = "member" | "org_admin";
@@ -157,26 +157,30 @@ export async function readError(response: Response): Promise<AppApiError> {
   return new AppApiError(response.status, code, message);
 }
 
-/** `request(path, init)` with the session token attached; throws `AppApiError` on non-2xx. */
-export function useAppApi() {
-  const { getToken } = useAuth();
-  return useCallback(
-    async <T>(path: string, init: RequestInit = {}): Promise<T> => {
-      const token = await getToken();
-      const response = await fetch(`${API_URL}${path}`, {
-        ...init,
-        cache: "no-store",
-        headers: {
-          ...(init.body ? { "Content-Type": "application/json" } : {}),
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          ...init.headers,
-        },
-      });
-      if (!response.ok) throw await readError(response);
-      return (await response.json()) as T;
+/** A request with the session token attached; throws `AppApiError` on non-2xx. */
+export async function requestWithToken<T>(
+  getToken: () => Promise<string | null>,
+  path: string,
+  init: RequestInit = {},
+): Promise<T> {
+  const token = await getToken();
+  const response = await fetch(`${API_URL}${path}`, {
+    ...init,
+    cache: "no-store",
+    headers: {
+      ...(init.body ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...init.headers,
     },
-    [getToken],
-  );
+  });
+  if (!response.ok) throw await readError(response);
+  return (await response.json()) as T;
+}
+
+/** `request(path, init)` with the signed-in user's session token. */
+export function useAppApi() {
+  const { getToken } = useMe();
+  return useCallback(<T,>(path: string, init: RequestInit = {}) => requestWithToken<T>(getToken, path, init), [getToken]);
 }
 
 /** A photo reference stored with an inspection: a public sample (`sample:/media/…`) or a private key. */

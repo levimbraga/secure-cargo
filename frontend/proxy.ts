@@ -7,7 +7,10 @@ const intl = createMiddleware(routing);
 
 // Clerk first (session handshake), then next-intl (locale prefix). Pages are not protected here:
 // the API enforces every authorization rule, and the app pages ask the API who the caller is.
-export default clerkMiddleware((_auth, request) => intl(request));
+// Without the Clerk keys (CI, a misconfigured deploy) the site runs with sign-in off.
+const clerkConfigured = Boolean(process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY);
+
+export default clerkConfigured ? clerkMiddleware((_auth, request) => intl(request)) : intl;
 
 export const config = {
   // Every pathname except Next.js internals, Vercel internals and files with an extension.

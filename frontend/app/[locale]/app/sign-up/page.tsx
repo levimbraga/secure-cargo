@@ -4,7 +4,9 @@ import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { SignInPanel } from "@/components/app/sign-in-panel";
 import { SiteNav } from "@/components/site/site-nav";
+import { AUTH_ENABLED } from "@/lib/auth-config";
 import { routing } from "@/i18n/routing";
 
 /**
@@ -20,7 +22,7 @@ export default function SignUpPage({ params }: PageProps<"/[locale]/app/sign-up"
     <>
       <SiteNav variant="minimal" />
       <main className="col flex-1 pt-14 pb-24 md:pt-20">
-        <SignUp routing="hash" signInUrl={`${prefix}/app/sign-in`} />
+        {AUTH_ENABLED ? <SignUp routing="hash" signInUrl={`${prefix}/app/sign-in`} /> : <SignInPanel />}
       </main>
     </>
   );

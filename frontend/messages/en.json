@@ -737,7 +737,8 @@
       "rate_limited": "Too many attempts. Wait a minute and try again.",
       "demo_unavailable": "The demo accounts are not available right now.",
       "failed": "Could not sign in. Try again."
-    }
+    },
+    "unavailable": "Sign-in is not available right now. The examples and the explorer work without an account."
   },
   "Member": {
     "label": "Inspections",

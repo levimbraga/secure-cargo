@@ -1,7 +1,8 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { ptBR } from "@clerk/localizations";
 
-import { MeProvider } from "@/components/app/me-provider";
+import { MeProvider, SignedOutMeProvider } from "@/components/app/me-provider";
+import { AUTH_ENABLED } from "@/lib/auth-config";
 
 /**
  * Everything under /app knows who is signed in. Clerk loads only here, not on the landing page.
@@ -9,6 +10,7 @@ import { MeProvider } from "@/components/app/me-provider";
  */
 export default async function AppLayout({ children, params }: LayoutProps<"/[locale]/app">) {
   const { locale } = await params;
+  if (!AUTH_ENABLED) return <SignedOutMeProvider>{children}</SignedOutMeProvider>;
   const prefix = locale === "pt-BR" ? "/pt-BR" : "";
   return (
     <ClerkProvider

@@ -737,7 +737,8 @@
       "rate_limited": "Muitas tentativas. Espere um minuto e tente de novo.",
       "demo_unavailable": "As contas de demonstração não estão disponíveis agora.",
       "failed": "Não foi possível entrar. Tente de novo."
-    }
+    },
+    "unavailable": "O login não está disponível agora. Os exemplos e o explorador funcionam sem conta."
   },
   "Member": {
     "label": "Inspeções",
