@@ -29,25 +29,24 @@ export function OrgView() {
   const [filter, setFilter] = useState<Filter>("all");
   const [driver, setDriver] = useState<string>("");
 
+  // Both requests start with the session, and each fills its part of the page when it arrives:
+  // the list of inspections (D1 only) does not wait for the members (read from Clerk).
   useEffect(() => {
-    if (!me) return;
+    if (!signedIn) return;
     let cancelled = false;
-    Promise.all([
-      request<OrgData>("/org"),
-      request<{ inspections: InspectionSummary[] }>("/inspections?scope=org"),
-    ])
-      .then(([orgData, list]) => {
-        if (cancelled) return;
-        setOrg(orgData);
-        setInspections(list.inspections);
-      })
-      .catch((error: unknown) => {
-        if (!cancelled && error instanceof AppApiError) setDenied(true);
-      });
+    const denyOnError = (error: unknown) => {
+      if (!cancelled && error instanceof AppApiError) setDenied(true);
+    };
+    request<{ inspections: InspectionSummary[] }>("/inspections?scope=org")
+      .then((list) => !cancelled && setInspections(list.inspections))
+      .catch(denyOnError);
+    request<OrgData>("/org")
+      .then((orgData) => !cancelled && setOrg(orgData))
+      .catch(denyOnError);
     return () => {
       cancelled = true;
     };
-  }, [me, request]);
+  }, [signedIn, request]);
 
   const shown = useMemo(
     () =>
@@ -67,18 +66,22 @@ export function OrgView() {
 
   if (ready && !signedIn) return null;
   if (denied || (me && !me.org)) return <p className="type-body col">{t("noOrg")}</p>;
-  if (!org || !inspections) return <p className="type-small col text-gray">{t("loading")}</p>;
+  const header = org?.org ?? me?.org ?? null;
+  if (!inspections || !header) return <p className="type-small col text-gray">{t("loading")}</p>;
 
   const failing = inspections.filter((i) => i.verdict === "fail").length;
   const fixed = inspections.filter((i) => i.fixed_verdict === "pass").length;
-  const drivers = org.members.filter((m) => inspections.some((i) => i.author_id === m.userId));
+  // Drivers come from the inspections themselves, so the filter does not wait for the members.
+  const drivers = [...new Map(inspections.map((i) => [i.author_id, i.author_name ?? i.author_id])).entries()]
+    .map(([userId, name]) => ({ userId, name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="wide md:px-8">
       <p className="type-label">
-        {t("label")} · {org.org.type === "insurer" ? t("typeInsurer") : t("typeCarrier")}
+        {t("label")} · {header.type === "insurer" ? t("typeInsurer") : t("typeCarrier")}
       </p>
-      <h1 className="type-hero mt-5 text-balance">{t("title", { org: org.org.name })}</h1>
+      <h1 className="type-hero mt-5 text-balance">{t("title", { org: header.name })}</h1>
       <p className="type-body mt-4">{t("summary", { total: inspections.length, failing, fixed })}</p>
 
       <section className="mt-12">
@@ -108,7 +111,7 @@ export function OrgView() {
               <option value="">{t("allDrivers")}</option>
               {drivers.map((m) => (
                 <option key={m.userId} value={m.userId}>
-                  {m.name ?? m.email ?? m.userId}
+                  {m.name}
                 </option>
               ))}
             </select>
@@ -154,6 +157,9 @@ export function OrgView() {
         </div>
       </section>
 
+      {!org ? (
+        <p className="type-small mt-16 text-gray">{t("loading")}</p>
+      ) : (
       <div className="mt-16 grid gap-14 lg:grid-cols-[3fr_2fr]">
         <section>
           <h2 className="type-label">{t("membersLabel")}</h2>
@@ -185,6 +191,7 @@ export function OrgView() {
         </section>
         <InviteForm demo={Boolean(me?.user.is_demo)} invitations={org.invitations} />
       </div>
+      )}
     </div>
   );
 }

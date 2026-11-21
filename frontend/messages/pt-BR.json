@@ -738,7 +738,12 @@
       "demo_unavailable": "As contas de demonstração não estão disponíveis agora.",
       "failed": "Não foi possível entrar. Tente de novo."
     },
-    "unavailable": "O login não está disponível agora. Os exemplos e o explorador funcionam sem conta."
+    "unavailable": "O login não está disponível agora. Os exemplos e o explorador funcionam sem conta.",
+    "signingIn": {
+      "driver": "Entrando como motorista demo…",
+      "insurer": "Entrando como seguradora demo…"
+    },
+    "signingInNote": "Abrindo a organização Demo Insurer. Leva alguns segundos."
   },
   "Member": {
     "label": "Inspeções",

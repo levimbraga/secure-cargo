@@ -58,8 +58,8 @@ export interface IdentityProvider {
 		inviterUserId: string;
 		redirectUrl: string;
 	}): Promise<OrgInvitation>;
-	/** A one-time ticket that signs the given user in (demo accounts). */
-	createSignInTicket(userId: string, orgId: string | null): Promise<string>;
+	/** A one-time ticket that signs the given user in (demo accounts), valid for `expiresInSeconds`. */
+	createSignInTicket(userId: string, orgId: string | null, expiresInSeconds: number): Promise<string>;
 }
 
 /** Clerk org roles are `org:admin` / `org:member` (session tokens v2 drop the prefix). */
@@ -195,11 +195,11 @@ export function createClerkIdentity(options: {
 			};
 		},
 
-		async createSignInTicket(userId, orgId) {
+		async createSignInTicket(userId, orgId, expiresInSeconds) {
 			const token = await clerk.signInTokens.createSignInToken({
 				userId,
 				...(orgId ? { orgId } : {}),
-				expiresInSeconds: 300,
+				expiresInSeconds,
 			});
 			return token.token;
 		},

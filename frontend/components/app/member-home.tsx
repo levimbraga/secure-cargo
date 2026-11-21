@@ -18,8 +18,9 @@ export function MemberHome() {
   const request = useAppApi();
   const [inspections, setInspections] = useState<InspectionSummary[] | null>(null);
 
+  // The list does not wait for /me: both requests start as soon as the session exists.
   useEffect(() => {
-    if (!me) return;
+    if (!signedIn) return;
     let cancelled = false;
     request<{ inspections: InspectionSummary[] }>("/inspections?scope=mine")
       .then((body) => !cancelled && setInspections(body.inspections))
@@ -27,7 +28,7 @@ export function MemberHome() {
     return () => {
       cancelled = true;
     };
-  }, [me, request]);
+  }, [signedIn, request]);
 
   if (!ready) return <p className="type-small text-gray">{t("loading")}</p>;
   if (!signedIn) return <SignInPanel />;

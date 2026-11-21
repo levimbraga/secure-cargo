@@ -738,7 +738,12 @@
       "demo_unavailable": "The demo accounts are not available right now.",
       "failed": "Could not sign in. Try again."
     },
-    "unavailable": "Sign-in is not available right now. The examples and the explorer work without an account."
+    "unavailable": "Sign-in is not available right now. The examples and the explorer work without an account.",
+    "signingIn": {
+      "driver": "Signing you in as the demo driver…",
+      "insurer": "Signing you in as the demo insurer…"
+    },
+    "signingInNote": "Opening the organization Demo Insurer. This takes a few seconds."
   },
   "Member": {
     "label": "Inspections",

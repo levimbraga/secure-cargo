@@ -58,6 +58,12 @@ const BODIES = ["flatbed", "box", "curtain_sider"] as const;
 const SIZES = ["vuc", "toco", "truck", "semi"] as const;
 const STATUSES = ["draft", "analyzed", "confirmed", "simulated"] as const;
 const ROLES = ["member", "org_admin"] as const;
+const DEMO_ROLES = ["driver", "insurer"] as const;
+type DemoRole = (typeof DEMO_ROLES)[number];
+/** Pre-minted demo tickets: how many per account, how long each is valid, and the margin kept. */
+const DEMO_POOL_SIZE = 3;
+const DEMO_TICKET_TTL_S = 24 * 60 * 60;
+const DEMO_TICKET_MARGIN_MS = 10 * 60 * 1000;
 
 const INSPECTION_COLUMNS = `i.id, i.org_id, i.author_id, i.created_at, i.updated_at, i.status, i.title,
 	i.truck_body, i.truck_size, i.cargo_weight_kg, i.notes, i.plate, i.situations_passed,
@@ -417,17 +423,25 @@ export function createApp(deps: AppDeps): Hono<Env> {
 			fail(429, "rate_limited", "Too many requests. Wait a minute and try again.");
 		}
 		const body = await jsonBody(c);
-		const as = field.optionalEnum(body, "as", ["driver", "insurer"] as const);
+		const as = field.optionalEnum(body, "as", DEMO_ROLES);
 		if (!as) fail(422, "invalid_field", "as must be driver or insurer.");
+		const account = await demoAccount(as);
+		// A ticket minted ahead of time answers at once; Clerk is asked only when the pool is empty.
+		const pooled = await takeDemoTicket(db, as);
+		const ticket = pooled ?? (await identity.createSignInTicket(account.userId, account.orgId, DEMO_TICKET_TTL_S));
+		inBackground(c, refillDemoTickets(db, identity, as, account));
+		return c.json({ ticket });
+	});
+
+	async function demoAccount(as: DemoRole): Promise<{ userId: string; orgId: string | null }> {
 		const { results } = await db
 			.prepare("SELECT key, value FROM settings WHERE key IN ('demo_driver_user_id', 'demo_insurer_user_id', 'demo_org_id')")
 			.all<{ key: string; value: string }>();
 		const settings = new Map(results.map((r) => [r.key, r.value]));
 		const userId = settings.get(as === "driver" ? "demo_driver_user_id" : "demo_insurer_user_id");
 		if (!userId) fail(503, "demo_unavailable", "The demo accounts are not set up yet.");
-		const ticket = await identity.createSignInTicket(userId, settings.get("demo_org_id") ?? null);
-		return c.json({ ticket });
-	});
+		return { userId, orgId: settings.get("demo_org_id") ?? null };
+	}
 
 	app.notFound((c) => c.json({ detail: { code: "not_found", message: "No such route." } }, 404));
 
@@ -458,4 +472,57 @@ async function loadInspection(db: Db, id: string) {
 		results: results.results.map(({ metrics_json, ...rest }) => ({ ...rest, metrics: JSON.parse(metrics_json) })),
 		fixes: fixes.results.map(({ changes_json, passes, ...rest }) => ({ ...rest, passes: passes === 1, changes: JSON.parse(changes_json) })),
 	};
+}
+
+/** Run `task` after the response (Workers `waitUntil`); without an execution context, just start it. */
+function inBackground(c: Context, task: Promise<unknown>): void {
+	const guarded = task.catch((error: unknown) => console.error("Background task failed:", error));
+	try {
+		c.executionCtx.waitUntil(guarded);
+	} catch {
+		// Tests: no execution context; the task still runs.
+	}
+}
+
+/** Hand out one pre-minted ticket (each one only once), or null when none is left. */
+export async function takeDemoTicket(db: Db, role: DemoRole, at: Date = new Date()): Promise<string | null> {
+	const validUntil = new Date(at.getTime() + DEMO_TICKET_MARGIN_MS).toISOString();
+	const row = await db
+		.prepare(
+			`DELETE FROM demo_tickets WHERE id = (
+			   SELECT id FROM demo_tickets WHERE role = ? AND expires_at > ? ORDER BY expires_at LIMIT 1
+			 ) RETURNING token`,
+		)
+		.bind(role, validUntil)
+		.first<{ token: string }>();
+	return row?.token ?? null;
+}
+
+/** Top the pool up to `DEMO_POOL_SIZE` valid tickets, and drop the expired ones. */
+export async function refillDemoTickets(
+	db: Db,
+	identity: IdentityProvider,
+	role: DemoRole,
+	account: { userId: string; orgId: string | null },
+	at: Date = new Date(),
+): Promise<void> {
+	const validUntil = new Date(at.getTime() + DEMO_TICKET_MARGIN_MS).toISOString();
+	await db.prepare("DELETE FROM demo_tickets WHERE expires_at <= ?").bind(validUntil).run();
+	const row = await db
+		.prepare("SELECT COUNT(*) AS n FROM demo_tickets WHERE role = ?")
+		.bind(role)
+		.first<{ n: number }>();
+	const missing = DEMO_POOL_SIZE - (row?.n ?? 0);
+	if (missing <= 0) return;
+	const expires = new Date(at.getTime() + DEMO_TICKET_TTL_S * 1000).toISOString();
+	const tokens = await Promise.all(
+		Array.from({ length: missing }, () => identity.createSignInTicket(account.userId, account.orgId, DEMO_TICKET_TTL_S)),
+	);
+	await db.batch(
+		tokens.map((token) =>
+			db
+				.prepare("INSERT INTO demo_tickets (id, role, token, expires_at, created_at) VALUES (?, ?, ?, ?, ?)")
+				.bind(newId("dtk"), role, token, expires, at.toISOString()),
+		),
+	);
 }

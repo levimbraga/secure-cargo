@@ -37,7 +37,7 @@ export class FakeIdentity implements IdentityProvider {
 	users = new Map<string, IdentityUser>();
 	orgs = new Map<string, { id: string; name: string; type: "insurer" | "carrier" }>();
 	invitations: OrgInvitation[] = [];
-	tickets: { userId: string; orgId: string | null }[] = [];
+	tickets: { userId: string; orgId: string | null; expiresInSeconds: number }[] = [];
 
 	async verify(token: string) {
 		const [kind, userId, orgId, role] = token.split(":");
@@ -61,9 +61,9 @@ export class FakeIdentity implements IdentityProvider {
 		this.invitations.push(invitation);
 		return invitation;
 	}
-	async createSignInTicket(userId: string, orgId: string | null) {
-		this.tickets.push({ userId, orgId });
-		return `ticket-for-${userId}`;
+	async createSignInTicket(userId: string, orgId: string | null, expiresInSeconds: number) {
+		this.tickets.push({ userId, orgId, expiresInSeconds });
+		return `ticket-${this.tickets.length}-for-${userId}`;
 	}
 }
 

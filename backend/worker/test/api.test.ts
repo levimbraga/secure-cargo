@@ -1,6 +1,7 @@
 /** Authorization through the HTTP API, against real SQLite with the production migrations. */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+import { takeDemoTicket } from "../src/app";
 import { as, setup } from "./helpers";
 
 async function ids(response: Response): Promise<string[]> {
@@ -163,14 +164,40 @@ describe("the platform admin", () => {
 describe("demo access", () => {
 	it("mints a sign-in ticket for the demo driver and insurer, in the demo organization", async () => {
 		const { call, identity } = setup();
-		const driver = await call("POST", "/demo/session", undefined, { as: "driver" });
-		expect(await driver.json()).toEqual({ ticket: "ticket-for-demo_driver" });
+		const driver = (await (await call("POST", "/demo/session", undefined, { as: "driver" })).json()) as { ticket: string };
+		expect(driver.ticket).toBe("ticket-1-for-demo_driver");
 		await call("POST", "/demo/session", undefined, { as: "insurer" });
-		expect(identity.tickets).toEqual([
-			{ userId: "demo_driver", orgId: "org_a" },
-			{ userId: "demo_insurer", orgId: "org_a" },
-		]);
+		expect(identity.tickets.filter((t) => t.userId === "demo_insurer")[0]).toMatchObject({ orgId: "org_a" });
+		expect(identity.tickets.every((t) => t.orgId === "org_a")).toBe(true);
 		expect((await call("POST", "/demo/session", undefined, { as: "admin" })).status).toBe(422);
+	});
+
+	it("answers from tickets minted ahead of time, each handed out once", async () => {
+		const { call, db, identity } = setup();
+		await call("POST", "/demo/session", undefined, { as: "driver" });
+		// The pool fills in the background after the first request.
+		await vi.waitFor(async () => {
+			const row = await db.prepare("SELECT COUNT(*) AS n FROM demo_tickets WHERE role = 'driver'").first<{ n: number }>();
+			expect(row?.n).toBe(3);
+		});
+		const minted = identity.tickets.length;
+		const seen = new Set<string>();
+		for (let i = 0; i < 3; i++) {
+			const { ticket } = (await (await call("POST", "/demo/session", undefined, { as: "driver" })).json()) as { ticket: string };
+			expect(seen.has(ticket)).toBe(false);
+			seen.add(ticket);
+		}
+		// Three answers, and none of them waited for Clerk: every ticket came from the pool.
+		expect([...seen].every((ticket) => Number(ticket.split("-")[1]) <= minted)).toBe(true);
+	});
+
+	it("never hands out a ticket that is about to expire", async () => {
+		const { db } = setup();
+		db.raw.exec(`INSERT INTO demo_tickets (id, role, token, expires_at, created_at) VALUES
+			('old', 'driver', 'stale', '2026-11-20T12:05:00.000Z', '2026-11-20T00:00:00.000Z')`);
+		expect(await takeDemoTicket(db, "driver", new Date("2026-11-20T12:00:00.000Z"))).toBeNull();
+		expect(await takeDemoTicket(db, "driver", new Date("2026-11-20T11:00:00.000Z"))).toBe("stale");
+		expect(await takeDemoTicket(db, "driver", new Date("2026-11-20T11:00:00.000Z"))).toBeNull();
 	});
 
 	it("is rate-limited per IP", async () => {
