@@ -229,22 +229,24 @@ def simulate(
 
     floor_force_sum = np.zeros(count)
     steps_since_frame = 0
-    recent_contacts: list[KeyframeContact] = []
+    # The fullest set of contacts seen since the previous keyframe, kept as raw arrays and
+    # turned into keyframe tuples only if a keyframe uses it (see _ContactSnapshot).
+    recent_contacts: _ContactSnapshot | None = None
 
     def keyframe(t: float, step: int) -> Keyframe:
         nonlocal floor_force_sum, steps_since_frame, recent_contacts
         if frame_hook is not None:
             frame_hook(model, data, t)
         contacts, floor_force = _contact_points(data, bed_id, contact_kinds, unit_of_geom, count)
-        if len(recent_contacts) > len(contacts):
-            contacts = recent_contacts
+        if recent_contacts is not None and recent_contacts.size > len(contacts):
+            contacts = recent_contacts.points()
         # The floor force of a frame is its average over the steps since the previous frame
         # (the instantaneous value at the very first one).
         if steps_since_frame:
             floor_force = floor_force_sum / steps_since_frame
         floor_force_sum = np.zeros(count)
         steps_since_frame = 0
-        recent_contacts = []
+        recent_contacts = None
         return _keyframe(
             t,
             profile,
@@ -322,8 +324,8 @@ def simulate(
         # missing. For the replay, keep the fullest set seen since the previous keyframe.
         frame_step = round(next_frame * steps_per_frame)
         if 0 < frame_step - (step + 1) <= _CONTACT_LOOKBACK_STEPS and data.ncon:
-            snapshot, _ = _contact_points(data, bed_id, contact_kinds, unit_of_geom, count)
-            if len(snapshot) >= len(recent_contacts):
+            snapshot = _ContactSnapshot.take(data, bed_id, contact_kinds)
+            if recent_contacts is None or snapshot.size >= recent_contacts.size:
                 recent_contacts = snapshot
 
         if headboard_geom >= 0 and data.ncon:
@@ -632,6 +634,48 @@ def _contact_kinds(
     for geom in unit_geoms:
         kinds[int(geom)] = "unit"
     return kinds
+
+
+class _ContactSnapshot:
+    """The contacts of one instant as copied arrays: cheap to take at every step.
+
+    ``points()`` gives exactly what ``_contact_points`` would have returned at that instant
+    (same filter, order and rounding), so the replay does not change; only the cost does.
+    """
+
+    def __init__(self, positions: FloatArray, forces: FloatArray, kinds: list[str]) -> None:
+        self.positions = positions
+        self.forces = forces
+        self.kinds = kinds
+        self.size = len(kinds)
+
+    @classmethod
+    def take(cls, data: mujoco.MjData, bed_id: int, contact_kinds: list[str]) -> "_ContactSnapshot":
+        count = data.ncon
+        address = data.contact.efc_address[:count]
+        valid = address >= 0
+        force = np.zeros(count)
+        force[valid] = data.efc_force[address[valid]]
+        keep = np.flatnonzero(valid & (force >= 1.0))
+        geoms = data.contact.geom[keep]
+        kinds = [
+            contact_kinds[int(first if contact_kinds[int(second)] == "unit" else second)]
+            for first, second in geoms
+        ]
+        positions = data.contact.pos[keep] - data.xpos[bed_id]
+        return cls(positions, force[keep], kinds)
+
+    def points(self) -> list[KeyframeContact]:
+        return [
+            (
+                _round(position[0], 3),
+                _round(position[1], 3),
+                _round(position[2], 3),
+                _round(force, 0),
+                kind,  # type: ignore[misc]
+            )
+            for position, force, kind in zip(self.positions, self.forces, self.kinds, strict=True)
+        ]
 
 
 def _contact_points(
