@@ -271,7 +271,7 @@ def analysis_to_draft(
         kept_numbers = {u.number for u in kept}
 
     masses = _masses(kept, sizes, weight)
-    ident = {u.number: f"u{u.number}" for u in kept}
+    ident = {u.number: f"unit-{u.number}" for u in kept}
     restraint = _restraint(analysis)
 
     def unit_of(number: int, straps: int = 0) -> DraftUnit:
@@ -326,7 +326,7 @@ def _placeholder(truck: DraftTruck) -> DraftUnit:
     spec = CARGO[Cargo.CRATE]
     length = spec.size_m[0]
     return DraftUnit(
-        id="u1",
+        id="unit-1",
         cargo=Cargo.CRATE,
         x_m=_grid(TRUCKS[truck.size].length_m / 2 - length / 2),
         y_m=0.0,

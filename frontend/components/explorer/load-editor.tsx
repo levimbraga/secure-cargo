@@ -38,7 +38,7 @@ const KEY_STEP_M = 0.1;
 type Drag = { id: string; offsetX: number; offsetY: number; x: number; y: number; moved: boolean; valid: boolean };
 
 /** Strap positions along a unit: the anchor pairs a top-over strap uses, spread as the server spreads them. */
-function strapLines(load: ExplorerLoad, unit: Footprint, count: number): number[] {
+function strapLines(load: EditorLoad, unit: Footprint, count: number): number[] {
   if (count <= 0) return [];
   const anchors = load.scenario.bed.anchor_points;
   const left = new Set(anchors.filter((a) => a.position_m[1] > unit.y).map((a) => a.position_m[0]));
@@ -54,14 +54,27 @@ function strapLines(load: ExplorerLoad, unit: Footprint, count: number): number[
   });
 }
 
+/** What the editor needs of a built load: the bed, its anchors and axles, the units' sizes. */
+export type EditorLoad = Pick<ExplorerLoad, "scenario">;
+
 export function LoadEditor({
   load,
   draft,
   onEdit,
+  selected = null,
+  onSelect,
+  numberOf,
+  hideUnitList = false,
 }: {
-  load: ExplorerLoad;
+  load: EditorLoad;
   draft: LoadDraft;
   onEdit: (next: LoadDraft) => void;
+  /** Review mode: a tap selects a unit (straps are set in the review's own panel). */
+  selected?: string | null;
+  onSelect?: (id: string) => void;
+  /** The number shown on a unit (the photo's numbering); its position in the list by default. */
+  numberOf?: (unit: Footprint) => number;
+  hideUnitList?: boolean;
 }) {
   const t = useTranslations("Explorer.editor");
   const format = useFormatter();
@@ -142,7 +155,8 @@ export function LoadEditor({
     const current = drag;
     setDrag(null);
     if (!current.moved) {
-      onEdit(cycleStraps(draft, units, unit.id, strapRoom(load.scenario, unit)));
+      if (onSelect) onSelect(unit.id);
+      else onEdit(cycleStraps(draft, units, unit.id, strapRoom(load.scenario, unit)));
       return;
     }
     const next = place(current.id, current.x, current.y);
@@ -165,7 +179,8 @@ export function LoadEditor({
       else setRefused(unit.id);
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      onEdit(cycleStraps(draft, units, unit.id, strapRoom(load.scenario, unit)));
+      if (onSelect) onSelect(unit.id);
+      else onEdit(cycleStraps(draft, units, unit.id, strapRoom(load.scenario, unit)));
     }
   }
 
@@ -238,6 +253,7 @@ export function LoadEditor({
         {floor.map((unit) => {
           const dragging = drag?.id === unit.id;
           const invalid = (dragging && !drag.valid) || refused === unit.id;
+          const highlighted = dragging || selected === unit.id;
           const straps = strapsOf(unit);
           const name = nameOf(unit.id);
           const stack = stackSize(unit);
@@ -265,8 +281,8 @@ export function LoadEditor({
                   cy={-unit.y}
                   r={unit.length / 2}
                   fill={invalid ? "#fbe9e7" : "#e2d2b4"}
-                  stroke={invalid ? "#b42318" : "#8a6a43"}
-                  strokeWidth={dragging ? 2 : 1}
+                  stroke={invalid ? "#b42318" : highlighted ? "#191918" : "#8a6a43"}
+                  strokeWidth={highlighted ? 2.5 : 1}
                   vectorEffect="non-scaling-stroke"
                 />
               ) : (
@@ -278,8 +294,8 @@ export function LoadEditor({
                   height={unit.width}
                   rx={unit.round ? Math.min(unit.length, unit.width) / 2 : 0.02}
                   fill={invalid ? "#fbe9e7" : stack > 1 ? "#d9c49a" : "#e2d2b4"}
-                  stroke={invalid ? "#b42318" : "#8a6a43"}
-                  strokeWidth={dragging ? 2 : 1}
+                  stroke={invalid ? "#b42318" : highlighted ? "#191918" : "#8a6a43"}
+                  strokeWidth={highlighted ? 2.5 : 1}
                   vectorEffect="non-scaling-stroke"
                 />
               )}
@@ -306,7 +322,7 @@ export function LoadEditor({
                 pointerEvents="none"
                 className="font-mono"
               >
-                {unit.index + 1}
+                {numberOf ? numberOf(unit) : unit.index + 1}
                 {stack > 1 ? ` ×${stack}` : ""}
               </text>
             </g>
@@ -357,6 +373,32 @@ export function LoadEditor({
 
       <AxleBars axles={axles} tonnes={tonnes} />
 
+      {!hideUnitList && <UnitList load={load} draft={draft} units={units} onEdit={onEdit} />}
+    </section>
+  );
+}
+
+function UnitList({
+  load,
+  draft,
+  units,
+  onEdit,
+}: {
+  load: EditorLoad;
+  draft: LoadDraft;
+  units: Footprint[];
+  onEdit: (next: LoadDraft) => void;
+}) {
+  const t = useTranslations("Explorer.editor");
+  const format = useFormatter();
+  const { nameOf } = useReplayText();
+  const stackSize = (unit: Footprint) => {
+    let size = 1;
+    for (let id = unit.carries; id; id = units.find((item) => item.id === id)?.carries ?? null) size += 1;
+    return size;
+  };
+  return (
+    <>
       <h3 className="type-label mt-6">{t("units")}</h3>
       <ul className="mt-2 border-b border-hairline">
         {units
@@ -403,12 +445,12 @@ export function LoadEditor({
             );
           })}
       </ul>
-    </section>
+    </>
   );
 }
 
 /** Load on each axle group against its legal limit, updated while units move. */
-function AxleBars({ axles, tonnes }: { axles: ReturnType<typeof axleLoads>; tonnes: (kg: number) => string }) {
+export function AxleBars({ axles, tonnes }: { axles: ReturnType<typeof axleLoads>; tonnes: (kg: number) => string }) {
   const t = useTranslations("Explorer.editor");
   const format = useFormatter();
   if (!axles.length) return null;

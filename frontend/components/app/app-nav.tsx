@@ -77,7 +77,7 @@ export function AppUser() {
         openLabel={nav("openMenu")}
         closeLabel={nav("closeMenu")}
         items={items}
-        cta={signedIn ? { href: "/app/inspections/new", label: member("newInspection") } : { href: "/app/sign-in", label: t("signIn") }}
+        cta={signedIn ? { href: "/app/new", label: member("newInspection") } : { href: "/app/sign-in", label: t("signIn") }}
       />
     </>
   );

@@ -97,7 +97,7 @@ def test_a_stacked_unit_stands_on_its_base() -> None:
     analysis = _analysis([_unit(1, 0.1), _unit(2, 0.1, stacked_on=1)])
     draft = analysis_to_draft(analysis, TOCO).draft
     top = next(u for u in draft.units if u.on)
-    assert top.on == "u1"
+    assert top.on == "unit-1"
     scenario, _ = build_draft(draft)
     assert max(u.position_m[2] for u in scenario.units) == pytest.approx(1.1)
 
@@ -117,7 +117,7 @@ def test_the_total_is_split_by_volume_and_adds_up_exactly() -> None:
     draft = analysis_to_draft(analysis, TOCO, Weight(total_kg=1501)).draft
     masses = {u.id: u.mass_kg for u in draft.units}
     assert sum(m or 0 for m in masses.values()) == 1501
-    assert masses["u2"] == pytest.approx(2 * (masses["u1"] or 0), abs=1)
+    assert masses["unit-2"] == pytest.approx(2 * (masses["unit-1"] or 0), abs=1)
 
 
 def test_weights_per_unit_are_taken_as_given() -> None:
@@ -136,4 +136,4 @@ def test_endpoint(client: TestClient) -> None:
     assert response.status_code == 200
     data = response.json()
     assert data["draft"]["units"][0]["mass_kg"] == 900
-    assert data["links"][0]["unit_id"] == "u1"
+    assert data["links"][0]["unit_id"] == "unit-1"

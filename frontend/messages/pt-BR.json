@@ -305,7 +305,8 @@
       "carton": "Caixa {number}",
       "sacks": "Sacaria {number}",
       "pipe": "Tubo {number}",
-      "drum": "Tambor {number}"
+      "drum": "Tambor {number}",
+      "unit": "Unidade {number}"
     },
     "method": "Como isso é calculado",
     "others": "Outros cenários",
@@ -777,7 +778,8 @@
       "weight": "Peso da carga",
       "status": "Situação",
       "situations": "Situações aprovadas",
-      "plate": "Placa"
+      "plate": "Placa",
+      "notes": "Observações"
     },
     "asLoaded": "Como carregado",
     "fixed": "Com a correção",
@@ -807,7 +809,9 @@
       "restraint": "Amarração: {from} → {to}",
       "units": "Volumes: {from} → {to}"
     },
-    "weightKg": "{weight} kg"
+    "weightKg": "{weight} kg",
+    "notSimulated": "Esta inspeção ainda não foi simulada.",
+    "photo": "Foto ({position})"
   },
   "Org": {
     "label": "Organização",
@@ -913,5 +917,268 @@
     "demo": "demo",
     "on": "Ligada",
     "off": "Desligada"
+  },
+  "Flow": {
+    "steps": {
+      "label": "Etapas",
+      "photos": "Fotos",
+      "details": "Caminhão e peso",
+      "review": "Revisão",
+      "result": "Resultado"
+    },
+    "restart": "Recomeçar",
+    "back": "Voltar",
+    "retry": "Tentar de novo",
+    "newInspection": "Nova inspeção",
+    "editLoad": "Editar a carga",
+    "photos": {
+      "title": "Fotografe a carga.",
+      "sentence": "De uma a quatro fotos: de trás, dos lados ou da frente, com a carroceria inteira à vista. A IA analisa as fotos para pré-preencher a carga; você confere tudo antes da simulação.",
+      "demoMode": {
+        "blocked": "Esta conta está bloqueada: experimente uma foto de exemplo abaixo.",
+        "kill_switch": "A análise de fotos está pausada agora: experimente uma foto de exemplo abaixo.",
+        "budget_cap": "A análise de fotos atingiu o orçamento do mês: experimente uma foto de exemplo abaixo.",
+        "quota_exceeded": "Você já usou as análises de fotos de hoje: experimente uma foto de exemplo abaixo ou volte amanhã."
+      },
+      "preparing": "Preparando a foto…",
+      "camera": "Fotografar a carga",
+      "upload": "Enviar fotos",
+      "hint": "Até {max} fotos. JPEG, PNG ou HEIC.",
+      "privacy": "As fotos são reduzidas no seu celular e perdem a localização e os dados da câmera antes de serem enviadas.",
+      "signIn": "Entre para inspecionar uma carga sua. As fotos de exemplo abaixo funcionam sem conta.",
+      "signInButton": "Entrar",
+      "alt": "Foto {number} da carga",
+      "position": "De onde a foto foi tirada",
+      "remove": "Remover a foto {number}",
+      "next": "Continuar"
+    },
+    "positions": {
+      "rear": "De trás",
+      "left": "Lado esquerdo",
+      "right": "Lado direito",
+      "front": "De frente"
+    },
+    "samples": {
+      "title": "Experimente com uma foto de exemplo",
+      "sentence": "Fotos reais de cargas, já analisadas: sem conta e sem custo.",
+      "credit": "Foto: {photographer} no {source}"
+    },
+    "details": {
+      "title": "Confirme o caminhão e informe o peso.",
+      "body": "Carroceria",
+      "size": "Tamanho do caminhão",
+      "suggested": "Sugerido pela IA a partir das fotos ({percent}% de certeza).",
+      "weight": "Peso da carga (da nota fiscal)",
+      "weightWhy": "Uma foto não mostra o peso: ele vem só de você.",
+      "sampleWeight": "Foto de exemplo: este é o peso da nota fiscal de exemplo. Mude para ver o que acontece.",
+      "notes": "Observações (opcional)",
+      "building": "Montando a carga…",
+      "next": "Revisar a carga",
+      "ai": "IA"
+    },
+    "analysis": {
+      "running": "A IA está lendo as fotos…",
+      "sample": "Analisada com antecedência: {units, plural, one {# unidade encontrada} other {# unidades encontradas}}.",
+      "cached": "Já analisada: {units, plural, one {# unidade encontrada} other {# unidades encontradas}}.",
+      "done": "Análise concluída: {units, plural, one {# unidade encontrada} other {# unidades encontradas}}.",
+      "notALoad": "As fotos parecem não mostrar carga em um caminhão. Você ainda pode montar a carga à mão.",
+      "demo": {
+        "blocked": "Esta conta está bloqueada para análise de fotos. Monte a carga à mão na próxima etapa.",
+        "kill_switch": "A análise de fotos está pausada. Monte a carga à mão na próxima etapa.",
+        "budget_cap": "A análise de fotos atingiu o orçamento do mês. Monte a carga à mão na próxima etapa.",
+        "quota_exceeded": "Você já usou as análises de fotos de hoje. Monte a carga à mão na próxima etapa.",
+        "not_configured": "A análise de fotos não está disponível. Monte a carga à mão na próxima etapa.",
+        "failed": "A análise não funcionou. Monte a carga à mão na próxima etapa."
+      }
+    },
+    "review": {
+      "title": "Confira a carga.",
+      "sentence": "A leitura que a IA fez das fotos, no caminhão que você confirmou. Arraste uma unidade para movê-la; toque nela para mudar tamanho, peso ou cintas.",
+      "tab": {
+        "photo": "Foto",
+        "load": "Carga"
+      },
+      "weights": "Pesos: {sum} kg de {total} kg",
+      "weightsMissing": "Cada unidade precisa de um peso, e a soma deve dar o peso da carga.",
+      "confirm": "Confirmar carga",
+      "split": "Dividir o total pelo volume",
+      "noPhoto": "Sem foto.",
+      "photoHint": "Cada número na foto é a unidade com o mesmo número na carroceria. Toque em um para editá-la.",
+      "unitOnPhoto": "Unidade {number} na foto",
+      "restraint": "Como a carga está amarrada",
+      "yours": "seu",
+      "ai": "IA · {percent}%",
+      "units": "Unidades",
+      "onTopOf": "sobre {unit}",
+      "noWeight": "sem peso",
+      "uncertain": "A IA não teve certeza: {note}",
+      "cargo": "Carga",
+      "size": "Tamanho",
+      "length": "Compr.",
+      "width": "Larg.",
+      "height": "Alt.",
+      "weight": "Peso",
+      "straps": "Cintas sobre ela",
+      "fewerStraps": "Uma cinta a menos",
+      "moreStraps": "Uma cinta a mais",
+      "strapRoom": "cabem {room}",
+      "remove": "Remover esta unidade",
+      "add": "Adicionar unidade",
+      "refused": "Não cabe: ficaria sobre outra unidade ou fora da carroceria."
+    },
+    "warnings": {
+      "not_a_load": "As fotos talvez não mostrem carga em um caminhão.",
+      "no_units": "Nenhuma unidade encontrada: uma foi adicionada para começar.",
+      "unit_dropped": "Algumas unidades não couberam neste caminhão e ficaram de fora; adicione-as se estiverem lá.",
+      "moved_to_fit": "Algumas unidades foram movidas para nenhuma ficar sobre outra.",
+      "resized_to_fit": "Algumas unidades eram maiores que a carroceria e foram ajustadas.",
+      "straps_reduced": "Foram vistas mais cintas do que os pontos de amarração de uma unidade permitem; confira as cintas.",
+      "stack_dropped": "Uma pilha não pôde ser lida; confira as unidades de cima."
+    },
+    "result": {
+      "variant": "Versão",
+      "fixedVersion": "Corrigida",
+      "asLoaded": "Como carregada",
+      "arrives": "Chega inteira",
+      "doesNotArrive": "Não chega inteira",
+      "passes": "Passa em {passed} de {total}",
+      "all": "Ela aguenta todas as situações e segue as regras.",
+      "allFixed": "A carga corrigida aguenta todas as situações e segue as regras: comprovado em simulação.",
+      "allButRules": "Ela aguenta todas as situações, mas descumpre uma regra da CONTRAN 945 (abaixo).",
+      "worst": "Ela falha em {count, plural, one {# situação} other {# situações}}. A pior: {situation}.",
+      "holds": "Aguenta"
+    },
+    "situations": {
+      "emergency_braking": {
+        "name": "Frenagem de emergência a 80 km/h"
+      },
+      "lane_change": {
+        "name": "Mudança brusca de faixa a 80 km/h"
+      },
+      "sharp_curve": {
+        "name": "Curva fechada a 60 km/h"
+      },
+      "pothole": {
+        "name": "Buraco a 60 km/h"
+      },
+      "speed_bump": {
+        "name": "Lombada a 30 km/h"
+      },
+      "mountain_descent": {
+        "name": "Descida de serra com chuva forte"
+      },
+      "long_vibration": {
+        "name": "Vibração longa em estrada de terra"
+      }
+    },
+    "status": {
+      "pass": "Aguenta",
+      "warning": "Aguenta, com alerta",
+      "fail": "Falha"
+    },
+    "detail": {
+      "worst": "A pior situação",
+      "label": "Situação",
+      "unavailable": "O replay desta situação não está disponível agora.",
+      "loading": "Carregando o replay…",
+      "openExplorer": "Abrir no explorador",
+      "explorerHint": "O explorador simula esta carga ao vivo: mude a velocidade, a estrada, o clima ou as cintas."
+    },
+    "checks": {
+      "title": "Regras e normas",
+      "contran": "Resolução CONTRAN 945/2022 (regras brasileiras de amarração)",
+      "notApplicable": "não se aplica",
+      "en": "EN 12195-1 (norma europeia de amarração), por unidade",
+      "enNotAssessed": "Não avaliada pela fórmula (empilhada, amarração mista ou travada por bloqueio): a simulação decide.",
+      "enStraps": "{installed} das {required} cintas que a norma pede",
+      "enMeets": "Atende à norma",
+      "enFails": "Não atende à norma",
+      "axleSource": "Limites legais por eixo: Resolução CONTRAN 882/2021, art. 6."
+    },
+    "contran": {
+      "devices_allowed": {
+        "pass": "Só cintas, correntes, bloqueio ou mantas prendem a carga",
+        "fail": "Cordas são proibidas para amarrar carga"
+      },
+      "safety_factor": {
+        "pass": "Amarrações com capacidade de pelo menos o dobro do peso que seguram",
+        "fail": "Amarrações com capacidade menor que o dobro do peso que seguram"
+      },
+      "four_terminals": {
+        "pass": "Cada unidade tem pelo menos 4 terminais de amarração",
+        "fail": "Uma unidade tem menos de 4 terminais de amarração"
+      },
+      "anchoring": {
+        "pass": "Amarrações presas na estrutura metálica",
+        "fail": "Amarrações presas no assoalho ou na guarda de madeira"
+      },
+      "diagonals_for_gaps": {
+        "pass": "Sem espaço para a carga correr, ou diagonais a seguram",
+        "fail": "Espaço para a carga correr sem amarrações diagonais"
+      },
+      "above_headboard": {
+        "pass": "Nada acima da cabeceira pode deslizar por cima dela",
+        "fail": "Carga acima da cabeceira pode deslizar por cima dela"
+      }
+    },
+    "changes": {
+      "straps": "{unit}: {from} → {to} cintas sobre ela.",
+      "restraint": "Amarre a carga com {to} em vez de {from}.",
+      "closeGaps": "Empurre a carga {distance} cm para a frente, contra a cabeceira: sem espaço para correr, a cabeceira a segura.",
+      "closeGapsAxles": "Empurre a carga {distance} cm para a frente, até onde os limites dos eixos permitem.",
+      "balanceForward": "Mova a carga {distance} cm para a frente: um eixo levava {load} t, acima do limite de {limit} t.",
+      "balanceBack": "Mova a carga {distance} cm para trás: um eixo levava {load} t, acima do limite de {limit} t.",
+      "replace_rope": "Troque as cordas por cintas com catraca.",
+      "reanchor": "Prenda as amarrações nos pontos de amarração da estrutura metálica, não no assoalho de madeira."
+    },
+    "fix": {
+      "title": "Como corrigir",
+      "none": "Nada a corrigir: a carga chega inteira nas sete situações.",
+      "sentence": "A menor mudança que segue as regras, pelas fórmulas da EN 12195-1. Ao aplicar, a bateria inteira roda de novo para comprovar.",
+      "applied": "O que mudou",
+      "recommended": "Recomendado",
+      "proven": "A carga corrigida passa em {passed} de {total}: comprovado em simulação.",
+      "notProven": "Nenhuma correção passou em tudo; a melhor passa em {passed} de {total}. Tente no explorador.",
+      "running": "Buscando a correção e simulando nas sete situações…",
+      "apply": "Aplicar correção e simular de novo"
+    },
+    "running": {
+      "elapsed": "{seconds} s",
+      "title": "Simulando a carga.",
+      "battery": "Rodando sete situações no servidor (de 15 a 40 segundos)…",
+      "failed": "A simulação não terminou."
+    },
+    "saved": {
+      "yes": "Salva nas suas inspeções; seu gestor também vê.",
+      "open": "Abrir a inspeção",
+      "no": "Não salva: entre para guardar inspeções."
+    },
+    "errors": {
+      "failed": "Algo deu errado. Tente de novo.",
+      "api_unavailable": "O motor de física está iniciando ou indisponível. Tente de novo em alguns segundos.",
+      "photo_unsupported": "Esta foto não pôde ser lida. Use uma foto JPEG, PNG ou HEIC.",
+      "photo_too_small": "Esta foto é pequena demais para análise.",
+      "too_many_photos": "Uma inspeção aceita no máximo quatro fotos.",
+      "photo_too_large": "A foto é grande demais.",
+      "unsupported_photo": "Só fotos JPEG e PNG são aceitas.",
+      "rate_limited": "Muitas simulações daqui. Espere um minuto e tente de novo.",
+      "analysis_failed": "A análise da foto não funcionou.",
+      "analysis_refused": "A análise da foto foi recusada.",
+      "weight_required": "Informe o peso da carga.",
+      "unit_weight_required": "Cada unidade precisa de um peso.",
+      "weights_do_not_add_up": "Os pesos das unidades precisam somar o peso da carga.",
+      "not_confirmed": "Confirme a carga primeiro.",
+      "invalid_load": "Esta carga não pode ser simulada. Confira as unidades.",
+      "units_overlap": "Duas unidades se sobrepõem. Mova uma delas.",
+      "off_the_bed": "Uma unidade passa da borda da carroceria.",
+      "not_enough_anchors": "Uma unidade tem mais cintas do que pontos de amarração.",
+      "unauthenticated": "Sua sessão expirou. Entre de novo.",
+      "blocked": "Esta conta está bloqueada.",
+      "simulation_unstable": "A simulação ficou instável para esta carga. Mude um pouco e tente de novo.",
+      "invalid_draft": "A carga não é válida.",
+      "forbidden": "Seu papel não permite isso.",
+      "unit_unsupported": "Uma unidade não está apoiada em nada.",
+      "cannot_stack": "Essa unidade não pode levar outra em cima."
+    }
   }
 }

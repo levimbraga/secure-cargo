@@ -305,7 +305,8 @@
       "carton": "Carton {number}",
       "sacks": "Sacks {number}",
       "pipe": "Pipe {number}",
-      "drum": "Drum {number}"
+      "drum": "Drum {number}",
+      "unit": "Unit {number}"
     },
     "method": "How this is calculated",
     "others": "Other scenarios",
@@ -777,7 +778,8 @@
       "weight": "Cargo weight",
       "status": "Status",
       "situations": "Situations passed",
-      "plate": "Plate"
+      "plate": "Plate",
+      "notes": "Notes"
     },
     "asLoaded": "As loaded",
     "fixed": "With the fix",
@@ -807,7 +809,9 @@
       "restraint": "Restraint: {from} → {to}",
       "units": "Units: {from} → {to}"
     },
-    "weightKg": "{weight} kg"
+    "weightKg": "{weight} kg",
+    "notSimulated": "This inspection has not been simulated yet.",
+    "photo": "Photo ({position})"
   },
   "Org": {
     "label": "Organization",
@@ -913,5 +917,268 @@
     "demo": "demo",
     "on": "On",
     "off": "Off"
+  },
+  "Flow": {
+    "steps": {
+      "label": "Steps",
+      "photos": "Photos",
+      "details": "Truck and weight",
+      "review": "Review",
+      "result": "Result"
+    },
+    "restart": "Start over",
+    "back": "Back",
+    "retry": "Try again",
+    "newInspection": "New inspection",
+    "editLoad": "Edit the load",
+    "photos": {
+      "title": "Photograph the load.",
+      "sentence": "One to four photos: from behind, the sides or the front, with the whole bed in view. The photos are analysed by AI to prefill the load; you check everything before it is simulated.",
+      "demoMode": {
+        "blocked": "This account is blocked: try a sample photo below.",
+        "kill_switch": "Photo analysis is paused right now: try a sample photo below.",
+        "budget_cap": "Photo analysis reached this month's budget: try a sample photo below.",
+        "quota_exceeded": "You used today's photo analyses: try a sample photo below, or come back tomorrow."
+      },
+      "preparing": "Preparing the photo…",
+      "camera": "Photograph the load",
+      "upload": "Upload photos",
+      "hint": "Up to {max} photos. JPEG, PNG or HEIC.",
+      "privacy": "Photos are resized on your phone and their location and camera data are removed before they are sent.",
+      "signIn": "Sign in to inspect a load of your own. The sample photos below work without an account.",
+      "signInButton": "Sign in",
+      "alt": "Photo {number} of the load",
+      "position": "Where the photo was taken",
+      "remove": "Remove photo {number}",
+      "next": "Continue"
+    },
+    "positions": {
+      "rear": "From behind",
+      "left": "Left side",
+      "right": "Right side",
+      "front": "From the front"
+    },
+    "samples": {
+      "title": "Try with a sample photo",
+      "sentence": "Real photos of loads, already analysed: no account and no cost.",
+      "credit": "Photo: {photographer} on {source}"
+    },
+    "details": {
+      "title": "Confirm the truck and enter the weight.",
+      "body": "Truck body",
+      "size": "Truck size",
+      "suggested": "Suggested by the AI from the photos ({percent}% sure).",
+      "weight": "Cargo weight (from the invoice)",
+      "weightWhy": "A photo cannot show weight: it comes only from you.",
+      "sampleWeight": "Sample photo: this is the weight on its example invoice. Change it to see what happens.",
+      "notes": "Notes (optional)",
+      "building": "Building the load…",
+      "next": "Review the load",
+      "ai": "AI"
+    },
+    "analysis": {
+      "running": "The AI is reading the photos…",
+      "sample": "Analysed in advance: {units, plural, one {# unit} other {# units}} found.",
+      "cached": "Already analysed: {units, plural, one {# unit} other {# units}} found.",
+      "done": "Analysis done: {units, plural, one {# unit} other {# units}} found.",
+      "notALoad": "The photos do not seem to show cargo on a truck. You can still build the load by hand.",
+      "demo": {
+        "blocked": "This account is blocked from photo analysis. Build the load by hand in the next step.",
+        "kill_switch": "Photo analysis is paused. Build the load by hand in the next step.",
+        "budget_cap": "Photo analysis reached this month's budget. Build the load by hand in the next step.",
+        "quota_exceeded": "You used today's photo analyses. Build the load by hand in the next step.",
+        "not_configured": "Photo analysis is not available. Build the load by hand in the next step.",
+        "failed": "The analysis did not work. Build the load by hand in the next step."
+      }
+    },
+    "review": {
+      "title": "Check the load.",
+      "sentence": "The AI's reading of the photos, on the truck you confirmed. Drag a unit to move it, tap it to change its size, weight or straps.",
+      "tab": {
+        "photo": "Photo",
+        "load": "Load"
+      },
+      "weights": "Weights: {sum} kg of {total} kg",
+      "weightsMissing": "Every unit needs a weight, and together they must make the cargo weight.",
+      "confirm": "Confirm load",
+      "split": "Split the total by volume",
+      "noPhoto": "No photo.",
+      "photoHint": "Each number on the photo is the unit with the same number on the bed. Tap one to edit it.",
+      "unitOnPhoto": "Unit {number} on the photo",
+      "restraint": "How the load is secured",
+      "yours": "yours",
+      "ai": "AI · {percent}%",
+      "units": "Units",
+      "onTopOf": "on top of {unit}",
+      "noWeight": "no weight",
+      "uncertain": "The AI was not sure: {note}",
+      "cargo": "Cargo",
+      "size": "Size",
+      "length": "Length",
+      "width": "Width",
+      "height": "Height",
+      "weight": "Weight",
+      "straps": "Straps over it",
+      "fewerStraps": "One strap less",
+      "moreStraps": "One strap more",
+      "strapRoom": "room for {room}",
+      "remove": "Remove this unit",
+      "add": "Add a unit",
+      "refused": "That does not fit: it would overlap another unit or leave the bed."
+    },
+    "warnings": {
+      "not_a_load": "The photos may not show cargo on a truck.",
+      "no_units": "No units were found: one was added to start from.",
+      "unit_dropped": "Some units did not fit on this truck and were left out; add them if they are there.",
+      "moved_to_fit": "Some units were moved so that none overlaps another.",
+      "resized_to_fit": "Some units were larger than the bed and were made to fit.",
+      "straps_reduced": "More straps were seen than a unit has lashing points for; check the straps.",
+      "stack_dropped": "A stack could not be read; check the units on top."
+    },
+    "result": {
+      "variant": "Version",
+      "fixedVersion": "Fixed",
+      "asLoaded": "As loaded",
+      "arrives": "Arrives intact",
+      "doesNotArrive": "Does not arrive intact",
+      "passes": "Passes {passed} of {total}",
+      "all": "It holds in every situation and follows the rules.",
+      "allFixed": "The fixed load holds in every situation and follows the rules: proven in simulation.",
+      "allButRules": "It holds in every situation, but it breaks a CONTRAN 945 rule (below).",
+      "worst": "It fails in {count, plural, one {# situation} other {# situations}}. The worst: {situation}.",
+      "holds": "Holds"
+    },
+    "situations": {
+      "emergency_braking": {
+        "name": "Emergency braking at 80 km/h"
+      },
+      "lane_change": {
+        "name": "Sudden lane change at 80 km/h"
+      },
+      "sharp_curve": {
+        "name": "Sharp curve at 60 km/h"
+      },
+      "pothole": {
+        "name": "Pothole at 60 km/h"
+      },
+      "speed_bump": {
+        "name": "Speed bump at 30 km/h"
+      },
+      "mountain_descent": {
+        "name": "Mountain descent in heavy rain"
+      },
+      "long_vibration": {
+        "name": "Long vibration on a dirt road"
+      }
+    },
+    "status": {
+      "pass": "Holds",
+      "warning": "Holds, with a warning",
+      "fail": "Fails"
+    },
+    "detail": {
+      "worst": "The worst situation",
+      "label": "Situation",
+      "unavailable": "The replay of this situation is not available right now.",
+      "loading": "Loading the replay…",
+      "openExplorer": "Open in the explorer",
+      "explorerHint": "The explorer simulates this load live: change the speed, the road, the weather or the straps."
+    },
+    "checks": {
+      "title": "Rules and standards",
+      "contran": "CONTRAN Resolution 945/2022 (Brazilian lashing rules)",
+      "notApplicable": "does not apply",
+      "en": "EN 12195-1 (European securing standard), per unit",
+      "enNotAssessed": "Not assessed by the formula (stacked, mixed or held by blocking): the simulation decides.",
+      "enStraps": "{installed} of the {required} straps the standard asks for",
+      "enMeets": "Meets the standard",
+      "enFails": "Does not meet the standard",
+      "axleSource": "Legal axle limits: CONTRAN Resolution 882/2021, art. 6."
+    },
+    "contran": {
+      "devices_allowed": {
+        "pass": "Only straps, chains, blocking or mats secure the load",
+        "fail": "Ropes are prohibited as cargo lashing"
+      },
+      "safety_factor": {
+        "pass": "Lashings rated for at least twice the weight they hold",
+        "fail": "Lashings rated for less than twice the weight they hold"
+      },
+      "four_terminals": {
+        "pass": "Each unit has at least 4 lashing terminals",
+        "fail": "A unit has fewer than 4 lashing terminals"
+      },
+      "anchoring": {
+        "pass": "Lashings hooked to the metal frame",
+        "fail": "Lashings tied to the wooden floor or rails"
+      },
+      "diagonals_for_gaps": {
+        "pass": "No room to travel along the truck, or diagonals hold the load",
+        "fail": "Room to travel along the truck without diagonal lashings"
+      },
+      "above_headboard": {
+        "pass": "Nothing above the headboard can slide forward over it",
+        "fail": "Cargo above the headboard could slide forward over it"
+      }
+    },
+    "changes": {
+      "straps": "{unit}: {from} → {to} straps over it.",
+      "restraint": "Secure the load with {to} instead of {from}.",
+      "closeGaps": "Push the load {distance} cm forward against the headboard: with no room to travel, the headboard stops it.",
+      "closeGapsAxles": "Push the load {distance} cm forward, as far as the axle limits allow.",
+      "balanceForward": "Move the load {distance} cm forward: an axle carried {load} t, over its {limit} t limit.",
+      "balanceBack": "Move the load {distance} cm back: an axle carried {load} t, over its {limit} t limit.",
+      "replace_rope": "Replace the ropes with ratchet straps.",
+      "reanchor": "Hook the lashings to the lashing points on the metal frame, not the wooden floor."
+    },
+    "fix": {
+      "title": "How to fix it",
+      "none": "Nothing to fix: the load arrives intact in all seven situations.",
+      "sentence": "The smallest change that follows the rules, from the EN 12195-1 formulas. Applying it runs the whole battery again to prove it.",
+      "applied": "What changed",
+      "recommended": "Recommended",
+      "proven": "The fixed load passes {passed} of {total}: proven in simulation.",
+      "notProven": "No fix found that passes everything; the best one passes {passed} of {total}. Try the explorer.",
+      "running": "Finding the fix and simulating it in all seven situations…",
+      "apply": "Apply fix and re-simulate"
+    },
+    "running": {
+      "elapsed": "{seconds} s",
+      "title": "Simulating the load.",
+      "battery": "Running seven situations on the server (about 15 to 40 seconds)…",
+      "failed": "The simulation did not finish."
+    },
+    "saved": {
+      "yes": "Saved to your inspections; your manager sees it too.",
+      "open": "Open the inspection",
+      "no": "Not saved: sign in to keep inspections."
+    },
+    "errors": {
+      "failed": "Something went wrong. Try again.",
+      "api_unavailable": "The physics engine is starting or unavailable. Try again in a few seconds.",
+      "photo_unsupported": "This photo could not be read. Use a JPEG, PNG or HEIC photo.",
+      "photo_too_small": "This photo is too small to analyse.",
+      "too_many_photos": "An inspection takes at most four photos.",
+      "photo_too_large": "The photo is too large.",
+      "unsupported_photo": "Only JPEG and PNG photos are accepted.",
+      "rate_limited": "Too many simulations from here. Wait a minute and try again.",
+      "analysis_failed": "The photo analysis did not work.",
+      "analysis_refused": "The photo analysis was declined.",
+      "weight_required": "Enter the cargo weight.",
+      "unit_weight_required": "Every unit needs a weight.",
+      "weights_do_not_add_up": "The units' weights must add up to the cargo weight.",
+      "not_confirmed": "Confirm the load first.",
+      "invalid_load": "This load cannot be simulated. Check the units.",
+      "units_overlap": "Two units overlap. Move one of them.",
+      "off_the_bed": "A unit hangs over the edge of the bed.",
+      "not_enough_anchors": "A unit has more straps than lashing points.",
+      "unauthenticated": "Your session expired. Sign in again.",
+      "blocked": "This account is blocked.",
+      "simulation_unstable": "The simulation became unstable for this load. Change it slightly and try again.",
+      "invalid_draft": "The load is not valid.",
+      "forbidden": "Your role cannot do this.",
+      "unit_unsupported": "A unit is not resting on anything.",
+      "cannot_stack": "That unit cannot carry another one."
+    }
   }
 }

@@ -69,7 +69,8 @@ const DEMO_TICKET_MARGIN_MS = 10 * 60 * 1000;
 const INSPECTION_COLUMNS = `i.id, i.org_id, i.author_id, i.created_at, i.updated_at, i.status, i.title,
 	i.truck_body, i.truck_size, i.cargo_weight_kg, i.notes, i.plate, i.situations_passed,
 	i.situations_total, i.verdict, i.fixed_verdict, i.sample, u.name AS author_name, o.name AS org_name,
-	(SELECT p.r2_key FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at LIMIT 1) AS cover_photo`;
+	(SELECT p.r2_key FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at LIMIT 1) AS cover_photo,
+	(SELECT p.id FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at LIMIT 1) AS cover_photo_id`;
 
 interface InspectionRow {
 	id: string;
@@ -481,7 +482,7 @@ async function loadInspection(db: Db, id: string) {
 			.prepare("SELECT id, position, r2_key, sha256, content_type, bytes, created_at FROM photos WHERE inspection_id = ? ORDER BY created_at")
 			.bind(id)
 			.all(),
-		db.prepare("SELECT id, kind, draft_json, created_by, created_at FROM scenarios WHERE inspection_id = ? ORDER BY created_at").bind(id).all<{ draft_json: string }>(),
+		db.prepare("SELECT id, kind, draft_json, battery_ref, created_by, created_at FROM scenarios WHERE inspection_id = ? ORDER BY created_at").bind(id).all<{ draft_json: string }>(),
 		db.prepare("SELECT id, scenario_id, situation, verdict, metrics_json, keyframes_ref, created_at FROM results WHERE inspection_id = ? ORDER BY created_at").bind(id).all<{ metrics_json: string }>(),
 		db.prepare("SELECT id, from_scenario_id, to_scenario_id, changes_json, passes, created_at FROM fixes WHERE inspection_id = ? ORDER BY created_at").bind(id).all<{ changes_json: string; passes: number }>(),
 	]);

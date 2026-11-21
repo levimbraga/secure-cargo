@@ -42,7 +42,7 @@ export function MemberHome() {
           {inspections && inspections.length === 0 ? t("greetingEmpty") : t("greeting")}
         </h1>
         <div className="mt-6 flex flex-wrap gap-3">
-          <Link href="/app/inspections/new" className={pill({ className: "h-11 px-4" })}>
+          <Link href="/app/new" className={pill({ className: "h-11 px-4" })}>
             {t("newInspection")}
           </Link>
           <Link href="/app/explorer" className={pill({ variant: "secondary", className: "h-11 px-4" })}>

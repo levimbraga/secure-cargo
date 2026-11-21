@@ -5,7 +5,7 @@
  */
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useMe } from "@/components/app/me-provider";
 import { API_URL } from "@/lib/api";
@@ -52,11 +52,12 @@ export interface InspectionSummary {
   verdict: Verdict | null;
   fixed_verdict: Verdict | null;
   cover_photo: string | null;
+  cover_photo_id: string | null;
 }
 
 export interface InspectionDetail extends InspectionSummary {
   photos: { id: string; position: string; r2_key: string; created_at: string }[];
-  scenarios: { id: string; kind: "as_loaded" | "fixed"; draft: unknown; created_at: string }[];
+  scenarios: { id: string; kind: "as_loaded" | "fixed"; draft: unknown; battery_ref: string | null; created_at: string }[];
   results: {
     id: string;
     scenario_id: string;
@@ -70,7 +71,8 @@ export interface InspectionDetail extends InspectionSummary {
     from_scenario_id: string;
     to_scenario_id: string;
     passes: boolean;
-    changes: { unit?: string; field: string; from: unknown; to: unknown }[];
+    /** The planner's changes (`code`), or the seeded gallery fixes (`field`). */
+    changes: ({ unit?: string; field: string; from: unknown; to: unknown } | import("@/lib/inspection/types").Change)[];
   }[];
 }
 
@@ -187,6 +189,36 @@ export function useAppApi() {
 export function photoUrl(r2Key: string | null): string | null {
   if (!r2Key) return null;
   if (r2Key.startsWith("sample:")) return r2Key.slice("sample:".length);
-  // Private photos need the session token: the inspection flow (Phase 6) fetches them as blobs.
+  // Private photos need the session token: `usePhotoSrc` fetches them as blobs.
   return null;
+}
+
+/**
+ * The address to show a stored photo: a sample's public path, or the private photo fetched
+ * with the session token (the bucket is private) as an object URL, freed on unmount.
+ */
+export function usePhotoSrc(inspectionId: string, photoId: string | null, r2Key: string | null): string | null {
+  const { getToken } = useMe();
+  const isPublic = photoUrl(r2Key);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (isPublic || !photoId || !r2Key) return;
+    let url: string | null = null;
+    let cancelled = false;
+    (async () => {
+      const token = await getToken();
+      const response = await fetch(`${API_URL}/inspections/${encodeURIComponent(inspectionId)}/photos/${encodeURIComponent(photoId)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!response.ok || cancelled) return;
+      url = URL.createObjectURL(await response.blob());
+      if (cancelled) URL.revokeObjectURL(url);
+      else setBlobUrl(url);
+    })().catch(() => undefined);
+    return () => {
+      cancelled = true;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [inspectionId, photoId, r2Key, isPublic, getToken]);
+  return isPublic ?? blobUrl;
 }

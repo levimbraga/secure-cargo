@@ -48,7 +48,7 @@ const MARKERS = [
 ] as const;
 type Marker = (typeof MARKERS)[number];
 
-const UNIT_KINDS = ["pallet", "crate", "machine", "stack", "cabinet", "coil", "carton", "sacks", "pipe", "drum"] as const;
+const UNIT_KINDS = ["pallet", "crate", "machine", "stack", "cabinet", "coil", "carton", "sacks", "pipe", "drum", "unit"] as const;
 type UnitKind = (typeof UNIT_KINDS)[number];
 
 /** The words and number formats of a run, in the visitor's language. */

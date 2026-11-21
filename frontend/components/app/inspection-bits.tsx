@@ -4,7 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 
 import { VerdictBadge } from "@/components/ui/verdict-badge";
 import { Link } from "@/i18n/navigation";
-import { type InspectionSummary, photoUrl, type Verdict } from "@/lib/app-api";
+import { type InspectionSummary, usePhotoSrc, type Verdict } from "@/lib/app-api";
 
 export function badgeVerdict(verdict: Verdict | null): "pass" | "fail" | "neutral" {
   if (verdict === "pass") return "pass";
@@ -43,14 +43,14 @@ export function InspectionListItem({ inspection }: { inspection: InspectionSumma
   const t = useTranslations("Inspection");
   const dates = useDates();
   const truck = useTruckLabel();
-  const photo = photoUrl(inspection.cover_photo);
+  const photo = usePhotoSrc(inspection.id, inspection.cover_photo_id, inspection.cover_photo);
   return (
     <li className="border-t border-hairline">
       <Link href={`/app/inspection?id=${inspection.id}`} className="flex min-h-[76px] items-center gap-4 py-3 hover:bg-surface/40">
         <span className="size-14 shrink-0 overflow-hidden rounded-[4px] bg-surface">
           {photo && (
             // eslint-disable-next-line @next/next/no-img-element -- small sample thumbnails, already optimized
-            <img src={photo} alt="" width={56} height={56} loading="lazy" className="size-full object-cover grayscale" />
+            <img src={photo} alt="" width={56} height={56} loading="lazy" className="size-full object-cover" />
           )}
         </span>
         <span className="min-w-0 flex-1">
