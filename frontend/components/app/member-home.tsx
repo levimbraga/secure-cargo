@@ -11,6 +11,7 @@ import { SignInPanel } from "@/components/app/sign-in-panel";
 import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
 import { type InspectionSummary, useAppApi } from "@/lib/app-api";
+import { DEMO_SAMPLE } from "@/lib/inspection/samples";
 
 /** `/app`: the driver's home. Signed out, it is the sign-in screen with the demo buttons. */
 export function MemberHome() {
@@ -75,6 +76,14 @@ export function MemberHome() {
             {inspections.map((inspection) => (
               <InspectionListItem key={inspection.id} inspection={inspection} />
             ))}
+            {inspections.length === 0 && (
+              <li className="type-small border-t border-hairline py-4 text-gray" data-testid="inspections-empty">
+                {t("listEmpty")}{" "}
+                <Link href={`/app/new?sample=${DEMO_SAMPLE}`} className="text-ink underline decoration-1 underline-offset-4">
+                  {t("trySample")}
+                </Link>
+              </li>
+            )}
           </ul>
         )}
         <p className="type-small mt-4 text-gray">{t("explorerHint")}</p>

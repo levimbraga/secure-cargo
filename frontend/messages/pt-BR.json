@@ -848,7 +848,9 @@
     "allowance": "Análises de foto hoje: {used} de {quota}",
     "allowanceShared": "Análises de foto hoje (compartilhadas pelas contas demo): {used} de {quota}",
     "demoMode": "A análise de fotos está em modo demonstração: use as fotos de exemplo.",
-    "explorerHint": "Ou monte a carga à mão no explorador, sem custo."
+    "explorerHint": "Ou monte a carga à mão no explorador, sem custo.",
+    "listEmpty": "Nenhuma ainda.",
+    "trySample": "Veja um resultado com uma foto de exemplo"
   },
   "NewInspection": {
     "label": "Nova inspeção",
@@ -1816,7 +1818,8 @@
         "inspections": "Inspeções",
         "failureRate": "Taxa de reprovação",
         "proven": "Correções comprovadas",
-        "open": "Sem correção comprovada"
+        "open": "Sem correção comprovada",
+        "empty": "Nenhum motorista fez inspeção neste período."
       },
       "definitions": "Como contamos: cada carga conta uma vez, como foi carregada; a reinspeção é a prova da correção. Corrigida e comprovada quer dizer que uma nova foto da carga corrigida foi aprovada.",
       "seeAlerts": "Ver os alertas",
@@ -1870,7 +1873,9 @@
         "result": "Resultado",
         "failures": "Falhas"
       },
-      "filtersLabel": "Filtros"
+      "filtersLabel": "Filtros",
+      "empty": "Nenhuma inspeção ainda. Convide seus motoristas em Equipe e políticas; as inspeções deles aparecem aqui.",
+      "emptyFiltered": "Nenhuma inspeção com esses filtros."
     },
     "team": {
       "policies": "Políticas",

@@ -51,8 +51,8 @@ export function InspectionView({ id }: { id: string }) {
         if (cancelled) return;
         setInspection(value);
         // Batteries are stored whole: in the private bucket, or on the site for the seeded demo.
-        const read = async (kind: "as_loaded" | "fixed"): Promise<Battery | null> => {
-          const scenario = value.scenarios.find((s) => s.kind === kind);
+        const read = async (kind: "as_loaded" | "fixed", detail: InspectionDetail = value): Promise<Battery | null> => {
+          const scenario = detail.scenarios.find((s) => s.kind === kind);
           if (!scenario?.battery_ref) return null;
           if (scenario.battery_ref.startsWith("static:")) {
             // `static:/path[#key]`: a file of the site, or one key of it (a sample's battery).
@@ -62,13 +62,15 @@ export function InspectionView({ id }: { id: string }) {
             const data = (await response.json()) as Record<string, unknown>;
             return (key ? (data[key] as Battery | undefined) ?? null : (data as unknown as Battery));
           }
-          return request<Battery>(`/inspections/${encodeURIComponent(id)}/battery/${kind}`).catch(() => null);
+          return request<Battery>(`/inspections/${encodeURIComponent(detail.id)}/battery/${kind}`).catch(() => null);
         };
         const [asLoaded, fixed] = await Promise.all([read("as_loaded"), read("fixed")]);
         // A re-inspection shows the first inspection's result beside its own.
-        const before = value.reinspection_of
-          ? await request<Battery>(`/inspections/${encodeURIComponent(value.reinspection_of)}/battery/as_loaded`).catch(() => null)
+        // (Read the same way: a seeded first inspection keeps its battery on the site, not in the bucket.)
+        const parent = value.reinspection_of
+          ? await request<InspectionDetail>(`/inspections/${encodeURIComponent(value.reinspection_of)}`).catch(() => null)
           : null;
+        const before = parent ? await read("as_loaded", parent) : null;
         const fix = value.fixes[0];
         const fixedScenario = value.scenarios.find((s) => s.kind === "fixed");
         const plan: Plan | null =

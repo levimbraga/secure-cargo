@@ -209,6 +209,13 @@ function OrgTable() {
                 </tr>
               );
             })}
+            {data && data.inspections.length === 0 && (
+              <tr>
+                <td colSpan={7} className={cn(td, "text-gray")} data-testid="table-empty">
+                  {Object.values(filters).some(Boolean) ? t("emptyFiltered") : t("empty")}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

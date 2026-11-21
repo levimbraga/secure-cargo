@@ -238,6 +238,13 @@ function DriverTable({ drivers }: { drivers: Overview["drivers"] }) {
           </tr>
         </thead>
         <tbody>
+          {drivers.length === 0 && (
+            <tr>
+              <td colSpan={5} className={cn(td, "text-gray")} data-testid="drivers-empty">
+                {t("empty")}
+              </td>
+            </tr>
+          )}
           {drivers.map((d) => (
             <tr key={d.user_id}>
               <td className={td}>

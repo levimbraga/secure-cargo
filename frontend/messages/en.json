@@ -848,7 +848,9 @@
     "allowance": "Photo analyses today: {used} of {quota}",
     "allowanceShared": "Photo analyses today (shared by the demo accounts): {used} of {quota}",
     "demoMode": "Photo analysis is in demo mode: use the sample photos.",
-    "explorerHint": "Or build a load by hand in the explorer, at no cost."
+    "explorerHint": "Or build a load by hand in the explorer, at no cost.",
+    "listEmpty": "None yet.",
+    "trySample": "See a result with a sample photo"
   },
   "NewInspection": {
     "label": "New inspection",
@@ -1816,7 +1818,8 @@
         "inspections": "Inspections",
         "failureRate": "Failure rate",
         "proven": "Fixes proven",
-        "open": "No proven fix"
+        "open": "No proven fix",
+        "empty": "No driver has made an inspection in this period."
       },
       "definitions": "How we count: each load counts once, as first loaded; its re-inspection is the proof of the fix. Fixed and proven means a new photo of the fixed load was approved.",
       "seeAlerts": "See the alerts",
@@ -1870,7 +1873,9 @@
         "result": "Result",
         "failures": "Failures"
       },
-      "filtersLabel": "Filters"
+      "filtersLabel": "Filters",
+      "empty": "No inspections yet. Invite your drivers under Team and policies; their inspections appear here.",
+      "emptyFiltered": "No inspection matches these filters."
     },
     "team": {
       "policies": "Policies",
