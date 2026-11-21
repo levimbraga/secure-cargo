@@ -762,11 +762,11 @@
     "lab": "Laboratório",
     "signIn": "Entrar",
     "menu": "Seções do app",
-    "demoBadge": "Conta de demonstração",
-    "switchDemo": "Trocar de conta demo",
+    "demoBadge": "Demo",
     "demoResets": "Os dados de demonstração são reiniciados todos os dias.",
     "trucks": "Meus caminhões",
-    "alertsBadge": "{count, plural, one {# alerta} other {# alertas}}"
+    "alertsBadge": "{count, plural, one {# alerta} other {# alertas}}",
+    "demoExit": "Sair"
   },
   "Auth": {
     "label": "Conta",

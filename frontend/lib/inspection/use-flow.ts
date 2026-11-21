@@ -394,6 +394,7 @@ export function useInspectionFlow() {
       const response = await fetch(`${API_URL}/inspections/${encodeURIComponent(id)}/invoice`, {
         method: "POST",
         headers: { "Content-Type": "image/jpeg", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
         body: prepared.blob,
       });
       if (!response.ok) throw new AppApiError(response.status, "invoice_failed", "The invoice could not be read.");

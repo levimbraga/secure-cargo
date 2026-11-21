@@ -1,58 +1,24 @@
 "use client";
 
-import { useClerk, useSignIn } from "@clerk/nextjs";
+import { useClerk } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { type DemoRole, useMe } from "@/components/app/me-provider";
 import { pill } from "@/components/ui/pill";
 import { useRouter } from "@/i18n/navigation";
-import { API_URL } from "@/lib/api";
-import { readError } from "@/lib/app-api";
-
-type DemoRole = "driver" | "insurer";
 
 const HOME: Record<DemoRole, "/app" | "/app/org"> = { driver: "/app", insurer: "/app/org" };
 
-async function fetchTicket(role: DemoRole): Promise<string> {
-  const response = await fetch(`${API_URL}/demo/session`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ as: role }),
-  });
-  if (!response.ok) throw await readError(response);
-  return ((await response.json()) as { ticket: string }).ticket;
-}
-
-/** Tickets asked for ahead of the click, one per role (each signs in once). */
-const early = new Map<DemoRole, Promise<string>>();
-
-/** Start fetching a ticket early (hover, touch, focus); a failed attempt is forgotten. */
-function warm(role: DemoRole): Promise<string> {
-  const pending = early.get(role) ?? fetchTicket(role);
-  early.set(role, pending);
-  pending.catch(() => {
-    if (early.get(role) === pending) early.delete(role);
-  });
-  return pending;
-}
-
-function take(role: DemoRole): Promise<string> {
-  const pending = warm(role);
-  early.delete(role);
-  return pending;
-}
-
 /**
- * "Enter as demo driver / insurer": the API hands out a one-time Clerk sign-in ticket for a
- * seeded demo account (minted ahead of time), and the page redeems it. No signup, no password.
- *
- * To keep the wait short: the ticket is asked for as soon as a finger or pointer reaches a
- * button, the destination page is prefetched, and the page says at once that it is signing in.
+ * "Enter as demo driver / insurer": the Worker starts an anonymous demo session (a signed,
+ * httpOnly cookie, 24 hours) in a sandbox of its own: no account, no password, nothing a visitor
+ * could change for the next one. Switching between driver and insurer keeps the sandbox.
  */
 export function DemoButtons() {
   const t = useTranslations("Auth");
-  const { signIn } = useSignIn();
   const clerk = useClerk();
+  const { enterDemo } = useMe();
   const router = useRouter();
   const [busy, setBusy] = useState<DemoRole | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -66,13 +32,9 @@ export function DemoButtons() {
     setBusy(role);
     setError(null);
     try {
-      const ticket = await take(role);
-      // One session at a time: leave the current account before entering the demo one.
+      // One session at a time: leave a real account before entering the demo.
       if (clerk.isSignedIn) await clerk.signOut({ redirectUrl: undefined });
-      const attempt = await signIn.ticket({ ticket });
-      if (attempt.error) throw attempt.error;
-      const done = await signIn.finalize();
-      if (done.error) throw done.error;
+      await enterDemo(role);
       router.push(HOME[role]);
     } catch (cause) {
       const code = (cause as { code?: string }).code;
@@ -81,12 +43,7 @@ export function DemoButtons() {
     }
   }
 
-  const intent = (role: DemoRole) => ({
-    onPointerEnter: () => void warm(role).catch(() => {}),
-    onTouchStart: () => void warm(role).catch(() => {}),
-    onFocus: () => void warm(role).catch(() => {}),
-    onClick: () => enter(role),
-  });
+  const intent = (role: DemoRole) => ({ onClick: () => void enter(role) });
 
   return (
     <div aria-busy={busy !== null}>

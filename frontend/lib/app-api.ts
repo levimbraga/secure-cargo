@@ -298,6 +298,8 @@ export async function requestWithToken<T>(
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     cache: "no-store",
+    // A demo visitor's session is the Worker's httpOnly cookie (real accounts send the token).
+    credentials: "include",
     headers: {
       ...(init.body ? { "Content-Type": "application/json" } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -338,6 +340,7 @@ export function usePhotoSrc(inspectionId: string, photoId: string | null, r2Key:
       const token = await getToken();
       const response = await fetch(`${API_URL}/inspections/${encodeURIComponent(inspectionId)}/photos/${encodeURIComponent(photoId)}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
       });
       if (!response.ok || cancelled) return;
       url = URL.createObjectURL(await response.blob());

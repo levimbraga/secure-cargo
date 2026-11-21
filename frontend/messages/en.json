@@ -762,11 +762,11 @@
     "lab": "Lab",
     "signIn": "Sign in",
     "menu": "App sections",
-    "demoBadge": "Demo account",
-    "switchDemo": "Switch demo account",
+    "demoBadge": "Demo",
     "demoResets": "Demo data resets daily.",
     "trucks": "My trucks",
-    "alertsBadge": "{count, plural, one {# alert} other {# alerts}}"
+    "alertsBadge": "{count, plural, one {# alert} other {# alerts}}",
+    "demoExit": "Exit"
   },
   "Auth": {
     "label": "Account",

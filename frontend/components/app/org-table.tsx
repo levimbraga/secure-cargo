@@ -114,7 +114,10 @@ function OrgTable() {
     setExporting(true);
     try {
       const token = await getToken();
-      const response = await fetch(`${API_URL}/inspections/export.csv?${qs}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      const response = await fetch(`${API_URL}/inspections/export.csv?${qs}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+      });
       if (!response.ok) return;
       const url = URL.createObjectURL(await response.blob());
       const link = document.createElement("a");

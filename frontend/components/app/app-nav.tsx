@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { useMe } from "@/components/app/me-provider";
 import { MobileMenu } from "@/components/site/mobile-menu";
 import { pill } from "@/components/ui/pill";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 
 type Item = { href: string; label: string; badge?: number };
 
@@ -61,22 +61,33 @@ export function AppLinks() {
   );
 }
 
-/** Right side of the nav: the user's menu (or "Sign in") and, on phones, the sections menu. */
+/** Right side of the nav: the user's menu (or "Sign in"), or "Demo · Exit"; on phones, the sections menu. */
 export function AppUser() {
   const t = useTranslations("AppNav");
   const nav = useTranslations("Nav");
   const member = useTranslations("Member");
   const items = useItems();
-  const { signedIn, me } = useMe();
+  const { signedIn, demo, exitDemo } = useMe();
+  const router = useRouter();
 
   return (
     <>
-      {me?.user.is_demo && (
-        <Link href="/app/sign-in" title={t("switchDemo")} className="type-label rounded-full bg-surface px-2.5 py-1 hover:bg-hairline max-md:hidden">
-          {t("demoBadge")}
-        </Link>
-      )}
-      {signedIn ? (
+      {demo ? (
+        // A demo visitor has no account: no profile, password or devices, just a way out.
+        <button
+          type="button"
+          onClick={async () => {
+            await exitDemo();
+            router.push("/app/sign-in");
+          }}
+          className={pill({ variant: "secondary", className: "gap-1.5" })}
+          data-testid="demo-exit"
+        >
+          <span className="type-label text-gray">{t("demoBadge")}</span>
+          <span aria-hidden>·</span>
+          {t("demoExit")}
+        </button>
+      ) : signedIn ? (
         <div className="flex size-8 items-center justify-center">
           <UserButton />
         </div>

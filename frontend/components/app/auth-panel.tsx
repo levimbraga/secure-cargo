@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useId, useState } from "react";
 
 import { DemoButtons } from "@/components/app/demo-buttons";
+import { useMe } from "@/components/app/me-provider";
 import { pill } from "@/components/ui/pill";
 import { useRouter } from "@/i18n/navigation";
 import { type AuthErrorKey, authErrorKey, localAuthError, passwordMinLength } from "@/lib/auth-errors";
@@ -214,7 +215,12 @@ function Submit({ busy, label, busyLabel }: { busy: boolean; label: string; busy
 /** Send the signed-in user to their home; `/app` decides between inspections and the org choice. */
 function useGoHome() {
   const router = useRouter();
-  return () => router.push("/app");
+  const { demo, exitDemo } = useMe();
+  return () => {
+    // A real account replaces a demo session left in this browser.
+    if (demo) void exitDemo();
+    router.push("/app");
+  };
 }
 
 function SignInForm() {

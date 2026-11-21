@@ -73,6 +73,7 @@ export function flowCalls(request: <T>(path: string, init?: RequestInit) => Prom
       const response = await fetch(`${API_URL}/inspections/${encodeURIComponent(id)}/photos?position=${position}`, {
         method: "POST",
         headers: { "Content-Type": photo.type || "image/jpeg", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
         body: photo,
       });
       if (!response.ok) throw await readError(response);
