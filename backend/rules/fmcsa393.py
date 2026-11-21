@@ -60,6 +60,8 @@ class RuleCheck(BaseModel):
     unit_ids: list[str] = []
     values: dict[str, float] = Field(default_factory=dict)
     message: str
+    # EU only: the class a roadside inspection gives a failing check (2014/47/EU Annex III).
+    deficiency: Literal["minor", "major", "dangerous"] | None = None
 
 
 def _weight_n(units: list[CargoUnit]) -> float:

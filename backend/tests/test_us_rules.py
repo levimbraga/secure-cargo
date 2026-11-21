@@ -296,7 +296,7 @@ def test_one_battery_carries_both_rule_sets_and_the_verdict_follows_the_country(
     crate = DraftUnit(id="c", cargo="crate", x_m=2.5, y_m=0, mass_kg=500, straps=2)
     draft = LoadDraft(source="explorer", truck=DraftTruck(), units=[crate], restraint="rope")
     checks = battery_checks(draft)
-    assert set(checks.rules) == {"BR", "US"}
+    assert set(checks.rules) == {"BR", "US", "EU"}
     assert checks.country == "BR"
     held = [{"id": "emergency_braking", "findings": [], "severity": 0.0}]
     battery = {"situations": held, "rules": {k: v.model_dump() for k, v in checks.rules.items()}}

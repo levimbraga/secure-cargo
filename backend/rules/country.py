@@ -6,6 +6,9 @@ set of both countries (``rule_sets``), so a page can switch country without a ne
 
 * BR: CONTRAN Resolution 945/2022 (securing) and 882/2021 (weights, dimensions).
 * US: 49 CFR 393 subpart I (securing), 23 CFR 658.17 (weights) and 658.15 / 393.87 (dimensions).
+* EU: Directive 2014/47/EU Art. 13 and Annex III with EN 12195-1, EN 12642 and EN 12640
+  (securing, with the roadside deficiency class of each failure), Directive 96/53/EC Annex I
+  (weights in international traffic, dimensions).
 """
 
 from pydantic import BaseModel, ConfigDict
@@ -15,6 +18,8 @@ from app.explorer.draft import LoadDraft
 from app.scenario import Scenario
 from rules.checklist import Checklist, checklist
 from rules.contran945 import check_contran_945
+from rules.eu_annex3 import check_annex3
+from rules.eu_checklist import eu_checklist
 from rules.fmcsa393 import RuleCheck, check_fmcsa_393
 from rules.us_checklist import us_checklist
 
@@ -30,6 +35,13 @@ class RuleSet(BaseModel):
 def securing_checks(
     scenario: Scenario, draft: LoadDraft, country: Country, *, headboard_known: bool = True
 ) -> list[RuleCheck]:
+    if country is Country.EU:
+        return check_annex3(
+            scenario,
+            draft,
+            anchored_on_wood=draft.anchored_on_wood,
+            headboard_known=headboard_known,
+        )
     if country is Country.US:
         return check_fmcsa_393(
             scenario,
@@ -56,7 +68,9 @@ def rule_set(
 ) -> RuleSet:
     cargo = [u.cargo.value for u in draft.units]
     restraint = draft.restraint.value
-    if country is Country.US:
+    if country is Country.EU:
+        items = eu_checklist(scenario, draft.truck.size, cargo=cargo, restraint=restraint)
+    elif country is Country.US:
         items = us_checklist(
             scenario,
             draft.truck.size,

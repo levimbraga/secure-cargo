@@ -44,6 +44,8 @@ class MainProblem(BaseModel):
     situation: str | None = None
     unit_id: str | None = None
     article: str | None = None
+    # EU: the roadside deficiency class of the failing check (Directive 2014/47/EU Annex III).
+    deficiency: Literal["minor", "major", "dangerous"] | None = None
 
 
 class Verdict(BaseModel):
@@ -98,7 +100,7 @@ def verdict_of(battery: Json) -> Verdict:
 
 def active_rules(battery: Json) -> tuple[list[Json], Json]:
     """The securing checks and checklist the verdict uses: the battery's country's, if it has the
-    rule sets of both countries (since 2026-11-21); else the Brazilian ones it always carried."""
+    rule sets of every country (since 2026-11-21); else the Brazilian ones it always carried."""
     country = battery.get("country") or "BR"
     rules = (battery.get("rules") or {}).get(country)
     if rules:
@@ -106,14 +108,23 @@ def active_rules(battery: Json) -> tuple[list[Json], Json]:
     return battery.get("contran_945", []), battery.get("checklist") or {}
 
 
+DEFICIENCY_RANK = {"minor": 1, "major": 2, "dangerous": 3}
+
+
 def _first_rule_failure(battery: Json) -> MainProblem | None:
     securing, checklist = active_rules(battery)
-    for check in securing:
-        if check.get("status") == "fail":
-            ids = check.get("unit_ids") or [None]
-            return MainProblem(
-                kind="rule", code=check["code"], unit_id=ids[0], article=check.get("article")
-            )
+    failing = [c for c in securing if c.get("status") == "fail"]
+    if failing:
+        # The worst roadside class first (EU); otherwise the order of the articles.
+        check = max(failing, key=lambda c: DEFICIENCY_RANK.get(c.get("deficiency") or "", 0))
+        ids = check.get("unit_ids") or [None]
+        return MainProblem(
+            kind="rule",
+            code=check["code"],
+            unit_id=ids[0],
+            article=check.get("article"),
+            deficiency=check.get("deficiency"),
+        )
     for theme in ("weight", "dimensions", "protection"):
         for item in checklist.get(theme, []):
             if item.get("kind") == "rule" and item.get("status") == "fail":
