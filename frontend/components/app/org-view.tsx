@@ -131,12 +131,12 @@ export function OrgView() {
                 <tr
                   key={inspection.id}
                   className="cursor-pointer hover:bg-surface/40"
-                  onClick={() => router.push(`/app/inspections/${inspection.id}`)}
+                  onClick={() => router.push(`/app/inspection?id=${inspection.id}`)}
                 >
                   <td className={cn(td, "font-mono text-[0.875rem] whitespace-nowrap")}>{dates.short(inspection.created_at)}</td>
                   <td className={td}>{inspection.author_name ?? "—"}</td>
                   <td className={td}>
-                    <Link href={`/app/inspections/${inspection.id}`} className="font-[450] text-ink hover:underline">
+                    <Link href={`/app/inspection?id=${inspection.id}`} className="font-[450] text-ink hover:underline">
                       {inspection.title}
                     </Link>
                   </td>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { badgeVerdict, InspectionVerdict, useDates, useTruckLabel } from "@/components/app/inspection-bits";
@@ -11,6 +12,12 @@ import { VerdictBadge } from "@/components/ui/verdict-badge";
 import { Link } from "@/i18n/navigation";
 import { AppApiError, type InspectionDetail, photoUrl, useAppApi } from "@/lib/app-api";
 import { encodeDraft, type LoadDraft } from "@/lib/explorer/draft";
+
+/** The inspection named by `?id=`. */
+export function InspectionFromQuery() {
+  const id = useSearchParams().get("id") ?? "";
+  return <InspectionView key={id} id={id} />;
+}
 
 /** One saved inspection: what was loaded, how it did, the fix, and links into the editor, replay and lab. */
 export function InspectionView({ id }: { id: string }) {

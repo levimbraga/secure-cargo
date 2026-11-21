@@ -1,21 +1,26 @@
 import { use } from "react";
+import { SignUp } from "@clerk/nextjs";
 import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-import { InspectionView } from "@/components/app/inspection-view";
 import { SiteNav } from "@/components/site/site-nav";
 import { routing } from "@/i18n/routing";
 
-export default function InspectionPage({ params }: PageProps<"/[locale]/app/inspections/[id]">) {
-  const { locale, id } = use(params);
+/**
+ * Where invitation emails land: Clerk reads the invitation ticket from the URL. Hash routing keeps
+ * the page static (no catch-all segment).
+ */
+export default function SignUpPage({ params }: PageProps<"/[locale]/app/sign-up">) {
+  const { locale } = use(params);
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  const prefix = locale === "pt-BR" ? "/pt-BR" : "";
   return (
     <>
       <SiteNav variant="minimal" />
       <main className="col flex-1 pt-14 pb-24 md:pt-20">
-        <InspectionView id={id} />
+        <SignUp routing="hash" signInUrl={`${prefix}/app/sign-in`} />
       </main>
     </>
   );

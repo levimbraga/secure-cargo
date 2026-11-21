@@ -30,7 +30,7 @@ export function MemberHome() {
   }, [me, request]);
 
   if (!ready) return <p className="type-small text-gray">{t("loading")}</p>;
-  if (!signedIn) return <SignInPanel mode="embedded" />;
+  if (!signedIn) return <SignInPanel />;
 
   const allowance = me?.analysis;
   return (

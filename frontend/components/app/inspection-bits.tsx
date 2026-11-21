@@ -46,7 +46,7 @@ export function InspectionListItem({ inspection }: { inspection: InspectionSumma
   const photo = photoUrl(inspection.cover_photo);
   return (
     <li className="border-t border-hairline">
-      <Link href={`/app/inspections/${inspection.id}`} className="flex min-h-[76px] items-center gap-4 py-3 hover:bg-surface/40">
+      <Link href={`/app/inspection?id=${inspection.id}`} className="flex min-h-[76px] items-center gap-4 py-3 hover:bg-surface/40">
         <span className="size-14 shrink-0 overflow-hidden rounded-[4px] bg-surface">
           {photo && (
             // eslint-disable-next-line @next/next/no-img-element -- small sample thumbnails, already optimized

@@ -26,7 +26,7 @@ function useItems(): Item[] {
 }
 
 function isActive(pathname: string, href: string): boolean {
-  return href === "/app" ? pathname === "/app" || pathname.startsWith("/app/inspections") : pathname.startsWith(href);
+  return href === "/app" ? pathname === "/app" || pathname.startsWith("/app/inspection") : pathname.startsWith(href);
 }
 
 /** Section links in the center of the nav, from 768px up. */
@@ -60,7 +60,9 @@ export function AppUser() {
   return (
     <>
       {me?.user.is_demo && (
-        <span className="type-label rounded-full bg-surface px-2.5 py-1 max-md:hidden">{t("demoBadge")}</span>
+        <Link href="/app/sign-in" title={t("switchDemo")} className="type-label rounded-full bg-surface px-2.5 py-1 hover:bg-hairline max-md:hidden">
+          {t("demoBadge")}
+        </Link>
       )}
       {signedIn ? (
         <div className="flex size-8 items-center justify-center">

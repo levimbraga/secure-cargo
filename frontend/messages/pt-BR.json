@@ -720,7 +720,8 @@
     "lab": "Laboratório",
     "signIn": "Entrar",
     "menu": "Seções do app",
-    "demoBadge": "Conta de demonstração"
+    "demoBadge": "Conta de demonstração",
+    "switchDemo": "Trocar de conta demo"
   },
   "Auth": {
     "label": "Entrar",

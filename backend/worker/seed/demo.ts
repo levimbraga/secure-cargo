@@ -2,14 +2,15 @@
  * Seed the demo organization for the judges: "Demo Insurer", a manager and three drivers, and
  * inspections built from the gallery examples (fails, fixes, passes) with sample photos.
  *
- * 1. Finds or creates the demo users and organization in Clerk (idempotent, by email and slug).
+ * 1. Finds or creates the demo users and organization in Clerk (idempotent, by email and name).
  * 2. Writes `seed/out/demo.sql`, which replaces the demo inspections in D1. Recorded usage is never
  *    touched: it is what the monthly cap is computed from.
  *
  *   pnpm seed:demo                          # reads CLERK_SECRET_KEY from .dev.vars or the env
  *   npx wrangler d1 execute securecargo --remote --file seed/out/demo.sql
  *
- * Names are fictional and the emails use the reserved `.invalid` domain: no real personal data.
+ * Names are fictional and the emails are on our own demo subdomain (no mailbox; nothing is ever sent to
+ * them): no real personal data.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -45,12 +46,12 @@ interface DemoPerson {
 }
 
 const PEOPLE: DemoPerson[] = [
-	{ key: "manager", firstName: "Marina", lastName: "(demo insurer)", email: "manager@demo-insurer.invalid", role: "org:admin" },
-	{ key: "driver", firstName: "Rafael", lastName: "(demo driver)", email: "driver@demo-insurer.invalid", role: "org:member" },
-	{ key: "driver2", firstName: "Joana", lastName: "(demo driver)", email: "driver2@demo-insurer.invalid", role: "org:member" },
-	{ key: "driver3", firstName: "Tiago", lastName: "(demo driver)", email: "driver3@demo-insurer.invalid", role: "org:member" },
+	{ key: "manager", firstName: "Marina", lastName: "(demo insurer)", email: "manager@demo.securecargo.app", role: "org:admin" },
+	{ key: "driver", firstName: "Rafael", lastName: "(demo driver)", email: "driver@demo.securecargo.app", role: "org:member" },
+	{ key: "driver2", firstName: "Joana", lastName: "(demo driver)", email: "driver2@demo.securecargo.app", role: "org:member" },
+	{ key: "driver3", firstName: "Tiago", lastName: "(demo driver)", email: "driver3@demo.securecargo.app", role: "org:member" },
 ];
-const ORG = { name: "Demo Insurer", slug: "demo-insurer", type: "insurer" as const };
+const ORG = { name: "Demo Insurer", type: "insurer" as const };
 
 async function findOrCreateUser(person: DemoPerson): Promise<string> {
 	const { data } = await clerk.users.getUserList({ emailAddress: [person.email] });
@@ -66,18 +67,16 @@ async function findOrCreateUser(person: DemoPerson): Promise<string> {
 }
 
 async function findOrCreateOrg(createdBy: string): Promise<string> {
-	try {
-		const org = await clerk.organizations.getOrganization({ slug: ORG.slug });
-		return org.id;
-	} catch {
-		const org = await clerk.organizations.createOrganization({
-			name: ORG.name,
-			slug: ORG.slug,
-			createdBy,
-			publicMetadata: { type: ORG.type, demo: true },
-		});
-		return org.id;
-	}
+	// Organization slugs are off by default in Clerk Core 3: find the demo org by name and metadata.
+	const { data } = await clerk.organizations.getOrganizationList({ query: ORG.name, limit: 20 });
+	const existing = data.find((o) => o.name === ORG.name && (o.publicMetadata as { demo?: boolean } | null)?.demo);
+	if (existing) return existing.id;
+	const org = await clerk.organizations.createOrganization({
+		name: ORG.name,
+		createdBy,
+		publicMetadata: { type: ORG.type, demo: true },
+	});
+	return org.id;
 }
 
 async function ensureMembership(orgId: string, userId: string, role: string): Promise<void> {

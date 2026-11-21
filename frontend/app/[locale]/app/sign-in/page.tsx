@@ -7,7 +7,7 @@ import { SignInPanel } from "@/components/app/sign-in-panel";
 import { SiteNav } from "@/components/site/site-nav";
 import { routing } from "@/i18n/routing";
 
-export default function SignInPage({ params }: PageProps<"/[locale]/app/sign-in/[[...sign-in]]">) {
+export default function SignInPage({ params }: PageProps<"/[locale]/app/sign-in">) {
   const { locale } = use(params);
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);

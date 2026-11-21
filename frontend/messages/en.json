@@ -720,7 +720,8 @@
     "lab": "Lab",
     "signIn": "Sign in",
     "menu": "App sections",
-    "demoBadge": "Demo account"
+    "demoBadge": "Demo account",
+    "switchDemo": "Switch demo account"
   },
   "Auth": {
     "label": "Sign in",
