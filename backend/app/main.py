@@ -6,14 +6,15 @@ from contextlib import asynccontextmanager
 
 import mujoco
 from fastapi import FastAPI, HTTPException, Query, Request, Response
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app import __version__
 from app.config import Settings, get_settings
 from app.demo import load_demo_scenarios
 from app.demo.fixtures import Variant
 from app.explorer import BuildError, ExplorerConfig, build, build_draft
+from app.inspection.battery import run_battery
 from app.schemas import (
     DemoScenariosResponse,
     DraftRequest,
@@ -28,7 +29,7 @@ from app.simulation_service import simulate_cached
 from app.storage import create_storage
 from physics.live import build_live_model
 from physics.simulate import SimulationError
-
+from planner.plan import BatteryResponse, Plan, Recommendation, plan, recommend
 
 INTERNAL_HEADER = "x-securecargo-internal"
 
@@ -50,6 +51,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         version=__version__,
         lifespan=lifespan,
     )
+
     # Added before CORS so that it runs after it: a refused request still carries CORS headers.
     @app.middleware("http")
     async def only_the_worker(
@@ -185,6 +187,49 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             event=event,
             live=build_live_model(scenario, event),
         )
+
+    @app.post(
+        "/battery",
+        response_model=BatteryResponse,
+        tags=["inspection"],
+        responses={422: {"description": "A draft that cannot be loaded or simulated."}},
+    )
+    def battery(body: DraftRequest, request: Request) -> BatteryResponse:
+        """The load through the standard battery of seven situations.
+
+        Returns a verdict per situation, the worst one with its keyframes (fetch the others with
+        ``POST /simulate``, from the cache), axle loads, the EN 12195-1 and CONTRAN 945 checks,
+        and, when anything fails, the fix the planner recommends on paper.
+        """
+        try:
+            result = run_battery(request.app.state.storage, body.draft)
+            needs_fix = result.passed < result.total or any(
+                check.status == "fail" for check in result.contran_945
+            )
+            recommendation = None
+            if needs_fix:
+                fixed, changes = recommend(body.draft)
+                recommendation = Recommendation(draft=fixed, changes=changes)
+        except BuildError as error:
+            raise _unprocessable(error.code, str(error)) from error
+        except SimulationError as error:
+            raise _unprocessable("simulation_unstable", str(error)) from error
+        return BatteryResponse(**result.model_dump(), recommendation=recommendation)
+
+    @app.post(
+        "/plan",
+        response_model=Plan,
+        tags=["inspection"],
+        responses={422: {"description": "A draft that cannot be loaded or simulated."}},
+    )
+    def plan_fix(body: DraftRequest, request: Request) -> Plan:
+        """The smallest change that passes the rules and the whole battery, proven in simulation."""
+        try:
+            return plan(request.app.state.storage, body.draft)
+        except BuildError as error:
+            raise _unprocessable(error.code, str(error)) from error
+        except SimulationError as error:
+            raise _unprocessable("simulation_unstable", str(error)) from error
 
     return app
 

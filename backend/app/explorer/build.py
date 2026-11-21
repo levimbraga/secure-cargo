@@ -511,6 +511,16 @@ def build_draft(
     return scenario, trip_event(draft.trip)
 
 
+def strap_room(scenario: Scenario, unit_id: str) -> int:
+    """How many top-over straps fit over a unit: the anchor pairs facing each other along it."""
+    unit = next(u for u in scenario.units if u.id == unit_id)
+    return len(
+        _anchor_pairs(
+            scenario.bed.anchor_points, unit.position_m[0], unit.size_m[0], unit.position_m[1]
+        )
+    )
+
+
 def _anchors(truck: TruckSpec) -> list[AnchorPoint]:
     return side_anchor_points(
         length_m=truck.length_m, width_m=truck.width_m, spacing_m=ANCHOR_SPACING_M
