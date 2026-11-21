@@ -66,7 +66,9 @@ export function useMainProblem() {
       return t(`physics.${problem.code}` as never, { when, unit: unitName(problem.unitId) } as never);
     }
     const axle = problem.code === "axle" || problem.code === "us_axle" ? t(`axleName.${problem.unitId ?? "rear"}` as never) : "";
-    return t(`rule.${problem.code}` as never, { unit: unitName(problem.unitId), axle } as never);
+    const sentence = t(`rule.${problem.code}` as never, { unit: unitName(problem.unitId), axle } as never);
+    // "{unit} needs…" starts with a unit's name, written in lower case mid-sentence.
+    return sentence.charAt(0).toLocaleUpperCase() + sentence.slice(1);
   };
 }
 
