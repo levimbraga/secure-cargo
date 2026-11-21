@@ -30,7 +30,9 @@ from physics.results import (
     StandardCheck,
     Status,
 )
+from rules.axle_loads import axle_loads
 from rules.contran945 import ContranCheck, check_contran_945
+from rules.en12195 import check_scenario
 
 SituationId = Literal[
     "emergency_braking",
@@ -144,46 +146,80 @@ def run_situations(
     return out
 
 
+def situation_result(
+    storage: Storage, draft: LoadDraft, situation: Situation
+) -> tuple[SituationResult, SimulationResult]:
+    """One situation of the battery: its summary and its full run (with keyframes)."""
+    scenario, event = scenario_for(draft, situation)
+    response = simulate_cached(storage, scenario, event)
+    result = response.result
+    summary = SituationResult(
+        id=situation.id,
+        trip=situation.trip,
+        event=event,
+        status=result.verdict.status,
+        passed=result.verdict.status != "fail",
+        severity=severity(result) if result.verdict.status != "pass" else 0.0,
+        findings=result.verdict.findings,
+        margins=result.margins,
+        profile=result.profile,
+        scenario_hash=response.scenario_hash,
+    )
+    return summary, result
+
+
+class BatteryChecks(_Model):
+    """What a battery reports besides the situations: the same for all of them."""
+
+    draft: LoadDraft
+    scenario: Scenario
+    axle_loads: list[AxleLoad]
+    en_12195_1: list[StandardCheck]
+    contran_945: list[ContranCheck]
+
+
+def battery_checks(draft: LoadDraft) -> BatteryChecks:
+    """Axle loads, EN 12195-1 and CONTRAN 945 of a load (no simulation)."""
+    scenario, _ = scenario_for(draft, SITUATIONS[0])
+    return BatteryChecks(
+        draft=draft,
+        scenario=scenario,
+        axle_loads=axle_loads(scenario),
+        en_12195_1=check_scenario(scenario),
+        contran_945=check_contran_945(scenario, anchored_on_wood=draft.anchored_on_wood),
+    )
+
+
+def worst_of(situations: list[SituationResult]) -> int:
+    """Index of the situation shown first: failures before warnings, then by severity."""
+    return max(
+        range(len(situations)),
+        key=lambda i: (_STATUS_RANK[situations[i].status], situations[i].severity, -i),
+    )
+
+
 def run_battery(storage: Storage, draft: LoadDraft) -> BatteryResult:
     """The load through all seven situations, with the rule checks and the worst case first."""
     started = time.thread_time()
-    runs = run_situations(storage, draft)
-    situations = [
-        SituationResult(
-            id=situation.id,
-            trip=situation.trip,
-            event=scenario_for(draft, situation)[1],
-            status=result.verdict.status,
-            passed=result.verdict.status != "fail",
-            severity=severity(result) if result.verdict.status != "pass" else 0.0,
-            findings=result.verdict.findings,
-            margins=result.margins,
-            profile=result.profile,
-            scenario_hash=key,
-        )
-        for situation, result, key in runs
-    ]
-    worst_index = max(
-        range(len(runs)),
-        key=lambda i: (_STATUS_RANK[situations[i].status], situations[i].severity, -i),
-    )
+    runs = [situation_result(storage, draft, situation) for situation in SITUATIONS]
+    situations = [summary for summary, _ in runs]
+    worst_index = worst_of(situations)
     statuses = {s.status for s in situations}
     status: Status = (
         "fail" if "fail" in statuses else "warning" if "warning" in statuses else "pass"
     )
-    scenario, _ = scenario_for(draft, SITUATIONS[0])
-    first = runs[0][1]
+    checks = battery_checks(draft)
     return BatteryResult(
         draft=draft,
-        scenario=scenario,
+        scenario=checks.scenario,
         situations=situations,
         passed=sum(s.passed for s in situations),
         total=len(situations),
         status=status,
         worst=situations[worst_index].id,
         worst_result=runs[worst_index][1],
-        axle_loads=first.axle_loads,
-        en_12195_1=first.en_12195_1,
-        contran_945=check_contran_945(scenario, anchored_on_wood=draft.anchored_on_wood),
+        axle_loads=checks.axle_loads,
+        en_12195_1=checks.en_12195_1,
+        contran_945=checks.contran_945,
         cpu_time_s=round(time.thread_time() - started, 3),
     )

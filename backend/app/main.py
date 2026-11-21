@@ -15,7 +15,16 @@ from app.config import Settings, get_settings
 from app.demo import load_demo_scenarios
 from app.demo.fixtures import Variant
 from app.explorer import BuildError, DraftTruck, ExplorerConfig, build, build_draft
-from app.inspection.battery import run_battery
+from app.explorer.draft import LoadDraft
+from app.inspection.battery import (
+    SITUATIONS,
+    BatteryChecks,
+    SituationId,
+    SituationResult,
+    battery_checks,
+    run_battery,
+    situation_result,
+)
 from app.schemas import (
     DemoScenariosResponse,
     DraftRequest,
@@ -30,8 +39,17 @@ from app.simulation_service import simulate_cached
 from app.storage import create_storage
 from perception.draft import PerceptionDraft, PhotoAnalysis, Weight, analysis_to_draft
 from physics.live import build_live_model
+from physics.results import SimulationResult
 from physics.simulate import SimulationError
-from planner.plan import BatteryResponse, Plan, Recommendation, plan, recommend
+from planner.plan import (
+    BatteryResponse,
+    Candidates,
+    Plan,
+    Recommendation,
+    candidates,
+    plan,
+    recommend,
+)
 
 INTERNAL_HEADER = "x-securecargo-internal"
 
@@ -226,6 +244,41 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise _unprocessable("simulation_unstable", str(error)) from error
         return BatteryResponse(**result.model_dump(), recommendation=recommendation)
 
+    # The Worker runs the seven situations in parallel, one container instance each: a
+    # 1/4-vCPU instance takes most of a minute for the whole battery on its own.
+
+    @app.post("/battery/situation", response_model=SituationRun, tags=["inspection"])
+    def battery_situation(body: SituationRequest, request: Request) -> SituationRun:
+        """One situation of the battery, with its full run (keyframes included)."""
+        situation = next(s for s in SITUATIONS if s.id == body.situation)
+        try:
+            summary, result = situation_result(request.app.state.storage, body.draft, situation)
+        except BuildError as error:
+            raise _unprocessable(error.code, str(error)) from error
+        except SimulationError as error:
+            raise _unprocessable("simulation_unstable", str(error)) from error
+        return SituationRun(situation=summary, result=result)
+
+    @app.post("/battery/checks", response_model=ChecksResponse, tags=["inspection"])
+    def battery_rule_checks(body: DraftRequest) -> ChecksResponse:
+        """Axle loads, EN 12195-1, CONTRAN 945 and the planner's recommendation (no simulation)."""
+        try:
+            checks = battery_checks(body.draft)
+            fixed, changes = recommend(body.draft)
+        except BuildError as error:
+            raise _unprocessable(error.code, str(error)) from error
+        return ChecksResponse(
+            **checks.model_dump(), recommendation=Recommendation(draft=fixed, changes=changes)
+        )
+
+    @app.post("/plan/candidates", response_model=Candidates, tags=["inspection"])
+    def plan_candidates(body: DraftRequest) -> Candidates:
+        """The planner's candidates, cheapest first, for a proof in parallel."""
+        try:
+            return candidates(body.draft)
+        except BuildError as error:
+            raise _unprocessable(error.code, str(error)) from error
+
     @app.post(
         "/plan",
         response_model=Plan,
@@ -242,6 +295,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise _unprocessable("simulation_unstable", str(error)) from error
 
     return app
+
+
+class SituationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    draft: LoadDraft
+    situation: SituationId
+
+
+class SituationRun(BaseModel):
+    situation: SituationResult
+    result: SimulationResult
+
+
+class ChecksResponse(BatteryChecks):
+    recommendation: Recommendation
 
 
 class PerceptionRequest(BaseModel):

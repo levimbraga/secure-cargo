@@ -55,6 +55,7 @@ ChangeCode = Literal[
     "balance_axles",
     "straps",
     "restraint",
+    "overweight",
 ]
 
 # Battery situations in the order the planner tries them: the ones most loads fail first, so a
@@ -461,6 +462,63 @@ def recommend(draft: LoadDraft) -> tuple[LoadDraft, list[Change]]:
     return fixed, changes
 
 
+class Candidate(_Model):
+    name: str
+    draft: LoadDraft
+    changes: list[Change]
+
+
+class Candidates(_Model):
+    """The planner's candidates, cheapest first, for a proof run elsewhere (in parallel)."""
+
+    candidates: list[Candidate]
+    infeasible: Literal["overweight"] | None = None
+    values: dict[str, float] = Field(default_factory=dict)
+
+
+def overweight(draft: LoadDraft) -> tuple[float, float] | None:
+    """(cargo mass, payload) when the cargo is heavier than the truck may carry, else None."""
+    scenario, _ = build_draft(draft)
+    payload = scenario.vehicle.payload_kg if scenario.vehicle else None
+    mass = sum(unit.mass_kg for unit in scenario.units)
+    return (mass, payload) if payload is not None and mass > payload else None
+
+
+def overweight_change(mass_kg: float, payload_kg: float) -> Change:
+    return Change(
+        code="overweight",
+        values={"mass_kg": round(mass_kg), "payload_kg": round(payload_kg)},
+        message=(
+            f"The cargo weighs {mass_kg / 1000:.1f} t; this truck may carry "
+            f"{payload_kg / 1000:.1f} t. Use a larger truck or split the load."
+        ),
+    )
+
+
+def candidates(draft: LoadDraft) -> Candidates:
+    """What `plan` would simulate, in order, without simulating: at most MAX_ROUNDS."""
+    heavy = overweight(draft)
+    if heavy:
+        return Candidates(
+            candidates=[],
+            infeasible="overweight",
+            values={"mass_kg": heavy[0], "payload_kg": heavy[1]},
+        )
+    fixed, changes = _rule_fixes(draft)
+    scenario, _ = build_draft(fixed)
+    fixed, placement = _placement(fixed, scenario)
+    changes += placement
+    options = [c for c in _candidates(fixed) if _on_paper(c)] or _candidates(fixed)
+    return Candidates(
+        candidates=[
+            Candidate(
+                name=c.name, draft=c.draft, changes=changes + _securing_changes(fixed, c.draft)
+            )
+            for c in options[:MAX_ROUNDS]
+        ]
+    )
+
+
 def plan(storage: Storage, draft: LoadDraft) -> Plan:
     """Find the smallest change that passes, and prove it through the whole battery."""
     original = run_battery(storage, draft)
@@ -468,6 +526,16 @@ def plan(storage: Storage, draft: LoadDraft) -> Plan:
     if original.passed == original.total and passes_rules:
         return Plan(draft=draft, changes=[], verified=True, rounds=0, battery=original)
 
+    heavy = overweight(draft)
+    if heavy:
+        # No securing makes a truck carry more than it may: say so instead of simulating.
+        return Plan(
+            draft=draft,
+            changes=[overweight_change(*heavy)],
+            verified=False,
+            rounds=0,
+            battery=original,
+        )
     fixed, changes = _rule_fixes(draft)
     scenario, _ = build_draft(fixed)
     fixed, placement = _placement(fixed, scenario)

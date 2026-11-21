@@ -114,3 +114,34 @@ def test_battery_and_plan_endpoints(client: TestClient) -> None:
     assert fixed.json()["verified"] is True
     unloadable = {**draft, "units": [{**draft["units"][0], "x_m": 9.0}]}
     assert client.post("/battery", json={"draft": unloadable}).status_code == 422
+
+
+def test_an_overweight_load_is_not_simulated_in_vain() -> None:
+    heavy = LoadDraft(
+        truck={"body": "flatbed", "size": "toco"},
+        units=[DraftUnit(id="m", cargo="machine", x_m=0.0, y_m=0, mass_kg=12_000)],
+    )
+    result = plan(create_storage("memory://"), heavy)
+    assert not result.verified
+    assert [c.code for c in result.changes] == ["overweight"]
+    assert result.rounds == 0
+
+
+def test_the_parallel_pieces_add_up_to_the_battery(client: TestClient) -> None:
+    draft = _draft("emergency-braking.as_loaded").model_dump(mode="json")
+    whole = client.post("/battery", json={"draft": draft}).json()
+    one = client.post(
+        "/battery/situation", json={"draft": draft, "situation": "emergency_braking"}
+    ).json()
+    assert one["situation"] == next(
+        s for s in whole["situations"] if s["id"] == "emergency_braking"
+    )
+    assert one["result"]["keyframes"]["frames"]
+    checks = client.post("/battery/checks", json={"draft": draft}).json()
+    assert checks["contran_945"] == whole["contran_945"]
+    assert checks["axle_loads"] == whole["axle_loads"]
+    assert checks["recommendation"] == whole["recommendation"]
+    options = client.post("/plan/candidates", json={"draft": draft}).json()
+    assert options["infeasible"] is None
+    assert 1 <= len(options["candidates"]) <= 4
+    assert options["candidates"][0]["changes"]
