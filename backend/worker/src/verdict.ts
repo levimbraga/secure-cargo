@@ -28,6 +28,24 @@ export interface BatteryLike {
 	contran_945?: CheckLike[];
 	checklist?: Record<string, CheckLike[]> | null;
 	axle_loads?: unknown[];
+	/** Whose rules the verdict uses (since 2026-11-21; absent: BR). */
+	country?: string | null;
+	/** Both countries' rule checks (`rules/country.py`); absent on older batteries. */
+	rules?: Record<string, { securing?: CheckLike[]; checklist?: Record<string, CheckLike[]> | null }> | null;
+}
+
+export type Country = "BR" | "US";
+export const COUNTRIES: readonly Country[] = ["BR", "US"];
+
+/**
+ * The battery as its country's rules see it: the securing checks in `contran_945`'s place and that
+ * country's checklist. A battery without rule sets (stored before US mode) is Brazilian as it is.
+ */
+export function activeView<T extends BatteryLike>(battery: T, country?: string | null): T {
+	const chosen = country ?? battery.country ?? "BR";
+	const rules = battery.rules?.[chosen];
+	if (!rules) return battery;
+	return { ...battery, country: chosen, contran_945: rules.securing ?? [], checklist: rules.checklist ?? null };
 }
 
 const RULE_FINDINGS = new Set(["axle_overloaded"]);
@@ -39,7 +57,8 @@ export function physicalFailure(situation: SituationLike): boolean {
 	});
 }
 
-export function rulesFail(battery: BatteryLike): boolean {
+export function rulesFail(input: BatteryLike): boolean {
+	const battery = activeView(input);
 	if ((battery.contran_945 ?? []).some((check) => check.status === "fail")) return true;
 	const checklist = battery.checklist;
 	if (checklist) {

@@ -12,7 +12,7 @@
  * fresh instance and the previous one stops by itself after the inactivity timeout.
  */
 import { createApp, isAppRoute } from "./app";
-import { type ContainerCall, runBattery, runPlan } from "./fanout";
+import { type ContainerCall, runBattery, runChecks, runPlan } from "./fanout";
 import type { PhotoStore, SamplePhoto } from "./flow";
 import { ApiError } from "./http";
 import { createClerkIdentity } from "./identity";
@@ -46,7 +46,11 @@ function application(env: Env): ReturnType<typeof createApp> {
 		demoSecret: env.DEMO_SESSION_SECRET?.trim() ?? "",
 		limitAnonymous: async (k) => (await env.ANON_RATE_LIMITER.limit({ key: k })).success,
 		photos: r2PhotoStore(env.PHOTOS),
-		physics: { battery: (draft) => runBattery(containerCall(env), draft), plan: (draft) => runPlan(containerCall(env), draft) },
+		physics: {
+			battery: (draft) => runBattery(containerCall(env), draft),
+			plan: (draft) => runPlan(containerCall(env), draft),
+			checks: (draft) => runChecks(containerCall(env), draft),
+		},
 		// Trimmed: a key pasted with a trailing newline is answered with 401 by the API.
 		analyzer: env.ANTHROPIC_API_KEY?.trim()
 			? { model, analyze: (photos) => analyzePhotos((env.ANTHROPIC_API_KEY as string).trim(), photos, model) }

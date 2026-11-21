@@ -10,7 +10,7 @@
  * The answers have the shapes of the container's own `POST /battery` and `POST /plan`.
  */
 import { ApiError, fail } from "./http";
-import { verdictState } from "./verdict";
+import { type BatteryLike, activeView, verdictState } from "./verdict";
 
 /** A POST to a container instance (only the Worker can reach them). `instance` names it. */
 export type ContainerCall = (path: string, body: unknown, instance?: string) => Promise<Response>;
@@ -53,6 +53,10 @@ export interface BatteryJson {
 	en_12195_1: unknown[];
 	contran_945: { status: string }[];
 	checklist: Record<string, { status: string; kind: string }[]> | null;
+	/** Whose rules the verdict uses, and both countries' rule checks (absent before US mode). */
+	country?: string;
+	rules?: BatteryLike["rules"];
+	verdicts?: Record<string, { state: string }>;
 	verdict: { state: string } | null;
 	wall_time_s: number;
 	recommendation: unknown;
@@ -95,7 +99,7 @@ export function worstIndex(situations: Pick<Situation, "status" | "severity">[])
 }
 
 /** Approved: every situation holds and every rule passes (`verdict.ts`). */
-export function passesRules(battery: Pick<BatteryJson, "situations" | "contran_945" | "checklist">): boolean {
+export function passesRules(battery: Pick<BatteryJson, "situations" | "contran_945" | "checklist" | "country" | "rules">): boolean {
 	return verdictState(battery) === "approved";
 }
 
@@ -110,6 +114,8 @@ export async function runBattery(call: ContainerCall, draft: unknown, withRecomm
 			en_12195_1: unknown[];
 			contran_945: { status: string }[];
 			checklist?: BatteryJson["checklist"];
+			country?: string;
+			rules?: BatteryJson["rules"];
 			recommendation: unknown;
 		}>(
 			call,
@@ -136,13 +142,23 @@ export async function runBattery(call: ContainerCall, draft: unknown, withRecomm
 		en_12195_1: checks.en_12195_1,
 		contran_945: checks.contran_945,
 		checklist: checks.checklist ?? null,
+		...(checks.rules ? { country: checks.country ?? "BR", rules: checks.rules } : {}),
 		verdict: null,
 		wall_time_s: (Date.now() - started) / 1000,
 		recommendation: null,
 	};
 	battery.verdict = { state: verdictState(battery) };
+	if (battery.rules) {
+		battery.verdicts = Object.fromEntries(Object.keys(battery.rules).map((c) => [c, { state: verdictState(activeView(battery, c)) }]));
+	}
 	if (withRecommendation && !passesRules(battery)) battery.recommendation = checks.recommendation;
 	return battery;
+}
+
+/** Both countries' rule checks of a load: no simulation (`POST /battery/checks`). */
+export async function runChecks(call: ContainerCall, draft: unknown): Promise<{ country?: string; rules?: BatteryJson["rules"] }> {
+	const checks = await post<{ country?: string; rules?: BatteryJson["rules"] }>(call, "/battery/checks", { draft });
+	return { country: checks.country, rules: checks.rules };
 }
 
 interface Candidate {

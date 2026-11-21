@@ -11,6 +11,7 @@
  */
 import { sha256Hex } from "./perception/metadata";
 import { unpackList } from "./summary";
+import { type BatteryLike, activeView } from "./verdict";
 
 export const DISCLAIMER_CODE = "decision_support_v1";
 export const DISCLAIMER =
@@ -69,6 +70,7 @@ export function certificateId(): string {
 	return `SC-${chars.slice(0, 4)}-${chars.slice(4)}`;
 }
 
+
 export const CERTIFICATE_ID = /^SC-[2-9A-HJKMNP-Z]{4}-[2-9A-HJKMNP-Z]{4}$/;
 
 interface Battery {
@@ -108,7 +110,8 @@ export function certificateBody(params: {
 	photo: { sha256: string; position: string } | null;
 	fixChanges: { code?: string }[];
 }): Record<string, unknown> {
-	const { inspection, battery } = params;
+	const { inspection } = params;
+	const battery = activeView(params.battery as Battery & BatteryLike) as Battery;
 	let truck: Record<string, unknown> = {};
 	try {
 		truck = inspection.truck_json ? (JSON.parse(inspection.truck_json) as Record<string, unknown>) : {};
@@ -126,6 +129,7 @@ export function certificateBody(params: {
 	return {
 		v: 1,
 		state: params.state,
+		...(params.battery && (params.battery as BatteryLike).rules ? { country: (battery as BatteryLike).country ?? "BR" } : {}),
 		inspection_id: inspection.id,
 		inspected_at: inspection.created_at,
 		proof_inspection_id: params.proof?.id ?? null,

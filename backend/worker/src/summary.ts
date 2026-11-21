@@ -10,6 +10,7 @@
  *   other legal checks of the checklist (`axle`, `payload`, `gross`, `height`, `width`, `overhang`).
  */
 import type { Db } from "./db";
+import { type BatteryLike, activeView } from "./verdict";
 
 export const PHYSICAL_FAILURES = [
 	"unit_slid",
@@ -35,9 +36,22 @@ export const RULE_FAILURES = [
 	"height",
 	"width",
 	"overhang",
+	// US mode (49 CFR 393, 23 CFR 658)
+	"aggregate_wll",
+	"min_tiedowns",
+	"front_end_structure",
+	"van_contained",
+	"rolling_articles",
+	"metal_coils",
+	"machinery",
+	"anchor_points",
+	"us_axle",
+	"us_gross",
+	"bridge",
 ] as const;
 
 export const FAILURE_CODES: readonly string[] = [...PHYSICAL_FAILURES, ...RULE_FAILURES];
+
 
 interface BatteryShape {
 	situations?: { findings?: { code?: string; severity?: string }[] }[];
@@ -48,7 +62,7 @@ interface BatteryShape {
 
 /** Every failure type of a battery, physical ones first, each once. */
 export function failureCodes(battery: unknown): string[] {
-	const b = (battery ?? {}) as BatteryShape;
+	const b = activeView((battery ?? {}) as BatteryShape & BatteryLike) as BatteryShape;
 	const found = new Set<string>();
 	for (const situation of b.situations ?? []) {
 		for (const finding of situation.findings ?? []) {

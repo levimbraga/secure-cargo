@@ -246,6 +246,54 @@ describe("confirmed load", () => {
 	});
 });
 
+describe("country (US mode)", () => {
+	const held = BATTERY.situations.map((s) => ({ ...s, status: "pass", passed: true, findings: [] }));
+	// Ropes: out of compliance in Brazil (CONTRAN 945 art. 4 §3), only "to confirm" in the US.
+	const rules = {
+		BR: { securing: [{ code: "devices_allowed", status: "fail" }], checklist: { weight: [], protection: [], dimensions: [] } },
+		US: { securing: [{ code: "rope_tiedowns", status: "to_confirm" }], checklist: { weight: [], protection: [], dimensions: [] } },
+	};
+	function countryPhysics(): Physics & { calls: string[] } {
+		const calls: string[] = [];
+		return {
+			calls,
+			async battery() {
+				calls.push("/battery");
+				return { ...BATTERY, passed: 7, status: "pass", situations: held, country: "BR", rules } as unknown as BatteryJson;
+			},
+			async plan() {
+				throw new Error("not used");
+			},
+			async checks() {
+				calls.push("/battery/checks");
+				return { rules };
+			},
+		};
+	}
+
+	it("re-checks only the rules when the driver switches country, and keeps the physics", async () => {
+		const physics = countryPhysics();
+		const ctx = setup({ flow: { photos: memoryStore(), analyzer: fakeAnalyzer(), physics, samples: { pallets: SAMPLE } } });
+		const created = (await (await ctx.call("POST", "/inspections", as.alice, {})).json()) as { id: string };
+		const id = created.id;
+		const confirm = await ctx.call("PUT", `/inspections/${id}/draft`, as.alice, { draft: draftFor([900, 900]), cargo_weight_kg: 1800 });
+		expect(confirm.status).toBe(200);
+		await ctx.call("POST", `/inspections/${id}/simulate`, as.alice);
+		let detail = (await (await ctx.call("GET", `/inspections/${id}`, as.alice)).json()) as { verdict: string; country: string };
+		expect(detail).toMatchObject({ verdict: "warning", country: "BR" });
+		expect((await ctx.call("PUT", `/inspections/${id}/country`, as.carol, { country: "US" })).status).toBe(403);
+		expect((await ctx.call("PUT", `/inspections/${id}/country`, as.alice, { country: "MX" })).status).toBe(422);
+		const switched = (await (await ctx.call("PUT", `/inspections/${id}/country`, as.alice, { country: "US" })).json()) as { verdict: string };
+		expect(switched.verdict).toBe("pass");
+		detail = (await (await ctx.call("GET", `/inspections/${id}`, as.alice)).json()) as { verdict: string; country: string };
+		expect(detail).toMatchObject({ verdict: "pass", country: "US" });
+		const stored = (await (await ctx.call("GET", `/inspections/${id}/battery/as_loaded`, as.alice)).json()) as { country: string; draft: { country: string } };
+		expect(stored.country).toBe("US");
+		expect(stored.draft.country).toBe("US");
+		expect(physics.calls).toEqual(["/battery"]); // no second simulation, no AI call
+	});
+});
+
 describe("simulation and fix", () => {
 	it("runs the battery on the server, saves it, and the manager sees it", async () => {
 		const { create, call, physics } = flowSetup();

@@ -31,7 +31,7 @@ import { INVOICE_PROMPT_VERSION, type InvoiceCall, type InvoiceReading } from ".
 import { sha256Hex, stripMetadata, toBase64, UnsupportedImage } from "./perception/metadata";
 import { type PhotoAnalysis, PROMPT_VERSION } from "./perception/schema";
 import { analysisAllowance } from "./quota";
-import { type BatteryLike, STORED, verdictState } from "./verdict";
+import { type BatteryLike, COUNTRIES, STORED, activeView, verdictState } from "./verdict";
 
 export interface PhotoStore {
 	put(key: string, bytes: Uint8Array, contentType: string): Promise<void>;
@@ -42,6 +42,8 @@ export interface PhotoStore {
 export interface Physics {
 	battery(draft: unknown): Promise<BatteryJson>;
 	plan(draft: unknown): Promise<PlanJson>;
+	/** Both countries' rule checks of a load, without simulating it. */
+	checks?(draft: unknown): Promise<{ country?: string; rules?: BatteryJson["rules"] }>;
 }
 
 export interface Analyzer {
@@ -376,6 +378,7 @@ export function registerFlow(
 		]);
 		await touch(inspection.id, {
 			status: "confirmed",
+			country: countryOf(draft),
 			truck_body: draft.truck.body,
 			truck_size: LEGACY_SIZES.includes(draft.truck.size) ? draft.truck.size : null,
 			truck_json: JSON.stringify({ ...draft.truck, truck_id: truckId }),
@@ -500,6 +503,51 @@ export function registerFlow(
 		return c.json(plan);
 	});
 
+	/**
+	 * Check the same load against the other country's rules: only the rules run again (no
+	 * simulation, no AI). The stored batteries carry both countries' checks; an older one gets
+	 * them from the physics engine's checks, which simulate nothing.
+	 */
+	app.put("/inspections/:id/country", authenticated, async (c) => {
+		const inspection = await writable(c);
+		const body = await jsonBody(c);
+		const country = body.country === "US" ? "US" : body.country === "BR" ? "BR" : null;
+		if (!country) fail(422, "invalid_country", "Expected BR or US.");
+		const fields: Record<string, unknown> = { country };
+		for (const kind of KINDS) {
+			const scenario = await scenarioOf(inspection.id, kind);
+			if (!scenario) continue;
+			const draft = { ...(JSON.parse(scenario.draft_json) as Record<string, unknown>), country };
+			await db.prepare("UPDATE scenarios SET draft_json = ? WHERE id = ?").bind(JSON.stringify(draft), scenario.id).run();
+			if (!scenario.battery_ref || !deps.photos) continue;
+			const object = await deps.photos.get(scenario.battery_ref);
+			if (!object) continue;
+			const battery = JSON.parse(new TextDecoder().decode(object.bytes)) as BatteryJson;
+			if (!battery.rules) {
+				const checks = await physics().checks?.(draft);
+				if (!checks?.rules) fail(503, "api_unavailable", "The rules engine is not reachable.");
+				battery.rules = checks.rules;
+			}
+			battery.country = country;
+			battery.draft = { ...((battery.draft as Record<string, unknown>) ?? {}), country };
+			battery.verdict = { state: verdictState(battery) };
+			battery.verdicts = Object.fromEntries(COUNTRIES.map((k) => [k, { state: verdictState(activeView(battery, k)) }]));
+			await deps.photos.put(scenario.battery_ref, new TextEncoder().encode(JSON.stringify(battery)), "application/json");
+			if (kind === "as_loaded") {
+				fields.verdict = verdictOf(battery);
+				fields.failure_codes = packList(failureCodes(battery));
+			} else {
+				fields.fixed_verdict = verdictOf(battery);
+			}
+		}
+		const at = now();
+		// A certificate records one verdict under one country's rules: a switch makes it void.
+		await db.prepare("UPDATE certificates SET revoked_at = ? WHERE inspection_id = ? AND revoked_at IS NULL").bind(at, inspection.id).run();
+		await touch(inspection.id, fields);
+		await logEvent(db, inspection.id, c.get("principal").userId, "country_changed", { country }, at);
+		return c.json({ country, verdict: fields.verdict ?? null, fixed_verdict: fields.fixed_verdict ?? null });
+	});
+
 	app.get("/inspections/:id/battery/:kind", authenticated, async (c) => {
 		const inspection = await readable(c);
 		const kind = c.req.param("kind");
@@ -510,6 +558,11 @@ export function registerFlow(
 		if (!object) fail(404, "not_found", "No battery stored yet.");
 		return c.body(object.bytes as Uint8Array<ArrayBuffer>, 200, { "Content-Type": "application/json", "Cache-Control": "private, no-store" });
 	});
+}
+
+/** The country of a draft: US when it says so, Brazil otherwise (and for every older draft). */
+export function countryOf(draft: unknown): "BR" | "US" {
+	return (draft as { country?: unknown } | null)?.country === "US" ? "US" : "BR";
 }
 
 /** The stored verdict: pass (approved), warning (holds, out of compliance), fail (does not hold). */
