@@ -356,6 +356,12 @@ export function useChangeSentence() {
           from: lower(restraint(`restraint.${String(change.before)}` as never)),
           to: lower(restraint(`restraint.${String(change.after)}` as never)),
         });
+      case "diagonal_sets":
+        return t("changes.diagonalSets", {
+          unit: nameOf(change.unit_id ?? ""),
+          to: Number(change.after ?? 0),
+          chains: change.values.chains ? "yes" : "no",
+        });
       case "close_gaps":
         return t(change.values.limited_by_axles ? "changes.closeGapsAxles" : "changes.closeGaps", { distance: cm(change.values.moved_m) });
       case "balance_axles":

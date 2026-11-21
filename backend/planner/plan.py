@@ -29,7 +29,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.explorer import BuildError, build_draft
 from app.explorer.build import CARGO, strap_room
-from app.explorer.config import MAX_STRAPS_PER_UNIT, Cargo, Restraint
+from app.explorer.config import MAX_DIAGONAL_SETS, MAX_STRAPS_PER_UNIT, Cargo, Restraint
 from app.explorer.draft import LoadDraft
 from app.inspection.battery import (
     SITUATIONS,
@@ -59,6 +59,7 @@ ChangeCode = Literal[
     "balance_axles",
     "straps",
     "restraint",
+    "diagonal_sets",
     "overweight",
     "edge_protectors",
 ]
@@ -327,6 +328,40 @@ def _with_straps(draft: LoadDraft, straps: dict[str, int], restraint: Restraint)
     return draft.model_copy(update={"units": units, "restraint": restraint})
 
 
+def _enough_diagonals(draft: LoadDraft) -> LoadDraft:
+    """Add sets of diagonal lashings or chains to the units whose lashings, summed, are rated for
+    less than twice their weight (CONTRAN 945/2022 art. 4), up to ``MAX_DIAGONAL_SETS`` each.
+
+    Only for a load secured with diagonals or chains; a heavy unit gets as many sets as it takes.
+    """
+    if draft.restraint not in (Restraint.DIRECT, Restraint.CHAIN):
+        return draft
+    floor = set(_floor_ids(draft))
+    base_of: dict[str, str] = {}
+    for unit in draft.units:
+        base_of[unit.id] = base_of.get(unit.on, unit.on) if unit.on else unit.id
+    current = draft
+    for _ in range(MAX_DIAGONAL_SETS):
+        try:
+            scenario, _ = build_draft(current)
+        except BuildError:
+            return current
+        check = next(c for c in check_contran_945(scenario) if c.code == "safety_factor")
+        if check.status != "fail":
+            return current
+        short = {base_of.get(uid, uid) for uid in check.unit_ids} & floor
+        units = [
+            unit.model_copy(update={"diagonal_sets": unit.diagonal_sets + 1})
+            if unit.id in short and unit.diagonal_sets < MAX_DIAGONAL_SETS
+            else unit
+            for unit in current.units
+        ]
+        if units == list(current.units):
+            return current  # every short unit already has the most sets that fit
+        current = current.model_copy(update={"units": units})
+    return current
+
+
 def _room(draft: LoadDraft) -> dict[str, int]:
     scenario, _ = build_draft(_with_straps(draft, {}, Restraint.NONE))
     return {uid: min(strap_room(scenario, uid), MAX_STRAPS_PER_UNIT) for uid in _lashed_ids(draft)}
@@ -400,7 +435,13 @@ def _securing(draft: LoadDraft) -> list[_Candidate]:
                 steps=("cradle", "straps"),
             )
         )
-        out.append(_Candidate("chain", _with_straps(draft, {}, Restraint.CHAIN), steps=("chain",)))
+        out.append(
+            _Candidate(
+                "chain",
+                _enough_diagonals(_with_straps(draft, {}, Restraint.CHAIN)),
+                steps=("chain",),
+            )
+        )
         return out
     # The load as it is (after the rules): enough when only the placement was wrong.
     out.append(_Candidate("as_is", draft, steps=()))
@@ -429,8 +470,20 @@ def _securing(draft: LoadDraft) -> list[_Candidate]:
         if (_tall(draft) or any(u.on for u in draft.units))
         else {uid: n for uid, n in existing.items() if uid in room}
     )
-    out.append(_Candidate("direct", _with_straps(draft, keep, Restraint.DIRECT), steps=("direct",)))
-    out.append(_Candidate("chain", _with_straps(draft, keep, Restraint.CHAIN), steps=("chain",)))
+    out.append(
+        _Candidate(
+            "direct",
+            _enough_diagonals(_with_straps(draft, keep, Restraint.DIRECT)),
+            steps=("direct",),
+        )
+    )
+    out.append(
+        _Candidate(
+            "chain",
+            _enough_diagonals(_with_straps(draft, keep, Restraint.CHAIN)),
+            steps=("chain",),
+        )
+    )
     return out
 
 
@@ -518,6 +571,28 @@ def _securing_changes(before: LoadDraft, after: LoadDraft) -> list[Change]:
                 ),
             )
         )
+    if after.restraint in (Restraint.DIRECT, Restraint.CHAIN):
+        sets_before = {
+            u.id: u.diagonal_sets if before.restraint in (Restraint.DIRECT, Restraint.CHAIN) else 0
+            for u in before.units
+        }
+        device = "chains" if after.restraint is Restraint.CHAIN else "diagonal straps"
+        for unit in after.units:
+            if unit.diagonal_sets > 1 and unit.diagonal_sets != sets_before.get(unit.id, 0):
+                changes.append(
+                    Change(
+                        code="diagonal_sets",
+                        unit_id=unit.id,
+                        before=float(4 * sets_before.get(unit.id, 0)),
+                        after=float(4 * unit.diagonal_sets),
+                        article="CONTRAN 945/2022 art. 4",
+                        values={"chains": 1.0 if after.restraint is Restraint.CHAIN else 0.0},
+                        message=(
+                            f"{unit.id}: {4 * unit.diagonal_sets} {device}, so their working "
+                            "capacity adds up to at least twice its weight."
+                        ),
+                    )
+                )
     old = {u.id: u.straps for u in before.units}
     for unit in after.units:
         if old.get(unit.id, 0) != unit.straps:

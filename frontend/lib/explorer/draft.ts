@@ -28,6 +28,8 @@ export type DraftUnit = {
   on?: string | null;
   /** Top-over lashings over this unit. */
   straps: number;
+  /** With diagonals or chains: sets of four on this unit (1 to 3; the planner adds them on heavy units). */
+  diagonal_sets?: number;
 };
 
 export type LoadDraft = {

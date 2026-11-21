@@ -261,6 +261,9 @@ ROPE: dict[str, object] = {
 # 8 mm grade 80 lashing chain, LC 4000 daN, tightened by a load binder.
 CHAIN: dict[str, object] = {"pretension_n": 2500.0, "lashing_capacity_n": 40000.0}
 DIAGONAL_REACH_M = 0.9
+# Each further set of diagonals: 20 cm further inside the unit, 40 cm further along the bed.
+DIAGONAL_SET_INSET_M = 0.2
+DIAGONAL_SET_REACH_M = 0.4
 BLOCK_LENGTH_M = 0.1
 # A coil cradle's chocks are an eighth of the coil's diameter high: for a 1.6 m coil 20 cm,
 # which holds up to 0.88 g (physics/analytical.py, roll_over_chock_acceleration).
@@ -510,8 +513,9 @@ def build_draft(
     if restraint in (Restraint.DIRECT, Restraint.CHAIN):
         device = CHAIN if restraint is Restraint.CHAIN else STRAP
         kind = LashingKind.CHAIN if restraint is Restraint.CHAIN else LashingKind.STRAP
+        sets = {item.id: item.diagonal_sets for item in draft.units}
         for unit in floor_units:
-            lashings += _diagonals(unit, bed.anchor_points, kind, device)
+            lashings += _diagonals(unit, bed.anchor_points, kind, device, sets.get(unit.id, 1))
     blocks: list[Block] = []
     if restraint in (Restraint.BLOCKING, Restraint.CRADLE):
         blocks = _blocks(truck, units)
@@ -633,27 +637,50 @@ def _diagonals(
     anchors: list[AnchorPoint],
     kind: LashingKind,
     device: dict[str, object],
+    sets: int = 1,
 ) -> list[Lashing]:
-    """Four diagonal lashings from the unit to the bed, forward and backward on both sides.
+    """Diagonal lashings from the unit to the bed, forward and backward on both sides: four per set.
 
     On a box they start at its corners, 40 cm up (or half its height); on a coil lying across
-    the truck they go through its eye, as coils are chained.
+    the truck they go through its eye, as coils are chained. A second or third set starts a bit
+    further inside the unit and reaches a lashing point further along the bed, so no two share
+    a point where the bed has room.
     """
     half_x, half_y, height = unit.size_m[0] / 2, unit.size_m[1] / 2, unit.size_m[2]
     through_eye = unit.shape is UnitShape.CYLINDER and unit.axis is CylinderAxis.Y
     lashings = []
+    for index in range(sets):
+        lashings += _diagonal_set(
+            unit, anchors, kind, device, index, half_x, half_y, height, through_eye
+        )
+    return lashings
+
+
+def _diagonal_set(
+    unit: CargoUnit,
+    anchors: list[AnchorPoint],
+    kind: LashingKind,
+    device: dict[str, object],
+    index: int,
+    half_x: float,
+    half_y: float,
+    height: float,
+    through_eye: bool,
+) -> list[Lashing]:
+    inset = min(DIAGONAL_SET_INSET_M * index, half_x / 2)
+    reach = DIAGONAL_REACH_M + DIAGONAL_SET_REACH_M * index
+    suffix = "" if index == 0 else f"-{index + 1}"
+    lashings = []
     for end, end_name in ((1, "front"), (-1, "rear")):
         for side, side_name in ((1, "left"), (-1, "right")):
             if through_eye:
-                point = (0.0, side * half_y, height / 2)
+                point = (end * inset, side * half_y, height / 2)
             else:
-                point = (end * half_x, side * half_y, min(0.4, height / 2))
-            anchor = _closest_anchor(
-                anchors, side, unit.position_m[0] + end * (half_x + DIAGONAL_REACH_M)
-            )
+                point = (end * (half_x - inset), side * half_y, min(0.4, height / 2))
+            anchor = _closest_anchor(anchors, side, unit.position_m[0] + end * (half_x + reach))
             lashings.append(
                 Lashing(
-                    id=f"{unit.id}-{kind.value}-{end_name}-{side_name}",
+                    id=f"{unit.id}-{kind.value}-{end_name}-{side_name}{suffix}",
                     kind=kind,
                     routing=LashingRouting.DIRECT,
                     unit_id=unit.id,

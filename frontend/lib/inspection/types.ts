@@ -126,6 +126,7 @@ export type ChangeCode =
   | "balance_axles"
   | "straps"
   | "restraint"
+  | "diagonal_sets"
   | "overweight"
   | "edge_protectors";
 

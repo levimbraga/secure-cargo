@@ -76,6 +76,8 @@ class Weather(StrEnum):
 
 MAX_UNITS = 20
 MAX_STRAPS_PER_UNIT = 6
+# Sets of four diagonal lashings (front and back, both sides) a unit can take: up to 12.
+MAX_DIAGONAL_SETS = 3
 
 Coordinate = Annotated[float, Field(ge=-10, le=10)]
 

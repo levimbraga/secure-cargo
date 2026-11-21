@@ -16,6 +16,7 @@ from typing import Annotated, Literal, Self
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.explorer.config import (
+    MAX_DIAGONAL_SETS,
     MAX_STRAPS_PER_UNIT,
     Cargo,
     Restraint,
@@ -100,6 +101,15 @@ class DraftUnit(_Model):
     on: Identifier | None = Field(default=None, description="Id of the unit it stands on.")
     straps: int = Field(
         default=0, ge=0, le=MAX_STRAPS_PER_UNIT, description="Top-over lashings over this unit."
+    )
+    diagonal_sets: int = Field(
+        default=1,
+        ge=1,
+        le=MAX_DIAGONAL_SETS,
+        description=(
+            "With diagonal lashings or chains (restraint direct or chain), sets of four on this "
+            "unit: forward and backward on both sides. Heavy units take more than one."
+        ),
     )
 
 

@@ -196,3 +196,49 @@ def test_the_parallel_pieces_add_up_to_the_battery(client: TestClient) -> None:
     assert options["infeasible"] is None
     assert 1 <= len(options["candidates"]) <= 5
     assert options["candidates"][0]["changes"]
+
+
+SAMPLES = Path(__file__).parents[2] / "frontend" / "public" / "demo" / "samples"
+
+
+def _heavy_pipes() -> LoadDraft:
+    """The steel pipes sample: one 18 t bundle on a semi-trailer, as the photo was read."""
+    sample = json.loads((SAMPLES / "steel-pipes.json").read_text())
+    return LoadDraft.model_validate(sample["battery"]["draft"])
+
+
+def test_each_set_of_diagonals_adds_four_lashings() -> None:
+    draft = LoadDraft(
+        restraint=Restraint.CHAIN,
+        units=[DraftUnit(id="m1", cargo="machine", x_m=1.0, y_m=0, diagonal_sets=2)],
+    )
+    scenario, _ = build_draft(draft)
+    chains = [lashing for lashing in scenario.lashings if lashing.unit_id == "m1"]
+    assert len(chains) == 8
+    assert len({lashing.id for lashing in chains}) == 8
+
+
+def test_a_heavy_unit_gets_chains_until_twice_its_weight_is_held() -> None:
+    from rules.contran945 import check_contran_945
+
+    draft = _heavy_pipes()
+    candidates = {c.name: c for c in _candidates(draft)}
+    chained = candidates["chain"].draft
+    assert chained.units[0].diagonal_sets > 1
+    scenario, _ = build_draft(chained)
+    factor = next(c for c in check_contran_945(scenario) if c.code == "safety_factor")
+    assert factor.status == "pass"
+    codes = [change.code for change in candidates["chain"].changes]
+    assert "diagonal_sets" in codes
+
+
+def test_light_loads_keep_one_set_of_diagonals() -> None:
+    for candidate in _candidates(_draft("emergency-braking.as_loaded")):
+        assert all(unit.diagonal_sets == 1 for unit in candidate.draft.units)
+
+
+def test_the_heavy_pipes_are_fixed_and_comply() -> None:
+    result = plan(create_storage("memory://"), _heavy_pipes())
+    assert result.verified
+    assert result.battery is not None
+    assert result.battery.verdict.state == "approved"
