@@ -262,6 +262,15 @@ change; the physics is the same. US securing: 49 CFR 393 subpart I (`rules/fmcsa
 the rules. Sources and worked examples: the workspace's `notes/us-rules.md`; details: `docs/inspection.md`
 section 10.
 
+## EU mode (backend/rules/eu_annex3.py, 2026-11-21)
+A third rule set: Directive 2014/47/EU Art. 13 and Annex III (securing, with EN 12195-1, EN 12642 and
+EN 12640; every failing check carries its roadside deficiency class: minor, major or dangerous) and
+Directive 96/53/EC Annex I (weights in international traffic, dimensions): `rules/eu_annex3.py`,
+`rules/eu_weights.py`, `rules/eu_checklist.py`. EU presets are the `eu_*` sizes; a box or curtain-sider
+body has an EN 12642 code (`truck.body_code`, L by default): an XL curtain-sider's curtains are side
+walls in the model, an L one's are not. Units metric, lashings in daN. Sources and worked examples: the
+workspace's `notes/eu-rules.md`; details: `docs/inspection.md` section 11.
+
 ## Planner (backend/planner)
 0. Load advisor (before loading): from a photo of the cargo on the ground (or a list) and the chosen truck,
    answer: does it fit (body volume, vehicle max weight, axle loads — say which limit binds first), a 3D

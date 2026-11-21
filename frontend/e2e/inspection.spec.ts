@@ -82,5 +82,15 @@ test("switching country re-checks only the rules: same simulation, another check
   await expect(page.locator('[data-theme="securing"] summary')).toContainText("FMCSA 393");
   await expect(page.locator('[data-check="rolling_articles"]')).toHaveAttribute("data-mark", "fail");
   await expect(page.getByTestId("main-problem")).toContainText("roll");
+
+  // EU rules: round pipes under straps have nothing against rolling sideways (Annex III I.1):
+  // a dangerous deficiency at a roadside check; still the same simulation.
+  await page.getByTestId("country-EU").click();
+  await expect(result).toHaveAttribute("data-country", "EU");
+  await expect(result).toHaveAttribute("data-state", "holds_noncompliant");
+  await expect(result).toHaveAttribute("data-passed", passed ?? "7");
+  await expect(page.locator('[data-theme="securing"] summary')).toContainText("2014/47");
+  await expect(page.getByTestId("roadside-class")).toHaveAttribute("data-class", "dangerous");
+  await expect(page.locator('[data-check="eu_sideways"]')).toHaveAttribute("data-deficiency", "dangerous");
   expect(physics).toEqual([]);
 });

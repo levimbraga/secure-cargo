@@ -268,3 +268,40 @@ presets and the units do. Sources, worked examples and what is not covered: the 
   `proxy.ts`); everyone else starts in Brazil; the choice is remembered in the browser.
 - Gallery: `us-steel-coils` (two 9 t coils on a 48 ft flatbed: rolls under straps, holds and complies
   in cradles with chains through the eye).
+
+## 11. EU mode (`backend/rules/eu_annex3.py`, 2026-11-21)
+
+A third rule set: the EU's roadside-inspection rules for cargo securing and its weights and dimensions
+in international traffic. The physics is the same, except that the body's EN 12642 code (L or XL) is
+part of the truck. Sources, worked examples and what is not covered: the workspace's
+`notes/eu-rules.md`.
+
+- **Country** `EU` on the draft and the inspection (migration 0009 widens the column's check). Every
+  battery carries the three rule sets; a battery stored before EU mode gets its EU set from
+  `POST /battery/checks` when someone switches to it (no simulation).
+- **Body code** (`truck.body_code`, `code=` in the explorer's address): L or XL, from the body's plate;
+  not given means L, labelled "assumed". Code L: headboard 0.4 P (at most 5,000 daN), a curtain holds
+  nothing (open sides in the model). Code XL: headboard 0.5 P, side walls and curtains 0.4 P (an XL
+  curtain is a side wall in the model, rated 0.4 P by the rules). A flatbed headboard has a rating
+  only when the driver gives a code.
+- **Securing** (Directive 2014/47/EU Art. 13 and Annex III): forward 0.8 g, sideways 0.5 g, rearward
+  0.5 g, each the EN 12195-1 sum of what holds every stack (friction, top-over lashings at their STF,
+  direct lashings at their LC capped by the lashing point's EN 12640 strength, a wall in contact at
+  its EN 12642 rating, blocks); tipping (EN 12195-1 eq. 3, 0.6 g sideways); the body's code; the
+  headboard's height (Table 1 item 10.1.2); the devices (a rope is not an EN 12195 lashing); the
+  lashing points. Each failure carries its **roadside deficiency class** (minor / major / dangerous,
+  Annex III section II): held at least 2/3 of the demand → major, less → dangerous, nothing but
+  friction towards an open side → dangerous. The result shows the highest class
+  (`RoadsideClass`), the checklist each item's.
+- **Weights and dimensions** (Directive 96/53/EC Annex I, `rules/eu_weights.py`,
+  `rules/eu_checklist.py`): 10 t non-driving axle, 11.5 t driving axle, tandems and tri-axles by their
+  spacing, gross 18 / 25–26 / 40 t, the driving axle at least 25 % of the total; 4.00 m high,
+  2.55 m wide, 12.00 m (rigid) or 16.50 m (articulated) long on the EU presets.
+- **Planner:** the EU rule set is its legal target; ropes are replaced; strap counts and diagonal
+  sets grow until the three direction checks pass; axle placement uses the 96/53/EC limits.
+- **EU presets** (`Size.EU_*`): 7.5 t, 18 t and 26 t rigids, a 40 t articulated vehicle with a 13.6 m
+  curtain-sider (code L or XL on the body cards) or box, and with a 13.6 m flatbed.
+- **Units:** metric; lashing capacities and tensions in daN, as on an EU label.
+- Visitors from the 27 member states start in EU mode on the English site (`lib/geo.ts`).
+- Gallery: `eu-curtain-pallets` (eleven 1.5 t pallets in a code L curtain-sider slide off in a sharp
+  curve: a dangerous deficiency; two straps each hold them and the load complies).
