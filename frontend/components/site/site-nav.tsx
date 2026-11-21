@@ -13,8 +13,8 @@ export function SiteNav({ variant }: { variant: "full" | "minimal" }) {
   const t = useTranslations("Nav");
 
   const links = [
-    { href: "/#problem", label: t("problem") },
     { href: "/#how-it-works", label: t("howItWorks") },
+    { href: "/#insurers", label: t("insurers") },
     { href: "/#scenarios", label: t("scenarios") },
     { href: REPOSITORY_URL, label: t("github"), external: true },
   ];

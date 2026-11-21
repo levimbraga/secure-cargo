@@ -7,8 +7,8 @@
     "wordmark": "SecureCargo",
     "home": "SecureCargo home",
     "sections": "Sections",
-    "problem": "Problem",
     "howItWorks": "How it works",
+    "insurers": "For insurers",
     "scenarios": "Scenarios",
     "github": "GitHub",
     "cta": "Try the demo",
@@ -26,44 +26,83 @@
       "subtitle": "Simulate the trip before the truck leaves: see what slides, what tips and what to fix.",
       "primary": "Try the demo",
       "secondary": "How it works",
-      "photoAlt": "Black-and-white photograph of cargo held down by straps on a truck."
+      "photoAlt": "Black-and-white photograph of cargo held down by straps on a truck.",
+      "note": "A sample photo goes through the whole inspection. No account needed."
     },
-    "problem": {
-      "label": "Problem",
-      "title": "A load is checked with a look and a pull on the strap.",
-      "p1": "Before a trip, the driver walks around the truck, tugs each strap and decides it is good enough.",
-      "p2": "That check says nothing about a hard stop, a tight curve or a pothole.",
-      "p3": "Brazil has detailed rules for lashing cargo and for the weight each axle may carry. They are legal text. On the loading dock, what is needed is a yes or a no for this cargo, on this truck.",
-      "photoAlt": "Black-and-white photograph of a freight loading area."
-    },
-    "solution": {
-      "label": "Our solution",
-      "title": "We run the trip before the truck leaves.",
-      "body": "SecureCargo builds the load from a photo and drives it through braking, curves and potholes in a physics simulation. It shows what moves, why, and the smallest change that fixes it.",
-      "listLabel": "How it works:",
+    "steps": {
+      "label": "How it works",
+      "title": "Three steps, a few minutes, before the truck leaves.",
       "items": {
         "photo": {
           "title": "Photo",
-          "body": "Photograph the loaded truck bed. AI marks the cargo and the straps; you confirm or correct them."
+          "body": "Photograph the loaded truck from the side. AI reads the cargo, the straps and the truck; you give the weight."
         },
-        "simulation": {
-          "title": "Simulation",
-          "body": "A physics engine drives the load through hard braking, curves and potholes, and records what slides or tips."
+        "result": {
+          "title": "Result",
+          "body": "A physics simulation drives the load through 7 situations, like hard braking and sharp curves, and checks Brazilian rules."
         },
-        "plan": {
-          "title": "Plan",
-          "body": "Where each unit should sit and how many straps go where, checked against Brazilian rules."
-        },
-        "certificate": {
-          "title": "Certificate",
-          "body": "A shareable record of the photo, the plan and the result, for the carrier and the insurer."
+        "fix": {
+          "title": "Fix and proof",
+          "body": "It shows the smallest change that makes the load safe, proves it in simulation, and a new photo confirms the fix."
         }
       }
     },
+    "result": {
+      "label": "The result",
+      "title": "One of three answers, in one sentence.",
+      "body": "The same three states appear for the driver, in the manager's dashboard and on the certificate. Tap one to open the sample.",
+      "states": {
+        "approved": {
+          "badge": "Approved",
+          "load": "Concrete pipes, chained",
+          "sentence": "Arrives intact and complies: it holds in all 7 situations and meets the rules."
+        },
+        "holds": {
+          "badge": "Holds, out of compliance",
+          "load": "Steel racks on a semi-trailer",
+          "sentence": "It holds in all 7 situations, but a rule fails: an axle group carries more than its legal limit."
+        },
+        "fails": {
+          "badge": "Does not arrive intact",
+          "load": "Crates tied with ropes",
+          "sentence": "It holds in 1 of 7 situations: on a long mountain descent, a stack of crates falls off the truck. With the fix, 7 of 7."
+        }
+      }
+    },
+    "simulation": {
+      "label": "The simulation",
+      "title": "See what happens, and why.",
+      "body": "Every verdict comes from a MuJoCo physics simulation of the truck bed. The arrows show the forces: the load's inertia pushing forward, friction and straps holding it back.",
+      "alt": "3D simulation of a flatbed truck braking hard: three pallets with one strap each, arrows showing the forward push and the friction holding them, and the outline of where they started.",
+      "caption": "Emergency braking at 0.76 g: one strap per pallet is not enough, and the pallets slide toward the cab.",
+      "link": "Watch the replay"
+    },
+    "companies": {
+      "label": "For insurers and carriers",
+      "title": "Know where the risk is in your fleet.",
+      "body": "Managers see every inspection their drivers make, which loads failed and were never fixed, and proof of every fix.",
+      "items": {
+        "dashboard": {
+          "title": "Dashboard",
+          "body": "The three states for the period, the most common failures, each driver's record and the weekly trend."
+        },
+        "alerts": {
+          "title": "Alerts",
+          "body": "Loads that failed or are out of compliance with no proven fix after the hours your company sets."
+        },
+        "certificate": {
+          "title": "Certificate with QR",
+          "body": "A PDF for each approved or fixed-and-proven load, with a QR code anyone can scan to check it is authentic."
+        }
+      },
+      "alt": "The manager overview: counts for the three states, fixed and proven, failed with no proven fix, a weekly trend chart and the most common failures.",
+      "caption": "The manager overview, with the demo organization's data.",
+      "cta": "Enter as demo insurer"
+    },
     "scenarios": {
-      "title": "Scenarios",
-      "lead": "Four ways a load goes wrong. Each scenario runs as loaded, and again fixed.",
-      "cta": "Open the app",
+      "title": "Scenarios gallery",
+      "lead": "Ready-made loads that go wrong in different ways. Each runs as loaded, and again fixed.",
+      "cta": "See all examples",
       "items": {
         "braking": {
           "title": "Emergency braking",

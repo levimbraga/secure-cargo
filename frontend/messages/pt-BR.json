@@ -7,8 +7,8 @@
     "wordmark": "SecureCargo",
     "home": "Página inicial do SecureCargo",
     "sections": "Seções",
-    "problem": "Problema",
     "howItWorks": "Como funciona",
+    "insurers": "Para seguradoras",
     "scenarios": "Cenários",
     "github": "GitHub",
     "cta": "Testar a demo",
@@ -26,44 +26,83 @@
       "subtitle": "Simule a viagem antes de o caminhão sair: veja o que desliza, o que tomba e o que corrigir.",
       "primary": "Testar a demo",
       "secondary": "Como funciona",
-      "photoAlt": "Fotografia em preto e branco de carga presa por cintas em um caminhão."
+      "photoAlt": "Fotografia em preto e branco de carga presa por cintas em um caminhão.",
+      "note": "Uma foto de exemplo passa pela inspeção inteira. Sem cadastro."
     },
-    "problem": {
-      "label": "Problema",
-      "title": "A carga é conferida no olho e no puxão da cinta.",
-      "p1": "Antes da viagem, o motorista dá a volta no caminhão, puxa cada cinta e decide que está bom.",
-      "p2": "Essa conferência não diz nada sobre uma freada forte, uma curva fechada ou um buraco.",
-      "p3": "O Brasil tem regras detalhadas para a amarração da carga e para o peso que cada eixo pode levar. São texto de lei. No pátio de carregamento, o que se precisa é de um sim ou de um não para esta carga, neste caminhão.",
-      "photoAlt": "Fotografia em preto e branco de uma área de carregamento de cargas."
-    },
-    "solution": {
-      "label": "Nossa solução",
-      "title": "Fazemos a viagem antes de o caminhão sair.",
-      "body": "O Carga Segura monta a carga a partir de uma foto e a leva por frenagens, curvas e buracos numa simulação física. Mostra o que se move, por quê, e a menor mudança que resolve.",
-      "listLabel": "Como funciona:",
+    "steps": {
+      "label": "Como funciona",
+      "title": "Três passos, poucos minutos, antes de o caminhão sair.",
       "items": {
         "photo": {
           "title": "Foto",
-          "body": "Fotografe a carroceria carregada. A IA marca os volumes e as cintas; você confirma ou corrige."
+          "body": "Fotografe o caminhão carregado de lado. A IA lê a carga, as cintas e o caminhão; você informa o peso."
         },
-        "simulation": {
-          "title": "Simulação",
-          "body": "Um motor de física leva a carga por frenagens bruscas, curvas e buracos e registra o que desliza ou tomba."
+        "result": {
+          "title": "Resultado",
+          "body": "Uma simulação física leva a carga por 7 situações, como frenagem forte e curva fechada, e confere as regras brasileiras."
         },
-        "plan": {
-          "title": "Plano",
-          "body": "Onde cada volume deve ficar e quantas cintas vão em cada ponto, conferido com as regras brasileiras."
-        },
-        "certificate": {
-          "title": "Certificado",
-          "body": "Um registro compartilhável da foto, do plano e do resultado, para a transportadora e a seguradora."
+        "fix": {
+          "title": "Correção e prova",
+          "body": "Mostra a menor mudança que deixa a carga segura, prova na simulação, e uma nova foto confirma a correção."
         }
       }
     },
+    "result": {
+      "label": "O resultado",
+      "title": "Uma de três respostas, numa frase.",
+      "body": "Os mesmos três estados aparecem para o motorista, no painel do gestor e no certificado. Toque num deles para abrir o exemplo.",
+      "states": {
+        "approved": {
+          "badge": "Aprovada",
+          "load": "Tubos de concreto acorrentados",
+          "sentence": "Chega inteira e cumpre as regras: aguenta as 7 situações e atende às normas."
+        },
+        "holds": {
+          "badge": "Aguenta, fora das regras",
+          "load": "Racks de aço numa carreta",
+          "sentence": "Aguenta as 7 situações, mas uma regra falha: um conjunto de eixos leva mais que o limite legal."
+        },
+        "fails": {
+          "badge": "Não chega inteira",
+          "load": "Caixas amarradas com corda",
+          "sentence": "Aguenta 1 de 7 situações: numa descida de serra longa, uma pilha de caixas cai do caminhão. Com a correção, 7 de 7."
+        }
+      }
+    },
+    "simulation": {
+      "label": "A simulação",
+      "title": "Veja o que acontece, e por quê.",
+      "body": "Todo veredito vem de uma simulação física MuJoCo da carroceria. As setas mostram as forças: a inércia da carga empurrando para a frente, o atrito e as cintas segurando.",
+      "alt": "Simulação 3D de um caminhão de carroceria aberta freando forte: três paletes com uma cinta cada, setas mostrando o empurrão para a frente e o atrito que os segura, e o contorno de onde começaram.",
+      "caption": "Frenagem de emergência a 0,76 g: uma cinta por palete não basta, e os paletes deslizam em direção à cabine.",
+      "link": "Ver o replay"
+    },
+    "companies": {
+      "label": "Para seguradoras e transportadoras",
+      "title": "Saiba onde está o risco da sua frota.",
+      "body": "Gestores veem todas as inspeções dos motoristas, quais cargas falharam e nunca foram corrigidas, e a prova de cada correção.",
+      "items": {
+        "dashboard": {
+          "title": "Painel",
+          "body": "Os três estados no período, as falhas mais comuns, o histórico de cada motorista e a tendência semanal."
+        },
+        "alerts": {
+          "title": "Alertas",
+          "body": "Cargas que falharam ou estão fora das regras sem correção provada depois das horas que sua empresa define."
+        },
+        "certificate": {
+          "title": "Certificado com QR",
+          "body": "Um PDF para cada carga aprovada ou corrigida e provada, com um QR que qualquer pessoa lê para conferir a autenticidade."
+        }
+      },
+      "alt": "A visão geral do gestor: contagens dos três estados, corrigidas e provadas, falhas sem correção provada, um gráfico semanal e as falhas mais comuns.",
+      "caption": "A visão geral do gestor, com os dados da organização de demonstração.",
+      "cta": "Entrar como seguradora demo"
+    },
     "scenarios": {
-      "title": "Cenários",
-      "lead": "Quatro jeitos de uma carga dar errado. Cada cenário roda como foi carregado e de novo corrigido.",
-      "cta": "Abrir o app",
+      "title": "Galeria de cenários",
+      "lead": "Cargas prontas que dão errado de jeitos diferentes. Cada uma roda como carregada, e de novo corrigida.",
+      "cta": "Ver todos os exemplos",
       "items": {
         "braking": {
           "title": "Frenagem de emergência",
@@ -1747,7 +1786,7 @@
       "tiles": {
         "inspections": "Inspeções",
         "approved": "Aprovadas",
-        "holds_noncompliant": "Segura, fora da norma",
+        "holds_noncompliant": "Aguenta, fora das regras",
         "fails": "Não chega inteira",
         "proven": "Corrigidas e comprovadas",
         "noFix": "Reprovadas, sem correção comprovada",
@@ -1780,7 +1819,7 @@
     },
     "alerts": {
       "title": "Cargas esperando correção.",
-      "sentence": "Reprovadas ou fora da norma, sem correção comprovada depois de {hours, plural, one {# hora} other {# horas}}. Uma nova foto aprovada da carga corrigida fecha o alerta.",
+      "sentence": "Reprovadas ou fora das regras, sem correção comprovada depois de {hours, plural, one {# hora} other {# horas}}. Uma nova foto aprovada da carga corrigida fecha o alerta.",
       "none": "Nenhum alerta: toda carga reprovada tem correção comprovada, ou é mais recente que {hours, plural, one {# hora} other {# horas}}.",
       "open": "{hours, plural, one {Aberto há # hora} other {Aberto há # horas}}",
       "openDays": "{days, plural, one {Aberto há # dia} other {Aberto há # dias}}",
@@ -1809,7 +1848,7 @@
       "next": "Próxima",
       "states": {
         "approved": "Aprovada",
-        "holds_noncompliant": "Segura, fora da norma",
+        "holds_noncompliant": "Aguenta, fora das regras",
         "fails": "Não chega inteira",
         "proven": "Corrigida e comprovada",
         "open": "Precisa de correção",
@@ -1833,8 +1872,8 @@
       "policiesSentence": "Regras que as inspeções dos seus motoristas seguem. O servidor as aplica, não só a tela.",
       "twoPhotos": "Exigir 2 fotos",
       "twoPhotosHint": "Uma carga não é confirmada com menos de 2 fotos (as fotos de exemplo não contam).",
-      "compliance": "Sem certificado quando fora da norma",
-      "complianceHint": "Ligado: uma carga que segura mas descumpre uma regra não recebe certificado. Desligado: recebe um que diz que está fora da norma.",
+      "compliance": "Sem certificado quando fora das regras",
+      "complianceHint": "Ligado: uma carga que aguenta mas descumpre uma regra não recebe certificado. Desligado: recebe um que diz que está fora das regras.",
       "alertHours": "Alertar depois de (horas)",
       "alertHoursHint": "Uma carga reprovada sem correção comprovada depois dessas horas vira alerta.",
       "save": "Salvar políticas",
@@ -1948,12 +1987,12 @@
     "notYet": {
       "not_simulated": "O certificado sai depois que a carga for simulada.",
       "fails_no_proven_fix": "Ainda sem certificado: a carga não chega inteira. Corrija e comprove com uma foto nova.",
-      "out_of_compliance": "Sem certificado: a carga está fora da norma, e sua organização não emite certificado nesse caso."
+      "out_of_compliance": "Sem certificado: a carga está fora das regras, e sua organização não emite certificado nesse caso."
     },
     "states": {
       "approved": "Aprovada: chega inteira e cumpre as normas",
       "fixed_and_proven": "Corrigida e comprovada: uma foto nova da carga corrigida passa",
-      "holds_noncompliant": "Segura, mas fora da norma"
+      "holds_noncompliant": "Aguenta, mas fora das regras"
     },
     "title": "Certificado de carga {id}",
     "issued": "Emitido em {date}",
