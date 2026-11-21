@@ -23,6 +23,24 @@ class Size(StrEnum):
     TOCO = "toco"  # two-axle rigid truck, single rear axle with dual tyres
     TRUCK = "truck"  # three-axle rigid truck, tandem rear axles
     SEMI = "semi"  # tractor and three-axle semi-trailer
+    # US presets (2026-11-21, US mode): typical values, ``notes/us-rules.md`` section 4.
+    US_BOX = "us_box"  # Class 6 box truck, 26 ft box, two axles
+    US_STRAIGHT = "us_straight"  # straight truck, 24 ft bed, tandem rear axles
+    US_FLATBED_48 = "us_flatbed_48"  # tractor and 48 ft flatbed semitrailer, five axles
+    US_DRY_VAN_53 = "us_dry_van_53"  # tractor and 53 ft dry van, five axles
+    US_STEP_DECK = "us_step_deck"  # tractor and 48 ft step deck (the lower deck is modelled)
+
+
+US_SIZES = frozenset(
+    {Size.US_BOX, Size.US_STRAIGHT, Size.US_FLATBED_48, Size.US_DRY_VAN_53, Size.US_STEP_DECK}
+)
+
+
+class Country(StrEnum):
+    """Whose rules a load is checked against. The physics is the same everywhere."""
+
+    BR = "BR"  # CONTRAN Resolutions 945/2022 and 882/2021
+    US = "US"  # 49 CFR 393 subpart I and 23 CFR 658
 
 
 class Cargo(StrEnum):
@@ -55,6 +73,8 @@ class Restraint(StrEnum):
     BLOCKING = "blocking"  # beams or chocks against the load
     MAT = "mat"  # anti-slip mats under the load, with straps over it
     CRADLE = "cradle"  # coil cradle: chocks on both sides of a coil
+    # A coil cradle plus chains through the eye, forward and backward (49 CFR 393.120(c)).
+    CRADLE_CHAIN = "cradle_chain"
 
 
 class Road(StrEnum):

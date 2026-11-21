@@ -69,6 +69,114 @@ class TruckSpec:
     front: AxleGroup
     rear: AxleGroup
     payload_kg: float
+    headboard_m: float | None = None  # flatbeds; None: FLATBED_HEADBOARD_M
+
+
+def _lb(pounds: float) -> float:
+    """Pounds to kilograms, rounded to 1 kg (the US presets are typical values in pounds)."""
+    return round(pounds * 0.45359237)
+
+
+# US presets (notes/us-rules.md, section 4). A tractor-semitrailer is modelled like the Brazilian
+# semi: the bed rests on a group at the kingpin (the tractor's drive tandem carries it) and on the
+# trailer's tandem; the US rules share the kingpin load between the steer axle and the drive
+# tandem (rules/us_weights.py). Positions: X forward from the centre of the bed [m].
+US_FOOT_M = 0.3048
+US_TRUCKS: dict[Size, TruckSpec] = {
+    # Class 6 box truck: 26 ft box, steer axle and a single rear axle with duals, 260 in wheelbase.
+    Size.US_BOX: TruckSpec(
+        length_m=7.92,
+        width_m=2.44,
+        floor_height_m=1.12,
+        wall_height_m=2.44,
+        front=AxleGroup(
+            id="steer", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=4.8, tare_load_kg=_lb(7050)
+        ),
+        rear=AxleGroup(
+            id="rear", kind=AxleGroupKind.SINGLE_4_TYRES, position_x_m=-1.8, tare_load_kg=_lb(5950)
+        ),
+        payload_kg=_lb(11_900),
+    ),
+    # Straight truck: 24 ft bed, steer axle and a tandem (52 in spread), 228 in wheelbase.
+    Size.US_STRAIGHT: TruckSpec(
+        length_m=7.32,
+        width_m=2.44,
+        floor_height_m=1.32,
+        wall_height_m=2.44,
+        front=AxleGroup(
+            id="steer", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=4.6, tare_load_kg=_lb(9480)
+        ),
+        rear=AxleGroup(
+            id="rear", kind=AxleGroupKind.TANDEM_2_AXLES, position_x_m=-1.2, tare_load_kg=_lb(9260)
+        ),
+        payload_kg=_lb(24_250),
+        headboard_m=1.22,
+    ),
+    # 48 ft flatbed: kingpin 36 in behind the front, trailer tandem 2 m ahead of the rear end.
+    # The kingpin group carries the trailer's front share and the tractor's drive tandem tare.
+    Size.US_FLATBED_48: TruckSpec(
+        length_m=14.63,
+        width_m=2.59,
+        floor_height_m=1.52,
+        wall_height_m=2.59,
+        front=AxleGroup(
+            id="tractor",
+            kind=AxleGroupKind.TANDEM_2_AXLES,
+            position_x_m=6.4,
+            tare_load_kg=_lb(8000 + 4000),
+        ),
+        rear=AxleGroup(
+            id="trailer",
+            kind=AxleGroupKind.TANDEM_2_AXLES,
+            position_x_m=-5.3,
+            tare_load_kg=_lb(6000),
+        ),
+        payload_kg=_lb(48_000),
+        headboard_m=1.22,
+    ),
+    # 53 ft dry van: 52 ft 6 in inside, 100 in wide, 110 in tall; tandem slid to the rear.
+    Size.US_DRY_VAN_53: TruckSpec(
+        length_m=16.0,
+        width_m=2.54,
+        floor_height_m=1.22,
+        wall_height_m=2.79,
+        front=AxleGroup(
+            id="tractor",
+            kind=AxleGroupKind.TANDEM_2_AXLES,
+            position_x_m=7.09,
+            tare_load_kg=_lb(8000 + 6000),
+        ),
+        rear=AxleGroup(
+            id="trailer",
+            kind=AxleGroupKind.TANDEM_2_AXLES,
+            position_x_m=-5.6,
+            tare_load_kg=_lb(9000),
+        ),
+        payload_kg=_lb(45_000),
+    ),
+    # Step deck: the 38 ft lower deck at 40 in; the 10 ft upper deck (60 in) and the kingpin are
+    # ahead of it. Its "headboard" is the 20 in step up to the upper deck.
+    Size.US_STEP_DECK: TruckSpec(
+        length_m=11.58,
+        width_m=2.59,
+        floor_height_m=1.02,
+        wall_height_m=2.59,
+        front=AxleGroup(
+            id="tractor",
+            kind=AxleGroupKind.TANDEM_2_AXLES,
+            position_x_m=7.93,
+            tare_load_kg=_lb(8000 + 4400),
+        ),
+        rear=AxleGroup(
+            id="trailer",
+            kind=AxleGroupKind.TANDEM_2_AXLES,
+            position_x_m=-4.0,
+            tare_load_kg=_lb(6600),
+        ),
+        payload_kg=_lb(47_000),
+        headboard_m=0.51,
+    ),
+}
 
 
 TRUCKS: dict[Size, TruckSpec] = {
@@ -144,6 +252,7 @@ TRUCKS: dict[Size, TruckSpec] = {
         ),
         payload_kg=28000,
     ),
+    **US_TRUCKS,
 }
 FLATBED_HEADBOARD_M = 1.2
 # ASSUMPTION: the front wall of a box or curtain-sider body is an EN 12642 code L wall, rated for
@@ -512,14 +621,15 @@ def build_draft(
             )
         lashings += _over(unit, pairs, item.straps, properties)
     floor_units = [unit for unit in units if unit.position_m[2] == 0]
-    if restraint in (Restraint.DIRECT, Restraint.CHAIN):
-        device = CHAIN if restraint is Restraint.CHAIN else STRAP
-        kind = LashingKind.CHAIN if restraint is Restraint.CHAIN else LashingKind.STRAP
+    if restraint in (Restraint.DIRECT, Restraint.CHAIN, Restraint.CRADLE_CHAIN):
+        chained = restraint is not Restraint.DIRECT
+        device = CHAIN if chained else STRAP
+        kind = LashingKind.CHAIN if chained else LashingKind.STRAP
         sets = {item.id: item.diagonal_sets for item in draft.units}
         for unit in floor_units:
             lashings += _diagonals(unit, bed.anchor_points, kind, device, sets.get(unit.id, 1))
     blocks: list[Block] = []
-    if restraint in (Restraint.BLOCKING, Restraint.CRADLE):
+    if restraint in (Restraint.BLOCKING, Restraint.CRADLE, Restraint.CRADLE_CHAIN):
         blocks = _blocks(truck, units)
 
     vehicle = Vehicle(axle_groups=(truck.front, truck.rear), payload_kg=truck.payload_kg)
@@ -579,7 +689,7 @@ def _bed(
             width_m=truck.width_m,
             floor_height_m=truck.floor_height_m,
             floor_material=FloorMaterial.PLYWOOD_LAMINATE,
-            headboard=Headboard(height_m=headboard_m or FLATBED_HEADBOARD_M),
+            headboard=Headboard(height_m=headboard_m or truck.headboard_m or FLATBED_HEADBOARD_M),
             anchor_points=anchors,
         )
     rated = min(

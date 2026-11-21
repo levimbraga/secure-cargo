@@ -19,6 +19,7 @@ from app.explorer.config import (
     MAX_DIAGONAL_SETS,
     MAX_STRAPS_PER_UNIT,
     Cargo,
+    Country,
     Restraint,
     Road,
     Size,
@@ -116,6 +117,13 @@ class DraftUnit(_Model):
 class LoadDraft(_Model):
     version: Literal[1] = 1
     source: Literal["explorer", "photo", "manual"] = "explorer"
+    country: Country = Field(
+        default=Country.BR,
+        description=(
+            "Whose rules the load is checked against (BR: CONTRAN, US: FMCSA and 23 CFR 658). "
+            "Changes no physics, only the rule checks and the planner's legal targets."
+        ),
+    )
     truck: DraftTruck = DraftTruck()
     trip: DraftTrip = DraftTrip()
     restraint: Restraint = Field(
