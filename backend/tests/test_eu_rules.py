@@ -276,7 +276,7 @@ def test_height_width_and_length_limits() -> None:
     items = {i.code: i for i in dimensions(scenario, draft.truck.size)}
     assert items["eu_height"].values["limit_m"] == 4.0
     assert items["eu_height"].status == "fail"  # 1.30 m deck + 2.90 m = 4.20 m
-    assert items["width"].values["limit_m"] == 2.55
+    assert items["eu_width"].values["limit_m"] == 2.55
     assert items["eu_length"].values["limit_m"] == 16.5
     assert items["eu_length"].status == "pass"
 

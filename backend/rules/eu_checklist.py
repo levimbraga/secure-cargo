@@ -157,7 +157,7 @@ def dimensions(scenario: Scenario, size: Size | None) -> list[Item]:
             values={"height_m": height, "limit_m": MAX_HEIGHT_M},
         ),
         Item(
-            code="width",
+            code="eu_width",
             kind="rule",
             status="pass" if width <= MAX_WIDTH_M + 1e-6 else "fail",
             article=f"{DIRECTIVE} 1.2",
