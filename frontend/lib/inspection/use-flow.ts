@@ -310,6 +310,6 @@ function manualStart(truck: { body: Body; size: Size }, totalKg: number): Percep
       units: [{ id: "unit-1", cargo: "crate", x_m: 0, y_m: 0, straps: 2, mass_kg: totalKg }],
     },
     links: [],
-    warnings: ["no_units"],
+    warnings: ["manual_start"],
   };
 }

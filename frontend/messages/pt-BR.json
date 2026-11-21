@@ -633,7 +633,8 @@
       "straps": "{count, plural, =0 {sem cinta} one {# cinta} other {# cintas}}",
       "fewer": "Uma cinta a menos em {unit}",
       "more": "Uma cinta a mais em {unit}",
-      "reset": "Desfazer as edições"
+      "reset": "Desfazer as edições",
+      "hintSelect": "Vista de cima, frente à direita. Arraste uma unidade para movê-la; toque nela para editá-la abaixo."
     },
     "errors": {
       "api_unreachable": "Esta carga precisa do servidor de simulação, e ele não está respondendo. O que você vê é a simulação anterior.",
@@ -1033,7 +1034,8 @@
       "moved_to_fit": "Algumas unidades foram movidas para nenhuma ficar sobre outra.",
       "resized_to_fit": "Algumas unidades eram maiores que a carroceria e foram ajustadas.",
       "straps_reduced": "Foram vistas mais cintas do que os pontos de amarração de uma unidade permitem; confira as cintas.",
-      "stack_dropped": "Uma pilha não pôde ser lida; confira as unidades de cima."
+      "stack_dropped": "Uma pilha não pôde ser lida; confira as unidades de cima.",
+      "manual_start": "Sem análise da foto, a carga começa com uma unidade: defina carga, tamanho, posição e cintas, ou adicione outras."
     },
     "result": {
       "variant": "Versão",

@@ -68,7 +68,8 @@ export type PerceptionWarning =
   | "moved_to_fit"
   | "resized_to_fit"
   | "straps_reduced"
-  | "stack_dropped";
+  | "stack_dropped"
+  | "manual_start";
 
 export type PerceptionDraft = { draft: LoadDraft; links: UnitLink[]; warnings: PerceptionWarning[] };
 

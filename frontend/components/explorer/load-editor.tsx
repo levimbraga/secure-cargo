@@ -200,7 +200,7 @@ export function LoadEditor({
       <h2 id="editor-title" className="type-label">
         {t("title")}
       </h2>
-      <p className="type-small mt-1 text-pretty text-gray">{t("hint")}</p>
+      <p className="type-small mt-1 text-pretty text-gray">{onSelect ? t("hintSelect") : t("hint")}</p>
 
       <svg
         ref={svg}

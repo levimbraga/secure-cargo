@@ -633,7 +633,8 @@
       "straps": "{count, plural, =0 {no strap} one {# strap} other {# straps}}",
       "fewer": "One strap fewer on {unit}",
       "more": "One strap more on {unit}",
-      "reset": "Undo the edits"
+      "reset": "Undo the edits",
+      "hintSelect": "Top view, front to the right. Drag a unit to move it; tap it to edit it below."
     },
     "errors": {
       "api_unreachable": "This load needs the simulation server, and it is not answering. What you see is the previous run.",
@@ -1033,7 +1034,8 @@
       "moved_to_fit": "Some units were moved so that none overlaps another.",
       "resized_to_fit": "Some units were larger than the bed and were made to fit.",
       "straps_reduced": "More straps were seen than a unit has lashing points for; check the straps.",
-      "stack_dropped": "A stack could not be read; check the units on top."
+      "stack_dropped": "A stack could not be read; check the units on top.",
+      "manual_start": "Without a photo analysis, the load starts from one unit: set its cargo, size, place and straps, or add more."
     },
     "result": {
       "variant": "Version",
