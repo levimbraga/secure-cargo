@@ -20,6 +20,8 @@ import { fileURLToPath } from "node:url";
 
 import { createClerkClient } from "@clerk/backend";
 
+import { type BatteryLike, STORED, verdictState } from "../src/verdict";
+
 const here = dirname(fileURLToPath(import.meta.url));
 const demoDir = join(here, "..", "..", "..", "frontend", "public", "demo");
 
@@ -146,9 +148,9 @@ function readJson<T>(file: string): T {
 	return JSON.parse(readFileSync(join(demoDir, file), "utf8")) as T;
 }
 
-/** As the Worker decides it (src/flow.ts): every situation passes and no CONTRAN rule fails. */
-function verdictOf(battery: Battery): "pass" | "fail" {
-	return battery.passed === battery.total && battery.contran_945.every((c) => c.status !== "fail") ? "pass" : "fail";
+/** As the Worker decides it (src/verdict.ts): pass, warning (holds, out of compliance), fail. */
+function verdictOf(battery: Battery): "pass" | "warning" | "fail" {
+	return STORED[verdictState(battery as unknown as BatteryLike)];
 }
 
 function resultRows(id: string, scenarioId: string, battery: Battery, at: string, prefix: string): string[] {

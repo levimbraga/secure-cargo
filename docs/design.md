@@ -18,7 +18,10 @@ Principles:
    color and whitespace, not from size.
 2. **Whitespace separates sections.** There are no divider lines between sections.
 3. **Photographs, not illustrations.** Real trucks, straps and roads, in monochrome or duotone. No drawings,
-   no clip art, no low-poly 3D.
+   no clip art, no low-poly 3D. One exception, asked for by the owner (2026-11-21): in the app, the truck
+   cards, the result summary, the lists and the shared summary use our own side-view line drawing of the
+   truck (`components/inspection/truck-art.tsx`): ink lines on paper, the axle count visible, no
+   manufacturer's shapes or logos.
 4. **Red and green are verdicts.** Status colors appear only on results (fail, pass).
 5. **One sentence first.** Each screen answers its question in one sentence before any detail.
 
@@ -35,6 +38,7 @@ Principles:
 | `--amber`          | `#F2A100` | Reserved accent: the browser icon today, straps in the future 3D section |
 | `--fail`           | `#B42318` | Fail verdicts, on `--fail-tint` `#FBE9E7`                    |
 | `--pass`           | `#136F33` | Pass verdicts, on `--pass-tint` `#E2F0E4`                    |
+| `--warn`           | `#8A5A00` | "Holds, but out of compliance", on `--warn-tint` `#FBF0D9` (5.2:1) |
 
 Scenario cards add one muted tone each, used only inside their duotone photograph: brown `#9C5B23`,
 blue `#2D4995`, gold `#CDAF5D`, green `#026340`.
