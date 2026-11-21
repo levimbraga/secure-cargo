@@ -16,6 +16,8 @@
  *   PATCH  /admin/orgs/:id         daily quota (platform admin)
  *   PATCH  /admin/settings         kill switch, monthly cap, default quotas (platform admin)
  *   POST   /demo/session           a one-time sign-in ticket for the demo driver or insurer
+ *   ...    /org/overview, /org/alerts, /org/policies, /inspections/export.csv, audit, certificates,
+ *          /verify/:id, /orgs (manager.ts)
  *
  * Every route that reads or writes a record asks `authz.ts`. Records of another organization
  * answer 404, never 403, so their ids do not leak.
@@ -32,7 +34,11 @@ import {
 	type Principal,
 } from "./authz";
 import { type Db, newId, now, periodStarts } from "./db";
+import { logEvent } from "./events";
 import { type FlowDeps, registerFlow } from "./flow";
+import { filterClauses, parseFilters } from "./listing";
+import { alertCount, orgPolicies, registerManager } from "./manager";
+import type { BatteryReader } from "./summary";
 import { ApiError, fail, field, forbidden, jsonBody, notFound } from "./http";
 import type { IdentityProvider } from "./identity";
 import { resolvePrincipal } from "./principal";
@@ -48,11 +54,24 @@ export interface AppDeps extends FlowDeps {
 	siteUrl: string;
 	/** Rate limit for anonymous endpoints; resolves false when the caller is over the limit. */
 	limitAnonymous(key: string): Promise<boolean>;
+	/** A static JSON file of the site (seeded demo batteries); null when it does not exist. */
+	fetchStatic?: (path: string) => Promise<unknown | null>;
 }
 
 type Env = { Variables: { principal: Principal } };
 
-export const APP_ROUTE_PREFIXES = ["/me", "/inspections", "/org", "/admin", "/demo", "/trucks", "/share"] as const;
+export const APP_ROUTE_PREFIXES = [
+	"/me",
+	"/inspections",
+	"/org",
+	"/orgs",
+	"/admin",
+	"/demo",
+	"/trucks",
+	"/share",
+	"/certificates",
+	"/verify",
+] as const;
 
 export function isAppRoute(pathname: string): boolean {
 	return APP_ROUTE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
@@ -87,6 +106,27 @@ interface InspectionRow {
 export function createApp(deps: AppDeps): Hono<Env> {
 	const { db, identity } = deps;
 	const app = new Hono<Env>();
+
+	const fetchStatic =
+		deps.fetchStatic ??
+		(async (path: string) => {
+			const response = await fetch(new URL(path, deps.siteUrl));
+			if (response.status === 404) return null;
+			if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
+			return response.json();
+		});
+	/** A stored battery: the private bucket, or a static file of the site (`static:/path[#key]`). */
+	const readBattery: BatteryReader = async (ref) => {
+		if (ref.startsWith("static:")) {
+			const [path, key] = ref.slice("static:".length).split("#");
+			const data = await fetchStatic(path as string);
+			if (data === null || !key) return data;
+			return ((data as Record<string, unknown>)[key] as unknown) ?? null;
+		}
+		if (!deps.photos) return null;
+		const object = await deps.photos.get(ref);
+		return object ? (JSON.parse(new TextDecoder().decode(object.bytes)) as unknown) : null;
+	};
 
 	app.use(
 		"*",
@@ -131,7 +171,8 @@ export function createApp(deps: AppDeps): Hono<Env> {
 
 	app.get("/me", authenticated, async (c) => {
 		const p = c.get("principal");
-		const [user, org, analysis] = await Promise.all([
+		const manager = p.orgId !== null && p.orgRole === "org_admin";
+		const [user, org, analysis, policies] = await Promise.all([
 			db
 				.prepare("SELECT id, email, name, is_demo FROM users WHERE id = ?")
 				.bind(p.userId)
@@ -143,10 +184,12 @@ export function createApp(deps: AppDeps): Hono<Env> {
 						.first<{ id: string; name: string; type: string; is_demo: number }>()
 				: Promise.resolve(null),
 			analysisAllowance(db, p),
+			orgPolicies(db, p.orgId),
 		]);
+		const alerts = org && manager ? await alertCount(db, org.id, policies.alert_after_hours) : null;
 		return c.json({
 			user: { id: p.userId, email: user?.email ?? null, name: user?.name ?? null, is_demo: p.isDemo },
-			org: org ? { id: org.id, name: org.name, type: org.type, role: p.orgRole, is_demo: org.is_demo === 1 } : null,
+			org: org ? { id: org.id, name: org.name, type: org.type, role: p.orgRole, is_demo: org.is_demo === 1, policies, alerts } : null,
 			is_platform_admin: p.isPlatformAdmin,
 			blocked: p.blocked,
 			analysis,
@@ -161,15 +204,26 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		if (!["mine", "org", "all"].includes(scope)) fail(422, "invalid_scope", "scope must be mine, org or all.");
 		const filter = inspectionListFilter(p, scope);
 		if (!filter) forbidden();
-		const { results } = await db
-			.prepare(
-				`SELECT ${INSPECTION_COLUMNS} FROM inspections i
-				 JOIN users u ON u.id = i.author_id LEFT JOIN organizations o ON o.id = i.org_id
-				 WHERE ${filter.where} ORDER BY i.created_at DESC LIMIT 200`,
-			)
-			.bind(...filter.params)
-			.all<InspectionRow>();
-		return c.json({ scope, inspections: results });
+		// Filters, search and pages only ever narrow what the role may read.
+		const filters = parseFilters((k) => c.req.query(k));
+		const extra = filterClauses(filters);
+		const where = [filter.where, ...extra.where].join(" AND ");
+		const params = [...filter.params, ...extra.params];
+		const [{ results }, count] = await Promise.all([
+			db
+				.prepare(
+					`SELECT ${INSPECTION_COLUMNS} FROM inspections i
+					 JOIN users u ON u.id = i.author_id LEFT JOIN organizations o ON o.id = i.org_id
+					 WHERE ${where} ORDER BY i.created_at DESC LIMIT ? OFFSET ?`,
+				)
+				.bind(...params, filters.pageSize, (filters.page - 1) * filters.pageSize)
+				.all<InspectionRow>(),
+			db
+				.prepare(`SELECT COUNT(*) AS n FROM inspections i JOIN users u ON u.id = i.author_id WHERE ${where}`)
+				.bind(...params)
+				.first<{ n: number }>(),
+		]);
+		return c.json({ scope, inspections: results, total: count?.n ?? 0, page: filters.page, page_size: filters.pageSize });
 	});
 
 	app.post("/inspections", authenticated, async (c) => {
@@ -209,6 +263,8 @@ export function createApp(deps: AppDeps): Hono<Env> {
 				parentId ?? null,
 			)
 			.run();
+		await logEvent(db, id, p.userId, "created", { sample: sample?.id ?? null, reinspection_of: parentId ?? null }, at);
+		if (parentId) await logEvent(db, parentId, p.userId, "reinspected", { inspection_id: id }, at);
 		// A sample inspection starts with the sample's photos (public files on the site).
 		if (sample) {
 			await db.batch(
@@ -224,6 +280,9 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		}
 		return c.json(await loadInspection(db, id), 201);
 	});
+
+	// Before `/inspections/:id`, so that `/inspections/export.csv` is not read as an id.
+	registerManager(app, { db, identity, readBattery, samples: deps.samples, limitAnonymous: deps.limitAnonymous }, authenticated, readableInspection);
 
 	app.get("/inspections/:id", authenticated, async (c) => {
 		const inspection = await readableInspection(c);
@@ -359,6 +418,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		const invitations = await identity.listInvitations(p.orgId).catch(() => []);
 		return c.json({
 			org,
+			policies: await orgPolicies(db, p.orgId),
 			members: members.map((m) => ({
 				...m,
 				inspections: byAuthor.get(m.userId)?.inspections ?? 0,

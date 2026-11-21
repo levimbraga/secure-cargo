@@ -7,7 +7,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 
-import { createApp } from "../src/app";
+import { type AppDeps, createApp } from "../src/app";
 import type { OrgRole } from "../src/authz";
 import type { Db, Statement } from "../src/db";
 import type { FlowDeps } from "../src/flow";
@@ -62,6 +62,13 @@ export class FakeIdentity implements IdentityProvider {
 		this.invitations.push(invitation);
 		return invitation;
 	}
+	async createOrganization(params: { name: string; type: "insurer" | "carrier"; createdBy: string }) {
+		const org = { id: `org_created_${this.orgs.size}`, name: params.name, type: params.type };
+		this.orgs.set(org.id, org);
+		this.created.push({ ...params, id: org.id });
+		return org;
+	}
+	created: { id: string; name: string; type: string; createdBy: string }[] = [];
 	async createSignInTicket(userId: string, orgId: string | null, expiresInSeconds: number) {
 		this.tickets.push({ userId, orgId, expiresInSeconds });
 		return `ticket-${this.tickets.length}-for-${userId}`;
@@ -111,7 +118,7 @@ export function seed(db: ReturnType<typeof createTestDb>, identity: FakeIdentity
 	identity.users.set("newcomer", { id: "newcomer", email: "NewComer@Example.com".toLowerCase(), name: "Newcomer" });
 }
 
-export function setup(options: { rateLimitAllows?: () => boolean; flow?: Partial<FlowDeps> } = {}) {
+export function setup(options: { rateLimitAllows?: () => boolean; flow?: Partial<FlowDeps>; extra?: Partial<AppDeps> } = {}) {
 	const db = createTestDb();
 	const identity = new FakeIdentity();
 	seed(db, identity);
@@ -127,6 +134,7 @@ export function setup(options: { rateLimitAllows?: () => boolean; flow?: Partial
 		analyzer: null,
 		samples: {},
 		...options.flow,
+		...options.extra,
 	});
 	const call = (method: string, path: string, token?: string, body?: unknown) =>
 		app.request(path, {

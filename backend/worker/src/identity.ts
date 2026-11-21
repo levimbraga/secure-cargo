@@ -58,6 +58,8 @@ export interface IdentityProvider {
 		inviterUserId: string;
 		redirectUrl: string;
 	}): Promise<OrgInvitation>;
+	/** A new organization, with its creator as its first admin (`org:admin`). */
+	createOrganization(params: { name: string; type: "insurer" | "carrier"; createdBy: string }): Promise<IdentityOrg>;
 	/** A one-time ticket that signs the given user in (demo accounts), valid for `expiresInSeconds`. */
 	createSignInTicket(userId: string, orgId: string | null, expiresInSeconds: number): Promise<string>;
 }
@@ -193,6 +195,11 @@ export function createClerkIdentity(options: {
 				status: i.status ?? "pending",
 				createdAt: iso(i.createdAt),
 			};
+		},
+
+		async createOrganization({ name, type, createdBy }) {
+			const org = await clerk.organizations.createOrganization({ name, createdBy, publicMetadata: { type } });
+			return { id: org.id, name: org.name, type };
 		},
 
 		async createSignInTicket(userId, orgId, expiresInSeconds) {

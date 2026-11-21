@@ -22,6 +22,9 @@ import type { Context, Hono, MiddlewareHandler } from "hono";
 import { canWriteInspection, type Principal } from "./authz";
 import type { BatteryJson, PlanJson } from "./fanout";
 import { type Db, newId, now } from "./db";
+import { logEvent } from "./events";
+import { confirmationDetail, orgPolicies } from "./manager";
+import { cargoTypes, failureCodes, packList } from "./summary";
 import { fail, forbidden, jsonBody } from "./http";
 import type { AnalysisCall, PhotoInput } from "./perception/claude";
 import { INVOICE_PROMPT_VERSION, type InvoiceCall, type InvoiceReading } from "./perception/invoice";
@@ -94,6 +97,14 @@ export function registerFlow(
 		return row;
 	}
 
+	/** Organization policy: at least 2 photos (sample photos are exempt: they come as they are). */
+	async function requirePhotos(inspection: Row, photos: number, sample: string | null): Promise<void> {
+		if (sample || !inspection.org_id || photos >= 2) return;
+		if ((await orgPolicies(db, inspection.org_id)).require_two_photos) {
+			fail(422, "policy_two_photos", "Your organization requires at least 2 photos of the load.");
+		}
+	}
+
 	const touch = (id: string, fields: Record<string, unknown>) => {
 		const entries = Object.entries({ ...fields, updated_at: now() });
 		return db
@@ -136,6 +147,7 @@ export function registerFlow(
 			.bind(id, inspection.id, position, key, sha256, stripped.kind, stripped.bytes.length, at)
 			.run();
 		await touch(inspection.id, { status: "draft", analysis_id: null });
+		await logEvent(db, inspection.id, c.get("principal").userId, "photo_added", { position, sha256 }, at);
 		return c.json({ id, position, sha256, content_type: stripped.kind, bytes: stripped.bytes.length, created_at: at }, 201);
 	});
 
@@ -158,6 +170,7 @@ export function registerFlow(
 		const inspection = await writable(c);
 		await db.prepare("DELETE FROM photos WHERE id = ? AND inspection_id = ?").bind(c.req.param("photoId"), inspection.id).run();
 		await touch(inspection.id, { status: "draft", analysis_id: null });
+		await logEvent(db, inspection.id, c.get("principal").userId, "photo_removed", { photo_id: c.req.param("photoId") });
 		return c.json({ deleted: true });
 	});
 
@@ -172,11 +185,13 @@ export function registerFlow(
 			.bind(inspection.id)
 			.all<{ id: string; position: string; r2_key: string; sha256: string; content_type: string }>();
 		if (photos.length === 0) fail(422, "no_photos", "Add at least one photo first.");
+		await requirePhotos(inspection, photos.length, meta?.sample ?? null);
 
 		// A sample photo: its analysis was computed once and ships with the API. Free, always.
 		const sample = meta?.sample ? deps.samples[meta.sample] : undefined;
 		if (sample) {
 			await touch(inspection.id, { status: "analyzed" });
+			await logEvent(db, inspection.id, p.userId, "analyzed", { mode: "sample", model: null, units: sample.analysis.units?.length ?? 0 });
 			return c.json({ mode: "sample", analysis: sample.analysis, model: null });
 		}
 
@@ -192,6 +207,7 @@ export function registerFlow(
 		if (cached) {
 			await recordUsage(db, p, { model, inputTokens: 0, outputTokens: 0, costUsd: 0, cached: true });
 			await touch(inspection.id, { status: "analyzed", analysis_id: cached.id });
+			await logEvent(db, inspection.id, p.userId, "analyzed", { mode: "cached", model });
 			return c.json({ mode: "cached", analysis: JSON.parse(cached.output_json) as PhotoAnalysis, model });
 		}
 
@@ -233,6 +249,7 @@ export function registerFlow(
 			.bind(setHash, call.model, PROMPT_VERSION)
 			.first<{ id: string }>();
 		await touch(inspection.id, { status: "analyzed", analysis_id: stored?.id ?? null });
+		await logEvent(db, inspection.id, p.userId, "analyzed", { mode: "live", model: call.model, units: call.analysis.units?.length ?? 0 });
 		return c.json({ mode: "live", analysis: call.analysis, model: call.model, cost_usd: round(call.costUsd) });
 	});
 
@@ -258,6 +275,7 @@ export function registerFlow(
 			if (deps.photos) await deps.photos.put(key, stripped.bytes, stripped.kind);
 			const stored = { ...reading, photo_key: deps.photos ? key : null, model };
 			await touch(inspection.id, { invoice_json: JSON.stringify(stored) });
+			await logEvent(db, inspection.id, p.userId, "invoice_read", { gross_kg: (reading as { gross_kg?: number | null }).gross_kg ?? null, model });
 			return stored;
 		};
 		if (!reader) return c.json({ mode: "demo", reason: "not_configured", reading: null });
@@ -307,13 +325,17 @@ export function registerFlow(
 		const inspection = await shareable(c);
 		const existing = await db.prepare("SELECT share_token FROM inspections WHERE id = ?").bind(inspection.id).first<{ share_token: string | null }>();
 		const token = existing?.share_token ?? shareToken();
-		if (!existing?.share_token) await touch(inspection.id, { share_token: token });
+		if (!existing?.share_token) {
+			await touch(inspection.id, { share_token: token });
+			await logEvent(db, inspection.id, c.get("principal").userId, "shared");
+		}
 		return c.json({ token, path: `/app/share?t=${token}` });
 	});
 
 	app.delete("/inspections/:id/share", authenticated, async (c) => {
 		const inspection = await shareable(c);
 		await touch(inspection.id, { share_token: null });
+		await logEvent(db, inspection.id, c.get("principal").userId, "unshared");
 		return c.json({ shared: false });
 	});
 
@@ -330,11 +352,22 @@ export function registerFlow(
 		const title = typeof body.title === "string" ? body.title.trim().slice(0, 120) : undefined;
 		const weight = checkWeightSource(body, total);
 		const truckId = typeof body.truck_id === "string" ? body.truck_id.slice(0, 40) : null;
+		const meta = await db
+			.prepare("SELECT sample, (SELECT COUNT(*) FROM photos p WHERE p.inspection_id = inspections.id) AS photos FROM inspections WHERE id = ?")
+			.bind(inspection.id)
+			.first<{ sample: string | null; photos: number }>();
+		await requirePhotos(inspection, meta?.photos ?? 0, meta?.sample ?? null);
+		const previous = await scenarioOf(inspection.id, "as_loaded");
+		// The load the driver started from (the AI's reading on the confirmed truck): kept to show
+		// what the driver changed. Only its shape matters; it is never simulated.
+		const prefill = body.prefill && typeof body.prefill === "object" && JSON.stringify(body.prefill).length <= 64_000 ? body.prefill : null;
 		const at = now();
 		const id = newId("scn");
 		// A confirmed load replaces the previous one, and with it every result and fix.
 		await db.batch([
 			db.prepare("DELETE FROM scenarios WHERE inspection_id = ?").bind(inspection.id),
+			// A certificate records one confirmed load: a new one makes it void.
+			db.prepare("UPDATE certificates SET revoked_at = ? WHERE inspection_id = ? AND revoked_at IS NULL").bind(at, inspection.id),
 			db
 				.prepare("INSERT INTO scenarios (id, inspection_id, kind, draft_json, created_by, created_at) VALUES (?, ?, 'as_loaded', ?, ?, ?)")
 				.bind(id, inspection.id, JSON.stringify(draft), p.userId, at),
@@ -351,9 +384,23 @@ export function registerFlow(
 			situations_total: null,
 			verdict: null,
 			fixed_verdict: null,
+			cargo_types: packList(cargoTypes(draft)),
+			failure_codes: null,
 			...(notes !== undefined ? { notes } : {}),
 			...(title ? { title } : {}),
 		});
+		await logEvent(
+			db,
+			inspection.id,
+			p.userId,
+			"load_confirmed",
+			{
+				...confirmationDetail(prefill, previous ? JSON.parse(previous.draft_json) : null, draft),
+				cargo_weight_kg: total,
+				weight_source: weight.source,
+			},
+			at,
+		);
 		return c.json({ scenario_id: id, status: "confirmed" });
 	});
 
@@ -409,6 +456,13 @@ export function registerFlow(
 			situations_passed: battery.passed,
 			situations_total: battery.total,
 			verdict: verdictOf(battery),
+			failure_codes: packList(failureCodes(battery)),
+		});
+		await logEvent(db, inspection.id, c.get("principal").userId, "simulated", {
+			verdict: verdictOf(battery),
+			passed: battery.passed,
+			total: battery.total,
+			failures: failureCodes(battery),
 		});
 		return c.json(battery);
 	});
@@ -436,6 +490,11 @@ export function registerFlow(
 		]);
 		await storeBattery(inspection.id, fixedId, "fixed", plan.battery);
 		await touch(inspection.id, { fixed_verdict: verdictOf(plan.battery) });
+		await logEvent(db, inspection.id, p.userId, "fix_simulated", {
+			verdict: verdictOf(plan.battery),
+			changes: plan.changes.length,
+			codes: plan.changes.map((change) => (change as { code?: string }).code).filter(Boolean),
+		});
 		return c.json(plan);
 	});
 

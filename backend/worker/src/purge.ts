@@ -64,7 +64,7 @@ export async function purgeDemoInspections(db: Db, bucket: PurgeBucket | null, n
 
 	// Children first: D1 enforces the foreign keys, and this does not rely on the cascades.
 	await db.batch(
-		["fixes", "results", "scenarios", "photos"]
+		["inspection_events", "certificates", "fixes", "results", "scenarios", "photos"]
 			.map((table) => db.prepare(`DELETE FROM ${table} WHERE inspection_id IN (${marks})`).bind(...ids))
 			.concat(db.prepare(`DELETE FROM inspections WHERE id IN (${marks})`).bind(...ids)),
 	);
