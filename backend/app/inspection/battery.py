@@ -7,7 +7,9 @@ situation is a trip of the explorer (``DraftTrip``), so any one of them can be o
 explorer and changed.
 
 A situation *passes* when its verdict is not "fail". A warning (the load crept 1 to 5 cm, or a
-lashing reached 90 % of its capacity) is shown as such but counts as arriving intact.
+lashing reached 90 % of its capacity) is shown as such but counts as arriving intact. An axle
+overload is not a situation's failure: it is a rule, reported once in the checklist (the
+inspection is then "holds, but out of compliance", see ``verdict.py``).
 """
 
 import time
@@ -19,6 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.explorer import build_draft
 from app.explorer.config import Road, Weather
 from app.explorer.draft import DraftTrip, LoadDraft
+from app.inspection.verdict import RULE_FINDINGS, Verdict, verdict_of
 from app.scenario import EventKind, Scenario, TripEvent
 from app.simulation_service import simulate_cached
 from app.storage import Storage
@@ -31,6 +34,7 @@ from physics.results import (
     Status,
 )
 from rules.axle_loads import axle_loads
+from rules.checklist import Checklist, checklist
 from rules.contran945 import ContranCheck, check_contran_945
 from rules.en12195 import check_scenario
 
@@ -104,6 +108,8 @@ class BatteryResult(_Model):
     axle_loads: list[AxleLoad]
     en_12195_1: list[StandardCheck]
     contran_945: list[ContranCheck]
+    checklist: Checklist
+    verdict: Verdict
     cpu_time_s: float
 
 
@@ -153,14 +159,22 @@ def situation_result(
     scenario, event = scenario_for(draft, situation)
     response = simulate_cached(storage, scenario, event)
     result = response.result
+    # The axle loads are the same in every situation and are a rule: the checklist has them.
+    findings = [f for f in result.verdict.findings if f.code not in RULE_FINDINGS]
+    status: Status = (
+        "fail" if any(f.severity == "fail" for f in findings) else "warning" if findings else "pass"
+    )
+    physical = result.model_copy(
+        update={"verdict": result.verdict.model_copy(update={"findings": findings})}
+    )
     summary = SituationResult(
         id=situation.id,
         trip=situation.trip,
         event=event,
-        status=result.verdict.status,
-        passed=result.verdict.status != "fail",
-        severity=severity(result) if result.verdict.status != "pass" else 0.0,
-        findings=result.verdict.findings,
+        status=status,
+        passed=status != "fail",
+        severity=severity(physical) if status != "pass" else 0.0,
+        findings=findings,
         margins=result.margins,
         profile=result.profile,
         scenario_hash=response.scenario_hash,
@@ -176,17 +190,32 @@ class BatteryChecks(_Model):
     axle_loads: list[AxleLoad]
     en_12195_1: list[StandardCheck]
     contran_945: list[ContranCheck]
+    checklist: Checklist
+
+
+def headboard_known(draft: LoadDraft) -> bool:
+    """An explorer load is on our preset truck; an inspection's headboard must be given."""
+    return draft.source == "explorer" or draft.truck.headboard_height_m is not None
 
 
 def battery_checks(draft: LoadDraft) -> BatteryChecks:
-    """Axle loads, EN 12195-1 and CONTRAN 945 of a load (no simulation)."""
+    """Axle loads, EN 12195-1, CONTRAN 945 and the checklist of a load (no simulation)."""
     scenario, _ = scenario_for(draft, SITUATIONS[0])
+    known = headboard_known(draft)
     return BatteryChecks(
         draft=draft,
         scenario=scenario,
         axle_loads=axle_loads(scenario),
         en_12195_1=check_scenario(scenario),
-        contran_945=check_contran_945(scenario, anchored_on_wood=draft.anchored_on_wood),
+        contran_945=check_contran_945(
+            scenario, anchored_on_wood=draft.anchored_on_wood, headboard_known=known
+        ),
+        checklist=checklist(
+            scenario,
+            cargo=[u.cargo.value for u in draft.units],
+            restraint=draft.restraint.value,
+            headboard_known=known,
+        ),
     )
 
 
@@ -209,6 +238,13 @@ def run_battery(storage: Storage, draft: LoadDraft) -> BatteryResult:
         "fail" if "fail" in statuses else "warning" if "warning" in statuses else "pass"
     )
     checks = battery_checks(draft)
+    verdict = verdict_of(
+        {
+            "situations": [s.model_dump() for s in situations],
+            "contran_945": [c.model_dump() for c in checks.contran_945],
+            "checklist": checks.checklist.model_dump(),
+        }
+    )
     return BatteryResult(
         draft=draft,
         scenario=checks.scenario,
@@ -221,5 +257,7 @@ def run_battery(storage: Storage, draft: LoadDraft) -> BatteryResult:
         axle_loads=checks.axle_loads,
         en_12195_1=checks.en_12195_1,
         contran_945=checks.contran_945,
+        checklist=checks.checklist,
+        verdict=verdict,
         cpu_time_s=round(time.thread_time() - started, 3),
     )

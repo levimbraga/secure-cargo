@@ -31,7 +31,9 @@ GAP_TOLERANCE_M = 0.15
 SAFETY_FACTOR = 2.0
 MIN_TERMINALS = 4
 
-CheckStatus = Literal["pass", "fail", "not_applicable"]
+# "to_confirm": the check depends on a measurement nobody gave (the headboard height); it is
+# never reported as a violation on an assumed value.
+CheckStatus = Literal["pass", "fail", "not_applicable", "to_confirm"]
 
 
 class ContranCheck(BaseModel):
@@ -51,15 +53,21 @@ class ContranCheck(BaseModel):
     message: str
 
 
-def check_contran_945(scenario: Scenario, *, anchored_on_wood: bool = False) -> list[ContranCheck]:
-    """The six checks, in the order of the articles. ``anchored_on_wood``: seen on a photo."""
+def check_contran_945(
+    scenario: Scenario, *, anchored_on_wood: bool = False, headboard_known: bool = True
+) -> list[ContranCheck]:
+    """The six checks, in the order of the articles.
+
+    ``anchored_on_wood``: seen on a photo. ``headboard_known``: False when the headboard height
+    is the body's usual one and nobody confirmed it; art. 8 then asks for it instead of failing.
+    """
     return [
         _devices_allowed(scenario),
         _safety_factor(scenario),
         _four_terminals(scenario),
         _anchoring(scenario, anchored_on_wood),
         _diagonals_for_gaps(scenario),
-        _above_headboard(scenario),
+        _above_headboard(scenario, headboard_known),
     ]
 
 
@@ -267,7 +275,7 @@ def _diagonals_for_gaps(scenario: Scenario) -> ContranCheck:
     )
 
 
-def _above_headboard(scenario: Scenario) -> ContranCheck:
+def _above_headboard(scenario: Scenario, known: bool = True) -> ContranCheck:
     headboard = scenario.bed.headboard
     if scenario.bed.body is not BodyType.FLATBED or headboard is None:
         return ContranCheck(
@@ -283,6 +291,17 @@ def _above_headboard(scenario: Scenario) -> ContranCheck:
         and not (_diagonal(scenario, stack) or _held_by_contact(scenario, stack))
         for unit in stack
     ]
+    if tall and not known:
+        return ContranCheck(
+            code="above_headboard",
+            article="Art. 8",
+            status="to_confirm",
+            unit_ids=tall,
+            message=(
+                f"The load stands taller than a {headboard.height_m:.1f} m headboard; "
+                "confirm the headboard height."
+            ),
+        )
     if tall:
         return ContranCheck(
             code="above_headboard",

@@ -231,9 +231,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         """
         try:
             result = run_battery(request.app.state.storage, body.draft)
-            needs_fix = result.passed < result.total or any(
-                check.status == "fail" for check in result.contran_945
-            )
+            needs_fix = result.verdict.state != "approved"
             recommendation = None
             if needs_fix:
                 fixed, changes = recommend(body.draft)
