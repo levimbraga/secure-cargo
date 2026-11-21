@@ -111,6 +111,12 @@ results and a `fixes` row with the changes. Members see their own inspections; a
 the organization's (`/app/org`); every rule is enforced in the Worker and tested
 (`backend/worker/test/flow.test.ts`).
 
+**Demo reset** (`backend/worker/src/purge.ts`): a Worker cron runs every hour and deletes the
+inspections that demo accounts created more than 24 hours earlier, with their rows, their stored
+batteries and their photos in R2 (a photo only when no remaining inspection uses it). The seeded
+inspections of the demo organization (`seeded = 1`) and everything made by real accounts are never
+touched (`backend/worker/test/purge.test.ts`). The demo views say "Demo data resets daily."
+
 ## 9. Sample photos (`backend/scripts/build_samples.py`, `public/demo/samples/`)
 
 Real photographs of loads (free licence, credited), each with its recorded Claude analysis, the

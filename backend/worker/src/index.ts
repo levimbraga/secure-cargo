@@ -19,6 +19,7 @@ import { createClerkIdentity } from "./identity";
 import { analyzePhotos, DEFAULT_MODEL } from "./perception/claude";
 import samples from "./perception/samples.json";
 import { parseEmailList } from "./principal";
+import { type PurgeBucket, purgeDemoInspections } from "./purge";
 
 export { ApiContainer } from "./container";
 
@@ -88,7 +89,26 @@ export default {
 			);
 		}
 	},
+	/** Demo reset (cron every hour): demo inspections older than 24 h, see purge.ts. */
+	async scheduled(_controller, env, ctx): Promise<void> {
+		ctx.waitUntil(
+			purgeDemoInspections(env.DB, r2PurgeBucket(env.PHOTOS)).then(
+				(report) => report.inspections.length && console.log(`Demo reset: ${report.inspections.length} inspections, ${report.objects} R2 objects deleted.`),
+				(error) => console.error("Demo reset failed:", error),
+			),
+		);
+	},
 } satisfies ExportedHandler<Env>;
+
+function r2PurgeBucket(bucket: R2Bucket): PurgeBucket {
+	return {
+		delete: (keys) => bucket.delete(keys),
+		list: async ({ prefix, cursor }) => {
+			const page = await bucket.list({ prefix, cursor });
+			return { objects: page.objects, truncated: page.truncated, cursor: page.truncated ? page.cursor : undefined };
+		},
+	};
+}
 
 function r2PhotoStore(bucket: R2Bucket): PhotoStore {
 	return {

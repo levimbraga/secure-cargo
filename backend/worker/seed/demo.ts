@@ -218,10 +218,10 @@ async function main() {
 		const fixedVerdict = item.outcome === "fixed" ? verdictOf(fixedBattery) : null;
 		sql.push(
 			`INSERT INTO inspections (id, org_id, author_id, created_at, updated_at, status, title, truck_body, truck_size,
-			   cargo_weight_kg, notes, situations_passed, situations_total, verdict, fixed_verdict)
+			   cargo_weight_kg, notes, situations_passed, situations_total, verdict, fixed_verdict, seeded)
 			 VALUES (${q(id)}, ${q(orgId)}, ${q(authorId)}, ${q(at)}, ${q(later)}, 'simulated', ${q(example.title)},
 			   ${q(loaded.truck.body)}, ${q(loaded.truck.size)}, ${weight}, '',
-			   ${battery.passed}, ${battery.total}, ${q(verdictOf(battery))}, ${q(fixedVerdict)});`,
+			   ${battery.passed}, ${battery.total}, ${q(verdictOf(battery))}, ${q(fixedVerdict)}, 1);`,
 		);
 		// Every inspection has a picture: a sample photograph, or else the MuJoCo render of the load.
 		const photo = SAMPLE_PHOTOS[item.example] ?? `/demo/video/${item.example}.${passedFirst ? "fixed" : "as_loaded"}.jpg`;
