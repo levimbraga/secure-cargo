@@ -2,9 +2,10 @@
 
 For each sample: the photograph (resized to the 1568 px the vision model uses, metadata
 removed, plates blurred where needed), its Claude vision analysis as recorded by the perception
-evaluation (``backend/worker/scripts/eval-perception.ts``, never re-billed), the load draft on
-the confirmed truck with the sample's invoice weight, the battery of seven situations, the
-planner's proven fix, and every situation's run with keyframes for the replays:
+evaluation for the current prompt version (``backend/worker/scripts/eval-perception.ts``, never
+re-billed), the load draft on the confirmed truck with the sample's invoice weight, the battery
+of seven situations, the planner's proven fix, and every situation's run with keyframes for the
+replays:
 
     uv run python -m scripts.build_samples
 
@@ -15,6 +16,7 @@ analyses (``backend/worker/src/perception/samples.json``).
 
 import hashlib
 import json
+import re
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,8 +32,16 @@ ROOT = Path(__file__).resolve().parents[2]
 PHOTOS = ROOT.parent / "photos" / "stock" / "loads"
 OUT = ROOT / "frontend" / "public" / "demo" / "samples"
 WORKER_COPY = ROOT / "backend" / "worker" / "src" / "perception" / "samples.json"
-MODEL = "claude-sonnet-5-5"
+MODEL = "claude-opus-5-5"
 MAX_EDGE = 1568
+
+
+def _prompt_version() -> str:
+    """The Worker's prompt version: the evaluation caches its answers per version."""
+    schema = (ROOT / "backend" / "worker" / "src" / "perception" / "schema.ts").read_text()
+    match = re.search(r'PROMPT_VERSION = "(\w+)"', schema)
+    assert match, "PROMPT_VERSION not found in the Worker's schema.ts"
+    return match.group(1)
 
 
 @dataclass(frozen=True)
@@ -91,7 +101,7 @@ SAMPLES: tuple[SampleSpec, ...] = (
             "Pacotes de madeira serrada sob cintas numa carreta.",
         ),
         DraftTruck(body="flatbed", size="semi"),
-        22000,
+        12000,  # about 0.58 t/m³ over the packages the draft keeps: sawn pine
     ),
 )
 
@@ -161,11 +171,12 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     manifest = {p["file"]: p for p in json.loads((PHOTOS / "manifest.json").read_text())}
     storage = create_storage("memory://")
+    answers = PHOTOS / "analyses" / f"prompt-v{_prompt_version()}"
     index = []
     worker: dict[str, object] = {}
     for spec in SAMPLES:
         photo = manifest[spec.file]
-        recorded = json.loads((PHOTOS / "analyses" / MODEL / f"{spec.file}.json").read_text())
+        recorded = json.loads((answers / MODEL / f"{spec.file}.json").read_text())
         analysis = PhotoAnalysis.model_validate(recorded["analysis"])
 
         image = OUT / f"{spec.id}.jpg"

@@ -1,1 +1,464 @@
-{}
+{
+ "crates-ropes": {
+  "id": "crates-ropes",
+  "photos": [
+   {
+    "position": "left",
+    "path": "/demo/samples/crates-ropes.jpg",
+    "sha256": "09cb76f260972230bc2ee6a495de7cd0d72c633254a067d6672565052189c45c"
+   }
+  ],
+  "analysis": {
+   "is_truck_load": true,
+   "truck": {
+    "body": "flatbed",
+    "size": "unknown",
+    "confidence": 0.6,
+    "uncertain": "only side visible; small truck with drop sides, axle count not visible"
+   },
+   "units": [
+    {
+     "number": 1,
+     "cargo": "stacked_boxes",
+     "length_m": 0.6,
+     "width_m": 2,
+     "height_m": 2.7,
+     "along": 0.9,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.08,
+      0.03,
+      0.22,
+      0.81
+     ],
+     "confidence": 0.5,
+     "uncertain": "columns of plastic crates grouped as blocks; depth across bed unknown"
+    },
+    {
+     "number": 2,
+     "cargo": "stacked_boxes",
+     "length_m": 0.6,
+     "width_m": 2,
+     "height_m": 2.7,
+     "along": 0.75,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.22,
+      0.04,
+      0.36,
+      0.82
+     ],
+     "confidence": 0.5,
+     "uncertain": "crate stack grouping"
+    },
+    {
+     "number": 3,
+     "cargo": "stacked_boxes",
+     "length_m": 0.6,
+     "width_m": 2,
+     "height_m": 2.7,
+     "along": 0.6,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.35,
+      0,
+      0.49,
+      0.82
+     ],
+     "confidence": 0.5,
+     "uncertain": "crate stack grouping"
+    },
+    {
+     "number": 4,
+     "cargo": "stacked_boxes",
+     "length_m": 0.6,
+     "width_m": 2,
+     "height_m": 2.6,
+     "along": 0.45,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.48,
+      0.06,
+      0.62,
+      0.82
+     ],
+     "confidence": 0.5,
+     "uncertain": "crate stack grouping"
+    },
+    {
+     "number": 5,
+     "cargo": "stacked_boxes",
+     "length_m": 0.6,
+     "width_m": 2,
+     "height_m": 2.6,
+     "along": 0.3,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.59,
+      0.07,
+      0.74,
+      0.82
+     ],
+     "confidence": 0.5,
+     "uncertain": "crate stack grouping"
+    },
+    {
+     "number": 6,
+     "cargo": "stacked_boxes",
+     "length_m": 0.6,
+     "width_m": 2,
+     "height_m": 2.2,
+     "along": 0.12,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.72,
+      0.19,
+      0.87,
+      0.82
+     ],
+     "confidence": 0.5,
+     "uncertain": "crate stack grouping; front stack near cab"
+    }
+   ],
+   "restraints": [
+    {
+     "kind": "rope",
+     "count": 6,
+     "routing": "top_over",
+     "units": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "confidence": 0.8,
+     "uncertain": "other side of truck not visible"
+    }
+   ],
+   "violations": [
+    {
+     "code": "rope",
+     "units": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "confidence": 0.85,
+     "note": "Load lashed only with ropes tied to the side hooks."
+    },
+    {
+     "code": "above_headboard",
+     "units": [
+      6
+     ],
+     "confidence": 0.5,
+     "note": "Crate stacks far above cab height; headboard not visible."
+    }
+   ],
+   "overall_confidence": 0.5,
+   "summary": "A small flatbed truck carries tall stacks of empty plastic crates secured only with about six ropes over the top."
+  }
+ },
+ "steel-pipes": {
+  "id": "steel-pipes",
+  "photos": [
+   {
+    "position": "rear",
+    "path": "/demo/samples/steel-pipes.jpg",
+    "sha256": "daf57a5385ef23e764a59fd24373bced40b5c0f6ad6001c04f255a5a58053f85"
+   }
+  ],
+  "analysis": {
+   "is_truck_load": true,
+   "truck": {
+    "body": "flatbed",
+    "size": "semi",
+    "confidence": 0.7,
+    "uncertain": "only part of the trailer visible; landing gear suggests semi-trailer"
+   },
+   "units": [
+    {
+     "number": 1,
+     "cargo": "long_pipes",
+     "length_m": 12,
+     "width_m": 2.4,
+     "height_m": 1.8,
+     "along": 0.5,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0,
+      0,
+      1,
+      0.66
+     ],
+     "confidence": 0.6,
+     "uncertain": "number of pipes, layers and full length not visible; treated as one bundle"
+    }
+   ],
+   "restraints": [
+    {
+     "kind": "strap",
+     "count": 4,
+     "routing": "top_over",
+     "units": [
+      1
+     ],
+     "confidence": 0.75,
+     "uncertain": "routing over the top not fully visible; more straps may exist outside the frame"
+    },
+    {
+     "kind": "blocking",
+     "count": 1,
+     "routing": "unknown",
+     "units": [
+      1
+     ],
+     "confidence": 0.4,
+     "uncertain": "wooden pieces/stakes visible near pipes; unclear if they block"
+    }
+   ],
+   "violations": [],
+   "overall_confidence": 0.55,
+   "summary": "A flatbed semi-trailer carries a stack of large green steel pipes lying lengthwise, secured with at least four yellow/brown top-over straps hooked to the side rail."
+  }
+ },
+ "backhoe-chains": {
+  "id": "backhoe-chains",
+  "photos": [
+   {
+    "position": "left",
+    "path": "/demo/samples/backhoe-chains.jpg",
+    "sha256": "9737cea2817a03dd46240eaab5a75374729a30397abb5d0ec59865b7ee447f46"
+   }
+  ],
+  "analysis": {
+   "is_truck_load": true,
+   "truck": {
+    "body": "flatbed",
+    "size": "semi",
+    "confidence": 0.8,
+    "uncertain": "lowbed semi-trailer; front gooseneck and tractor only partly visible"
+   },
+   "units": [
+    {
+     "number": 1,
+     "cargo": "machine",
+     "length_m": 5.8,
+     "width_m": 2.3,
+     "height_m": 3.5,
+     "along": 0.55,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.21,
+      0.29,
+      0.7,
+      0.71
+     ],
+     "confidence": 0.85,
+     "uncertain": "JCB backhoe loader; position on the bed is estimated from a side view only"
+    }
+   ],
+   "restraints": [
+    {
+     "kind": "chain",
+     "count": 2,
+     "routing": "diagonal",
+     "units": [
+      1
+     ],
+     "confidence": 0.6,
+     "uncertain": "chains at the rear stabiliser and the front wheel are partly hidden; the far side cannot be seen"
+    },
+    {
+     "kind": "strap",
+     "count": 1,
+     "routing": "unknown",
+     "units": [
+      1
+     ],
+     "confidence": 0.4,
+     "uncertain": "a strap hangs from the front bucket area to the frame; unclear whether it is tensioned"
+    }
+   ],
+   "violations": [],
+   "overall_confidence": 0.65,
+   "summary": "A JCB backhoe loader stands on a lowbed semi-trailer, held by diagonal chains at the front and rear plus a possible strap near the bucket; the other side cannot be seen."
+  }
+ },
+ "lumber-straps": {
+  "id": "lumber-straps",
+  "photos": [
+   {
+    "position": "rear",
+    "path": "/demo/samples/lumber-straps.jpg",
+    "sha256": "4c87c6cb5892c3ca6ed1b0833418fd546c6cf856d688c55e1b8105f56150f5d8"
+   }
+  ],
+  "analysis": {
+   "is_truck_load": true,
+   "truck": {
+    "body": "flatbed",
+    "size": "semi",
+    "confidence": 0.8,
+    "uncertain": "multi-axle flatbed semi-trailer, exact configuration unclear"
+   },
+   "units": [
+    {
+     "number": 1,
+     "cargo": "crate",
+     "length_m": 4.8,
+     "width_m": 1.2,
+     "height_m": 0.9,
+     "along": 0.85,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.63,
+      0.35,
+      1,
+      0.47
+     ],
+     "confidence": 0.5,
+     "uncertain": "lumber bundle; dimensions and count across width unclear"
+    },
+    {
+     "number": 2,
+     "cargo": "crate",
+     "length_m": 4.8,
+     "width_m": 1.2,
+     "height_m": 0.9,
+     "along": 0.85,
+     "across": 0.5,
+     "stacked_on": 1,
+     "photo": 0,
+     "box": [
+      0.63,
+      0.22,
+      1,
+      0.36
+     ],
+     "confidence": 0.5,
+     "uncertain": "lumber bundle; dimensions unclear"
+    },
+    {
+     "number": 3,
+     "cargo": "crate",
+     "length_m": 4.8,
+     "width_m": 1.2,
+     "height_m": 0.9,
+     "along": 0.55,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.53,
+      0.38,
+      0.66,
+      0.48
+     ],
+     "confidence": 0.4,
+     "uncertain": "lumber bundle; partly hidden"
+    },
+    {
+     "number": 4,
+     "cargo": "crate",
+     "length_m": 4.8,
+     "width_m": 1.2,
+     "height_m": 0.9,
+     "along": 0.55,
+     "across": 0.5,
+     "stacked_on": 3,
+     "photo": 0,
+     "box": [
+      0.54,
+      0.3,
+      0.66,
+      0.39
+     ],
+     "confidence": 0.4,
+     "uncertain": "lumber bundle; partly hidden"
+    },
+    {
+     "number": 5,
+     "cargo": "crate",
+     "length_m": 4.8,
+     "width_m": 1.2,
+     "height_m": 0.9,
+     "along": 0.2,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.38,
+      0.37,
+      0.54,
+      0.49
+     ],
+     "confidence": 0.4,
+     "uncertain": "lumber bundle; far, partly hidden"
+    },
+    {
+     "number": 6,
+     "cargo": "crate",
+     "length_m": 4.8,
+     "width_m": 1.2,
+     "height_m": 0.9,
+     "along": 0.2,
+     "across": 0.5,
+     "stacked_on": 5,
+     "photo": 0,
+     "box": [
+      0.4,
+      0.31,
+      0.56,
+      0.38
+     ],
+     "confidence": 0.4,
+     "uncertain": "lumber bundle; far, partly hidden"
+    }
+   ],
+   "restraints": [
+    {
+     "kind": "strap",
+     "count": 10,
+     "routing": "top_over",
+     "units": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+     ],
+     "confidence": 0.6,
+     "uncertain": "exact strap count hard to see"
+    }
+   ],
+   "violations": [],
+   "overall_confidence": 0.5,
+   "summary": "A flatbed semi-trailer carries about six stacked bundles of sawn lumber secured with roughly ten top-over straps."
+  }
+ }
+}

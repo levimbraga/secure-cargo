@@ -252,6 +252,18 @@ duotone, with grain added.
 | Rope lashing | [Mugabi Owen](https://unsplash.com/@spenz_official) | [photo](https://unsplash.com/photos/thick-rope-tied-with-a-knot-on-metal-bar-KZC9qnKD_-4) |
 | Sharp curve | [Zoshua Colah](https://unsplash.com/@zoshuacolah) | [photo](https://unsplash.com/photos/truck-on-a-winding-mountain-road-black-and-white-wmgLXFpLvqo) |
 
+The sample photos of the inspection flow (`/app/new`, "Try with a sample photo") are shown in colour,
+resized to 1568 px with all metadata removed. None shows a face or a readable plate. Unsplash photos are
+under the [Unsplash License](https://unsplash.com/license), Pexels photos under the
+[Pexels License](https://www.pexels.com/license/).
+
+| Sample | Photographer | Source |
+| ------ | ------------ | ------ |
+| Crates tied with ropes | [JUNLIN ZOU](https://www.pexels.com/@fangyuanzhiwai/) | [Pexels photo](https://www.pexels.com/photo/colorful-crates-on-truck-in-urban-setting-32444472/) |
+| Steel pipes with straps | [Jaime Maldonado](https://unsplash.com/@jamoandres2021) | [Unsplash photo](https://unsplash.com/photos/a-large-truck-with-a-bunch-of-green-pipes-on-the-back-of-it-N53wfGqwtNQ) |
+| A backhoe on a low-bed | [Tayssir Kadamany](https://www.pexels.com/@sirokad/) | [Pexels photo](https://www.pexels.com/photo/yellow-construction-vehicle-on-flatbed-trailer-38095094/) |
+| Lumber, strapped | [Riley Crawford](https://unsplash.com/@ricrawfo) | [Unsplash photo](https://unsplash.com/photos/white-truck-on-gray-road-during-daytime-99HLgU4IHLY) |
+
 ## License
 
 [MIT](LICENSE)
