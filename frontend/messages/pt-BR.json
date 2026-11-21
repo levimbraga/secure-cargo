@@ -242,7 +242,7 @@
       },
       "eu-curtain-pallets": {
         "as_loaded": "Os paletes escorregam pela lona e caem do semirreboque: lona código L não segura nada, deficiência perigosa numa fiscalização.",
-        "fixed": "Com duas cintas por cima de cada palete, eles seguram na curva e a carga cumpre o Anexo III."
+        "fixed": "Com três cintas por cima de cada palete, eles seguram na curva e a carga cumpre o Anexo III."
       }
     },
     "explanations": {
@@ -300,7 +300,7 @@
       },
       "eu-curtain-pallets": {
         "as_loaded": "Onze paletes de 1,5 t encostados na parede frontal de um sider código L de 13,6 m, sem amarração. Só o atrito (μ 0,45) é menos que os 0,5 g que as regras europeias pedem para os lados.",
-        "fixed": "Duas cintas por cima de cada palete o pressionam para baixo: atrito e cintas seguram mais da metade do peso para os lados (EN 12195-1)."
+        "fixed": "Três cintas por cima de cada palete o pressionam para baixo: atrito e cintas seguram mais da metade do peso para os lados (EN 12195-1)."
       }
     },
     "variant": {
@@ -1643,7 +1643,7 @@
         "bridge": "Um grupo de eixos leva mais do que a fórmula das pontes permite.",
         "rear_projection": "A carga passa mais de 4 pés da traseira: precisa de bandeiras.",
         "eu_forward": "{unit} não está segura para a frente: a amarração segura menos de 0,8 g.",
-        "eu_sideways": "{unit} não está segura para os lados: só o atrito a mantém no caminhão.",
+        "eu_sideways": "{unit} não está segura para os lados: a amarração segura menos da metade do peso.",
         "eu_rearward": "{unit} não está segura para trás.",
         "eu_tipping": "{unit} pode tombar e nada a mantém em pé.",
         "eu_body_strength": "As lonas não seguram a carga: este sider é código L.",
@@ -2123,7 +2123,12 @@
         "L": "Código L: a parede frontal segura 40 % da carga útil (no máximo 5.000 daN); as lonas não seguram nada.",
         "XL": "Código XL: a parede frontal segura 50 % da carga útil; paredes e lonas, 40 %."
       },
-      "codeAssumed": "Código não informado: consideramos L."
+      "codeAssumed": "Código não informado: consideramos L.",
+      "short": {
+        "BR": "🇧🇷 Brasil",
+        "US": "🇺🇸 EUA",
+        "EU": "🇪🇺 UE"
+      }
     },
     "roadside": {
       "none": "Sem deficiência",

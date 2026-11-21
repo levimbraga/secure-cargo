@@ -504,7 +504,10 @@ export function Checklist({
         </Theme>
 
         <Theme id="dimensions" title={t(`${themes}.dimensions` as never)} marks={dimensionItems.map(itemMark)}>
-          {dimensionItems.map((item) => (
+          {dimensionItems
+            // The overall length is known only on the EU presets.
+            .filter((item) => !(item.code === "eu_length" && item.status === "not_applicable"))
+            .map((item) => (
             <Item
               key={item.code}
               testId={item.code}

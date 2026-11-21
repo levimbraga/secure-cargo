@@ -41,8 +41,11 @@ export function CountrySwitch({
               onClick={() => value !== country && onChange(value)}
               className={pill({ variant: country === value ? "primary" : "secondary", className: "h-10 px-4" })}
               data-testid={`country-${value}`}
+              aria-label={t(value)}
             >
-              {t(value)}
+              {/* Three countries fit a 375 px screen only with short names. */}
+              <span className="sm:hidden">{t(`short.${value}`)}</span>
+              <span className="hidden sm:inline">{t(value)}</span>
             </button>
           ))}
         </div>

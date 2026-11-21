@@ -242,7 +242,7 @@
       },
       "eu-curtain-pallets": {
         "as_loaded": "The pallets slide through the curtain and off the trailer: a code L curtain holds nothing, a dangerous deficiency at a roadside check.",
-        "fixed": "With two straps over each pallet they hold in the curve and the load complies with Annex III."
+        "fixed": "With three straps over each pallet they hold in the curve and the load complies with Annex III."
       }
     },
     "explanations": {
@@ -300,7 +300,7 @@
       },
       "eu-curtain-pallets": {
         "as_loaded": "Eleven 1.5 t pallets against the headboard of a 13.6 m code L curtain-sider, with no lashing. Friction alone (μ 0.45) is less than the 0.5 g the EU rules ask for sideways.",
-        "fixed": "Two straps over each pallet press it down: friction and straps hold more than half its weight sideways (EN 12195-1)."
+        "fixed": "Three straps over each pallet press it down: friction and straps hold more than half its weight sideways (EN 12195-1)."
       }
     },
     "variant": {
@@ -1643,7 +1643,7 @@
         "bridge": "A group of axles carries more than the bridge formula allows.",
         "rear_projection": "The load sticks out more than 4 ft at the rear: it needs flags.",
         "eu_forward": "{unit} is not held forward: the securing holds less than 0.8 g.",
-        "eu_sideways": "{unit} is not held sideways: nothing but friction keeps it on the truck.",
+        "eu_sideways": "{unit} is not held sideways: the securing holds less than half its weight.",
         "eu_rearward": "{unit} is not held towards the rear.",
         "eu_tipping": "{unit} can tip over and nothing holds it upright.",
         "eu_body_strength": "The curtains hold no cargo: this curtain-sider is code L.",
@@ -2123,7 +2123,12 @@
         "L": "Code L: the headboard holds 40 % of the payload (at most 5,000 daN); curtains hold nothing.",
         "XL": "Code XL: the headboard holds 50 % of the payload; walls and curtains 40 %."
       },
-      "codeAssumed": "No code given: L is assumed."
+      "codeAssumed": "No code given: L is assumed.",
+      "short": {
+        "BR": "🇧🇷 Brasil",
+        "US": "🇺🇸 US",
+        "EU": "🇪🇺 EU"
+      }
     },
     "roadside": {
       "none": "No deficiency",
