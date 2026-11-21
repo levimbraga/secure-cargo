@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from app.explorer import build_draft
 from app.explorer.config import Restraint
 from app.explorer.draft import DraftUnit, LoadDraft
 from app.inspection.battery import SITUATION_IDS, SITUATIONS, run_battery
@@ -96,7 +97,7 @@ def test_a_step_that_is_not_needed_is_dropped(monkeypatch: pytest.MonkeyPatch) -
     import planner.plan as planner
 
     draft = _draft("emergency-braking.as_loaded")
-    moved, _ = planner._placement(draft, planner.build_draft(draft)[0])
+    moved, _ = planner._placement(draft, build_draft(draft)[0])
     both = planner._Candidate(
         "move+direct", planner._with_straps(moved, {}, Restraint.DIRECT), steps=("move", "direct")
     )

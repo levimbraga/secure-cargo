@@ -1,9 +1,11 @@
 """The three-state verdict: approved, holds but out of compliance, does not arrive intact."""
 
+from typing import Any
+
 from app.inspection.verdict import verdict_of
 
 
-def _situation(sid: str, *findings: dict) -> dict:
+def _situation(sid: str, *findings: dict[str, Any]) -> dict[str, Any]:
     return {"id": sid, "severity": 1.0 if findings else 0.0, "findings": list(findings)}
 
 
