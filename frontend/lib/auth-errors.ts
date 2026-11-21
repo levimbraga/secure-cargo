@@ -58,14 +58,22 @@ export function authErrorKey(error: unknown): AuthErrorKey {
 }
 
 /**
- * The minimum password length. It must match the Clerk instance setting (User & authentication,
- * Password: 15 on our production instance, Clerk's default without complexity rules).
+ * The minimum password length we expect from the Clerk instance (User & authentication, Password).
+ * The page reads the live value from Clerk when it can, so the two never disagree; this is the
+ * fallback. Leaked passwords are refused by Clerk whatever their length.
  */
-export const MIN_PASSWORD_LENGTH = 15;
+export const MIN_PASSWORD_LENGTH = 8;
+
+/** The instance's minimum from Clerk's loaded settings, or our fallback. */
+export function passwordMinLength(environment: unknown): number {
+  const value = (environment as { userSettings?: { passwordSettings?: { min_length?: unknown } } } | null | undefined)
+    ?.userSettings?.passwordSettings?.min_length;
+  return typeof value === "number" && value > 0 ? value : MIN_PASSWORD_LENGTH;
+}
 
 /** A quick local check before any request, so the obvious mistakes answer at once. */
-export function localAuthError(email: string, password?: string): AuthErrorKey | null {
+export function localAuthError(email: string, password?: string, minLength = MIN_PASSWORD_LENGTH): AuthErrorKey | null {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return "invalid_email";
-  if (password !== undefined && password.length < MIN_PASSWORD_LENGTH) return "short_password";
+  if (password !== undefined && password.length < minLength) return "short_password";
   return null;
 }

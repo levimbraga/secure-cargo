@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth, useSignIn, useSignUp } from "@clerk/nextjs";
+import { useAuth, useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
 import { cn } from "cn";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useState } from "react";
@@ -8,7 +8,7 @@ import { useEffect, useId, useState } from "react";
 import { DemoButtons } from "@/components/app/demo-buttons";
 import { pill } from "@/components/ui/pill";
 import { useRouter } from "@/i18n/navigation";
-import { type AuthErrorKey, authErrorKey, localAuthError, MIN_PASSWORD_LENGTH } from "@/lib/auth-errors";
+import { type AuthErrorKey, authErrorKey, localAuthError, passwordMinLength } from "@/lib/auth-errors";
 
 export type AuthTab = "sign-in" | "sign-up";
 
@@ -84,6 +84,12 @@ export function AuthPanel({ initial = "sign-in" }: { initial?: AuthTab }) {
   );
 }
 
+/** The live minimum password length of the Clerk instance (falls back to 8). */
+function useMinLength(): number {
+  const clerk = useClerk() as unknown as { __internal_environment?: unknown };
+  return passwordMinLength(clerk.__internal_environment);
+}
+
 const fieldClass =
   "mt-1 h-12 w-full rounded-[4px] border border-control-border bg-white px-3 text-base text-ink outline-none focus-visible:border-ink aria-[invalid=true]:border-fail";
 
@@ -125,6 +131,7 @@ function PasswordField({
   hint?: string;
 }) {
   const t = useTranslations("Auth.form");
+  const min = useMinLength();
   const [shown, setShown] = useState(false);
   const hintId = useId();
   return (
@@ -137,7 +144,7 @@ function PasswordField({
             name="password"
             autoComplete={autoComplete}
             required
-            minLength={autoComplete === "new-password" ? MIN_PASSWORD_LENGTH : undefined}
+            minLength={autoComplete === "new-password" ? min : undefined}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             aria-invalid={invalid || undefined}
@@ -187,10 +194,11 @@ function CodeField({ value, onChange, invalid }: { value: string; onChange: (v: 
 
 function FormError({ error }: { error: AuthErrorKey | null }) {
   const t = useTranslations("Auth.form.errors");
+  const min = useMinLength();
   if (!error) return null;
   return (
     <p role="alert" className="type-small text-fail">
-      {t(error)}
+      {t(error, { min })}
     </p>
   );
 }
@@ -258,6 +266,7 @@ function SignInForm() {
 
 function ResetForm({ initialEmail, onDone, onBack }: { initialEmail: string; onDone: () => void; onBack: () => void }) {
   const t = useTranslations("Auth.form");
+  const min = useMinLength();
   const { signIn } = useSignIn();
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState(initialEmail);
@@ -281,7 +290,7 @@ function ResetForm({ initialEmail, onDone, onBack }: { initialEmail: string; onD
 
   async function reset(event: React.FormEvent) {
     event.preventDefault();
-    if (password.length < MIN_PASSWORD_LENGTH) return setError("short_password");
+    if (password.length < min) return setError("short_password");
     setBusy(true);
     setError(null);
     const verified = await signIn.resetPasswordEmailCode.verifyCode({ code });
@@ -321,7 +330,7 @@ function ResetForm({ initialEmail, onDone, onBack }: { initialEmail: string; onD
         label={t("newPassword")}
         autoComplete="new-password"
         invalid={error === "weak_password" || error === "short_password"}
-        hint={t("passwordHint", { min: MIN_PASSWORD_LENGTH })}
+        hint={t("passwordHint", { min })}
       />
       <FormError error={error} />
       <Submit busy={busy} label={t("savePassword")} busyLabel={t("saving")} />
@@ -334,6 +343,7 @@ function ResetForm({ initialEmail, onDone, onBack }: { initialEmail: string; onD
 
 function SignUpForm({ onHaveAccount }: { onHaveAccount: () => void }) {
   const t = useTranslations("Auth.form");
+  const min = useMinLength();
   const { signUp } = useSignUp();
   const goHome = useGoHome();
   const [step, setStep] = useState<"details" | "code">("details");
@@ -345,7 +355,7 @@ function SignUpForm({ onHaveAccount }: { onHaveAccount: () => void }) {
 
   async function create(event: React.FormEvent) {
     event.preventDefault();
-    const local = localAuthError(email, password);
+    const local = localAuthError(email, password, min);
     if (local) return setError(local);
     setBusy(true);
     setError(null);
@@ -385,7 +395,7 @@ function SignUpForm({ onHaveAccount }: { onHaveAccount: () => void }) {
         label={t("password")}
         autoComplete="new-password"
         invalid={error === "weak_password" || error === "short_password"}
-        hint={t("passwordHint", { min: MIN_PASSWORD_LENGTH })}
+        hint={t("passwordHint", { min })}
       />
       <FormError error={error} />
       {error === "account_exists" && (
@@ -416,6 +426,7 @@ function SignUpForm({ onHaveAccount }: { onHaveAccount: () => void }) {
 /** An emailed invitation: a new person chooses a password; an existing account just signs in. */
 function InvitedForm({ invite }: { invite: Invite }) {
   const t = useTranslations("Auth.form");
+  const min = useMinLength();
   const { signIn } = useSignIn();
   const { signUp } = useSignUp();
   const goHome = useGoHome();
@@ -445,7 +456,7 @@ function InvitedForm({ invite }: { invite: Invite }) {
 
   async function accept(event: React.FormEvent) {
     event.preventDefault();
-    if (password.length < MIN_PASSWORD_LENGTH) return setError("short_password");
+    if (password.length < min) return setError("short_password");
     setBusy(true);
     setError(null);
     const created = await signUp.create({ strategy: "ticket", ticket: invite.ticket, password });
@@ -474,7 +485,7 @@ function InvitedForm({ invite }: { invite: Invite }) {
         label={t("choosePassword")}
         autoComplete="new-password"
         invalid={error === "weak_password" || error === "short_password"}
-        hint={t("passwordHint", { min: MIN_PASSWORD_LENGTH })}
+        hint={t("passwordHint", { min })}
       />
       <FormError error={error} />
       <div id="clerk-captcha" />

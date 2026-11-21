@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import en from "@/messages/en.json";
 import pt from "@/messages/pt-BR.json";
 
-import { AUTH_ERROR_KEYS, authErrorKey, clerkErrorCode, localAuthError } from "./auth-errors";
+import { AUTH_ERROR_KEYS, authErrorKey, clerkErrorCode, localAuthError, passwordMinLength } from "./auth-errors";
 
 describe("auth errors", () => {
   it("reads the first code of a Clerk API error", () => {
@@ -33,6 +33,14 @@ describe("auth errors", () => {
     expect(localAuthError("driver@example.com", "short")).toBe("short_password");
     expect(localAuthError("driver@example.com", "long enough passphrase")).toBeNull();
     expect(localAuthError("driver@example.com")).toBeNull();
+    expect(localAuthError("driver@example.com", "eight888")).toBeNull();
+    expect(localAuthError("driver@example.com", "eight888", 15)).toBe("short_password");
+  });
+
+  it("reads the instance's minimum password length, with a fallback of 8", () => {
+    expect(passwordMinLength({ userSettings: { passwordSettings: { min_length: 12 } } })).toBe(12);
+    expect(passwordMinLength({ userSettings: {} })).toBe(8);
+    expect(passwordMinLength(undefined)).toBe(8);
   });
 
   it("has a sentence for every key in both languages", () => {
