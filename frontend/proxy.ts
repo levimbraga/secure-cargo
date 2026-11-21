@@ -1,6 +1,6 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import createMiddleware from "next-intl/middleware";
-import { NextRequest } from "next/server";
+import { NextRequest, type NextResponse } from "next/server";
 
 import { routing } from "./i18n/routing";
 
@@ -24,7 +24,20 @@ function verifyRewrite(request: NextRequest): NextRequest {
   return new NextRequest(url, request);
 }
 
-const localized = (request: NextRequest) => intl(verifyRewrite(request));
+/**
+ * US mode's default: a new visitor's country from Vercel's IP country header, kept for 30 days
+ * in `sc_geo` (US or BR only). The page reads it once, for English visitors without a choice of
+ * their own (`lib/country.ts`). No other location data is kept.
+ */
+function withGeo(request: NextRequest, response: NextResponse): NextResponse {
+  const country = request.headers.get("x-vercel-ip-country");
+  if (country && !request.cookies.has("sc_geo")) {
+    response.cookies.set("sc_geo", country === "US" ? "US" : "BR", { path: "/", maxAge: 60 * 60 * 24 * 30, sameSite: "lax", secure: true });
+  }
+  return response;
+}
+
+const localized = (request: NextRequest) => withGeo(request, intl(verifyRewrite(request)));
 
 export default clerkConfigured ? clerkMiddleware((_auth, request) => localized(request)) : localized;
 
