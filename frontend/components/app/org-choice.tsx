@@ -7,7 +7,7 @@ import { useState } from "react";
 import { CreateOrg } from "@/components/app/create-org";
 import { useMe } from "@/components/app/me-provider";
 import { pill } from "@/components/ui/pill";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 
 /**
  * After the first sign-in with no organization: one simple choice, "I was invited by my company"
@@ -16,6 +16,7 @@ import { Link } from "@/i18n/navigation";
 export function OrgChoice() {
   const t = useTranslations("OrgChoice");
   const { me } = useMe();
+  const router = useRouter();
   const [choice, setChoice] = useState<"invited" | "create" | null>(null);
 
   if (choice === "create") {
@@ -23,7 +24,8 @@ export function OrgChoice() {
       <div>
         <BackButton onClick={() => setChoice(null)} />
         <div className="-mx-4 mt-6">
-          <CreateOrg />
+          {/* The creator is the new company's manager: open its overview. */}
+          <CreateOrg onCreated={() => router.push("/app/org")} />
         </div>
       </div>
     );

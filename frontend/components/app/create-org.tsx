@@ -13,7 +13,7 @@ import { AppApiError, useAppApi } from "@/lib/app-api";
  * A signed-in user without an organization creates one (insurer or carrier) and becomes its
  * manager; the session then switches to it. Demo accounts never see this: they are in the demo org.
  */
-export function CreateOrg() {
+export function CreateOrg({ onCreated }: { onCreated?: () => void } = {}) {
   const t = useTranslations("Manager.create");
   const { me, refresh } = useMe();
   const request = useAppApi();
@@ -34,6 +34,7 @@ export function CreateOrg() {
       // The new organization becomes the active one in the session (a new token carries it).
       await setActive?.({ organization: org.id });
       refresh();
+      onCreated?.();
     } catch (cause) {
       setError(cause instanceof AppApiError && cause.code === "invalid_name" ? t("errors.invalid_name") : t("errors.failed"));
       setBusy(false);

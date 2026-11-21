@@ -730,7 +730,7 @@
     "alertsBadge": "{count, plural, one {# alert} other {# alerts}}"
   },
   "Auth": {
-    "label": "Sign in",
+    "label": "Account",
     "title": "Inspect a load before the trip.",
     "sentence": "Drivers create inspections from photos; managers at insurers and carriers see every inspection of their organization.",
     "demoLabel": "Just looking?",

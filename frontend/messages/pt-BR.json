@@ -730,7 +730,7 @@
     "alertsBadge": "{count, plural, one {# alerta} other {# alertas}}"
   },
   "Auth": {
-    "label": "Entrar",
+    "label": "Conta",
     "title": "Inspecione a carga antes da viagem.",
     "sentence": "Motoristas criam inspeções a partir de fotos; gestores de seguradoras e transportadoras veem todas as inspeções da organização.",
     "demoLabel": "Só quer conhecer?",
