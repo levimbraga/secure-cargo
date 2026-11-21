@@ -1,17 +1,21 @@
 """The planner: the smallest change to a load that passes the rules and the whole battery.
 
 1. **Rules first.** Ropes become straps (CONTRAN 945 art. 4 §3); lashings tied to the wooden
-   floor go to the metal frame (art. 6).
-2. **Placement.** Units slide forward until the load is one block against the headboard (no
-   room to travel, art. 7; the headboard stops the forward push), then the whole load shifts
-   back if an axle group would exceed its limit (CONTRAN 882/2021).
-3. **Securing, cheapest first.** Candidates in order of cost: top-over straps in the number
-   EN 12195-1 asks for, an anti-slip mat under the same straps, diagonal lashings, chains
-   (and a cradle for a coil, blocking in a box body). A candidate is tried only if it meets
-   EN 12195-1 and every CONTRAN check on paper.
-4. **Proof.** The first candidate that holds on paper is simulated through the battery,
-   stopping at the first failure; if it fails, the next one is tried. The plan that passes
-   is then reported with its full battery.
+   floor go to the metal frame (art. 6). These are never optional.
+2. **Steps, in order of effort.** Move the units (forward against the headboard, or back to
+   free an overloaded axle: then the move is mandatory too), add straps (the number EN 12195-1
+   asks for), an anti-slip mat under them, diagonal lashings, chains; a coil gets a cradle and
+   a box body blocking. Every candidate is a set of steps, and candidates are tried by their
+   total effort, fewest steps first on a tie: "diagonals" is tried before "move + diagonals", so
+   the two are combined only when neither is enough on its own.
+3. **On paper first.** A candidate is simulated only if it meets EN 12195-1 and every CONTRAN
+   check without simulating.
+4. **Proof and minimality.** Candidates go through the battery (stopping at the first failure)
+   in order; the first that passes is the plan. Then each optional step of the plan is dropped
+   in turn and the rest re-checked; a step whose removal still passes is not needed. Because
+   every subset of a plan costs less, it was tried earlier, so this mostly confirms the plan.
+5. **Protection.** Edge protectors are advised under straps over fragile cargo; they change no
+   physics and are added last, as advice.
 
 Every change carries a stable code (translated by the UI), the article behind it when there
 is one, and the numbers that explain it.
@@ -42,7 +46,7 @@ from rules.contran945 import check_contran_945
 from rules.en12195 import check_scenario
 
 # Simulated candidates at most; each costs up to one battery.
-MAX_ROUNDS = 4
+MAX_ROUNDS = 5
 # Placement tolerance [m].
 EPS = 1e-6
 # A unit counts as tall when it is more than this times higher than its narrowest side.
@@ -56,7 +60,20 @@ ChangeCode = Literal[
     "straps",
     "restraint",
     "overweight",
+    "edge_protectors",
 ]
+
+# Effort of each step (what it takes the driver), for ordering the candidates.
+STEP_EFFORT: dict[str, int] = {
+    "move": 1,
+    "straps": 2,
+    "cradle": 2,
+    "blocking": 2,
+    "mat": 3,
+    "direct": 4,
+    "chain": 5,
+}
+FRAGILE_CARGO = {Cargo.STACKED_BOXES, Cargo.SACKS, Cargo.PLASTIC_PALLET}
 
 # Battery situations in the order the planner tries them: the ones most loads fail first, so a
 # weak candidate is rejected after one or two runs.
@@ -111,6 +128,11 @@ class _Candidate:
     name: str
     draft: LoadDraft
     changes: list[Change] = field(default_factory=list)
+    steps: tuple[str, ...] = ()
+
+    @property
+    def effort(self) -> tuple[int, int]:
+        return (sum(STEP_EFFORT.get(step, 1) for step in self.steps), len(self.steps))
 
 
 # --- 1. Rules ----------------------------------------------------------------------------
@@ -354,8 +376,8 @@ def _tall(draft: LoadDraft) -> bool:
     return False
 
 
-def _candidates(draft: LoadDraft) -> list[_Candidate]:
-    """Securing options, cheapest first."""
+def _securing(draft: LoadDraft) -> list[_Candidate]:
+    """Securing options on a placed load, each with the steps it takes (cheapest first)."""
     out: list[_Candidate] = []
     room = _room(draft)
     existing = {u.id: u.straps for u in draft.units}
@@ -368,16 +390,38 @@ def _candidates(draft: LoadDraft) -> list[_Candidate]:
     )
     if coil or rolling:
         # A cradle stops the roll; straps over the coil keep it from sliding sideways in it.
-        out.append(_Candidate("cradle", _with_straps(draft, {}, Restraint.CRADLE)))
-        out.append(_Candidate("cradle_straps", _with_straps(draft, two, Restraint.CRADLE)))
-        out.append(_Candidate("chain", _with_straps(draft, {}, Restraint.CHAIN)))
+        out.append(
+            _Candidate("cradle", _with_straps(draft, {}, Restraint.CRADLE), steps=("cradle",))
+        )
+        out.append(
+            _Candidate(
+                "cradle_straps",
+                _with_straps(draft, two, Restraint.CRADLE),
+                steps=("cradle", "straps"),
+            )
+        )
+        out.append(_Candidate("chain", _with_straps(draft, {}, Restraint.CHAIN), steps=("chain",)))
         return out
+    # The load as it is (after the rules): enough when only the placement was wrong.
+    out.append(_Candidate("as_is", draft, steps=()))
     if box:
-        out.append(_Candidate("blocking", _with_straps(draft, {}, Restraint.BLOCKING)))
-    for restraint in (Restraint.TOP_OVER, Restraint.MAT):
+        out.append(
+            _Candidate("blocking", _with_straps(draft, {}, Restraint.BLOCKING), steps=("blocking",))
+        )
+    for restraint, steps in ((Restraint.TOP_OVER, ("straps",)), (Restraint.MAT, ("straps", "mat"))):
         straps = _required_top_over(draft, restraint)
-        if straps is not None:
-            out.append(_Candidate(restraint.value, _with_straps(draft, straps, restraint)))
+        if straps is None:
+            continue
+        added = any(straps.get(uid, 0) > existing.get(uid, 0) for uid in straps)
+        if restraint is Restraint.TOP_OVER and not added and draft.restraint is restraint:
+            continue  # the same as the load as it is
+        out.append(
+            _Candidate(
+                restraint.value,
+                _with_straps(draft, straps, restraint),
+                steps=steps if added else tuple(s for s in steps if s != "straps"),
+            )
+        )
     # Diagonals hold by their strength, not by friction: they survive a dirty deck and loose
     # straps. Top-over straps stay on tall or stacked loads, which also tip.
     keep = (
@@ -385,9 +429,62 @@ def _candidates(draft: LoadDraft) -> list[_Candidate]:
         if (_tall(draft) or any(u.on for u in draft.units))
         else {uid: n for uid, n in existing.items() if uid in room}
     )
-    out.append(_Candidate("direct", _with_straps(draft, keep, Restraint.DIRECT)))
-    out.append(_Candidate("chain", _with_straps(draft, keep, Restraint.CHAIN)))
+    out.append(_Candidate("direct", _with_straps(draft, keep, Restraint.DIRECT), steps=("direct",)))
+    out.append(_Candidate("chain", _with_straps(draft, keep, Restraint.CHAIN), steps=("chain",)))
     return out
+
+
+def _candidates(draft: LoadDraft) -> list[_Candidate]:
+    """Every candidate after the rule fixes, in order of effort (on the original ``draft``).
+
+    Each securing option is tried on the load where it stands and, when the placement changes
+    it, on the moved load. A move needed to bring an axle group within its limit is mandatory.
+    """
+    fixed, rule_changes = _rule_fixes(draft)
+    scenario, _ = build_draft(fixed)
+    moved, placement = _placement(fixed, scenario)
+    mandatory_move = bool(placement) and placement[0].code == "balance_axles"
+    bases: list[tuple[LoadDraft, list[Change], tuple[str, ...]]] = []
+    if not mandatory_move:
+        bases.append((fixed, [], ()))
+    if placement:
+        bases.append((moved, placement, ("move",) if not mandatory_move else ()))
+    out: list[_Candidate] = []
+    seen: set[str] = set()
+    for base, base_changes, base_steps in bases:
+        for option in _securing(base):
+            key = option.draft.model_dump_json()
+            if key in seen:
+                continue
+            seen.add(key)
+            steps = base_steps + option.steps
+            if not steps and not rule_changes and not (mandatory_move and placement):
+                continue  # nothing changed at all
+            out.append(
+                _Candidate(
+                    "+".join(steps) or "rules",
+                    option.draft,
+                    rule_changes + base_changes + _securing_changes(base, option.draft),
+                    steps=steps,
+                )
+            )
+    out.sort(key=lambda c: c.effort)  # stable: the usual order on ties
+    return out
+
+
+def _edge_protectors(draft: LoadDraft) -> list[Change]:
+    """Advice: protect the webbing and the cargo where straps cross fragile cargo."""
+    fragile = [u.id for u in draft.units if u.cargo in FRAGILE_CARGO and u.straps > 0]
+    if not fragile:
+        return []
+    return [
+        Change(
+            code="edge_protectors",
+            values={"units": float(len(fragile))},
+            article="EN 12195-1 (good practice)",
+            message="Put edge protectors under the straps where they cross the cartons or sacks.",
+        )
+    ]
 
 
 def _on_paper(candidate: _Candidate) -> bool:
@@ -451,15 +548,15 @@ def _proof_order(original: BatteryResult | None = None) -> tuple[Situation, ...]
 
 
 def recommend(draft: LoadDraft) -> tuple[LoadDraft, list[Change]]:
-    """The analytic recommendation, without simulating: rules, placement, first candidate."""
+    """The analytic recommendation, without simulating: the cheapest candidate on paper."""
+    options = _candidates(draft)
+    for candidate in options:
+        if _on_paper(candidate):
+            return candidate.draft, candidate.changes + _edge_protectors(candidate.draft)
     fixed, changes = _rule_fixes(draft)
     scenario, _ = build_draft(fixed)
     fixed, placement = _placement(fixed, scenario)
-    changes += placement
-    for candidate in _candidates(fixed):
-        if _on_paper(candidate):
-            return candidate.draft, changes + _securing_changes(fixed, candidate.draft)
-    return fixed, changes
+    return fixed, changes + placement
 
 
 class Candidate(_Model):
@@ -504,26 +601,26 @@ def candidates(draft: LoadDraft) -> Candidates:
             infeasible="overweight",
             values={"mass_kg": heavy[0], "payload_kg": heavy[1]},
         )
-    fixed, changes = _rule_fixes(draft)
-    scenario, _ = build_draft(fixed)
-    fixed, placement = _placement(fixed, scenario)
-    changes += placement
-    options = [c for c in _candidates(fixed) if _on_paper(c)] or _candidates(fixed)
+    options = [c for c in _candidates(draft) if _on_paper(c)] or _candidates(draft)
     return Candidates(
         candidates=[
-            Candidate(
-                name=c.name, draft=c.draft, changes=changes + _securing_changes(fixed, c.draft)
-            )
+            Candidate(name=c.name, draft=c.draft, changes=c.changes + _edge_protectors(c.draft))
             for c in options[:MAX_ROUNDS]
         ]
+    )
+
+
+def _holds(storage: Storage, draft: LoadDraft, order: tuple[Situation, ...]) -> bool:
+    runs = run_situations(storage, draft, order, stop_at_first_failure=True)
+    return len(runs) == len(SITUATIONS) and all(
+        result.verdict.status != "fail" for _, result, _ in runs
     )
 
 
 def plan(storage: Storage, draft: LoadDraft) -> Plan:
     """Find the smallest change that passes, and prove it through the whole battery."""
     original = run_battery(storage, draft)
-    passes_rules = all(c.status != "fail" for c in original.contran_945)
-    if original.passed == original.total and passes_rules:
+    if original.verdict.state == "approved":
         return Plan(draft=draft, changes=[], verified=True, rounds=0, battery=original)
 
     heavy = overweight(draft)
@@ -536,33 +633,53 @@ def plan(storage: Storage, draft: LoadDraft) -> Plan:
             rounds=0,
             battery=original,
         )
-    fixed, changes = _rule_fixes(draft)
-    scenario, _ = build_draft(fixed)
-    fixed, placement = _placement(fixed, scenario)
-    changes += placement
-    candidates = [c for c in _candidates(fixed) if _on_paper(c)] or _candidates(fixed)
+    options = _candidates(draft)
+    on_paper = [c for c in options if _on_paper(c)] or options
+    order = _proof_order(original)
+    tried: dict[str, bool] = {}
+
+    def holds(candidate: _Candidate) -> bool:
+        key = candidate.draft.model_dump_json()
+        if key not in tried:
+            tried[key] = _holds(storage, candidate.draft, order)
+        return tried[key]
+
     rounds = 0
-    for candidate in candidates[:MAX_ROUNDS]:
+    winner: _Candidate | None = None
+    for candidate in on_paper[:MAX_ROUNDS]:
         rounds += 1
-        runs = run_situations(
-            storage, candidate.draft, _proof_order(original), stop_at_first_failure=True
+        if holds(candidate):
+            winner = candidate
+            break
+    if winner is None:
+        last = on_paper[min(len(on_paper), MAX_ROUNDS) - 1]
+        return Plan(
+            draft=last.draft,
+            changes=last.changes,
+            verified=False,
+            rounds=rounds,
+            battery=run_battery(storage, last.draft),
         )
-        if all(result.verdict.status != "fail" for _, result, _ in runs) and len(runs) == len(
-            SITUATIONS
-        ):
-            battery = run_battery(storage, candidate.draft)  # cached: no new simulation
-            return Plan(
-                draft=candidate.draft,
-                changes=changes + _securing_changes(fixed, candidate.draft),
-                verified=battery.passed == battery.total,
-                rounds=rounds,
-                battery=battery,
-            )
-    last = candidates[min(len(candidates), MAX_ROUNDS) - 1].draft
+    # Minimality: drop each step in turn; a candidate that still holds without it wins.
+    by_steps = {c.steps: c for c in on_paper}
+    improved = True
+    while improved and winner.steps:
+        improved = False
+        for step in winner.steps:
+            fewer = tuple(s for s in winner.steps if s != step)
+            smaller = by_steps.get(fewer)
+            if smaller is None or smaller is winner:
+                continue
+            if smaller.draft.model_dump_json() not in tried:
+                rounds += 1
+            if holds(smaller):
+                winner, improved = smaller, True
+                break
+    battery = run_battery(storage, winner.draft)  # cached: no new simulation
     return Plan(
-        draft=last,
-        changes=changes + _securing_changes(fixed, last),
-        verified=False,
+        draft=winner.draft,
+        changes=winner.changes + _edge_protectors(winner.draft),
+        verified=battery.verdict.state == "approved",
         rounds=rounds,
-        battery=run_battery(storage, last),
+        battery=battery,
     )

@@ -6,10 +6,11 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from app.explorer.config import Restraint
 from app.explorer.draft import DraftUnit, LoadDraft
 from app.inspection.battery import SITUATION_IDS, SITUATIONS, run_battery
 from app.storage import create_storage
-from planner.plan import plan, recommend
+from planner.plan import _candidates, plan, recommend
 
 EXPLORER = Path(__file__).parents[2] / "frontend" / "public" / "demo" / "explorer"
 
@@ -61,13 +62,61 @@ def test_the_battery_is_cached_by_input() -> None:
 
 
 def test_the_recommendation_follows_the_rules_without_simulating() -> None:
-    # Ropes (art. 4 §3) become straps; a load with gaps is pushed against the headboard (art. 7).
-    fixed, changes = recommend(_draft("rope-lashing.as_loaded"))
+    # Ropes (art. 4 §3) become straps. The crates stand taller than the headboard, so pushing
+    # them against it breaks art. 8: diagonals alone close art. 7, without moving anything.
+    draft = _draft("rope-lashing.as_loaded")
+    fixed, changes = recommend(draft)
     codes = [c.code for c in changes]
-    assert codes[:2] == ["replace_rope", "close_gaps"]
-    assert fixed.restraint != "rope"
-    front = max(u.x_m for u in fixed.units)
-    assert front == pytest.approx(6.2 / 2 - 1.2 / 2)  # touching the headboard
+    assert codes[0] == "replace_rope"
+    assert "close_gaps" not in codes
+    assert fixed.restraint == "direct"
+    assert [u.x_m for u in fixed.units] == [u.x_m for u in draft.units]
+
+
+def test_a_load_with_room_against_the_headboard_is_pushed_not_rerouted() -> None:
+    # Pallets with a gap: pushing them forward (effort 1) is cheaper than diagonals (effort 4).
+    fixed, changes = recommend(_draft("emergency-braking.as_loaded"))
+    codes = [c.code for c in changes]
+    assert "close_gaps" in codes
+    assert fixed.restraint != "direct"
+
+
+@pytest.mark.parametrize("name", [p.name.split(".")[0] for p in EXPLORER.glob("*.as_loaded.json")])
+def test_moving_and_switching_to_diagonals_are_never_both_the_first_try(name: str) -> None:
+    candidates = _candidates(_draft(f"{name}.as_loaded"))
+    efforts = [c.effort for c in candidates]
+    assert efforts == sorted(efforts), "candidates are tried in order of effort"
+    names = [c.name for c in candidates]
+    for combined in ("move+direct", "move+chain"):
+        if combined in names:
+            assert names.index(combined.split("+")[1]) < names.index(combined)
+
+
+def test_a_step_that_is_not_needed_is_dropped(monkeypatch: pytest.MonkeyPatch) -> None:
+    import planner.plan as planner
+
+    draft = _draft("emergency-braking.as_loaded")
+    moved, _ = planner._placement(draft, planner.build_draft(draft)[0])
+    both = planner._Candidate(
+        "move+direct", planner._with_straps(moved, {}, Restraint.DIRECT), steps=("move", "direct")
+    )
+    alone = planner._Candidate(
+        "direct", planner._with_straps(draft, {}, Restraint.DIRECT), steps=("direct",)
+    )
+    # Listed in the wrong order on purpose: the search must still end with the smaller set.
+    monkeypatch.setattr(planner, "_candidates", lambda _: [both, alone])
+    monkeypatch.setattr(planner, "_on_paper", lambda _: True)
+    monkeypatch.setattr(planner, "_holds", lambda *_: True)
+    result = planner.plan(create_storage("memory://"), draft)
+    assert result.draft == alone.draft
+    assert "close_gaps" not in [c.code for c in result.changes]
+
+
+def test_edge_protectors_are_advised_under_straps_over_fragile_cargo() -> None:
+    _, changes = recommend(_draft("dirt-road.as_loaded"))
+    assert "edge_protectors" in [c.code for c in changes]
+    _, coil = recommend(_draft("steel-coil.as_loaded"))
+    assert "edge_protectors" not in [c.code for c in coil]
 
 
 def test_an_overloaded_axle_moves_the_load() -> None:
@@ -91,6 +140,7 @@ def test_the_fix_is_proven_through_the_whole_battery(name: str) -> None:
     assert result.battery is not None
     assert result.battery.passed == result.battery.total == 7
     assert all(c.status != "fail" for c in result.battery.contran_945)
+    assert result.battery.verdict.state == "approved"
     assert result.changes, "a failing load needs at least one change"
 
 
@@ -143,5 +193,5 @@ def test_the_parallel_pieces_add_up_to_the_battery(client: TestClient) -> None:
     assert checks["recommendation"] == whole["recommendation"]
     options = client.post("/plan/candidates", json={"draft": draft}).json()
     assert options["infeasible"] is None
-    assert 1 <= len(options["candidates"]) <= 4
+    assert 1 <= len(options["candidates"]) <= 5
     assert options["candidates"][0]["changes"]
