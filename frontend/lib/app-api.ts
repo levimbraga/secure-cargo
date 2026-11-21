@@ -26,7 +26,16 @@ export interface AnalysisAllowance {
 
 export interface Me {
   user: { id: string; email: string | null; name: string | null; is_demo: boolean };
-  org: { id: string; name: string; type: "insurer" | "carrier"; role: OrgRole; is_demo: boolean } | null;
+  org: {
+    id: string;
+    name: string;
+    type: "insurer" | "carrier";
+    role: OrgRole;
+    is_demo: boolean;
+    policies?: OrgPolicies;
+    /** Open alerts (managers only; null for members). */
+    alerts?: number | null;
+  } | null;
   is_platform_admin: boolean;
   blocked: boolean;
   analysis: AnalysisAllowance;
@@ -87,7 +96,116 @@ export interface InspectionDetail extends InspectionSummary {
   }[];
 }
 
+export interface OrgPolicies {
+  require_two_photos: boolean;
+  certificate_requires_compliance: boolean;
+  alert_after_hours: number;
+}
+
+export type FailureCode = string;
+
+export interface OrgOverview {
+  days: number;
+  period: { from: string; to: string };
+  policies: OrgPolicies;
+  totals: {
+    inspections: number;
+    simulated: number;
+    approved: number;
+    holds_noncompliant: number;
+    fails: number;
+    needs_fix: number;
+    fixed_and_proven: number;
+    fixed_and_proven_rate: number | null;
+    failed_no_proven_fix: number;
+    reinspections: number;
+    alerts: number;
+  };
+  failures: { code: FailureCode; inspections: number; share: number }[];
+  drivers: { user_id: string; name: string | null; inspections: number; needs_fix: number; failure_rate: number | null; fixes_proven: number; open: number }[];
+  weeks: { week: string; approved: number; holds_noncompliant: number; fails: number; pending: number }[];
+}
+
+export interface OrgAlert {
+  id: string;
+  title: string;
+  author_id: string;
+  author_name: string | null;
+  created_at: string;
+  verdict: Verdict;
+  fixed_verdict: Verdict | null;
+  truck_json: string | null;
+  truck_size: string | null;
+  truck_body: string | null;
+  failure_codes: FailureCode[];
+  hours_open: number;
+}
+
+export interface InspectionPage {
+  inspections: (InspectionSummary & { failure_codes?: string | null; cargo_types?: string | null })[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface AuditEvent {
+  id: string;
+  at: string;
+  kind: string;
+  actor_id: string | null;
+  actor_name: string | null;
+  detail: Record<string, unknown>;
+}
+
+export type DraftEdit = { code: string; unit?: string; cargo?: string; field?: string; from?: unknown; to?: unknown; distance_m?: number };
+
+export interface Audit {
+  events: AuditEvent[];
+  reading: { model: string | null; rows: { field: string; ai: unknown; driver: unknown; changed: boolean }[] } | null;
+  edits: DraftEdit[] | null;
+}
+
+export type CertificateState = "approved" | "fixed_and_proven" | "holds_noncompliant";
+
+export interface CertificateContent {
+  certificate_id: string;
+  issued_at: string;
+  state: CertificateState;
+  inspection_id: string;
+  inspected_at: string;
+  proof_inspection_id: string | null;
+  proven_at: string | null;
+  organization: { id: string; name: string | null; type: string | null } | null;
+  truck: { size: string | null; style: string | null; body: string | null; bed_length_m: number | null; headboard_height_m: number | null };
+  cargo: { weight_kg: number | null; weight_source: string | null; types: string[]; units: number };
+  photo: { sha256: string; position: string } | null;
+  results: { passed: number; total: number; situations: { id: string; status: string }[] };
+  checks: { code: string; article: string | null; status: string }[];
+  axle_loads: { group: string | null; load_kg: number; limit_kg: number }[];
+  fix: string[] | null;
+  disclaimer: string;
+}
+
+export interface Certificate {
+  id: string;
+  inspection_id: string;
+  issued_at: string;
+  content_hash: string;
+  revoked_at: string | null;
+  issued_by_name: string | null;
+  authentic: boolean;
+  disclaimer: string;
+  content: CertificateContent;
+  photo: { inspection_id: string; photo_id: string; path: string | null } | null;
+}
+
+export interface CertificateStatus {
+  certificate_id: string | null;
+  eligibility: { ok: true; state: CertificateState } | { ok: false; code: "not_simulated" | "fails_no_proven_fix" | "out_of_compliance" };
+}
+
 export interface OrgView {
+  policies?: OrgPolicies;
   org: { id: string; name: string; type: "insurer" | "carrier"; is_demo: number };
   members: {
     userId: string;

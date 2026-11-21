@@ -9,7 +9,7 @@ import { MobileMenu } from "@/components/site/mobile-menu";
 import { pill } from "@/components/ui/pill";
 import { Link, usePathname } from "@/i18n/navigation";
 
-type Item = { href: string; label: string };
+type Item = { href: string; label: string; badge?: number };
 
 /** The app's sections for the signed-in role. Gallery, explorer and lab are there for everyone. */
 function useItems(): Item[] {
@@ -17,7 +17,13 @@ function useItems(): Item[] {
   const { me } = useMe();
   const items: Item[] = [{ href: "/app", label: t("inspections") }];
   if (me) items.push({ href: "/app/trucks", label: t("trucks") });
-  if (me?.org?.role === "org_admin" || (me?.is_platform_admin && me.org)) items.push({ href: "/app/org", label: t("org") });
+  if (me?.org?.role === "org_admin" || (me?.is_platform_admin && me.org)) {
+    const alerts = me.org.alerts ?? 0;
+    // The badge: loads that failed and have no proven fix after the organization's N hours.
+    items.push({ href: "/app/org", label: alerts > 0 ? `${t("org")} · ${t("alertsBadge", { count: alerts })}` : t("org"), badge: alerts });
+  } else if (me && !me.org && !me.user.is_demo) {
+    items.push({ href: "/app/org", label: t("org") });
+  }
   if (me?.is_platform_admin) items.push({ href: "/app/admin", label: t("admin") });
   items.push(
     { href: "/app/examples", label: t("examples") },
@@ -41,9 +47,14 @@ export function AppLinks() {
           key={item.href}
           href={item.href}
           aria-current={isActive(pathname, item.href) ? "page" : undefined}
-          className={cn("hover:text-ink", isActive(pathname, item.href) ? "text-ink" : "text-gray")}
+          className={cn("inline-flex items-center gap-1.5 hover:text-ink", isActive(pathname, item.href) ? "text-ink" : "text-gray")}
         >
-          {item.label}
+          {item.badge ? item.label.split(" · ")[0] : item.label}
+          {item.badge ? (
+            <span className="rounded-full bg-fail-tint px-1.5 font-mono text-[0.75rem] leading-5 text-fail" title={item.label} data-testid="alerts-badge">
+              {item.badge}
+            </span>
+          ) : null}
         </Link>
       ))}
     </>

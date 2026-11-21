@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useOrganizationList } from "@clerk/nextjs";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import { type Me, requestWithToken } from "@/lib/app-api";
@@ -74,9 +74,23 @@ export function MeProvider({ children }: { children: React.ReactNode }) {
         getToken,
       }}
     >
+      {signedIn && !orgId && <ActivateMembership />}
       {children}
     </MeContext.Provider>
   );
+}
+
+/**
+ * Signed in with no active organization but a member of one (an accepted invitation, or a new
+ * sign-in): make it the active one, so that the session token carries it and the API sees it.
+ */
+function ActivateMembership() {
+  const { isLoaded, setActive, userMemberships } = useOrganizationList({ userMemberships: true });
+  const first = userMemberships?.data?.[0]?.organization.id;
+  useEffect(() => {
+    if (isLoaded && first) void setActive?.({ organization: first });
+  }, [isLoaded, first, setActive]);
+  return null;
 }
 
 export function useMe(): MeState {

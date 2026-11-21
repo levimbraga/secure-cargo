@@ -2,199 +2,170 @@
 
 import { cn } from "cn";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { InspectionVerdict, useDates, useTruckLabel } from "@/components/app/inspection-bits";
-import { DemoResetNote } from "@/components/app/demo-reset-note";
+import { useDates } from "@/components/app/inspection-bits";
 import { useMe } from "@/components/app/me-provider";
+import { OrgShell } from "@/components/app/org-shell";
 import { pill } from "@/components/ui/pill";
-import { Link, useRouter } from "@/i18n/navigation";
-import { AppApiError, type InspectionSummary, type OrgRole, type OrgView as OrgData, useAppApi } from "@/lib/app-api";
-
-type Filter = "all" | "fail" | "fixed" | "pass";
+import { Link } from "@/i18n/navigation";
+import { AppApiError, type OrgPolicies, type OrgRole, type OrgView as OrgData, useAppApi } from "@/lib/app-api";
 
 const th = "type-label h-10 border-b border-hairline px-3 text-left font-normal first:pl-0";
 const td = "border-b border-hairline px-3 py-3 align-middle first:pl-0";
 
-/** `/app/org`: the manager's view (desktop-first). Every inspection of the organization, members, invite. */
-export function OrgView() {
-  const t = useTranslations("Org");
-  const { ready, signedIn, me } = useMe();
-  const request = useAppApi();
-  const router = useRouter();
-  const dates = useDates();
-  const truck = useTruckLabel();
-  const [org, setOrg] = useState<OrgData | null>(null);
-  const [inspections, setInspections] = useState<InspectionSummary[] | null>(null);
-  const [denied, setDenied] = useState(false);
-  const [filter, setFilter] = useState<Filter>("all");
-  const [driver, setDriver] = useState<string>("");
+export function OrgTeamPage() {
+  return <OrgShell>{() => <OrgTeam />}</OrgShell>;
+}
 
-  // Both requests start with the session, and each fills its part of the page when it arrives:
-  // the list of inspections (D1 only) does not wait for the members (read from Clerk).
+/** `/app/org/team`: members and their inspections, invitations, and the organization's policies. */
+function OrgTeam() {
+  const t = useTranslations("Org");
+  const m = useTranslations("Manager");
+  const { me } = useMe();
+  const request = useAppApi();
+  const dates = useDates();
+  const [org, setOrg] = useState<OrgData | null>(null);
+
   useEffect(() => {
-    if (!signedIn) return;
     let cancelled = false;
-    const denyOnError = (error: unknown) => {
-      if (!cancelled && error instanceof AppApiError) setDenied(true);
-    };
-    request<{ inspections: InspectionSummary[] }>("/inspections?scope=org")
-      .then((list) => !cancelled && setInspections(list.inspections))
-      .catch(denyOnError);
     request<OrgData>("/org")
-      .then((orgData) => !cancelled && setOrg(orgData))
-      .catch(denyOnError);
+      .then((value) => !cancelled && setOrg(value))
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [signedIn, request]);
+  }, [request]);
 
-  const shown = useMemo(
-    () =>
-      (inspections ?? []).filter((i) => {
-        if (driver && i.author_id !== driver) return false;
-        if (filter === "fail") return i.verdict === "fail";
-        if (filter === "fixed") return i.fixed_verdict === "pass";
-        if (filter === "pass") return i.verdict === "pass";
-        return true;
-      }),
-    [inspections, filter, driver],
-  );
-
-  useEffect(() => {
-    if (ready && !signedIn) router.replace("/app/sign-in");
-  }, [ready, signedIn, router]);
-
-  if (ready && !signedIn) return null;
-  if (denied || (me && !me.org)) return <p className="type-body col">{t("noOrg")}</p>;
-  const header = org?.org ?? me?.org ?? null;
-  if (!inspections || !header) return <p className="type-small col text-gray">{t("loading")}</p>;
-
-  const failing = inspections.filter((i) => i.verdict === "fail").length;
-  const fixed = inspections.filter((i) => i.fixed_verdict === "pass").length;
-  // Drivers come from the inspections themselves, so the filter does not wait for the members.
-  const drivers = [...new Map(inspections.map((i) => [i.author_id, i.author_name ?? i.author_id])).entries()]
-    .map(([userId, name]) => ({ userId, name }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-
+  if (!org) return <p className="type-small text-gray">{m("loading")}</p>;
+  const demo = Boolean(me?.user.is_demo);
   return (
-    <div className="wide md:px-8">
-      <p className="type-label">
-        {t("label")} · {header.type === "insurer" ? t("typeInsurer") : t("typeCarrier")}
-      </p>
-      <h1 className="type-hero mt-5 text-balance">{t("title", { org: header.name })}</h1>
-      <p className="type-body mt-4">{t("summary", { total: inspections.length, failing, fixed })}</p>
-      <DemoResetNote className="mt-2" />
-
-      <section className="mt-12">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="type-label">{t("inspectionsLabel")}</h2>
-          <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t("filterLabel")}>
-            {(["all", "fail", "fixed", "pass"] as const).map((value) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={filter === value}
-                onClick={() => setFilter(value)}
-                className={pill({ variant: filter === value ? "primary" : "secondary" })}
-              >
-                {t(value === "all" ? "filterAll" : value === "fail" ? "filterFail" : value === "fixed" ? "filterFixed" : "filterPass")}
-              </button>
-            ))}
-            <label className="sr-only" htmlFor="driver-filter">
-              {t("driverFilter")}
-            </label>
-            <select
-              id="driver-filter"
-              value={driver}
-              onChange={(e) => setDriver(e.target.value)}
-              className="h-8 rounded-full border border-control-border bg-paper px-3 text-sm"
-            >
-              <option value="">{t("allDrivers")}</option>
-              {drivers.map((m) => (
-                <option key={m.userId} value={m.userId}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-[0.9375rem]">
-            <thead>
-              <tr>
-                <th className={th}>{t("columns.date")}</th>
-                <th className={th}>{t("columns.driver")}</th>
-                <th className={th}>{t("columns.load")}</th>
-                <th className={th}>{t("columns.truck")}</th>
-                <th className={cn(th, "text-right")}>{t("columns.weight")}</th>
-                <th className={th}>{t("columns.asLoaded")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map((inspection) => (
-                <tr
-                  key={inspection.id}
-                  className="cursor-pointer hover:bg-surface/40"
-                  onClick={() => router.push(`/app/inspection?id=${inspection.id}`)}
-                >
-                  <td className={cn(td, "font-mono text-[0.875rem] whitespace-nowrap")}>{dates.short(inspection.created_at)}</td>
-                  <td className={td}>{inspection.author_name ?? "—"}</td>
-                  <td className={td}>
-                    <Link href={`/app/inspection?id=${inspection.id}`} className="font-[450] text-ink hover:underline">
-                      {inspection.title}
-                    </Link>
-                  </td>
-                  <td className={cn(td, "text-gray")}>{truck(inspection.truck_body, inspection.truck_size)}</td>
-                  <td className={cn(td, "text-right font-mono text-[0.875rem]")}>
-                    {inspection.cargo_weight_kg ? `${inspection.cargo_weight_kg.toLocaleString()} kg` : "—"}
-                  </td>
-                  <td className={td}>
-                    <InspectionVerdict inspection={inspection} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {!org ? (
-        <p className="type-small mt-16 text-gray">{t("loading")}</p>
-      ) : (
-      <div className="mt-16 grid gap-14 lg:grid-cols-[3fr_2fr]">
+    <>
+      <h1 className="type-hero text-balance">{org.org.name}</h1>
+      <div className="mt-10 grid gap-14 lg:grid-cols-[3fr_2fr]">
         <section>
           <h2 className="type-label">{t("membersLabel")}</h2>
-          <table className="mt-4 w-full border-collapse text-[0.9375rem]">
-            <thead>
-              <tr>
-                <th className={th}>{t("memberColumns.name")}</th>
-                <th className={th}>{t("memberColumns.role")}</th>
-                <th className={cn(th, "text-right")}>{t("memberColumns.inspections")}</th>
-                <th className={th}>{t("memberColumns.last")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {org.members.map((m) => (
-                <tr key={m.userId}>
-                  <td className={td}>
-                    <span className="text-ink">{m.name ?? "—"}</span>
-                    {m.email && <span className="type-small block text-gray">{m.email}</span>}
-                  </td>
-                  <td className={cn(td, "text-gray")}>{t(`roles.${m.role}`)}</td>
-                  <td className={cn(td, "text-right font-mono text-[0.875rem]")}>{m.inspections}</td>
-                  <td className={cn(td, "font-mono text-[0.875rem] text-gray")}>
-                    {m.last_inspection_at ? dates.short(m.last_inspection_at) : "—"}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="mt-4 w-full min-w-[480px] border-collapse text-[0.9375rem]">
+              <thead>
+                <tr>
+                  <th className={th}>{t("memberColumns.name")}</th>
+                  <th className={th}>{t("memberColumns.role")}</th>
+                  <th className={cn(th, "text-right")}>{t("memberColumns.inspections")}</th>
+                  <th className={th}>{t("memberColumns.last")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {org.members.map((member) => (
+                  <tr key={member.userId}>
+                    <td className={td}>
+                      <span className="text-ink">{member.name ?? "—"}</span>
+                      {member.email && <span className="type-small block text-gray">{member.email}</span>}
+                    </td>
+                    <td className={cn(td, "text-gray")}>{t(`roles.${member.role}`)}</td>
+                    <td className={cn(td, "text-right font-mono text-[0.875rem]")}>
+                      <Link href={`/app/org/inspections?driver=${encodeURIComponent(member.userId)}`} className="hover:underline">
+                        {member.inspections}
+                      </Link>
+                    </td>
+                    <td className={cn(td, "font-mono text-[0.875rem] text-gray")}>
+                      {member.last_inspection_at ? dates.short(member.last_inspection_at) : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {org.policies && <Policies initial={org.policies} demo={demo} />}
         </section>
-        <InviteForm demo={Boolean(me?.user.is_demo)} invitations={org.invitations} />
+        <InviteForm demo={demo} invitations={org.invitations} />
       </div>
-      )}
-    </div>
+    </>
+  );
+}
+
+function Policies({ initial, demo }: { initial: OrgPolicies; demo: boolean }) {
+  const t = useTranslations("Manager.team");
+  const request = useAppApi();
+  const { refresh } = useMe();
+  const [policies, setPolicies] = useState(initial);
+  const [hours, setHours] = useState(String(initial.alert_after_hours));
+  const [status, setStatus] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function save(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setStatus(null);
+    try {
+      const saved = await request<OrgPolicies>("/org/policies", {
+        method: "PATCH",
+        body: JSON.stringify({ ...policies, alert_after_hours: Number(hours) }),
+      });
+      setPolicies(saved);
+      setHours(String(saved.alert_after_hours));
+      setStatus({ ok: true, text: t("saved") });
+      refresh();
+    } catch {
+      setStatus({ ok: false, text: t("failed") });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const toggle = (key: "require_two_photos" | "certificate_requires_compliance", label: string, hint: string) => (
+    <label className="flex cursor-pointer items-start gap-3 border-t border-hairline py-4">
+      <input
+        type="checkbox"
+        checked={policies[key]}
+        disabled={demo}
+        onChange={(e) => setPolicies((p) => ({ ...p, [key]: e.target.checked }))}
+        className="mt-1 size-4 accent-ink"
+      />
+      <span>
+        <span className="block text-[0.9375rem] text-ink">{label}</span>
+        <span className="type-small mt-0.5 block text-gray">{hint}</span>
+      </span>
+    </label>
+  );
+
+  return (
+    <form onSubmit={save} className="mt-14" data-testid="policies">
+      <h2 className="type-label">{t("policies")}</h2>
+      <p className="type-small mt-2 text-gray">{t("policiesSentence")}</p>
+      <div className="mt-4 border-b border-hairline">
+        {toggle("require_two_photos", t("twoPhotos"), t("twoPhotosHint"))}
+        {toggle("certificate_requires_compliance", t("compliance"), t("complianceHint"))}
+        <label className="flex items-start gap-3 border-t border-hairline py-4">
+          <input
+            type="number"
+            min={1}
+            max={720}
+            step={1}
+            required
+            value={hours}
+            disabled={demo}
+            onChange={(e) => setHours(e.target.value)}
+            className="h-9 w-20 rounded-[4px] border border-control-border bg-white px-2 font-mono text-[0.9375rem]"
+          />
+          <span>
+            <span className="block text-[0.9375rem] text-ink">{t("alertHours")}</span>
+            <span className="type-small mt-0.5 block text-gray">{t("alertHoursHint")}</span>
+          </span>
+        </label>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <button type="submit" disabled={demo || busy} className={pill()}>
+          {t("save")}
+        </button>
+        {demo && <span className="type-small text-gray">{t("demo")}</span>}
+        {status && (
+          <span role="status" className={cn("type-small", status.ok ? "text-pass" : "text-fail")}>
+            {status.text}
+          </span>
+        )}
+      </div>
+    </form>
   );
 }
 

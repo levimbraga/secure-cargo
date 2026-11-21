@@ -726,7 +726,8 @@
     "demoBadge": "Conta de demonstração",
     "switchDemo": "Trocar de conta demo",
     "demoResets": "Os dados de demonstração são reiniciados todos os dias.",
-    "trucks": "Meus caminhões"
+    "trucks": "Meus caminhões",
+    "alertsBadge": "{count, plural, one {# alerta} other {# alertas}}"
   },
   "Auth": {
     "label": "Entrar",
@@ -806,7 +807,7 @@
       "fail": "Reprova",
       "none": "Não simulada"
     },
-    "fixedTo": "corrigida: passa",
+    "fixedTo": "Correção simulada, sem foto nova",
     "situations": "Aguenta {passed} de {total}",
     "change": {
       "straps": "{unit}: {from} → {to} cintas",
@@ -1193,7 +1194,8 @@
       "invalid_draft": "A carga não é válida.",
       "forbidden": "Seu papel não permite isso.",
       "unit_unsupported": "Uma unidade não está apoiada em nada.",
-      "cannot_stack": "Essa unidade não pode levar outra em cima."
+      "cannot_stack": "Essa unidade não pode levar outra em cima.",
+      "policy_two_photos": "Sua organização exige pelo menos 2 fotos da carga."
     },
     "loading": "Carregando…"
   },
@@ -1317,7 +1319,9 @@
       "noCamera": "A câmera não abriu aqui. Use a câmera do celular.",
       "openCamera": "Abrir a câmera",
       "upload": "Escolher foto",
-      "shutter": "Tirar a foto"
+      "shutter": "Tirar a foto",
+      "required": "Obrigatória",
+      "policyTwo": "Sua organização pede 2 fotos: a lateral inteira e o canto traseiro."
     },
     "weight": {
       "title": "Quanto pesa a carga?",
@@ -1675,5 +1679,312 @@
       "disclaimer": "O SecureCargo é uma ferramenta de apoio à decisão, não uma certificação de engenharia.",
       "try": "Confira a sua carga"
     }
+  },
+  "Manager": {
+    "label": "Organização",
+    "tabs": {
+      "overview": "Visão geral",
+      "alerts": "Alertas",
+      "inspections": "Inspeções",
+      "team": "Equipe e políticas",
+      "nav": "Seções da organização"
+    },
+    "loading": "Carregando…",
+    "overview": {
+      "title": "Onde está o risco em {org}.",
+      "headline": "{open, plural, =0 {No período, nenhuma carga está esperando correção.} one {No período, # carga reprovou e não tem correção comprovada.} other {No período, # cargas reprovaram e não têm correção comprovada.}}",
+      "headlineAlerts": "{count, plural, =0 {Nenhum alerta aberto.} one {# alerta no total: uma carga sem correção comprovada depois de {hours} horas, de qualquer data.} other {# alertas no total: cargas sem correção comprovada depois de {hours} horas, de qualquer data.}}",
+      "period": "Período",
+      "days": "{days, plural, one {# dia} other {Últimos # dias}}",
+      "tiles": {
+        "inspections": "Inspeções",
+        "approved": "Aprovadas",
+        "holds_noncompliant": "Segura, fora da norma",
+        "fails": "Não chega inteira",
+        "proven": "Corrigidas e comprovadas",
+        "noFix": "Reprovadas, sem correção comprovada",
+        "alerts": "Alertas"
+      },
+      "ofSimulated": "{share} das cargas simuladas",
+      "provenOf": "{proven} de {total} que precisavam de correção",
+      "noneNeeded": "Nenhuma carga precisou de correção",
+      "pending": "{count, plural, one {# ainda não simulada} other {# ainda não simuladas}}",
+      "reinspections": "{count, plural, one {# reinspeção} other {# reinspeções}}",
+      "trend": "Tendência semanal",
+      "trendSentence": "Primeiras inspeções de cada semana, por resultado (segunda a domingo, horário de Brasília).",
+      "week": "Semana de {date}",
+      "failures": "Falhas mais comuns",
+      "failuresSentence": "Parcela das cargas que precisavam de correção.",
+      "noFailures": "Nenhuma falha no período.",
+      "physics": "Física",
+      "rule": "Norma",
+      "drivers": "Por motorista",
+      "driverColumns": {
+        "driver": "Motorista",
+        "inspections": "Inspeções",
+        "failureRate": "Taxa de reprovação",
+        "proven": "Correções comprovadas",
+        "open": "Sem correção comprovada"
+      },
+      "definitions": "Como contamos: cada carga conta uma vez, como foi carregada; a reinspeção é a prova da correção. Corrigida e comprovada quer dizer que uma nova foto da carga corrigida foi aprovada.",
+      "seeAlerts": "Ver os alertas",
+      "seeInspections": "Ver na tabela"
+    },
+    "alerts": {
+      "title": "Cargas esperando correção.",
+      "sentence": "Reprovadas ou fora da norma, sem correção comprovada depois de {hours, plural, one {# hora} other {# horas}}. Uma nova foto aprovada da carga corrigida fecha o alerta.",
+      "none": "Nenhum alerta: toda carga reprovada tem correção comprovada, ou é mais recente que {hours, plural, one {# hora} other {# horas}}.",
+      "open": "{hours, plural, one {Aberto há # hora} other {Aberto há # horas}}",
+      "openDays": "{days, plural, one {Aberto há # dia} other {Aberto há # dias}}",
+      "fixSimulated": "Correção simulada, sem foto nova ainda",
+      "noFixYet": "Nenhuma correção aplicada",
+      "changeN": "Mude o tempo do alerta em Equipe e políticas.",
+      "badge": "{count, plural, one {# alerta} other {# alertas}}"
+    },
+    "table": {
+      "title": "Todas as inspeções.",
+      "search": "Buscar carga, motorista ou id",
+      "from": "De",
+      "to": "Até",
+      "driver": "Motorista",
+      "state": "Resultado",
+      "truck": "Caminhão",
+      "cargo": "Carga",
+      "failure": "Tipo de falha",
+      "any": "Todos",
+      "clear": "Limpar filtros",
+      "export": "Exportar CSV",
+      "exporting": "Exportando…",
+      "results": "{total, plural, =0 {Nenhuma inspeção encontrada} one {# inspeção} other {# inspeções}}",
+      "page": "Página {page} de {pages}",
+      "prev": "Anterior",
+      "next": "Próxima",
+      "states": {
+        "approved": "Aprovada",
+        "holds_noncompliant": "Segura, fora da norma",
+        "fails": "Não chega inteira",
+        "proven": "Corrigida e comprovada",
+        "open": "Precisa de correção",
+        "pending": "Não simulada"
+      },
+      "reinspection": "Reinspeção",
+      "columns": {
+        "date": "Data",
+        "driver": "Motorista",
+        "load": "Carga",
+        "truck": "Caminhão",
+        "cargo": "Tipo de carga",
+        "weight": "Peso",
+        "result": "Resultado",
+        "failures": "Falhas"
+      },
+      "filtersLabel": "Filtros"
+    },
+    "team": {
+      "policies": "Políticas",
+      "policiesSentence": "Regras que as inspeções dos seus motoristas seguem. O servidor as aplica, não só a tela.",
+      "twoPhotos": "Exigir 2 fotos",
+      "twoPhotosHint": "Uma carga não é confirmada com menos de 2 fotos (as fotos de exemplo não contam).",
+      "compliance": "Sem certificado quando fora da norma",
+      "complianceHint": "Ligado: uma carga que segura mas descumpre uma regra não recebe certificado. Desligado: recebe um que diz que está fora da norma.",
+      "alertHours": "Alertar depois de (horas)",
+      "alertHoursHint": "Uma carga reprovada sem correção comprovada depois dessas horas vira alerta.",
+      "save": "Salvar políticas",
+      "saved": "Políticas salvas.",
+      "failed": "Não foi possível salvar. Tente de novo.",
+      "demo": "Contas de demonstração não mudam as políticas."
+    },
+    "create": {
+      "title": "Crie sua organização.",
+      "sentence": "Uma seguradora ou uma transportadora: você vira o gestor, convida seus motoristas por e-mail e vê todas as inspeções deles.",
+      "name": "Nome da organização",
+      "type": "Tipo",
+      "insurer": "Seguradora",
+      "carrier": "Transportadora",
+      "submit": "Criar organização",
+      "creating": "Criando…",
+      "demo": "Contas de demonstração já fazem parte da organização de demonstração.",
+      "member": "Sua conta é membro de {org}. Só os gestores veem esta página.",
+      "errors": {
+        "invalid_name": "Digite o nome da organização.",
+        "failed": "Não foi possível criar. Tente de novo."
+      }
+    },
+    "failures": {
+      "unit_slid": "Desliza na carroceria",
+      "unit_hit_headboard": "Bate na cabine",
+      "headboard_overloaded": "Parede frontal sobrecarregada",
+      "unit_left_bed": "Cai do caminhão",
+      "unit_tilted": "Tomba",
+      "unit_rolled": "Rola",
+      "lashing_broke": "Uma cinta arrebenta",
+      "lashing_overloaded": "Cinta acima da capacidade",
+      "devices_allowed": "Corda usada na amarração",
+      "safety_factor": "Cintas fracas demais",
+      "four_terminals": "Menos de 4 pontos de amarração",
+      "anchoring": "Presa no assoalho de madeira",
+      "diagonals_for_gaps": "Espaço para deslizar, sem diagonais",
+      "above_headboard": "Acima da guarda frontal",
+      "axle": "Eixo acima do limite",
+      "payload": "Acima da carga útil",
+      "gross": "Acima do peso bruto",
+      "height": "Alta demais",
+      "width": "Larga demais",
+      "overhang": "Passa da traseira"
+    }
+  },
+  "Audit": {
+    "title": "Histórico",
+    "sentence": "O que a IA leu, o que o motorista mudou, e quem fez o quê, quando.",
+    "reading": "Leitura da IA e a carga confirmada",
+    "readingModel": "Lido por {model}",
+    "readingSample": "Foto de exemplo: a leitura foi registrada uma vez",
+    "columns": {
+      "field": "O quê",
+      "ai": "Leitura da IA",
+      "driver": "Confirmado pelo motorista"
+    },
+    "fields": {
+      "truck_size": "Caminhão",
+      "truck_body": "Carroceria",
+      "units": "Volumes",
+      "cargo": "Carga",
+      "straps": "Amarrações",
+      "restraint": "Amarração",
+      "weight": "Peso"
+    },
+    "changed": "Mudou",
+    "notRead": "Nunca lido de uma foto",
+    "weightBy": "{kg} kg, {source}",
+    "edits": "Correções do motorista na leitura",
+    "noEdits": "Confirmado como lido, sem mudanças.",
+    "noReading": "Sem leitura da IA: a carga foi informada à mão.",
+    "edit": {
+      "unit_added": "Adicionou {unit} ({cargo})",
+      "unit_removed": "Removeu {unit} ({cargo})",
+      "unit_cargo": "{unit}: {from} → {to}",
+      "unit_moved": "Moveu {unit} {distance} m",
+      "unit_resized": "Mudou o tamanho de {unit}",
+      "unit_stacking": "Mudou onde {unit} está apoiado",
+      "unit_straps": "{unit}: {from} → {to} cintas",
+      "truck": "Caminhão, {field}: {from} → {to}",
+      "restraint": "Amarração: {from} → {to}"
+    },
+    "events": {
+      "created": "Inspeção criada",
+      "photo_added": "Foto adicionada ({position})",
+      "photo_removed": "Foto removida",
+      "analyzed": "Fotos lidas pela IA",
+      "invoice_read": "Peso lido da nota fiscal",
+      "load_confirmed": "Carga confirmada",
+      "simulated": "Simulada: segura em {passed} de {total} situações",
+      "fix_simulated": "Correção encontrada e simulada ({changes, plural, one {# mudança} other {# mudanças}})",
+      "reinspected": "Foto nova tirada depois da correção",
+      "shared": "Link público compartilhado",
+      "unshared": "Link público desligado",
+      "certificate_issued": "Certificado {id} emitido"
+    },
+    "weightSource": {
+      "measured": "digitado",
+      "invoice": "da nota fiscal",
+      "estimated": "estimado"
+    },
+    "system": "Sistema",
+    "changesCount": "{count, plural, one {# mudança em relação à carga anterior} other {# mudanças em relação à carga anterior}}"
+  },
+  "Certificate": {
+    "label": "Certificado de carga",
+    "get": "Emitir o certificado",
+    "open": "Abrir o certificado",
+    "issuing": "Emitindo…",
+    "notYet": {
+      "not_simulated": "O certificado sai depois que a carga for simulada.",
+      "fails_no_proven_fix": "Ainda sem certificado: a carga não chega inteira. Corrija e comprove com uma foto nova.",
+      "out_of_compliance": "Sem certificado: a carga está fora da norma, e sua organização não emite certificado nesse caso."
+    },
+    "states": {
+      "approved": "Aprovada: chega inteira e cumpre as normas",
+      "fixed_and_proven": "Corrigida e comprovada: uma foto nova da carga corrigida passa",
+      "holds_noncompliant": "Segura, mas fora da norma"
+    },
+    "title": "Certificado de carga {id}",
+    "issued": "Emitido em {date}",
+    "inspected": "Inspecionada em {date}",
+    "proven": "Correção comprovada em {date}",
+    "organization": "Organização",
+    "truck": "Caminhão",
+    "cargo": "Carga",
+    "cargoLine": "{weight} kg · {units, plural, one {# volume} other {# volumes}} · {source}",
+    "results": "Situações",
+    "resultsLine": "Segura em {passed} de {total}",
+    "checks": "Verificações",
+    "axles": "Carga por eixo",
+    "axleLine": "{group}: {load} t de {limit} t",
+    "hash": "Hash do conteúdo (SHA-256)",
+    "verify": "Verifique em",
+    "scan": "Escaneie para verificar",
+    "pdf": "Baixar PDF",
+    "pdfMaking": "Gerando o PDF…",
+    "revoked": "Este certificado foi substituído: a carga foi confirmada de novo.",
+    "notAuthentic": "Este registro não confere mais com o hash.",
+    "notFound": "Este certificado não existe ou você não pode vê-lo.",
+    "situation": {
+      "pass": "segura",
+      "warning": "segura, com aviso",
+      "fail": "falha"
+    },
+    "check": {
+      "pass": "passa",
+      "fail": "falha",
+      "to_confirm": "a confirmar",
+      "not_applicable": "não se aplica"
+    },
+    "photo": "Foto",
+    "fileName": "securecargo-certificado-{id}.pdf",
+    "back": "Voltar para a inspeção",
+    "checkNames": {
+      "devices_allowed": "Dispositivos permitidos (sem corda)",
+      "safety_factor": "Resistência da amarração, 2× o peso",
+      "four_terminals": "4 pontos de amarração por volume",
+      "anchoring": "Ancorado no chassi metálico",
+      "diagonals_for_gaps": "Diagonais onde a carga pode deslizar",
+      "above_headboard": "Nada acima da guarda frontal pode deslizar",
+      "axle": "Carga por eixo",
+      "payload": "Carga útil",
+      "gross": "Peso bruto total",
+      "height": "Altura, 4,40 m",
+      "width": "Largura, 2,60 m",
+      "overhang": "Balanço traseiro",
+      "headboard_height": "Altura da guarda frontal"
+    },
+    "issuedLabel": "Emitido em",
+    "inspectedLabel": "Inspecionada em",
+    "provenLabel": "Correção comprovada em",
+    "disclaimerText": "A SecureCargo é uma ferramenta de apoio à decisão, não uma certificação de engenharia. Este registro diz o que a simulação física e as verificações das normas encontraram para a carga como foi fotografada e confirmada pelo motorista."
+  },
+  "Verify": {
+    "label": "Verificação de certificado",
+    "checking": "Verificando…",
+    "valid": "Certificado autêntico.",
+    "validSentence": "A SecureCargo emitiu este certificado, e o registro não mudou desde então.",
+    "revoked": "Certificado substituído.",
+    "revokedSentence": "Este certificado é autêntico, mas foi substituído: a carga foi confirmada de novo depois da emissão.",
+    "invalid": "Este registro não confere com o hash.",
+    "invalidSentence": "Não confie nele. Peça um novo certificado à transportadora.",
+    "notFound": "Nenhum certificado com este número.",
+    "notFoundSentence": "Confira o número no papel: SC- e dois grupos de quatro caracteres.",
+    "id": "Certificado",
+    "issued": "Emitido em",
+    "inspected": "Inspecionada em",
+    "result": "Resultado",
+    "situations": "Situações",
+    "situationsLine": "Segura em {passed} de {total}",
+    "checksFailed": "{count, plural, =0 {Todas as normas passam} one {# norma falha} other {# normas falham}}",
+    "issuer": "Organização",
+    "truck": "Caminhão",
+    "hash": "Hash do conteúdo (SHA-256)",
+    "hashHint": "Deve ser igual ao hash impresso no certificado.",
+    "minimal": "Esta página pública mostra só se o certificado é autêntico e um resumo curto. O registro completo fica com a organização que o emitiu.",
+    "disclaimerText": "A SecureCargo é uma ferramenta de apoio à decisão, não uma certificação de engenharia. Este registro diz o que a simulação física e as verificações das normas encontraram para a carga como foi fotografada e confirmada pelo motorista."
   }
 }

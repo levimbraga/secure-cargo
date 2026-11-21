@@ -726,7 +726,8 @@
     "demoBadge": "Demo account",
     "switchDemo": "Switch demo account",
     "demoResets": "Demo data resets daily.",
-    "trucks": "My trucks"
+    "trucks": "My trucks",
+    "alertsBadge": "{count, plural, one {# alert} other {# alerts}}"
   },
   "Auth": {
     "label": "Sign in",
@@ -806,7 +807,7 @@
       "fail": "Fails",
       "none": "Not simulated"
     },
-    "fixedTo": "fixed: passes",
+    "fixedTo": "Fix simulated, no new photo yet",
     "situations": "Holds in {passed} of {total}",
     "change": {
       "straps": "{unit}: {from} → {to} straps",
@@ -1193,7 +1194,8 @@
       "invalid_draft": "The load is not valid.",
       "forbidden": "Your role cannot do this.",
       "unit_unsupported": "A unit is not resting on anything.",
-      "cannot_stack": "That unit cannot carry another one."
+      "cannot_stack": "That unit cannot carry another one.",
+      "policy_two_photos": "Your organization requires at least 2 photos of the load."
     },
     "loading": "Loading…"
   },
@@ -1317,7 +1319,9 @@
       "noCamera": "The camera could not open here. Use the phone's camera instead.",
       "openCamera": "Open the camera",
       "upload": "Choose a photo",
-      "shutter": "Take the photo"
+      "shutter": "Take the photo",
+      "required": "Required",
+      "policyTwo": "Your organization asks for 2 photos: the full side and the rear corner."
     },
     "weight": {
       "title": "How much does the cargo weigh?",
@@ -1675,5 +1679,312 @@
       "disclaimer": "SecureCargo is a decision-support tool, not an engineering certification.",
       "try": "Check your own load"
     }
+  },
+  "Manager": {
+    "label": "Organization",
+    "tabs": {
+      "overview": "Overview",
+      "alerts": "Alerts",
+      "inspections": "Inspections",
+      "team": "Team and policies",
+      "nav": "Organization sections"
+    },
+    "loading": "Loading…",
+    "overview": {
+      "title": "Where the risk is in {org}.",
+      "headline": "{open, plural, =0 {In this period, no load is waiting for a fix.} one {In this period, # load failed and has no proven fix.} other {In this period, # loads failed and have no proven fix.}}",
+      "headlineAlerts": "{count, plural, =0 {No open alerts.} one {# alert in all: a load with no proven fix after {hours} hours, from any date.} other {# alerts in all: loads with no proven fix after {hours} hours, from any date.}}",
+      "period": "Period",
+      "days": "{days, plural, one {# day} other {Last # days}}",
+      "tiles": {
+        "inspections": "Inspections",
+        "approved": "Approved",
+        "holds_noncompliant": "Holds, out of compliance",
+        "fails": "Does not arrive intact",
+        "proven": "Fixed and proven",
+        "noFix": "Failed, no proven fix",
+        "alerts": "Alerts"
+      },
+      "ofSimulated": "{share} of simulated loads",
+      "provenOf": "{proven} of {total} that needed a fix",
+      "noneNeeded": "No load needed a fix",
+      "pending": "{count, plural, one {# not simulated yet} other {# not simulated yet}}",
+      "reinspections": "{count, plural, one {# re-inspection} other {# re-inspections}}",
+      "trend": "Weekly trend",
+      "trendSentence": "First inspections each week, by result (Monday to Sunday, Brasília time).",
+      "week": "Week of {date}",
+      "failures": "Most common failures",
+      "failuresSentence": "Share of the loads that needed a fix.",
+      "noFailures": "No failures in this period.",
+      "physics": "Physics",
+      "rule": "Rule",
+      "drivers": "Per driver",
+      "driverColumns": {
+        "driver": "Driver",
+        "inspections": "Inspections",
+        "failureRate": "Failure rate",
+        "proven": "Fixes proven",
+        "open": "No proven fix"
+      },
+      "definitions": "How we count: each load counts once, as first loaded; its re-inspection is the proof of the fix. Fixed and proven means a new photo of the fixed load was approved.",
+      "seeAlerts": "See the alerts",
+      "seeInspections": "See them in the table"
+    },
+    "alerts": {
+      "title": "Loads waiting for a fix.",
+      "sentence": "Failed or out of compliance, with no proven fix after {hours, plural, one {# hour} other {# hours}}. A new approved photo of the fixed load closes the alert.",
+      "none": "No alerts: every load that failed has a proven fix, or is newer than {hours, plural, one {# hour} other {# hours}}.",
+      "open": "{hours, plural, one {Open # hour} other {Open # hours}}",
+      "openDays": "{days, plural, one {Open # day} other {Open # days}}",
+      "fixSimulated": "Fix simulated, no new photo yet",
+      "noFixYet": "No fix applied",
+      "changeN": "Change the alert time in Team and policies.",
+      "badge": "{count, plural, one {# alert} other {# alerts}}"
+    },
+    "table": {
+      "title": "Every inspection.",
+      "search": "Search load, driver or id",
+      "from": "From",
+      "to": "To",
+      "driver": "Driver",
+      "state": "Result",
+      "truck": "Truck",
+      "cargo": "Cargo",
+      "failure": "Failure type",
+      "any": "Any",
+      "clear": "Clear filters",
+      "export": "Export CSV",
+      "exporting": "Exporting…",
+      "results": "{total, plural, =0 {No inspection matches} one {# inspection} other {# inspections}}",
+      "page": "Page {page} of {pages}",
+      "prev": "Previous",
+      "next": "Next",
+      "states": {
+        "approved": "Approved",
+        "holds_noncompliant": "Holds, out of compliance",
+        "fails": "Does not arrive intact",
+        "proven": "Fixed and proven",
+        "open": "Needs a fix",
+        "pending": "Not simulated"
+      },
+      "reinspection": "Re-inspection",
+      "columns": {
+        "date": "Date",
+        "driver": "Driver",
+        "load": "Load",
+        "truck": "Truck",
+        "cargo": "Cargo",
+        "weight": "Weight",
+        "result": "Result",
+        "failures": "Failures"
+      },
+      "filtersLabel": "Filters"
+    },
+    "team": {
+      "policies": "Policies",
+      "policiesSentence": "Rules your drivers' inspections follow. They are enforced by the server, not only on screen.",
+      "twoPhotos": "Require 2 photos",
+      "twoPhotosHint": "A load is not confirmed with fewer than 2 photos (the sample photos are exempt).",
+      "compliance": "No certificate when out of compliance",
+      "complianceHint": "On: a load that holds but breaks a rule gets no certificate. Off: it gets one that says it is out of compliance.",
+      "alertHours": "Alert after (hours)",
+      "alertHoursHint": "A load that failed and has no proven fix after this many hours becomes an alert.",
+      "save": "Save policies",
+      "saved": "Policies saved.",
+      "failed": "Could not save. Try again.",
+      "demo": "Demo accounts cannot change the policies."
+    },
+    "create": {
+      "title": "Create your organization.",
+      "sentence": "An insurer or a carrier: you become its manager, invite your drivers by email and see every inspection they make.",
+      "name": "Organization name",
+      "type": "Type",
+      "insurer": "Insurer",
+      "carrier": "Carrier",
+      "submit": "Create organization",
+      "creating": "Creating…",
+      "demo": "Demo accounts already belong to the demo organization.",
+      "member": "Your account is a member of {org}. Only its managers see this page.",
+      "errors": {
+        "invalid_name": "Enter the organization's name.",
+        "failed": "Could not create it. Try again."
+      }
+    },
+    "failures": {
+      "unit_slid": "Slides on the deck",
+      "unit_hit_headboard": "Hits the cab",
+      "headboard_overloaded": "Front wall overloaded",
+      "unit_left_bed": "Falls off the truck",
+      "unit_tilted": "Tips over",
+      "unit_rolled": "Rolls",
+      "lashing_broke": "A strap breaks",
+      "lashing_overloaded": "Strap past its capacity",
+      "devices_allowed": "Ropes used as lashing",
+      "safety_factor": "Straps too weak",
+      "four_terminals": "Fewer than 4 lashing points",
+      "anchoring": "Hooked to the wooden floor",
+      "diagonals_for_gaps": "Room to slide, no diagonals",
+      "above_headboard": "Above the headboard",
+      "axle": "Axle over the limit",
+      "payload": "Over the payload",
+      "gross": "Over the gross weight",
+      "height": "Too tall",
+      "width": "Too wide",
+      "overhang": "Sticks out at the rear"
+    }
+  },
+  "Audit": {
+    "title": "Audit trail",
+    "sentence": "What the AI read, what the driver changed, and who did what, when.",
+    "reading": "AI reading and the confirmed load",
+    "readingModel": "Read by {model}",
+    "readingSample": "Sample photo: its reading was recorded once",
+    "columns": {
+      "field": "What",
+      "ai": "AI reading",
+      "driver": "Confirmed by the driver"
+    },
+    "fields": {
+      "truck_size": "Truck",
+      "truck_body": "Body",
+      "units": "Units",
+      "cargo": "Cargo",
+      "straps": "Lashings",
+      "restraint": "Securing",
+      "weight": "Weight"
+    },
+    "changed": "Changed",
+    "notRead": "Never read from a photo",
+    "weightBy": "{kg} kg, {source}",
+    "edits": "Driver's edits to the reading",
+    "noEdits": "Confirmed as read, without changes.",
+    "noReading": "No AI reading: the load was entered by hand.",
+    "edit": {
+      "unit_added": "Added {unit} ({cargo})",
+      "unit_removed": "Removed {unit} ({cargo})",
+      "unit_cargo": "{unit}: {from} → {to}",
+      "unit_moved": "Moved {unit} {distance} m",
+      "unit_resized": "Resized {unit}",
+      "unit_stacking": "Changed what {unit} stands on",
+      "unit_straps": "{unit}: {from} → {to} straps",
+      "truck": "Truck {field}: {from} → {to}",
+      "restraint": "Securing: {from} → {to}"
+    },
+    "events": {
+      "created": "Inspection created",
+      "photo_added": "Photo added ({position})",
+      "photo_removed": "Photo removed",
+      "analyzed": "Photos read by the AI",
+      "invoice_read": "Weight read from the invoice",
+      "load_confirmed": "Load confirmed",
+      "simulated": "Simulated: {passed} of {total} situations hold",
+      "fix_simulated": "Fix found and simulated ({changes, plural, one {# change} other {# changes}})",
+      "reinspected": "New photo taken after the fix",
+      "shared": "Public link shared",
+      "unshared": "Public link turned off",
+      "certificate_issued": "Certificate {id} issued"
+    },
+    "weightSource": {
+      "measured": "typed",
+      "invoice": "from the invoice",
+      "estimated": "estimated"
+    },
+    "system": "System",
+    "changesCount": "{count, plural, one {# change to the previous load} other {# changes to the previous load}}"
+  },
+  "Certificate": {
+    "label": "Load certificate",
+    "get": "Get the certificate",
+    "open": "Open the certificate",
+    "issuing": "Issuing…",
+    "notYet": {
+      "not_simulated": "The certificate comes once the load is simulated.",
+      "fails_no_proven_fix": "No certificate yet: the load does not arrive intact. Fix it and prove it with a new photo.",
+      "out_of_compliance": "No certificate: the load is out of compliance, and your organization issues none for that."
+    },
+    "states": {
+      "approved": "Approved: arrives intact and complies",
+      "fixed_and_proven": "Fixed and proven: a new photo of the fixed load passes",
+      "holds_noncompliant": "Holds, but out of compliance"
+    },
+    "title": "Load certificate {id}",
+    "issued": "Issued {date}",
+    "inspected": "Inspected {date}",
+    "proven": "Fix proven {date}",
+    "organization": "Organization",
+    "truck": "Truck",
+    "cargo": "Cargo",
+    "cargoLine": "{weight} kg · {units, plural, one {# unit} other {# units}} · {source}",
+    "results": "Situations",
+    "resultsLine": "Holds in {passed} of {total}",
+    "checks": "Checks",
+    "axles": "Axle loads",
+    "axleLine": "{group}: {load} t of {limit} t",
+    "hash": "Content hash (SHA-256)",
+    "verify": "Verify at",
+    "scan": "Scan to verify",
+    "pdf": "Download PDF",
+    "pdfMaking": "Making the PDF…",
+    "revoked": "This certificate was replaced: the load was confirmed again.",
+    "notAuthentic": "This record no longer matches its hash.",
+    "notFound": "This certificate does not exist or you cannot see it.",
+    "situation": {
+      "pass": "holds",
+      "warning": "holds, with a warning",
+      "fail": "fails"
+    },
+    "check": {
+      "pass": "passes",
+      "fail": "fails",
+      "to_confirm": "to confirm",
+      "not_applicable": "not applicable"
+    },
+    "photo": "Photo",
+    "fileName": "securecargo-certificate-{id}.pdf",
+    "back": "Back to the inspection",
+    "checkNames": {
+      "devices_allowed": "Allowed lashing devices (no ropes)",
+      "safety_factor": "Lashing strength, 2× the weight",
+      "four_terminals": "4 lashing points per unit",
+      "anchoring": "Anchored to the metal frame",
+      "diagonals_for_gaps": "Diagonals where the load can slide",
+      "above_headboard": "Nothing above the headboard can slide",
+      "axle": "Axle loads",
+      "payload": "Payload",
+      "gross": "Gross weight",
+      "height": "Height, 4.40 m",
+      "width": "Width, 2.60 m",
+      "overhang": "Rear overhang",
+      "headboard_height": "Headboard height"
+    },
+    "issuedLabel": "Issued",
+    "inspectedLabel": "Inspected",
+    "provenLabel": "Fix proven",
+    "disclaimerText": "SecureCargo is a decision-support tool, not an engineering certification. This record states what the physics simulation and the rule checks found for the load as photographed and confirmed by the driver."
+  },
+  "Verify": {
+    "label": "Certificate verification",
+    "checking": "Checking…",
+    "valid": "Authentic certificate.",
+    "validSentence": "SecureCargo issued this certificate, and its record has not changed since.",
+    "revoked": "Replaced certificate.",
+    "revokedSentence": "This certificate is authentic but was replaced: the load was confirmed again after it was issued.",
+    "invalid": "This record does not match its hash.",
+    "invalidSentence": "Do not rely on it. Ask the carrier for a new certificate.",
+    "notFound": "No certificate with this number.",
+    "notFoundSentence": "Check the number on the paper: SC- then two groups of four characters.",
+    "id": "Certificate",
+    "issued": "Issued",
+    "inspected": "Inspected",
+    "result": "Result",
+    "situations": "Situations",
+    "situationsLine": "Holds in {passed} of {total}",
+    "checksFailed": "{count, plural, =0 {Every rule passes} one {# rule fails} other {# rules fail}}",
+    "issuer": "Organization",
+    "truck": "Truck",
+    "hash": "Content hash (SHA-256)",
+    "hashHint": "It must match the hash printed on the certificate.",
+    "minimal": "This public page shows only whether the certificate is authentic and a short summary. The full record is with the organization that issued it.",
+    "disclaimerText": "SecureCargo is a decision-support tool, not an engineering certification. This record states what the physics simulation and the rule checks found for the load as photographed and confirmed by the driver."
   }
 }
