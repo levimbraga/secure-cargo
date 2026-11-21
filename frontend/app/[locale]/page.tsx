@@ -13,6 +13,7 @@ import { SiteNav } from "@/components/site/site-nav";
 import { pill } from "@/components/ui/pill";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Link } from "@/i18n/navigation";
+import { DEMO_SAMPLE } from "@/lib/inspection/samples";
 import { routing } from "@/i18n/routing";
 import dockPhoto from "@/public/media/dock.jpg";
 import heroPhoto from "@/public/media/hero.jpg";
@@ -42,7 +43,8 @@ export default function LandingPage({ params }: PageProps<"/[locale]">) {
           <h1 className="type-hero text-balance">{t("hero.title")}</h1>
           <TypedSubtitle text={t("hero.subtitle")} className="type-hero-sub mt-4 max-w-[34rem] text-pretty" />
           <div className="mt-7 flex flex-wrap gap-2.5">
-            <Link href="/app" className={pill()}>
+            {/* "Try the demo": a sample photo through the whole inspection, no account needed. */}
+            <Link href={`/app/new?sample=${DEMO_SAMPLE}`} className={pill()}>
               {t("hero.primary")}
             </Link>
             <Link href="/#how-it-works" className={pill({ variant: "secondary" })}>

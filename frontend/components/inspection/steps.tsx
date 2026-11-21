@@ -2,7 +2,7 @@
 
 /** The first two steps of a new inspection: the photos, then the truck and the weight. */
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useState } from "react";
 
 import { pill } from "@/components/ui/pill";
@@ -157,6 +157,7 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
 
 function Samples({ flow }: { flow: Flow }) {
   const t = useTranslations("Flow");
+  const pt = useLocale() === "pt-BR";
   const [samples, setSamples] = useState<Sample[] | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -193,8 +194,8 @@ function Samples({ flow }: { flow: Flow }) {
                 loading="lazy"
                 className="aspect-[3/2] w-full rounded object-cover"
               />
-              <span className="mt-2 block font-[450] text-ink group-hover:underline">{sample.title}</span>
-              <span className="type-small block text-gray">{sample.story}</span>
+              <span className="mt-2 block font-[450] text-ink group-hover:underline">{pt ? sample.title_pt : sample.title}</span>
+              <span className="type-small block text-gray">{pt ? sample.story_pt : sample.story}</span>
               <span className="type-label mt-1 block">
                 {t("samples.credit", { photographer: sample.credit.photographer, source: sample.credit.source })}
               </span>

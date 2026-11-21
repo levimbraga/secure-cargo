@@ -14,6 +14,9 @@ export type Sample = {
   title: string;
   /** One-sentence story, shown on the sample card. */
   story: string;
+  /** The same in Brazilian Portuguese. */
+  title_pt: string;
+  story_pt: string;
   photos: { position: string; path: string; width: number; height: number }[];
   credit: { photographer: string; url: string; source: string; license: string };
   /** The weight on the sample's (made-up) invoice. */
@@ -32,6 +35,9 @@ export type SampleData = Sample & {
   /** Every situation's run with keyframes, for the replays: as loaded and fixed. */
   runs: Record<"as_loaded" | "fixed", Partial<Record<SituationId, string>>>;
 };
+
+/** The sample the landing page's "Try the demo" opens: a load that fails, then is fixed. */
+export const DEMO_SAMPLE = "crates-ropes";
 
 let index: Promise<Sample[]> | null = null;
 
