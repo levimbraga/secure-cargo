@@ -460,5 +460,339 @@
    "overall_confidence": 0.5,
    "summary": "A flatbed semi-trailer carries about six stacked bundles of sawn lumber secured with roughly ten top-over straps."
   }
+ },
+ "concrete-pipes": {
+  "id": "concrete-pipes",
+  "photos": [
+   {
+    "position": "left",
+    "path": "/demo/samples/concrete-pipes.jpg",
+    "sha256": "236d7b3b1f2033d13a4374b5b3dd626c21dc7b2152224106cac5cf08bd05c451"
+   }
+  ],
+  "analysis": {
+   "is_truck_load": true,
+   "truck": {
+    "body": "flatbed",
+    "size": "truck",
+    "confidence": 0.6,
+    "uncertain": "rear of truck cut off; three axles assumed from tandem rear and crane rigid truck"
+   },
+   "units": [
+    {
+     "number": 1,
+     "cargo": "long_pipes",
+     "length_m": 2,
+     "width_m": 1,
+     "height_m": 1,
+     "along": 0.25,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.5,
+      0.53,
+      0.69,
+      0.63
+     ],
+     "confidence": 0.4,
+     "uncertain": "concrete pipes lie across the truck, not lengthwise; length and exact layout unclear"
+    },
+    {
+     "number": 2,
+     "cargo": "long_pipes",
+     "length_m": 2,
+     "width_m": 1,
+     "height_m": 1,
+     "along": 0.4,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.31,
+      0.52,
+      0.5,
+      0.63
+     ],
+     "confidence": 0.4,
+     "uncertain": "orientation across the truck"
+    },
+    {
+     "number": 3,
+     "cargo": "long_pipes",
+     "length_m": 2,
+     "width_m": 1,
+     "height_m": 1,
+     "along": 0.55,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.12,
+      0.52,
+      0.31,
+      0.63
+     ],
+     "confidence": 0.4,
+     "uncertain": "orientation across the truck"
+    },
+    {
+     "number": 4,
+     "cargo": "long_pipes",
+     "length_m": 2,
+     "width_m": 1,
+     "height_m": 1,
+     "along": 0.7,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0,
+      0.52,
+      0.12,
+      0.63
+     ],
+     "confidence": 0.3,
+     "uncertain": "partly out of frame"
+    },
+    {
+     "number": 5,
+     "cargo": "long_pipes",
+     "length_m": 2,
+     "width_m": 1.1,
+     "height_m": 1.1,
+     "along": 0.33,
+     "across": 0.5,
+     "stacked_on": 1,
+     "photo": 0,
+     "box": [
+      0.37,
+      0.37,
+      0.64,
+      0.55
+     ],
+     "confidence": 0.4,
+     "uncertain": "large upper pipe, resting between two lower pipes"
+    },
+    {
+     "number": 6,
+     "cargo": "long_pipes",
+     "length_m": 2,
+     "width_m": 0.8,
+     "height_m": 0.8,
+     "along": 0.48,
+     "across": 0.5,
+     "stacked_on": 2,
+     "photo": 0,
+     "box": [
+      0.25,
+      0.45,
+      0.38,
+      0.54
+     ],
+     "confidence": 0.35,
+     "uncertain": "upper pipe position"
+    },
+    {
+     "number": 7,
+     "cargo": "long_pipes",
+     "length_m": 2,
+     "width_m": 0.9,
+     "height_m": 0.9,
+     "along": 0.62,
+     "across": 0.5,
+     "stacked_on": 3,
+     "photo": 0,
+     "box": [
+      0.04,
+      0.44,
+      0.22,
+      0.55
+     ],
+     "confidence": 0.35,
+     "uncertain": "upper pipe position"
+    }
+   ],
+   "restraints": [
+    {
+     "kind": "chain",
+     "count": 1,
+     "routing": "unknown",
+     "units": [
+      5
+     ],
+     "confidence": 0.3,
+     "uncertain": "possible chain near front pipe; no other lashings visible from this side"
+    }
+   ],
+   "violations": [
+    {
+     "code": "above_headboard",
+     "units": [
+      5
+     ],
+     "confidence": 0.4,
+     "note": "top pipe appears to rise above headboard height"
+    }
+   ],
+   "overall_confidence": 0.35,
+   "summary": "A crane flatbed truck carries concrete pipes in two tiers lying across the bed, with lashings mostly not visible from this side."
+  }
+ },
+ "steel-racks": {
+  "id": "steel-racks",
+  "photos": [
+   {
+    "position": "left",
+    "path": "/demo/samples/steel-racks.jpg",
+    "sha256": "087565b6f2865cb99827f8f4c569a22caa51dd75f775efeb2c391421ba684164"
+   }
+  ],
+  "analysis": {
+   "is_truck_load": true,
+   "truck": {
+    "body": "flatbed",
+    "size": "semi",
+    "confidence": 0.85,
+    "uncertain": "no side rails visible; trailer may be extendable"
+   },
+   "units": [
+    {
+     "number": 1,
+     "cargo": "crate",
+     "length_m": 1.6,
+     "width_m": 2.4,
+     "height_m": 2.8,
+     "along": 0.12,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.62,
+      0.43,
+      0.67,
+      0.6
+     ],
+     "confidence": 0.5,
+     "uncertain": "steel rack frame holding upright metal anodes or bars; closest type crate"
+    },
+    {
+     "number": 2,
+     "cargo": "crate",
+     "length_m": 1.6,
+     "width_m": 2.4,
+     "height_m": 2.8,
+     "along": 0.26,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.55,
+      0.42,
+      0.63,
+      0.62
+     ],
+     "confidence": 0.5,
+     "uncertain": "rack boundaries hard to separate"
+    },
+    {
+     "number": 3,
+     "cargo": "crate",
+     "length_m": 1.6,
+     "width_m": 2.4,
+     "height_m": 2.9,
+     "along": 0.4,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.47,
+      0.41,
+      0.55,
+      0.64
+     ],
+     "confidence": 0.5,
+     "uncertain": "rack boundaries hard to separate"
+    },
+    {
+     "number": 4,
+     "cargo": "crate",
+     "length_m": 1.6,
+     "width_m": 2.4,
+     "height_m": 3,
+     "along": 0.54,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.37,
+      0.39,
+      0.48,
+      0.66
+     ],
+     "confidence": 0.5,
+     "uncertain": "rack boundaries hard to separate"
+    },
+    {
+     "number": 5,
+     "cargo": "crate",
+     "length_m": 1.6,
+     "width_m": 2.4,
+     "height_m": 3,
+     "along": 0.66,
+     "across": 0.5,
+     "stacked_on": null,
+     "photo": 0,
+     "box": [
+      0.31,
+      0.38,
+      0.39,
+      0.66
+     ],
+     "confidence": 0.45,
+     "uncertain": "rack count and exact positions uncertain"
+    }
+   ],
+   "restraints": [
+    {
+     "kind": "chain",
+     "count": 1,
+     "routing": "unknown",
+     "units": [
+      5
+     ],
+     "confidence": 0.3,
+     "uncertain": "a chain hangs on the rear rack; other lashings not visible from this angle"
+    },
+    {
+     "kind": "strap",
+     "count": 3,
+     "routing": "diagonal",
+     "units": [
+      2,
+      3,
+      4
+     ],
+     "confidence": 0.3,
+     "uncertain": "green items at rack bases may be straps or tensioners"
+    }
+   ],
+   "violations": [
+    {
+     "code": "above_headboard",
+     "units": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "confidence": 0.5,
+     "note": "Upright bars stand well above the low headboard and could move forward."
+    }
+   ],
+   "overall_confidence": 0.45,
+   "summary": "A flatbed semi-trailer carries about five steel racks of tall upright metal bars on its front two thirds, with only a few visible chain/strap lashings."
+  }
  }
 }

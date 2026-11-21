@@ -65,7 +65,7 @@ SAMPLES: tuple[SampleSpec, ...] = (
             "Stacks of plastic crates held only by ropes, which Brazilian rules prohibit.",
             "Pilhas de caixas plásticas presas só com cordas, proibidas pelas regras brasileiras.",
         ),
-        DraftTruck(body="flatbed", size="truck"),
+        DraftTruck(body="flatbed", size="truck", style="open_low_sides"),
         4200,
         "left",
     ),
@@ -77,7 +77,7 @@ SAMPLES: tuple[SampleSpec, ...] = (
             "Long steel pipes under ratchet straps: do they hold in a hard stop?",
             "Tubos de aço longos sob cintas com catraca: aguentam uma frenagem forte?",
         ),
-        DraftTruck(body="flatbed", size="semi"),
+        DraftTruck(body="flatbed", size="semi", style="open_low_sides"),
         18000,
     ),
     SampleSpec(
@@ -88,7 +88,7 @@ SAMPLES: tuple[SampleSpec, ...] = (
             "A machine chained to a trailer: chains, axle loads and the rules.",
             "Uma máquina acorrentada à carreta: correntes, carga por eixo e as regras.",
         ),
-        DraftTruck(body="flatbed", size="semi"),
+        DraftTruck(body="flatbed", size="semi", style="platform"),
         8500,
         "left",
     ),
@@ -100,8 +100,34 @@ SAMPLES: tuple[SampleSpec, ...] = (
             "Packages of lumber under straps on a semi-trailer.",
             "Pacotes de madeira serrada sob cintas numa carreta.",
         ),
-        DraftTruck(body="flatbed", size="semi"),
+        DraftTruck(body="flatbed", size="semi", style="open_low_sides"),
         12000,  # about 0.58 t/m³ over the packages the draft keeps: sawn pine
+    ),
+    # The three verdict states need a load that is approved and one that holds but is out of
+    # compliance (2026-11-21).
+    SampleSpec(
+        "concrete-pipes",
+        "concrete-pipes-crane-truck-DM5ZHQJvaE4.jpg",
+        ("Concrete pipes, chained", "Tubos de concreto acorrentados"),
+        (
+            "Concrete pipes lying across a crane truck, held down with chains.",
+            "Tubos de concreto deitados num caminhão com guindaste, presos com correntes.",
+        ),
+        DraftTruck(body="flatbed", size="truck", style="open_low_sides"),
+        11200,  # four pipes of about 2.8 t: a 1.2 m reinforced pipe, 2.5 m long
+        "left",
+    ),
+    SampleSpec(
+        "steel-racks",
+        "steel-posts-racks-semi-32126810.jpg",
+        ("Steel racks on a semi-trailer", "Racks de aço numa carreta"),
+        (
+            "Five racks of steel posts, chained: they hold, but is the weight legal?",
+            "Cinco racks de postes de aço com correntes: aguentam, mas o peso está dentro da lei?",
+        ),
+        DraftTruck(body="flatbed", size="semi", style="platform"),
+        22400,  # about 4.5 t per rack of steel posts
+        "left",
     ),
 )
 
@@ -221,7 +247,7 @@ def main() -> None:
             "photos": [{"position": spec.position, "path": path, "width": width, "height": height}],
             "credit": credit,
             "weight_kg": spec.weight_kg,
-            "truck": spec.truck.model_dump(mode="json"),
+            "truck": spec.truck.model_dump(mode="json", exclude_none=True),
             "passed": loaded.passed,
             "fixed_passed": fix.battery.passed,
         }
