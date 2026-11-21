@@ -202,13 +202,12 @@ async function main() {
 			   ${q(loaded.draft.truck.body)}, ${q(loaded.draft.truck.size)}, ${weight}, '',
 			   ${verdict === "pass" ? 1 : 0}, 1, ${q(verdict)}, ${q(fixedVerdict)});`,
 		);
-		const photo = SAMPLE_PHOTOS[item.example];
-		if (photo) {
-			sql.push(
-				`INSERT INTO photos (id, inspection_id, position, r2_key, sha256, content_type, bytes, exif_stripped, created_at)
-				 VALUES (${q(`${id}_p1`)}, ${q(id)}, 'rear', ${q(`sample:${photo}`)}, ${q(`sample-${item.example}`)}, 'image/jpeg', 0, 1, ${q(at)});`,
-			);
-		}
+		// Every inspection has a picture: a sample photograph, or else the MuJoCo render of the load.
+		const photo = SAMPLE_PHOTOS[item.example] ?? `/demo/video/${item.example}.${loadedVariant}.jpg`;
+		sql.push(
+			`INSERT INTO photos (id, inspection_id, position, r2_key, sha256, content_type, bytes, exif_stripped, created_at)
+			 VALUES (${q(`${id}_p1`)}, ${q(id)}, 'rear', ${q(`sample:${photo}`)}, ${q(`sample-${item.example}`)}, 'image/jpeg', 0, 1, ${q(at)});`,
+		);
 		const scenarioId = `${id}_s1`;
 		sql.push(
 			`INSERT INTO scenarios (id, inspection_id, kind, draft_json, created_by, created_at)
