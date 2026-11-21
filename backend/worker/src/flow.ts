@@ -231,6 +231,7 @@ export function registerFlow(
 		const total = typeof body.cargo_weight_kg === "number" ? body.cargo_weight_kg : NaN;
 		checkWeights(draft, total);
 		const notes = typeof body.notes === "string" ? body.notes.slice(0, 2000) : undefined;
+		const title = typeof body.title === "string" ? body.title.trim().slice(0, 120) : undefined;
 		const at = now();
 		const id = newId("scn");
 		// A confirmed load replaces the previous one, and with it every result and fix.
@@ -250,6 +251,7 @@ export function registerFlow(
 			verdict: null,
 			fixed_verdict: null,
 			...(notes !== undefined ? { notes } : {}),
+			...(title ? { title } : {}),
 		});
 		return c.json({ scenario_id: id, status: "confirmed" });
 	});

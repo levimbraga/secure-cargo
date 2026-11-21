@@ -352,6 +352,11 @@ function Checks({ battery }: { battery: Battery }) {
 
 // ---- fix ----------------------------------------------------------------------------------
 
+/** An option's label in the middle of a sentence. */
+function lower(label: string): string {
+  return label.charAt(0).toLocaleLowerCase() + label.slice(1);
+}
+
 export function useChangeSentence() {
   const t = useTranslations("Flow");
   const { nameOf } = useReplayText();
@@ -364,8 +369,8 @@ export function useChangeSentence() {
         return t("changes.straps", { unit: nameOf(change.unit_id), from: Number(change.before ?? 0), to: Number(change.after ?? 0) });
       case "restraint":
         return t("changes.restraint", {
-          from: restraint(`restraint.${String(change.before)}` as never),
-          to: restraint(`restraint.${String(change.after)}` as never),
+          from: lower(restraint(`restraint.${String(change.before)}` as never)),
+          to: lower(restraint(`restraint.${String(change.after)}` as never)),
         });
       case "close_gaps":
         return t(change.values.limited_by_axles ? "changes.closeGapsAxles" : "changes.closeGaps", { distance: cm(change.values.moved_m) });

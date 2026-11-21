@@ -1025,7 +1025,8 @@
       "strapRoom": "room for {room}",
       "remove": "Remove this unit",
       "add": "Add a unit",
-      "refused": "That does not fit: it would overlap another unit or leave the bed."
+      "refused": "That does not fit: it would overlap another unit or leave the bed.",
+      "mixed": "Mixed load"
     },
     "warnings": {
       "not_a_load": "The photos may not show cargo on a truck.",

@@ -139,7 +139,7 @@ export function useInspectionFlow() {
     patch({ ...INITIAL, busy: "upload" });
     try {
       const data = await fetchSample(sample.id);
-      const inspectionId = saving ? (await calls.create({ sample: sample.id })).id : null;
+      const inspectionId = saving ? (await calls.create({ sample: sample.id, title: sample.title })).id : null;
       setState({
         ...INITIAL,
         sample: data,
@@ -224,14 +224,15 @@ export function useInspectionFlow() {
 
   // ---- battery and fix ------------------------------------------------------------------------
 
-  async function confirm() {
+  /** `title`: what the lists show, e.g. "3 × Steel pipe" (written in the user's language). */
+  async function confirm(title?: string) {
     const { draft, totalKg, inspectionId, sample, notes } = latest.current;
     if (!draft || !totalKg || !weightsComplete(draft, totalKg)) return;
     patch({ busy: "battery", startedAt: Date.now(), error: null, step: "result" });
     try {
       let battery: Battery;
       if (inspectionId) {
-        await calls.saveDraft(inspectionId, { draft, cargo_weight_kg: totalKg, notes });
+        await calls.saveDraft(inspectionId, { draft, cargo_weight_kg: totalKg, notes, title });
         battery = await calls.simulate(inspectionId);
       } else if (sample && same(draft, sample.perception.draft)) {
         battery = sample.battery;

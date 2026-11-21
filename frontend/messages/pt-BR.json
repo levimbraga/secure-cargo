@@ -1025,7 +1025,8 @@
       "strapRoom": "cabem {room}",
       "remove": "Remover esta unidade",
       "add": "Adicionar unidade",
-      "refused": "Não cabe: ficaria sobre outra unidade ou fora da carroceria."
+      "refused": "Não cabe: ficaria sobre outra unidade ou fora da carroceria.",
+      "mixed": "Carga mista"
     },
     "warnings": {
       "not_a_load": "As fotos talvez não mostrem carga em um caminhão.",

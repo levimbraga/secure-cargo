@@ -23,8 +23,17 @@ import { ErrorLine } from "./steps";
 
 type Flow = ReturnType<typeof useInspectionFlow>;
 
+/** "3 × Steel pipe", or "Mixed load (5 units)". */
+function loadTitle(draft: LoadDraft, cargoName: (cargo: string) => string, mixed: string): string {
+  const kinds = new Set(draft.units.map((unit) => unit.cargo));
+  const first = draft.units[0];
+  if (kinds.size === 1 && first) return `${draft.units.length} × ${cargoName(first.cargo)}`;
+  return `${mixed} (${draft.units.length})`;
+}
+
 export function ReviewStep({ flow }: { flow: Flow }) {
   const t = useTranslations("Flow");
+  const options = useTranslations("Explorer.options");
   const format = useFormatter();
   const { state } = flow;
   const [tab, setTab] = useState<"photo" | "load">("load");
@@ -136,7 +145,7 @@ export function ReviewStep({ flow }: { flow: Flow }) {
           <button
             type="button"
             disabled={!complete || state.busy !== null}
-            onClick={() => void flow.confirm()}
+            onClick={() => void flow.confirm(loadTitle(draft, (cargo) => options(`cargo.${cargo}` as never), t("review.mixed")))}
             className={pill({ className: "h-12 px-6" })}
             data-testid="confirm-load"
           >

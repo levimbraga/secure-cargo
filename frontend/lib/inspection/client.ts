@@ -79,7 +79,7 @@ export function flowCalls(request: <T>(path: string, init?: RequestInit) => Prom
       return (await response.json()) as { id: string; sha256: string };
     },
     analyze: (id: string) => post<import("./types").AnalysisAnswer>(`/inspections/${encodeURIComponent(id)}/analyze`),
-    saveDraft: (id: string, body: { draft: LoadDraft; cargo_weight_kg: number; notes?: string }) =>
+    saveDraft: (id: string, body: { draft: LoadDraft; cargo_weight_kg: number; notes?: string; title?: string }) =>
       request<{ scenario_id: string }>(`/inspections/${encodeURIComponent(id)}/draft`, { method: "PUT", body: JSON.stringify(body) }),
     simulate: (id: string) => post<Battery>(`/inspections/${encodeURIComponent(id)}/simulate`),
     fix: (id: string) => post<Plan>(`/inspections/${encodeURIComponent(id)}/fix`),
