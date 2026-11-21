@@ -12,7 +12,10 @@
  * fresh instance and the previous one stops by itself after the inactivity timeout.
  */
 import { createApp, isAppRoute } from "./app";
+import type { PhotoStore, Physics, SamplePhoto } from "./flow";
 import { createClerkIdentity } from "./identity";
+import { analyzePhotos, DEFAULT_MODEL } from "./perception/claude";
+import samples from "./perception/samples.json";
 import { parseEmailList } from "./principal";
 
 export { ApiContainer } from "./container";
@@ -21,7 +24,8 @@ let cached: { key: string; app: ReturnType<typeof createApp> } | undefined;
 
 function application(env: Env): ReturnType<typeof createApp> {
 	// Build once per isolate; the key changes only if the configuration does.
-	const key = `${env.CLERK_PUBLISHABLE_KEY}|${env.CORS_ORIGINS}|${env.PLATFORM_ADMIN_EMAILS}`;
+	const model = env.ANALYSIS_MODEL || DEFAULT_MODEL;
+	const key = `${env.CLERK_PUBLISHABLE_KEY}|${env.CORS_ORIGINS}|${env.PLATFORM_ADMIN_EMAILS}|${model}|${Boolean(env.ANTHROPIC_API_KEY)}|${env.VERSION.id}`;
 	if (cached?.key === key) return cached.app;
 	const corsOrigins = env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean);
 	const app = createApp({
@@ -35,13 +39,21 @@ function application(env: Env): ReturnType<typeof createApp> {
 		corsOrigins,
 		siteUrl: env.SITE_URL,
 		limitAnonymous: async (k) => (await env.ANON_RATE_LIMITER.limit({ key: k })).success,
+		photos: r2PhotoStore(env.PHOTOS),
+		physics: containerPhysics(env),
+		analyzer: env.ANTHROPIC_API_KEY
+			? { model, analyze: (photos) => analyzePhotos(env.ANTHROPIC_API_KEY as string, photos, model) }
+			: null,
+		samples: samples as Record<string, SamplePhoto>,
 	});
 	cached = { key, app };
 	return app;
 }
 
 /** Physics endpoints that run a simulation or build a model: limited per IP for anonymous callers. */
-const LIMITED_PHYSICS = new Set(["/simulate", "/mjcf", "/explorer/draft"]);
+const LIMITED_PHYSICS = new Set(["/simulate", "/mjcf", "/explorer/draft", "/perception/draft"]);
+/** The battery (7 simulations) and the planner (up to 30): a tighter limit per IP. */
+const LIMITED_BATTERY = new Set(["/battery", "/plan"]);
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
@@ -49,9 +61,10 @@ export default {
 		if (isAppRoute(url.pathname)) {
 			return application(env).fetch(request, env, ctx);
 		}
-		if (request.method === "POST" && LIMITED_PHYSICS.has(url.pathname)) {
+		if (request.method === "POST" && (LIMITED_PHYSICS.has(url.pathname) || LIMITED_BATTERY.has(url.pathname))) {
 			const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
-			const { success } = await env.PHYSICS_RATE_LIMITER.limit({ key: `physics:${ip}` });
+			const limiter = LIMITED_BATTERY.has(url.pathname) ? env.BATTERY_RATE_LIMITER : env.PHYSICS_RATE_LIMITER;
+			const { success } = await limiter.limit({ key: `physics:${ip}` });
 			if (!success) {
 				return Response.json(
 					{ detail: { code: "rate_limited", message: "Too many simulations. Wait a minute and try again." } },
@@ -70,6 +83,34 @@ export default {
 		}
 	},
 } satisfies ExportedHandler<Env>;
+
+function r2PhotoStore(bucket: R2Bucket): PhotoStore {
+	return {
+		async put(key, bytes, contentType) {
+			await bucket.put(key, bytes, { httpMetadata: { contentType } });
+		},
+		async get(key) {
+			const object = await bucket.get(key);
+			if (!object) return null;
+			return {
+				bytes: new Uint8Array(await object.arrayBuffer()),
+				contentType: object.httpMetadata?.contentType ?? "application/octet-stream",
+			};
+		},
+	};
+}
+
+/** The Worker's own calls to the physics container (battery, planner). */
+function containerPhysics(env: Env): Physics {
+	return (path, body) =>
+		env.API_CONTAINER.getByName(`api-${env.VERSION.id}`).fetch(
+			new Request(`https://api.internal${path}`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(body),
+			}),
+		);
+}
 
 function corsHeaders(request: Request, env: Env): Record<string, string> {
 	const origin = request.headers.get("Origin") ?? "";

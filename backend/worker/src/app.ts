@@ -30,12 +30,13 @@ import {
 	type Principal,
 } from "./authz";
 import { type Db, newId, now, periodStarts } from "./db";
+import { type FlowDeps, registerFlow } from "./flow";
 import { ApiError, fail, field, forbidden, jsonBody, notFound } from "./http";
 import type { IdentityProvider } from "./identity";
 import { resolvePrincipal } from "./principal";
 import { analysisAllowance, monthSpendUsd, readSettings } from "./quota";
 
-export interface AppDeps {
+export interface AppDeps extends FlowDeps {
 	db: Db;
 	identity: IdentityProvider;
 	platformAdminEmails: readonly string[];
@@ -67,7 +68,7 @@ const DEMO_TICKET_MARGIN_MS = 10 * 60 * 1000;
 
 const INSPECTION_COLUMNS = `i.id, i.org_id, i.author_id, i.created_at, i.updated_at, i.status, i.title,
 	i.truck_body, i.truck_size, i.cargo_weight_kg, i.notes, i.plate, i.situations_passed,
-	i.situations_total, i.verdict, i.fixed_verdict, u.name AS author_name, o.name AS org_name,
+	i.situations_total, i.verdict, i.fixed_verdict, i.sample, u.name AS author_name, o.name AS org_name,
 	(SELECT p.r2_key FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at LIMIT 1) AS cover_photo`;
 
 interface InspectionRow {
@@ -85,7 +86,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		"*",
 		cors({
 			origin: (origin) => (deps.corsOrigins.includes(origin) ? origin : null),
-			allowMethods: ["GET", "POST", "PATCH", "OPTIONS"],
+			allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
 			allowHeaders: ["Authorization", "Content-Type"],
 			maxAge: 600,
 		}),
@@ -167,11 +168,14 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		const body = await jsonBody(c);
 		const at = now();
 		const id = newId("insp");
+		const sampleId = field.optionalString(body, "sample", 40);
+		const sample = sampleId ? deps.samples[sampleId] : undefined;
+		if (sampleId && !sample) fail(422, "unknown_sample", "No such sample photo.");
 		await db
 			.prepare(
 				`INSERT INTO inspections (id, org_id, author_id, created_at, updated_at, status, title,
-				 truck_body, truck_size, cargo_weight_kg, notes, plate)
-				 VALUES (?, ?, ?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?)`,
+				 truck_body, truck_size, cargo_weight_kg, notes, plate, sample)
+				 VALUES (?, ?, ?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?, ?)`,
 			)
 			.bind(
 				id,
@@ -185,8 +189,22 @@ export function createApp(deps: AppDeps): Hono<Env> {
 				field.optionalNumber(body, "cargo_weight_kg", 1, 80_000) ?? null,
 				field.optionalString(body, "notes", 2000) ?? "",
 				field.optionalString(body, "plate", 10) ?? null,
+				sample?.id ?? null,
 			)
 			.run();
+		// A sample inspection starts with the sample's photos (public files on the site).
+		if (sample) {
+			await db.batch(
+				sample.photos.map((photo, n) =>
+					db
+						.prepare(
+							`INSERT INTO photos (id, inspection_id, position, r2_key, sha256, content_type, bytes, exif_stripped, created_at)
+							 VALUES (?, ?, ?, ?, ?, 'image/jpeg', 0, 1, ?)`,
+						)
+						.bind(`${id}_p${n + 1}`, id, photo.position, `sample:${photo.path}`, photo.sha256, at),
+				),
+			);
+		}
 		return c.json(await loadInspection(db, id), 201);
 	});
 
@@ -229,6 +247,8 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		if (!row || !canReadInspection(c.get("principal"), row)) notFound();
 		return row;
 	}
+
+	registerFlow(app, deps, authenticated, readableInspection);
 
 	// ---- organization -----------------------------------------------------------------------
 

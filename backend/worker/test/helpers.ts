@@ -10,6 +10,7 @@ import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { createApp } from "../src/app";
 import type { OrgRole } from "../src/authz";
 import type { Db, Statement } from "../src/db";
+import type { FlowDeps } from "../src/flow";
 import type { IdentityProvider, IdentityUser, OrgInvitation } from "../src/identity";
 
 const MIGRATIONS = join(import.meta.dirname, "..", "migrations");
@@ -110,7 +111,7 @@ export function seed(db: ReturnType<typeof createTestDb>, identity: FakeIdentity
 	identity.users.set("newcomer", { id: "newcomer", email: "NewComer@Example.com".toLowerCase(), name: "Newcomer" });
 }
 
-export function setup(options: { rateLimitAllows?: () => boolean } = {}) {
+export function setup(options: { rateLimitAllows?: () => boolean; flow?: Partial<FlowDeps> } = {}) {
 	const db = createTestDb();
 	const identity = new FakeIdentity();
 	seed(db, identity);
@@ -121,6 +122,11 @@ export function setup(options: { rateLimitAllows?: () => boolean } = {}) {
 		corsOrigins: ["https://securecargo.app"],
 		siteUrl: "https://securecargo.app",
 		limitAnonymous: async () => options.rateLimitAllows?.() ?? true,
+		photos: null,
+		physics: null,
+		analyzer: null,
+		samples: {},
+		...options.flow,
 	});
 	const call = (method: string, path: string, token?: string, body?: unknown) =>
 		app.request(path, {

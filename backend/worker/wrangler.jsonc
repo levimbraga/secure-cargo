@@ -22,7 +22,8 @@
 		"SITE_URL": "https://securecargo.app"
 	},
 	// Secrets (never in the repo; `wrangler secret put`, locally in .dev.vars):
-	//   CLERK_SECRET_KEY, CLERK_PUBLISHABLE_KEY, PLATFORM_ADMIN_EMAILS (comma-separated).
+	//   CLERK_SECRET_KEY, CLERK_PUBLISHABLE_KEY, PLATFORM_ADMIN_EMAILS (comma-separated),
+	//   ANTHROPIC_API_KEY (photo analysis; without it the analysis answers "demo mode").
 	// Records: organizations, users, inspections, results, usage (migrations/).
 	"d1_databases": [
 		{
@@ -50,6 +51,12 @@
 			"name": "PHYSICS_RATE_LIMITER",
 			"namespace_id": "1002",
 			"simple": { "limit": 60, "period": 60 }
+		},
+		{
+			// The battery and the planner run up to 7 and 30 simulations: a tighter limit.
+			"name": "BATTERY_RATE_LIMITER",
+			"namespace_id": "1003",
+			"simple": { "limit": 8, "period": 60 }
 		}
 	],
 	// Identifies the deployed Worker version; used to give every deploy a fresh container.
