@@ -5,6 +5,7 @@
  * camera, checked on the phone), the truck (size, then body), and the weight.
  */
 
+import { cn } from "cn";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useEffect, useId, useState } from "react";
 
@@ -230,25 +231,72 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
   );
 }
 
-/** A photo that failed an instant check: why, and "Retake" or "Use it anyway". */
+/**
+ * A photo waiting for the driver: a failed instant check (why, "Retake" or "Use it anyway"), or,
+ * when every check passed, the one-tap question "Is the whole load in the photo?".
+ */
 function QualityPrompt({ flow, onRetake }: { flow: Flow; onRetake: (shot: Shot) => void }) {
   const t = useTranslations("Driver.capture");
   const pending = flow.state.pending;
   if (!pending) return null;
+  const confirm = pending.confirm && pending.issues.length === 0;
   return (
-    <div role="alert" className="mt-6 rounded-md border border-warn bg-warn-tint p-4" data-testid="quality-prompt" data-issues={pending.issues.join(",")}>
+    <div
+      role={confirm ? "group" : "alert"}
+      aria-labelledby="pending-photo-title"
+      className={cn("mt-6 rounded-md border p-4", confirm ? "border-hairline bg-white" : "border-warn bg-warn-tint")}
+      data-testid={confirm ? "whole-load-prompt" : "quality-prompt"}
+      data-issues={pending.issues.join(",")}
+    >
       <div className="flex gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element -- a local preview of the driver's own photo */}
-        <img src={pending.photo.url} alt="" className="size-20 shrink-0 rounded object-cover" />
+        <img src={pending.photo.url} alt="" className={cn("shrink-0 rounded object-cover", confirm ? "h-24 w-36" : "size-20")} />
         <div className="min-w-0">
-          <p className="font-[450] text-ink">{t("retakeTitle")}</p>
-          <ul className="type-small mt-1 text-ink">
-            {pending.issues.map((issue) => (
-              <li key={issue}>{t(`issues.${issue}`)}</li>
-            ))}
-          </ul>
+          <p id="pending-photo-title" className="font-[450] text-ink">
+            {confirm ? t("wholeTitle") : t("retakeTitle")}
+          </p>
+          {confirm ? (
+            <p className="type-small mt-1 text-gray">{t("wholeSentence")}</p>
+          ) : (
+            <ul className="type-small mt-1 text-ink">
+              {pending.issues.map((issue) => (
+                <li key={issue}>{t(`issues.${issue}`)}</li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
+      {confirm ? (
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button type="button" onClick={flow.keepPending} className={pill({ className: "h-12 px-5" })} data-testid="whole-yes">
+            {t("wholeYes")}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const shot = pending.photo.shot ?? "side";
+              flow.discardPending();
+              onRetake(shot);
+            }}
+            className={pill({ variant: "secondary", className: "h-12 px-5" })}
+            data-testid="whole-retake"
+          >
+            {t("wholeRetake")}
+          </button>
+        </div>
+      ) : (
+        <QualityButtons flow={flow} onRetake={onRetake} />
+      )}
+    </div>
+  );
+}
+
+function QualityButtons({ flow, onRetake }: { flow: Flow; onRetake: (shot: Shot) => void }) {
+  const t = useTranslations("Driver.capture");
+  const pending = flow.state.pending;
+  if (!pending) return null;
+  return (
+    <>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
           type="button"
@@ -266,7 +314,7 @@ function QualityPrompt({ flow, onRetake }: { flow: Flow; onRetake: (shot: Shot) 
           {t("keep")}
         </button>
       </div>
-    </div>
+    </>
   );
 }
 

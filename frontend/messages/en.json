@@ -1399,7 +1399,7 @@
         "too_dark": "It is too dark: find more light or turn the truck towards it.",
         "blurry": "It is blurred: hold the phone still and tap to focus.",
         "too_far": "The truck is too far away: come closer until it fills the frame.",
-        "cut_off": "Part of the load may be cut off: step back so the whole load fits."
+        "cut_off": "Part of the load seems to run out of the photo at the side: step back or turn so the whole load fits."
       },
       "retake": "Retake",
       "keep": "Use it anyway",
@@ -1409,7 +1409,11 @@
       "upload": "Choose a photo",
       "shutter": "Take the photo",
       "required": "Required",
-      "policyTwo": "Your organization asks for 2 photos: the full side and the rear corner."
+      "policyTwo": "Your organization asks for 2 photos: the full side and the rear corner.",
+      "wholeTitle": "Is the whole load in the photo?",
+      "wholeSentence": "From the front of the load to the back, with nothing cut off at the sides. The check needs all of it.",
+      "wholeYes": "Yes, all of it",
+      "wholeRetake": "No, retake"
     },
     "weight": {
       "title": "How much does the cargo weigh?",

@@ -1399,7 +1399,7 @@
         "too_dark": "Está escura demais: procure mais luz ou vire o caminhão para ela.",
         "blurry": "Está tremida: segure o celular firme e toque para focar.",
         "too_far": "O caminhão está longe demais: chegue mais perto até ele encher a foto.",
-        "cut_off": "Parte da carga pode ter ficado de fora: dê um passo para trás."
+        "cut_off": "Parte da carga parece sair da foto pela lateral: afaste-se ou vire para caber a carga inteira."
       },
       "retake": "Tirar de novo",
       "keep": "Usar assim mesmo",
@@ -1409,7 +1409,11 @@
       "upload": "Escolher foto",
       "shutter": "Tirar a foto",
       "required": "Obrigatória",
-      "policyTwo": "Sua organização pede 2 fotos: a lateral inteira e o canto traseiro."
+      "policyTwo": "Sua organização pede 2 fotos: a lateral inteira e o canto traseiro.",
+      "wholeTitle": "A carga inteira está na foto?",
+      "wholeSentence": "Da frente ao fundo da carga, sem nada cortado nas laterais. A verificação precisa dela toda.",
+      "wholeYes": "Sim, inteira",
+      "wholeRetake": "Não, tirar de novo"
     },
     "weight": {
       "title": "Quanto pesa a carga?",

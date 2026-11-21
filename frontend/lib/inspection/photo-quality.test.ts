@@ -60,6 +60,33 @@ describe("photo quality checks", () => {
     expect(checkQuality(gray).issues).toEqual(["cut_off"]);
   });
 
+  it("ask to step back when a load's lines run out through one side of the frame", () => {
+    // A load inside the frame, but its bundles (dark stripes on light) run out through the left edge.
+    const width = 320;
+    const height = 200;
+    const data = new Float32Array(width * height).fill(150);
+    let seed = 7;
+    const noise = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648) * 30;
+    for (let y = 40; y < 160; y++) {
+      for (let x = 0; x < 240; x++) data[y * width + x] = Math.floor((y - 40) / 6) % 2 ? 60 + noise() : 200 + noise();
+    }
+    const report = checkQuality({ width, height, data });
+    expect(report.issues).toEqual(["cut_off"]);
+    expect(report.runLeft).toBeGreaterThan(report.runRight);
+  });
+
+  it("let a load whose lines end inside the frame through", () => {
+    const width = 320;
+    const height = 200;
+    const data = new Float32Array(width * height).fill(150);
+    let seed = 7;
+    const noise = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648) * 30;
+    for (let y = 40; y < 160; y++) {
+      for (let x = 48; x < 272; x++) data[y * width + x] = Math.floor((y - 40) / 6) % 2 ? 60 + noise() : 200 + noise();
+    }
+    expect(checkQuality({ width, height, data }).issues).toEqual([]);
+  });
+
   it("flag units whose box touches a side of the photo after the analysis", () => {
     const units = [
       { number: 1, box: [0.0, 0.2, 0.3, 0.8] as [number, number, number, number] },

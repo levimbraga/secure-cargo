@@ -28,10 +28,21 @@ only through `GET /inspections/:id/photos/:photoId`, to those who may read the i
 
 **Instant photo checks** (`frontend/lib/inspection/photo-quality.ts`), on a 320 px grey copy, before any
 upload: too dark (mean brightness < 50/255), blurred (variance of the Laplacian < 45), too far (80 % of
-the detail inside less than 18 % of the frame), cut off (both side bands busier than the frame on
-average). Each gives a reason and "Retake" or "Use it anyway". Tuned on the 21 evaluation photos and the
-samples (none flagged) and on degraded copies (darkened, blurred and shrunk copies all flagged). The
-cut-off check is weak on its own, so the result also flags a unit whose box touches the side of the photo.
+the detail inside less than 18 % of the frame), cut off. Each gives a reason and "Retake" or "Use it
+anyway". The first three were tuned on the 21 evaluation photos and the samples (none flagged) and on
+degraded copies (darkened, blurred and shrunk copies all flagged).
+
+**Cut off (2026-11-21).** A load that runs out of the photo is detected two ways before any upload:
+1. Pixels: a strong horizontal line (a deck edge, the top of a bundle, a strap) runs out through the left
+   or right edge: in more than 3.4 % of the rows, both the outer 4 % band and the band next to it are
+   strong horizontal edges (vertical gradient above the frame's 90th percentile); or both side bands are
+   busier than the frame on average. On the 21 evaluation photos, labelled by hand (12 run out at a side,
+   17 sides in all), it catches 8 of the 12 photos (9 of the 17 sides) with no false alarm on the other 9.
+   Edge energy alone cannot separate them: a busy background (trees, a wall) at the side of a well-framed
+   photo scores as high as a cut load, so the pixel test is tuned for no false alarms.
+2. The driver: every photo that passes the checks shows one question with the photo, "Is the whole load
+   in the photo?" ("Yes, all of it" / "No, retake"). One tap, and it is the reliable part.
+After the analysis the result still flags a unit whose box touches the side of the photo (`cutOffUnits`).
 
 ## 2. Perception (`backend/worker/src/perception/`)
 

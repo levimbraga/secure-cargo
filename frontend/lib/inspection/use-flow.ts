@@ -30,7 +30,7 @@ import type { LoadDraft } from "@/lib/explorer/draft";
 
 import { flowCalls, perceptionDraft, runBattery, runPlan } from "./client";
 import { PhotoError, preparePhoto } from "./image";
-import { checkBlob, type QualityIssue } from "./photo-quality";
+import { checkBlob, CONFIRM_WHOLE, type QualityIssue } from "./photo-quality";
 import { weightsComplete } from "./review";
 import { fetchSample, type Sample, type SampleData } from "./samples";
 import { choiceOf, draftTruck, type SavedTruck, sizeOfGuess, styleOfGuess, type TruckChoice } from "./trucks";
@@ -52,7 +52,8 @@ export type FlowPhoto = {
 };
 
 /** A photo that did not pass the instant checks: the driver retakes it or keeps it. */
-export type PendingPhoto = { photo: FlowPhoto; issues: QualityIssue[] };
+/** A photo waiting for the driver: a failed check ("retake?"), or the whole-load question. */
+export type PendingPhoto = { photo: FlowPhoto; issues: QualityIssue[]; confirm?: boolean };
 
 type EditorLoad = { scenario: Battery["scenario"] };
 
@@ -242,6 +243,11 @@ export function useInspectionFlow() {
       const report = await checkBlob(prepared.blob).catch(() => ({ issues: [] as QualityIssue[] }));
       if (report.issues.length) {
         patch({ busy: null, pending: { photo, issues: report.issues } });
+        return;
+      }
+      // Pixels cannot always tell a cut-off load from a busy background: the driver confirms.
+      if (CONFIRM_WHOLE) {
+        patch({ busy: null, pending: { photo, issues: [], confirm: true } });
         return;
       }
       await keep(photo);
