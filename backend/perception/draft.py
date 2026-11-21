@@ -179,7 +179,8 @@ def _place(
         for y in lanes:
             y = _grid(min(max(y, -half_w + width / 2), half_w - width / 2))
             low_y, high_y = y - width / 2, y + width / 2
-            x = min(x_hint, half_l - length / 2)
+            # Inside the bed: a centre estimated too close to either end moves in, not out.
+            x = max(min(x_hint, half_l - length / 2), -half_l + length / 2)
             for x_low, _x_high, other_low, other_high in boxes:
                 if other_low < high_y - 0.005 and low_y < other_high - 0.005:
                     x = min(x, x_low - length / 2)

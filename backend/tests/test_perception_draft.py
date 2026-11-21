@@ -66,6 +66,18 @@ def test_units_that_cannot_fit_are_dropped_with_a_warning() -> None:
     build_draft(result.draft)
 
 
+def test_a_unit_guessed_past_the_rear_moves_in_rather_than_being_dropped() -> None:
+    # A live photo of a pickup: the model put a 1 m unit's centre at 95 % of a 4.2 m bed, so
+    # half of it would hang past the rear. It belongs at the rear edge, not out of the load.
+    vuc = DraftTruck(body="flatbed", size="vuc")
+    analysis = _analysis([_unit(1, 0.4), _unit(2, 0.95, length_m=1.0)])
+    result = analysis_to_draft(analysis, vuc)
+    assert "unit_dropped" not in result.warnings
+    rear = next(u for u in result.draft.units if u.id == "unit-2")
+    assert rear.x_m - 1.0 / 2 == pytest.approx(-TRUCKS[Size.VUC].length_m / 2, abs=1e-6)
+    build_draft(result.draft)
+
+
 def test_straps_follow_the_photo_within_the_lashing_points() -> None:
     analysis = _analysis(
         [_unit(1, 0.1), _unit(2, 0.4)],
