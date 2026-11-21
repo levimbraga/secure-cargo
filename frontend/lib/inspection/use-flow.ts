@@ -307,9 +307,10 @@ export function useInspectionFlow() {
 
   /** Photos are in: the analysis starts at once and runs while the truck and weight are asked. */
   async function toTruck() {
-    const { truckFixed } = latest.current;
-    patch({ step: truckFixed ? "weight" : "truck", truckStage: "size", error: null });
-    if (truckFixed) void buildPerception();
+    const { truckFixed, inspectionId: known, sample: chosen } = latest.current;
+    patch({ step: truckFixed ? "weight" : "truck", truckStage: "size", error: null, perception: null });
+    // Without an analysis to wait for, the load is ready now; else once the photo is read.
+    if (truckFixed && (!known || chosen)) void buildPerception();
     const id = latest.current.inspectionId;
     if (!id || latest.current.sample) return;
     patch({ analyzing: true });

@@ -1348,7 +1348,13 @@
       "unit": "Unit {number} (kg)",
       "perUnitSum": "{sum} of {total} kg. The units must add up to the total.",
       "waitingForPhoto": "Reading the photo…",
-      "next": "See the result"
+      "next": "See the result",
+      "same": "Same weight as the first inspection: {weight} kg ({source}).",
+      "sources": {
+        "measured": "typed",
+        "invoice": "from the invoice",
+        "estimated": "estimated"
+      }
     },
     "verdict": {
       "approved": {

@@ -423,7 +423,15 @@ export function WeightStep({ flow, title }: { flow: Flow; title: string }) {
   const inputId = useId();
   const invoiceId = useId();
   const [mode, setMode] = useState<"type" | "invoice" | "unknown" | null>(
-    state.weightSource === "estimated" ? "unknown" : state.weightSource === "invoice" && !state.sample ? "invoice" : state.weightSource ? "type" : null,
+    state.parent
+      ? null
+      : state.weightSource === "estimated"
+        ? "unknown"
+        : state.weightSource === "invoice" && !state.sample
+          ? "invoice"
+          : state.weightSource
+            ? "type"
+            : null,
   );
   const [perUnitOpen, setPerUnitOpen] = useState(false);
   const kg = (value: number) => format.number(Math.round(value));
@@ -448,6 +456,11 @@ export function WeightStep({ flow, title }: { flow: Flow; title: string }) {
         </div>
       )}
 
+      {state.parent && state.totalKg && !mode && (
+        <p className="mt-6 rounded bg-surface px-3 py-2 text-ink" data-testid="weight-same">
+          {t("weight.same", { weight: kg(state.totalKg), source: t(`weight.sources.${state.weightSource ?? "measured"}`) })}
+        </p>
+      )}
       <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <li>
           <ChoiceCard selected={mode === "type"} onClick={() => setMode("type")} testId="weight-type">

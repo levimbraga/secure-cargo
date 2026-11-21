@@ -1348,7 +1348,13 @@
       "unit": "Volume {number} (kg)",
       "perUnitSum": "{sum} de {total} kg. Os volumes precisam somar o total.",
       "waitingForPhoto": "Lendo a foto…",
-      "next": "Ver o resultado"
+      "next": "Ver o resultado",
+      "same": "Mesmo peso da primeira inspeção: {weight} kg ({source}).",
+      "sources": {
+        "measured": "digitado",
+        "invoice": "da nota fiscal",
+        "estimated": "estimado"
+      }
     },
     "verdict": {
       "approved": {
