@@ -127,6 +127,7 @@ export type ChangeCode =
   | "straps"
   | "restraint"
   | "diagonal_sets"
+  | "spread"
   | "overweight"
   | "edge_protectors";
 

@@ -356,6 +356,8 @@ export function useChangeSentence() {
           from: lower(restraint(`restraint.${String(change.before)}` as never)),
           to: lower(restraint(`restraint.${String(change.after)}` as never)),
         });
+      case "spread":
+        return t("changes.spread", { count: change.values.units ?? 1 });
       case "diagonal_sets":
         return t("changes.diagonalSets", {
           unit: nameOf(change.unit_id ?? ""),

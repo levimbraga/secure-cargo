@@ -242,3 +242,34 @@ def test_the_heavy_pipes_are_fixed_and_comply() -> None:
     assert result.verified
     assert result.battery is not None
     assert result.battery.verdict.state == "approved"
+
+
+def _stacked_crates() -> LoadDraft:
+    from app.explorer import ExplorerConfig, build
+
+    query = "cargo=crate&position=stacked&restraint=none&speed=60&road=curvy&event=sharp_curve"
+    config = ExplorerConfig.from_query(dict(item.split("=", 1) for item in query.split("&")))
+    return build(config).draft
+
+
+def test_a_stacked_load_can_be_spread_over_the_floor() -> None:
+    draft = _stacked_crates()
+    assert any(unit.on for unit in draft.units)
+    spread = [c for c in _candidates(draft) if "spread" in c.steps]
+    assert spread, "a stacked load with free floor gets an unstack candidate"
+    for candidate in spread:
+        assert all(unit.on is None for unit in candidate.draft.units)
+        build_draft(candidate.draft)  # fits on the bed, nothing overlaps
+        assert candidate.changes[0].code == "spread"
+        assert candidate.changes[0].values["units"] == 2
+
+
+def test_a_load_with_nothing_stacked_gets_no_spread_candidate() -> None:
+    assert not any("spread" in c.steps for c in _candidates(_draft("emergency-braking.as_loaded")))
+
+
+def test_a_stacked_load_is_fixed_and_proven() -> None:
+    result = plan(create_storage("memory://"), _stacked_crates())
+    assert result.verified
+    assert result.battery is not None
+    assert result.battery.verdict.state == "approved"

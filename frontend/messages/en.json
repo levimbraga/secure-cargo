@@ -1258,6 +1258,7 @@
       "straps": "{unit}: {from} → {to, plural, one {# strap} other {# straps}} {count, plural, one {over it} other {over each}}.",
       "restraint": "Secure the load with {to} instead of {from}.",
       "diagonalSets": "{unit}: {to} {chains, select, yes {chains} other {diagonal straps}}, rated together for at least twice its weight (CONTRAN 945, art. 4).",
+      "spread": "Unstack the load: set {count, plural, one {# unit} other {# units}} down on the floor, forward where there is room. Lower cargo tips less and is not above the headboard (CONTRAN 945, art. 8).",
       "closeGaps": "Push the load {distance} cm forward against the headboard: with no room to travel, the headboard stops it.",
       "closeGapsAxles": "Push the load {distance} cm forward, as far as the axle limits allow.",
       "balanceForward": "Move the load {distance} cm forward: an axle carried {load} t, over its {limit} t limit.",

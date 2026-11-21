@@ -181,6 +181,14 @@ The numbered list below is the order of the steps inside a candidate.
    most loads fail come first); the first one that passes all seven is the plan, reported with its
    full battery. At most four candidates are simulated.
 
+**Heavier and stacked loads (2026-11-21).** With diagonals or chains, a unit whose lashings add up to
+less than twice its weight (CONTRAN 945 art. 4) gets more sets of four, up to three (`diagonal_sets` on the
+draft unit; change `diagonal_sets`). A stacked load also gets a "spread" base (effort 4): every unit
+standing on another goes down on the floor, as far forward as there is room, in its lane first, then
+anywhere across the bed (change `spread`, CONTRAN 945 art. 8); the securing options are then tried on it
+like on any other base. The 18 t steel pipes sample and a stack of crates in a sharp curve are fixed this
+way and proven 7/7 (`tests/test_battery_and_planner.py`).
+
 Every change carries a stable code, the rule behind it and its numbers; the page translates them.
 All nine gallery loads are fixed this way and pass 7 of 7 (`scripts/build_demo_inspections.py`).
 

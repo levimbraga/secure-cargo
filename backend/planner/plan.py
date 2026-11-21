@@ -51,6 +51,9 @@ MAX_ROUNDS = 5
 EPS = 1e-6
 # A unit counts as tall when it is more than this times higher than its narrowest side.
 TALL_RATIO = 1.6
+# Spreading a stacked load: the search step along the bed and the gap left between units [m].
+SPREAD_STEP_M = 0.05
+SPREAD_GAP_M = 0.05
 
 ChangeCode = Literal[
     "replace_rope",
@@ -60,6 +63,7 @@ ChangeCode = Literal[
     "straps",
     "restraint",
     "diagonal_sets",
+    "spread",
     "overweight",
     "edge_protectors",
 ]
@@ -72,6 +76,8 @@ STEP_EFFORT: dict[str, int] = {
     "blocking": 2,
     "mat": 3,
     "direct": 4,
+    # Unloading the top of a stack and setting it down on the floor: heavier than re-lashing.
+    "spread": 4,
     "chain": 5,
 }
 FRAGILE_CARGO = {Cargo.STACKED_BOXES, Cargo.SACKS, Cargo.PLASTIC_PALLET}
@@ -305,6 +311,82 @@ def _placement(draft: LoadDraft, scenario: Scenario) -> tuple[LoadDraft, list[Ch
     return placed, [change]
 
 
+def _spread(draft: LoadDraft) -> tuple[LoadDraft, list[Change]] | None:
+    """Unstack the load: every unit standing on another goes down on the floor, as far forward as
+    there is room (in its stack's lane first, then anywhere across the bed).
+
+    Lower cargo tips less and is no longer above the headboard (CONTRAN 945/2022 art. 8). None
+    when nothing is stacked or the floor has no room for every unit.
+    """
+    stacked = [unit for unit in draft.units if unit.on is not None]
+    if not stacked:
+        return None
+    try:
+        scenario, _ = build_draft(draft)
+    except BuildError:
+        return None
+    size = {unit.id: unit.size_m for unit in scenario.units}
+    half_length, half_width = scenario.bed.length_m / 2, scenario.bed.width_m / 2
+    gap = SPREAD_GAP_M
+    placed = [
+        (unit.x_m, unit.y_m, size[unit.id][0], size[unit.id][1])
+        for unit in draft.units
+        if unit.on is None
+    ]
+
+    def free(x: float, y: float, length: float, width: float) -> bool:
+        if abs(x) + length / 2 > half_length + EPS or abs(y) + width / 2 > half_width + EPS:
+            return False
+        return all(
+            abs(x - ox) >= (length + olength) / 2 + gap - EPS
+            or abs(y - oy) >= (width + owidth) / 2 + gap - EPS
+            for ox, oy, olength, owidth in placed
+        )
+
+    moved: dict[str, tuple[float, float]] = {}
+    steps = int(scenario.bed.length_m / SPREAD_STEP_M) + 1
+    for unit in stacked:
+        length, width = size[unit.id][0], size[unit.id][1]
+        lanes = [unit.y_m, 0.0, half_width - width / 2, -(half_width - width / 2)]
+        spot = None
+        for y in dict.fromkeys(round(lane, 2) for lane in lanes):
+            for step in range(steps):
+                x = round(half_length - length / 2 - step * SPREAD_STEP_M, 2)
+                if x - length / 2 < -half_length - EPS:
+                    break
+                if free(x, y, length, width):
+                    spot = (x, y)
+                    break
+            if spot:
+                break
+        if spot is None:
+            return None
+        moved[unit.id] = spot
+        placed.append((spot[0], spot[1], length, width))
+    units = [
+        unit.model_copy(update={"on": None, "x_m": moved[unit.id][0], "y_m": moved[unit.id][1]})
+        if unit.id in moved
+        else unit
+        for unit in draft.units
+    ]
+    spread = draft.model_copy(update={"units": units})
+    try:
+        build_draft(spread)
+    except BuildError:
+        return None
+    change = Change(
+        code="spread",
+        values={"units": float(len(moved))},
+        article="CONTRAN 945/2022 art. 8",
+        message=(
+            f"Unstack the load: set {len(moved)} unit{'s' if len(moved) != 1 else ''} down on the "
+            "floor, forward where there is room. Lower cargo tips less and is not above the "
+            "headboard."
+        ),
+    )
+    return spread, [change]
+
+
 # --- 3. Securing candidates ------------------------------------------------------------------
 
 
@@ -502,6 +584,13 @@ def _candidates(draft: LoadDraft) -> list[_Candidate]:
         bases.append((fixed, [], ()))
     if placement:
         bases.append((moved, placement, ("move",) if not mandatory_move else ()))
+    # A stacked load can also be spread over the floor (then pushed forward like any other).
+    unstacked = _spread(fixed)
+    if unstacked is not None:
+        spread, spread_changes = unstacked
+        spread_scenario, _ = build_draft(spread)
+        spread_moved, spread_placement = _placement(spread, spread_scenario)
+        bases.append((spread_moved, spread_changes + spread_placement, ("spread",)))
     out: list[_Candidate] = []
     seen: set[str] = set()
     for base, base_changes, base_steps in bases:
