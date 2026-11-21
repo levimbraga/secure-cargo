@@ -253,6 +253,15 @@ Verify against the official text (Diário Oficial, 2021-12-24) and later amendme
 before the video. Axle loads are computed with beam statics (moment balance over the axle groups) from the
 vehicle tare and each unit's center of mass.
 
+## US mode (backend/rules/country.py, 2026-11-21)
+The same load can be checked against Brazil's rules or the US federal rules (the draft's `country`, BR by
+default; `inspections.country`). Only the rules layer, the truck presets (`us_*` sizes) and the units
+change; the physics is the same. US securing: 49 CFR 393 subpart I (`rules/fmcsa393.py`); weights:
+23 CFR 658.17 and the bridge formula (`rules/us_weights.py`); dimensions: 658.15 and 393.87
+(`rules/us_checklist.py`). Every battery carries both countries' rule sets; switching country re-runs only
+the rules. Sources and worked examples: the workspace's `notes/us-rules.md`; details: `docs/inspection.md`
+section 10.
+
 ## Planner (backend/planner)
 0. Load advisor (before loading): from a photo of the cargo on the ground (or a list) and the chosen truck,
    answer: does it fit (body volume, vehicle max weight, axle loads — say which limit binds first), a 3D
