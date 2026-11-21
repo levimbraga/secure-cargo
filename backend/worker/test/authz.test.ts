@@ -10,6 +10,7 @@ const base: Principal = {
 	isPlatformAdmin: false,
 	isDemo: false,
 	blocked: false,
+	sandboxId: null,
 };
 const mine = { author_id: "alice", org_id: "org_a" };
 const colleague = { author_id: "bob", org_id: "org_a" };
@@ -73,5 +74,35 @@ describe("inspectionListFilter", () => {
 	it("gives the platform admin everything", () => {
 		const owner = { ...base, isPlatformAdmin: true };
 		expect(inspectionListFilter(owner, "all")).toEqual({ where: "1 = 1", params: [] });
+	});
+});
+
+describe("demo sandboxes", () => {
+	const visitor: Principal = { ...base, userId: "demo_driver", isDemo: true, sandboxId: "sbx_one" };
+	const seeded = { author_id: "demo_driver", org_id: "org_a", seeded: 1, sandbox_id: null };
+	const own = { author_id: "demo_driver", org_id: "org_a", seeded: 0, sandbox_id: "sbx_one" };
+	const other = { author_id: "demo_driver", org_id: "org_a", seeded: 0, sandbox_id: "sbx_two" };
+
+	it("reads the seeded inspections and the own sandbox's, nothing else", () => {
+		expect(canReadInspection(visitor, seeded)).toBe(true);
+		expect(canReadInspection(visitor, own)).toBe(true);
+		expect(canReadInspection(visitor, other)).toBe(false);
+		// A row read without its sandbox columns is refused, not assumed shared.
+		expect(canReadInspection(visitor, { author_id: "demo_driver", org_id: "org_a" })).toBe(false);
+	});
+
+	it("changes only the own sandbox's inspections", () => {
+		expect(canWriteInspection(visitor, own)).toBe(true);
+		expect(canWriteInspection(visitor, seeded)).toBe(false);
+		expect(canWriteInspection(visitor, other)).toBe(false);
+	});
+
+	it("narrows every list to the seeded inspections and the sandbox", () => {
+		expect(inspectionListFilter(visitor, "mine")).toEqual({
+			where: "i.author_id = ? AND (i.seeded = 1 OR i.sandbox_id = ?)",
+			params: ["demo_driver", "sbx_one"],
+		});
+		expect(inspectionListFilter({ ...visitor, orgRole: "org_admin" }, "org")?.params).toEqual(["org_a", "sbx_one"]);
+		expect(inspectionListFilter(visitor, "all")).toBeNull();
 	});
 });

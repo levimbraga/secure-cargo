@@ -60,8 +60,6 @@ export interface IdentityProvider {
 	}): Promise<OrgInvitation>;
 	/** A new organization, with its creator as its first admin (`org:admin`). */
 	createOrganization(params: { name: string; type: "insurer" | "carrier"; createdBy: string }): Promise<IdentityOrg>;
-	/** A one-time ticket that signs the given user in (demo accounts), valid for `expiresInSeconds`. */
-	createSignInTicket(userId: string, orgId: string | null, expiresInSeconds: number): Promise<string>;
 }
 
 /** Clerk org roles are `org:admin` / `org:member` (session tokens v2 drop the prefix). */
@@ -200,15 +198,6 @@ export function createClerkIdentity(options: {
 		async createOrganization({ name, type, createdBy }) {
 			const org = await clerk.organizations.createOrganization({ name, createdBy, publicMetadata: { type } });
 			return { id: org.id, name: org.name, type };
-		},
-
-		async createSignInTicket(userId, orgId, expiresInSeconds) {
-			const token = await clerk.signInTokens.createSignInToken({
-				userId,
-				...(orgId ? { orgId } : {}),
-				expiresInSeconds,
-			});
-			return token.token;
 		},
 	};
 }

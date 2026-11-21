@@ -45,10 +45,12 @@ async function keysWithPrefix(bucket: PurgeBucket, prefix: string): Promise<stri
 
 export async function purgeDemoInspections(db: Db, bucket: PurgeBucket | null, now: Date = new Date()): Promise<PurgeReport> {
 	const cutoff = new Date(now.getTime() - DEMO_LIFETIME_MS).toISOString();
+	// A demo sandbox's trucks go with its inspections.
+	await db.prepare("DELETE FROM trucks WHERE sandbox_id IS NOT NULL AND created_at < ?").bind(cutoff).run();
 	const { results: rows } = await db
 		.prepare(
 			`SELECT i.id FROM inspections i JOIN users u ON u.id = i.author_id
-			 WHERE u.is_demo = 1 AND i.seeded = 0 AND i.created_at < ?
+			 WHERE (u.is_demo = 1 OR i.sandbox_id IS NOT NULL) AND i.seeded = 0 AND i.created_at < ?
 			 ORDER BY i.created_at LIMIT ${BATCH}`,
 		)
 		.bind(cutoff)

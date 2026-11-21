@@ -5,6 +5,7 @@
  */
 import type { Principal } from "./authz";
 import { type Db, now } from "./db";
+import type { DemoSession } from "./demo";
 import type { IdentityProvider, SessionClaims } from "./identity";
 
 interface UserRow {
@@ -91,8 +92,35 @@ export async function resolvePrincipal(
 		orgRole: claims.orgRole,
 		// Demo accounts never get the platform role, whatever their address.
 		isPlatformAdmin: !user.is_demo && email !== null && admins.includes(email),
+		// Demo people are D1 rows for Worker-issued demo sessions; the API refuses a Clerk session
+		// for one of them (an account left from before 2026-11-21).
 		isDemo: user.is_demo === 1,
 		blocked: user.blocked === 1,
+		sandboxId: null,
+	};
+}
+
+/**
+ * A demo visitor: the seeded demo driver or insurer of the Demo Insurer organization (rows in D1
+ * only, no Clerk account), limited to the seeded inspections and the session's own sandbox.
+ */
+export async function demoPrincipal(db: Db, session: DemoSession): Promise<Principal | null> {
+	const { results } = await db
+		.prepare("SELECT key, value FROM settings WHERE key IN ('demo_driver_user_id', 'demo_insurer_user_id', 'demo_org_id')")
+		.all<{ key: string; value: string }>();
+	const settings = new Map(results.map((r) => [r.key, r.value]));
+	const userId = settings.get(session.role === "driver" ? "demo_driver_user_id" : "demo_insurer_user_id");
+	const orgId = settings.get("demo_org_id") ?? null;
+	if (!userId || !orgId) return null;
+	return {
+		userId,
+		email: null,
+		orgId,
+		orgRole: session.role === "insurer" ? "org_admin" : "member",
+		isPlatformAdmin: false,
+		isDemo: true,
+		blocked: false,
+		sandboxId: session.sbx,
 	};
 }
 

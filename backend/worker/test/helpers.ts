@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 
 import { type AppDeps, createApp } from "../src/app";
+import { DEMO_COOKIE, type DemoRole, signDemoToken } from "../src/demo";
 import type { OrgRole } from "../src/authz";
 import type { Db, Statement } from "../src/db";
 import type { FlowDeps } from "../src/flow";
@@ -38,7 +39,6 @@ export class FakeIdentity implements IdentityProvider {
 	users = new Map<string, IdentityUser>();
 	orgs = new Map<string, { id: string; name: string; type: "insurer" | "carrier" }>();
 	invitations: OrgInvitation[] = [];
-	tickets: { userId: string; orgId: string | null; expiresInSeconds: number }[] = [];
 
 	async verify(token: string) {
 		const [kind, userId, orgId, role] = token.split(":");
@@ -69,10 +69,6 @@ export class FakeIdentity implements IdentityProvider {
 		return org;
 	}
 	created: { id: string; name: string; type: string; createdBy: string }[] = [];
-	async createSignInTicket(userId: string, orgId: string | null, expiresInSeconds: number) {
-		this.tickets.push({ userId, orgId, expiresInSeconds });
-		return `ticket-${this.tickets.length}-for-${userId}`;
-	}
 }
 
 export const ADMIN_EMAIL = "owner@example.com";
@@ -128,6 +124,7 @@ export function setup(options: { rateLimitAllows?: () => boolean; flow?: Partial
 		platformAdminEmails: [ADMIN_EMAIL],
 		corsOrigins: ["https://securecargo.app"],
 		siteUrl: "https://securecargo.app",
+		demoSecret: DEMO_SECRET,
 		limitAnonymous: async () => options.rateLimitAllows?.() ?? true,
 		photos: null,
 		physics: null,
@@ -136,16 +133,21 @@ export function setup(options: { rateLimitAllows?: () => boolean; flow?: Partial
 		...options.flow,
 		...options.extra,
 	});
-	const call = (method: string, path: string, token?: string, body?: unknown) =>
-		app.request(path, {
+	// `demo:<role>[:<sandbox>]` signs in as a demo visitor (the signed cookie); anything else is a
+	// fake Clerk session token.
+	const call = async (method: string, path: string, token?: string, body?: unknown) => {
+		const demo = token?.startsWith("demo:") ? await demoCookieFor(token) : null;
+		return app.request(path, {
 			method,
 			headers: {
-				...(token ? { Authorization: `Bearer ${token}` } : {}),
+				...(token && !demo ? { Authorization: `Bearer ${token}` } : {}),
+				...(demo ? { Cookie: demo } : {}),
 				...(body !== undefined ? { "Content-Type": "application/json" } : {}),
 				Origin: "https://securecargo.app",
 			},
 			body: body !== undefined ? JSON.stringify(body) : undefined,
 		});
+	};
 	return { db, identity, app, call };
 }
 
@@ -157,6 +159,17 @@ export const as = {
 	dave: "token:dave:org_b:member",
 	erin: "token:erin:org_b:org_admin",
 	owner: "token:owner",
-	demoDriver: "token:demo_driver:org_a:member",
-	demoInsurer: "token:demo_insurer:org_a:org_admin",
+	/** Demo visitors (Worker-issued sessions), both in sandbox "sbx_one". */
+	demoDriver: "demo:driver:sbx_one",
+	demoInsurer: "demo:insurer:sbx_one",
 };
+
+export const DEMO_SECRET = "test-demo-secret";
+
+/** The Cookie header of a demo session `demo:<role>[:<sandbox>]`, valid for 24 hours from now. */
+export async function demoCookieFor(spec: string, secret: string = DEMO_SECRET): Promise<string> {
+	const [, role, sandbox] = spec.split(":");
+	const iat = Math.floor(Date.now() / 1000);
+	const token = await signDemoToken({ sid: `sid_${sandbox ?? "one"}`, sbx: sandbox ?? "sbx_one", role: role as DemoRole, iat, exp: iat + 86_400 }, secret);
+	return `${DEMO_COOKIE}=${token}`;
+}

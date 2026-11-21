@@ -58,29 +58,34 @@ function readTruck(body: Record<string, unknown>, partial: boolean) {
 export function registerTrucks(app: Hono<Env>, db: Db, authenticated: MiddlewareHandler<Env>): void {
 	async function own(c: Context<Env>, write: boolean): Promise<TruckRow> {
 		const p = c.get("principal");
-		const row = await db.prepare("SELECT id, owner_id FROM trucks WHERE id = ?").bind(c.req.param("id")).first<TruckRow>();
-		const allowed = row && (row.owner_id === p.userId || (!write && p.isPlatformAdmin));
+		const row = await db
+			.prepare("SELECT id, owner_id, sandbox_id FROM trucks WHERE id = ?")
+			.bind(c.req.param("id"))
+			.first<TruckRow & { sandbox_id: string | null }>();
+		// Demo visitors share the demo driver: each sees only the trucks of their own sandbox.
+		const mine = row && row.owner_id === p.userId && (row.sandbox_id ?? null) === (p.sandboxId ?? null);
+		const allowed = row && (mine || (!write && p.isPlatformAdmin));
 		if (!row || !allowed) notFound();
 		return row;
 	}
 
 	app.get("/trucks", authenticated, async (c) => {
 		const p = c.get("principal");
-		const { results } = await db.prepare(`SELECT ${COLUMNS} FROM trucks WHERE owner_id = ? ORDER BY updated_at DESC`).bind(p.userId).all();
+		const { results } = await db.prepare(`SELECT ${COLUMNS} FROM trucks WHERE owner_id = ? AND sandbox_id IS ? ORDER BY updated_at DESC`).bind(p.userId, p.sandboxId ?? null).all();
 		return c.json({ trucks: results });
 	});
 
 	app.post("/trucks", authenticated, async (c) => {
 		const p = c.get("principal");
 		const truck = readTruck(await jsonBody(c), false);
-		const count = await db.prepare("SELECT COUNT(*) AS n FROM trucks WHERE owner_id = ?").bind(p.userId).first<{ n: number }>();
+		const count = await db.prepare("SELECT COUNT(*) AS n FROM trucks WHERE owner_id = ? AND sandbox_id IS ?").bind(p.userId, p.sandboxId ?? null).first<{ n: number }>();
 		if ((count?.n ?? 0) >= MAX_TRUCKS) fail(422, "too_many_trucks", `Save at most ${MAX_TRUCKS} trucks.`);
 		const id = newId("trk");
 		const at = now();
 		await db
 			.prepare(
-				`INSERT INTO trucks (id, owner_id, org_id, nickname, size, style, bed_length_m, headboard_height_m, anchors_per_side, created_at, updated_at)
-				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+				`INSERT INTO trucks (id, owner_id, org_id, nickname, size, style, bed_length_m, headboard_height_m, anchors_per_side, created_at, updated_at, sandbox_id)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			)
 			.bind(
 				id,
@@ -94,6 +99,7 @@ export function registerTrucks(app: Hono<Env>, db: Db, authenticated: Middleware
 				truck.anchors_per_side ?? null,
 				at,
 				at,
+				p.sandboxId ?? null,
 			)
 			.run();
 		return c.json(await db.prepare(`SELECT ${COLUMNS} FROM trucks WHERE id = ?`).bind(id).first(), 201);

@@ -15,7 +15,8 @@
  *   PATCH  /admin/users/:id        block, daily quota (platform admin)
  *   PATCH  /admin/orgs/:id         daily quota (platform admin)
  *   PATCH  /admin/settings         kill switch, monthly cap, default quotas (platform admin)
- *   POST   /demo/session           a one-time sign-in ticket for the demo driver or insurer
+ *   POST   /demo/session           a demo session (cookie) as the demo driver or insurer, no account
+ *   POST   /demo/logout            end the demo session
  *   ...    /org/overview, /org/alerts, /org/policies, /inspections/export.csv, audit, certificates,
  *          /verify/:id, /orgs (manager.ts)
  *
@@ -30,6 +31,7 @@ import {
 	canReadInspection,
 	canWriteInspection,
 	inspectionListFilter,
+	sandboxClause,
 	type ListScope,
 	type Principal,
 } from "./authz";
@@ -41,7 +43,8 @@ import { alertCount, orgPolicies, registerManager } from "./manager";
 import type { BatteryReader } from "./summary";
 import { ApiError, fail, field, forbidden, jsonBody, notFound } from "./http";
 import type { IdentityProvider } from "./identity";
-import { resolvePrincipal } from "./principal";
+import { clearDemoCookie, DEMO_COOKIE, DEMO_ROLES, demoCookie, newDemoSession, readCookie, signDemoToken, verifyDemoToken } from "./demo";
+import { demoPrincipal, resolvePrincipal } from "./principal";
 import { registerTrucks } from "./trucks";
 import { analysisAllowance, monthSpendUsd, readSettings } from "./quota";
 
@@ -56,6 +59,8 @@ export interface AppDeps extends FlowDeps {
 	limitAnonymous(key: string): Promise<boolean>;
 	/** A static JSON file of the site (seeded demo batteries); null when it does not exist. */
 	fetchStatic?: (path: string) => Promise<unknown | null>;
+	/** Secret that signs demo sessions (HMAC-SHA256); without it the demo buttons answer 503. */
+	demoSecret: string;
 }
 
 type Env = { Variables: { principal: Principal } };
@@ -81,12 +86,6 @@ const BODIES = ["flatbed", "box", "curtain_sider"] as const;
 const SIZES = ["vuc", "toco", "truck", "semi"] as const;
 const STATUSES = ["draft", "analyzed", "confirmed", "simulated"] as const;
 const ROLES = ["member", "org_admin"] as const;
-const DEMO_ROLES = ["driver", "insurer"] as const;
-type DemoRole = (typeof DEMO_ROLES)[number];
-/** Pre-minted demo tickets: how many per account, how long each is valid, and the margin kept. */
-const DEMO_POOL_SIZE = 3;
-const DEMO_TICKET_TTL_S = 24 * 60 * 60;
-const DEMO_TICKET_MARGIN_MS = 10 * 60 * 1000;
 
 const INSPECTION_COLUMNS = `i.id, i.org_id, i.author_id, i.created_at, i.updated_at, i.status, i.title,
 	i.truck_body, i.truck_size, i.cargo_weight_kg, i.notes, i.plate, i.situations_passed,
@@ -100,6 +99,8 @@ interface InspectionRow {
 	id: string;
 	org_id: string | null;
 	author_id: string;
+	seeded?: number | null;
+	sandbox_id?: string | null;
 	[key: string]: unknown;
 }
 
@@ -134,6 +135,8 @@ export function createApp(deps: AppDeps): Hono<Env> {
 			origin: (origin) => (deps.corsOrigins.includes(origin) ? origin : null),
 			allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
 			allowHeaders: ["Authorization", "Content-Type"],
+			// The demo session is a cookie: the site sends it with `credentials: "include"`.
+			credentials: true,
 			maxAge: 600,
 		}),
 	);
@@ -147,13 +150,28 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		return c.json({ detail: { code: "internal_error", message: "Something went wrong." } }, 500);
 	});
 
+	/**
+	 * A real account sends its Clerk session token (Authorization: Bearer); a demo visitor sends the
+	 * Worker's signed demo cookie. Both end in the same Principal and the same authorization rules.
+	 */
 	const authenticated: MiddlewareHandler<Env> = async (c, next) => {
 		const header = c.req.header("Authorization") ?? "";
 		const token = header.startsWith("Bearer ") ? header.slice(7).trim() : "";
-		if (!token) fail(401, "unauthenticated", "Sign in first.");
-		const claims = await identity.verify(token);
-		if (!claims) fail(401, "unauthenticated", "Your session expired. Sign in again.");
-		const principal = await resolvePrincipal(db, identity, claims, deps.platformAdminEmails);
+		let principal: Principal;
+		if (token) {
+			const claims = await identity.verify(token);
+			if (!claims) fail(401, "unauthenticated", "Your session expired. Sign in again.");
+			principal = await resolvePrincipal(db, identity, claims, deps.platformAdminEmails);
+			// Demo people exist only in D1 now; a Clerk session for one of them is not accepted.
+			if (principal.isDemo) fail(401, "unauthenticated", "Demo accounts enter through the demo buttons.");
+		} else {
+			const cookie = readCookie(c.req.header("Cookie"), DEMO_COOKIE);
+			const session = cookie ? await verifyDemoToken(cookie, deps.demoSecret) : null;
+			if (!session) fail(401, "unauthenticated", "Sign in first.");
+			const demo = await demoPrincipal(db, session);
+			if (!demo) fail(401, "unauthenticated", "The demo is not available right now.");
+			principal = demo;
+		}
 		c.set("principal", principal);
 		// A blocked user may still read /me (to see that they are blocked), nothing else.
 		if (principal.blocked && !principal.isPlatformAdmin && c.req.path !== "/me") {
@@ -186,7 +204,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
 			analysisAllowance(db, p),
 			orgPolicies(db, p.orgId),
 		]);
-		const alerts = org && manager ? await alertCount(db, org.id, policies.alert_after_hours) : null;
+		const alerts = org && manager ? await alertCount(db, p, org.id, policies.alert_after_hours) : null;
 		return c.json({
 			user: { id: p.userId, email: user?.email ?? null, name: user?.name ?? null, is_demo: p.isDemo },
 			org: org ? { id: org.id, name: org.name, type: org.type, role: p.orgRole, is_demo: org.is_demo === 1, policies, alerts } : null,
@@ -237,15 +255,15 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		// "I fixed it: take a new photo": only the author of an inspection re-inspects it.
 		const parentId = field.optionalString(body, "reinspection_of", 60);
 		if (parentId) {
-			const parent = await db.prepare("SELECT id, org_id, author_id FROM inspections WHERE id = ?").bind(parentId).first<InspectionRow>();
+			const parent = await db.prepare("SELECT id, org_id, author_id, seeded, sandbox_id FROM inspections WHERE id = ?").bind(parentId).first<InspectionRow>();
 			if (!parent || !canReadInspection(p, parent)) notFound();
 			if (!canWriteInspection(p, parent)) forbidden();
 		}
 		await db
 			.prepare(
 				`INSERT INTO inspections (id, org_id, author_id, created_at, updated_at, status, title,
-				 truck_body, truck_size, cargo_weight_kg, notes, plate, sample, reinspection_of)
-				 VALUES (?, ?, ?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?, ?, ?)`,
+				 truck_body, truck_size, cargo_weight_kg, notes, plate, sample, reinspection_of, sandbox_id)
+				 VALUES (?, ?, ?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			)
 			.bind(
 				id,
@@ -261,6 +279,8 @@ export function createApp(deps: AppDeps): Hono<Env> {
 				field.optionalString(body, "plate", 10) ?? null,
 				sample?.id ?? null,
 				parentId ?? null,
+				// A demo visitor's inspection lives in their sandbox (deleted after 24 hours).
+				p.sandboxId,
 			)
 			.run();
 		await logEvent(db, id, p.userId, "created", { sample: sample?.id ?? null, reinspection_of: parentId ?? null }, at);
@@ -317,7 +337,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
 
 	async function readableInspection(c: Context<Env>): Promise<InspectionRow> {
 		const row = await db
-			.prepare("SELECT id, org_id, author_id FROM inspections WHERE id = ?")
+			.prepare("SELECT id, org_id, author_id, seeded, sandbox_id FROM inspections WHERE id = ?")
 			.bind(c.req.param("id"))
 			.first<InspectionRow>();
 		if (!row || !canReadInspection(c.get("principal"), row)) notFound();
@@ -409,13 +429,15 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		const counts = await db
 			.prepare(
 				`SELECT author_id, COUNT(*) AS inspections, MAX(created_at) AS last_inspection_at
-				 FROM inspections WHERE org_id = ? GROUP BY author_id`,
+				 FROM inspections WHERE org_id = ?${sandboxClause(p, "").sql} GROUP BY author_id`,
 			)
-			.bind(p.orgId)
+			.bind(p.orgId, ...sandboxClause(p, "").params)
 			.all<{ author_id: string; inspections: number; last_inspection_at: string }>();
 		const byAuthor = new Map(counts.results.map((r) => [r.author_id, r]));
-		const members = await membersOf(p.orgId);
-		const invitations = await identity.listInvitations(p.orgId).catch(() => []);
+		// The demo organization lives in D1 only (no Clerk organization behind it).
+		const demoOrg = (org as { is_demo?: number } | null)?.is_demo === 1;
+		const members = demoOrg ? await membersFromDb(p.orgId) : await membersOf(p.orgId);
+		const invitations = demoOrg ? [] : await identity.listInvitations(p.orgId).catch(() => []);
 		return c.json({
 			org,
 			policies: await orgPolicies(db, p.orgId),
@@ -433,15 +455,19 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		try {
 			return await identity.listMembers(orgId);
 		} catch {
-			const { results } = await db
-				.prepare(
-					`SELECT m.user_id AS userId, u.name, u.email, m.role, m.created_at AS joinedAt
-					 FROM memberships m JOIN users u ON u.id = m.user_id WHERE m.org_id = ? ORDER BY u.name`,
-				)
-				.bind(orgId)
-				.all<{ userId: string; name: string | null; email: string | null; role: "member" | "org_admin"; joinedAt: string }>();
-			return results;
+			return membersFromDb(orgId);
 		}
+	}
+
+	async function membersFromDb(orgId: string) {
+		const { results } = await db
+			.prepare(
+				`SELECT m.user_id AS userId, u.name, u.email, m.role, m.created_at AS joinedAt
+				 FROM memberships m JOIN users u ON u.id = m.user_id WHERE m.org_id = ? ORDER BY u.name`,
+			)
+			.bind(orgId)
+			.all<{ userId: string; name: string | null; email: string | null; role: "member" | "org_admin"; joinedAt: string }>();
+		return results;
 	}
 
 	app.post("/org/invitations", authenticated, async (c) => {
@@ -596,23 +622,21 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		const body = await jsonBody(c);
 		const as = field.optionalEnum(body, "as", DEMO_ROLES);
 		if (!as) fail(422, "invalid_field", "as must be driver or insurer.");
-		const account = await demoAccount(as);
-		// A ticket minted ahead of time answers at once; Clerk is asked only when the pool is empty.
-		const pooled = await takeDemoTicket(db, as);
-		const ticket = pooled ?? (await identity.createSignInTicket(account.userId, account.orgId, DEMO_TICKET_TTL_S));
-		inBackground(c, refillDemoTickets(db, identity, as, account));
-		return c.json({ ticket });
+		if (!deps.demoSecret) fail(503, "demo_unavailable", "The demo is not available right now.");
+		// Switching between driver and insurer in one browser keeps the same sandbox.
+		const current = readCookie(c.req.header("Cookie"), DEMO_COOKIE);
+		const previous = current ? await verifyDemoToken(current, deps.demoSecret) : null;
+		const session = newDemoSession(as, previous);
+		if (!(await demoPrincipal(db, session))) fail(503, "demo_unavailable", "The demo accounts are not set up yet.");
+		c.header("Set-Cookie", demoCookie(await signDemoToken(session, deps.demoSecret)));
+		c.header("Cache-Control", "no-store");
+		return c.json({ role: as, expires_at: new Date(session.exp * 1000).toISOString() });
 	});
 
-	async function demoAccount(as: DemoRole): Promise<{ userId: string; orgId: string | null }> {
-		const { results } = await db
-			.prepare("SELECT key, value FROM settings WHERE key IN ('demo_driver_user_id', 'demo_insurer_user_id', 'demo_org_id')")
-			.all<{ key: string; value: string }>();
-		const settings = new Map(results.map((r) => [r.key, r.value]));
-		const userId = settings.get(as === "driver" ? "demo_driver_user_id" : "demo_insurer_user_id");
-		if (!userId) fail(503, "demo_unavailable", "The demo accounts are not set up yet.");
-		return { userId, orgId: settings.get("demo_org_id") ?? null };
-	}
+	app.post("/demo/logout", (c) => {
+		c.header("Set-Cookie", clearDemoCookie());
+		return c.body(null, 204);
+	});
 
 	app.notFound((c) => c.json({ detail: { code: "not_found", message: "No such route." } }, 404));
 
@@ -648,57 +672,4 @@ async function loadInspection(db: Db, id: string) {
 		results: results.results.map(({ metrics_json, ...rest }) => ({ ...rest, metrics: JSON.parse(metrics_json) })),
 		fixes: fixes.results.map(({ changes_json, passes, ...rest }) => ({ ...rest, passes: passes === 1, changes: JSON.parse(changes_json) })),
 	};
-}
-
-/** Run `task` after the response (Workers `waitUntil`); without an execution context, just start it. */
-function inBackground(c: Context, task: Promise<unknown>): void {
-	const guarded = task.catch((error: unknown) => console.error("Background task failed:", error));
-	try {
-		c.executionCtx.waitUntil(guarded);
-	} catch {
-		// Tests: no execution context; the task still runs.
-	}
-}
-
-/** Hand out one pre-minted ticket (each one only once), or null when none is left. */
-export async function takeDemoTicket(db: Db, role: DemoRole, at: Date = new Date()): Promise<string | null> {
-	const validUntil = new Date(at.getTime() + DEMO_TICKET_MARGIN_MS).toISOString();
-	const row = await db
-		.prepare(
-			`DELETE FROM demo_tickets WHERE id = (
-			   SELECT id FROM demo_tickets WHERE role = ? AND expires_at > ? ORDER BY expires_at LIMIT 1
-			 ) RETURNING token`,
-		)
-		.bind(role, validUntil)
-		.first<{ token: string }>();
-	return row?.token ?? null;
-}
-
-/** Top the pool up to `DEMO_POOL_SIZE` valid tickets, and drop the expired ones. */
-export async function refillDemoTickets(
-	db: Db,
-	identity: IdentityProvider,
-	role: DemoRole,
-	account: { userId: string; orgId: string | null },
-	at: Date = new Date(),
-): Promise<void> {
-	const validUntil = new Date(at.getTime() + DEMO_TICKET_MARGIN_MS).toISOString();
-	await db.prepare("DELETE FROM demo_tickets WHERE expires_at <= ?").bind(validUntil).run();
-	const row = await db
-		.prepare("SELECT COUNT(*) AS n FROM demo_tickets WHERE role = ?")
-		.bind(role)
-		.first<{ n: number }>();
-	const missing = DEMO_POOL_SIZE - (row?.n ?? 0);
-	if (missing <= 0) return;
-	const expires = new Date(at.getTime() + DEMO_TICKET_TTL_S * 1000).toISOString();
-	const tokens = await Promise.all(
-		Array.from({ length: missing }, () => identity.createSignInTicket(account.userId, account.orgId, DEMO_TICKET_TTL_S)),
-	);
-	await db.batch(
-		tokens.map((token) =>
-			db
-				.prepare("INSERT INTO demo_tickets (id, role, token, expires_at, created_at) VALUES (?, ?, ?, ?, ?)")
-				.bind(newId("dtk"), role, token, expires, at.toISOString()),
-		),
-	);
 }

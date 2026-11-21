@@ -43,6 +43,7 @@ function application(env: Env): ReturnType<typeof createApp> {
 		platformAdminEmails: parseEmailList(env.PLATFORM_ADMIN_EMAILS),
 		corsOrigins,
 		siteUrl: env.SITE_URL,
+		demoSecret: env.DEMO_SESSION_SECRET?.trim() ?? "",
 		limitAnonymous: async (k) => (await env.ANON_RATE_LIMITER.limit({ key: k })).success,
 		photos: r2PhotoStore(env.PHOTOS),
 		physics: { battery: (draft) => runBattery(containerCall(env), draft), plan: (draft) => runPlan(containerCall(env), draft) },

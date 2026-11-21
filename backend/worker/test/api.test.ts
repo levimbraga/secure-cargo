@@ -1,8 +1,8 @@
 /** Authorization through the HTTP API, against real SQLite with the production migrations. */
 import { describe, expect, it, vi } from "vitest";
 
-import { takeDemoTicket } from "../src/app";
-import { as, setup } from "./helpers";
+import { signDemoToken, verifyDemoToken } from "../src/demo";
+import { as, DEMO_SECRET, demoCookieFor, setup } from "./helpers";
 
 async function ids(response: Response): Promise<string[]> {
 	const body = (await response.json()) as { inspections: { id: string }[] };
@@ -162,42 +162,108 @@ describe("the platform admin", () => {
 });
 
 describe("demo access", () => {
-	it("mints a sign-in ticket for the demo driver and insurer, in the demo organization", async () => {
-		const { call, identity } = setup();
-		const driver = (await (await call("POST", "/demo/session", undefined, { as: "driver" })).json()) as { ticket: string };
-		expect(driver.ticket).toBe("ticket-1-for-demo_driver");
-		await call("POST", "/demo/session", undefined, { as: "insurer" });
-		expect(identity.tickets.filter((t) => t.userId === "demo_insurer")[0]).toMatchObject({ orgId: "org_a" });
-		expect(identity.tickets.every((t) => t.orgId === "org_a")).toBe(true);
+	it("gives a demo session as a signed, httpOnly cookie for 24 hours, with no account behind it", async () => {
+		const { call } = setup();
+		const response = await call("POST", "/demo/session", undefined, { as: "driver" });
+		expect(response.status).toBe(200);
+		const cookie = response.headers.get("Set-Cookie") ?? "";
+		expect(cookie).toMatch(/^sc_demo=v1\.[\w-]+\.[\w-]+;/);
+		expect(cookie).toContain("HttpOnly");
+		expect(cookie).toContain("Secure");
+		expect(cookie).toContain("SameSite=Lax");
+		expect(cookie).toContain("Max-Age=86400");
+		const me = await (await app(cookie)).json();
+		expect(me).toMatchObject({ user: { id: "demo_driver", is_demo: true }, org: { id: "org_a", role: "member" }, is_platform_admin: false });
 		expect((await call("POST", "/demo/session", undefined, { as: "admin" })).status).toBe(422);
-	});
 
-	it("answers from tickets minted ahead of time, each handed out once", async () => {
-		const { call, db, identity } = setup();
-		await call("POST", "/demo/session", undefined, { as: "driver" });
-		// The pool fills in the background after the first request.
-		await vi.waitFor(async () => {
-			const row = await db.prepare("SELECT COUNT(*) AS n FROM demo_tickets WHERE role = 'driver'").first<{ n: number }>();
-			expect(row?.n).toBe(3);
-		});
-		const minted = identity.tickets.length;
-		const seen = new Set<string>();
-		for (let i = 0; i < 3; i++) {
-			const { ticket } = (await (await call("POST", "/demo/session", undefined, { as: "driver" })).json()) as { ticket: string };
-			expect(seen.has(ticket)).toBe(false);
-			seen.add(ticket);
+		async function app(setCookie: string) {
+			const { app: a } = setup();
+			return a.request("/me", { headers: { Cookie: setCookie.split(";")[0] as string, Origin: "https://securecargo.app" } });
 		}
-		// Three answers, and none of them waited for Clerk: every ticket came from the pool.
-		expect([...seen].every((ticket) => Number(ticket.split("-")[1]) <= minted)).toBe(true);
 	});
 
-	it("never hands out a ticket that is about to expire", async () => {
-		const { db } = setup();
-		db.raw.exec(`INSERT INTO demo_tickets (id, role, token, expires_at, created_at) VALUES
-			('old', 'driver', 'stale', '2026-11-20T12:05:00.000Z', '2026-11-20T00:00:00.000Z')`);
-		expect(await takeDemoTicket(db, "driver", new Date("2026-11-20T12:00:00.000Z"))).toBeNull();
-		expect(await takeDemoTicket(db, "driver", new Date("2026-11-20T11:00:00.000Z"))).toBe("stale");
-		expect(await takeDemoTicket(db, "driver", new Date("2026-11-20T11:00:00.000Z"))).toBeNull();
+	it("keeps the sandbox when the same browser switches between driver and insurer", async () => {
+		const { app } = setup();
+		const first = await app.request("/demo/session", { method: "POST", body: JSON.stringify({ as: "driver" }), headers: { "Content-Type": "application/json" } });
+		const driverCookie = (first.headers.get("Set-Cookie") ?? "").split(";")[0] as string;
+		const second = await app.request("/demo/session", {
+			method: "POST",
+			body: JSON.stringify({ as: "insurer" }),
+			headers: { "Content-Type": "application/json", Cookie: driverCookie },
+		});
+		const insurerCookie = (second.headers.get("Set-Cookie") ?? "").split(";")[0] as string;
+		const sandbox = (cookie: string) => JSON.parse(Buffer.from((cookie.split("=")[1] as string).split(".")[1] as string, "base64url").toString()).sbx;
+		expect(sandbox(insurerCookie)).toBe(sandbox(driverCookie));
+		// A fresh browser gets a new sandbox.
+		const fresh = await app.request("/demo/session", { method: "POST", body: JSON.stringify({ as: "insurer" }), headers: { "Content-Type": "application/json" } });
+		expect(sandbox((fresh.headers.get("Set-Cookie") ?? "").split(";")[0] as string)).not.toBe(sandbox(driverCookie));
+	});
+
+	it("refuses tampered, expired and foreign demo tokens", async () => {
+		const { app } = setup();
+		const me = (cookie: string) => app.request("/me", { headers: { Cookie: cookie } });
+		const good = await demoCookieFor("demo:driver:sbx_one");
+		expect((await me(good)).status).toBe(200);
+		const [name, token] = good.split("=") as [string, string];
+		const [v, payload, signature] = token.split(".") as [string, string, string];
+		// Another role in the payload, the old signature.
+		const forged = Buffer.from(JSON.stringify({ ...JSON.parse(Buffer.from(payload, "base64url").toString()), role: "insurer" })).toString("base64url");
+		expect((await me(`${name}=${v}.${forged}.${signature}`)).status).toBe(401);
+		expect((await me(`${name}=${v}.${payload}.${signature.slice(0, -2)}AA`)).status).toBe(401);
+		// Signed with another secret.
+		expect((await me(await demoCookieFor("demo:driver:sbx_one", "another-secret"))).status).toBe(401);
+		// Expired.
+		const iat = Math.floor(Date.now() / 1000) - 90_000;
+		const old = await signDemoToken({ sid: "s", sbx: "sbx_one", role: "driver", iat, exp: iat + 86_400 }, DEMO_SECRET);
+		expect((await me(`sc_demo=${old}`)).status).toBe(401);
+		expect(await verifyDemoToken(old, DEMO_SECRET)).toBeNull();
+	});
+
+	it("never takes a demo token for a Clerk session, nor a Clerk session for a demo person", async () => {
+		const { app, call } = setup();
+		const cookie = await demoCookieFor("demo:driver:sbx_one");
+		const token = cookie.split("=")[1] as string;
+		expect((await app.request("/me", { headers: { Authorization: `Bearer ${token}` } })).status).toBe(401);
+		// The demo people are D1 rows only: a (left-over) Clerk session for one of them is refused.
+		expect((await call("GET", "/me", "token:demo_driver:org_a:member")).status).toBe(401);
+	});
+
+	it("shows a demo visitor the seeded inspections and their own sandbox only", async () => {
+		const { call, db } = setup();
+		db.raw.exec(`INSERT INTO inspections (id, org_id, author_id, created_at, updated_at, title, seeded) VALUES
+			('seed1', 'org_a', 'demo_driver', '2026-11-20T12:00:00.000Z', '2026-11-20T12:00:00.000Z', 'Seeded', 1)`);
+		const one = "demo:driver:sbx_one";
+		const two = "demo:driver:sbx_two";
+		const created = (await (await call("POST", "/inspections", one, { title: "Mine" })).json()) as { id: string };
+		const ids = async (who: string, scope: string) =>
+			((await (await call("GET", `/inspections?scope=${scope}`, who)).json()) as { inspections: { id: string }[] }).inspections.map((i) => i.id).sort();
+		expect(await ids(one, "mine")).toEqual([created.id, "seed1"].sort());
+		expect(await ids(two, "mine")).toEqual(["seed1"]);
+		expect((await call("GET", `/inspections/${created.id}`, two)).status).toBe(404);
+		// The insurer of the same browser sees it; the insurer of another browser does not.
+		expect(await ids("demo:insurer:sbx_one", "org")).toEqual([created.id, "seed1"].sort());
+		expect(await ids("demo:insurer:sbx_two", "org")).toEqual(["seed1"]);
+		// The real people of the organization stay invisible to demo visitors.
+		expect((await call("GET", "/inspections/a1", "demo:insurer:sbx_one")).status).toBe(404);
+		expect((await call("GET", "/inspections/d1", "demo:insurer:sbx_one")).status).toBe(404);
+		// And a visitor cannot change the seeded inspections everyone else sees.
+		expect((await call("POST", "/inspections", one, { reinspection_of: "seed1" })).status).toBe(403);
+		expect((await call("POST", "/inspections/seed1/share", "demo:insurer:sbx_one")).status).toBe(403);
+	});
+
+	it("keeps demo trucks per sandbox", async () => {
+		const { call } = setup();
+		expect((await call("POST", "/trucks", "demo:driver:sbx_one", { size: "toco", style: "box" })).status).toBe(201);
+		const list = async (who: string) => ((await (await call("GET", "/trucks", who)).json()) as { trucks: unknown[] }).trucks.length;
+		expect(await list("demo:driver:sbx_one")).toBe(1);
+		expect(await list("demo:driver:sbx_two")).toBe(0);
+	});
+
+	it("ends the demo session", async () => {
+		const { call } = setup();
+		const response = await call("POST", "/demo/logout");
+		expect(response.status).toBe(204);
+		expect(response.headers.get("Set-Cookie")).toContain("Max-Age=0");
 	});
 
 	it("is rate-limited per IP", async () => {

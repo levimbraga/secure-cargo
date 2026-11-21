@@ -17,7 +17,7 @@
  */
 import type { Context, Hono, MiddlewareHandler } from "hono";
 
-import { canManageOrg, canReadInspection, inspectionListFilter, type ListScope, type Principal } from "./authz";
+import { canManageOrg, canReadInspection, inspectionListFilter, type ListScope, type Principal, sandboxClause } from "./authz";
 import {
 	CERTIFICATE_ID,
 	certificateBody,
@@ -74,15 +74,16 @@ const PROVEN_BY =
 	"(SELECT r.id FROM inspections r WHERE r.reinspection_of = i.id AND r.verdict = 'pass' ORDER BY r.created_at DESC LIMIT 1)";
 
 /** How many open alerts an organization has now (the menu badge). Same rule as `metrics.isAlert`. */
-export async function alertCount(db: Db, orgId: string, hours: number, at: Date = new Date()): Promise<number> {
+export async function alertCount(db: Db, p: Principal, orgId: string, hours: number, at: Date = new Date()): Promise<number> {
 	const cutoff = new Date(at.getTime() - hours * 3_600_000).toISOString();
+	const sandbox = sandboxClause(p);
 	const row = await db
 		.prepare(
 			`SELECT COUNT(*) AS n FROM inspections i
-			 WHERE i.org_id = ? AND i.reinspection_of IS NULL AND i.verdict IN ('fail', 'warning') AND i.created_at <= ?
+			 WHERE i.org_id = ?${sandbox.sql} AND i.reinspection_of IS NULL AND i.verdict IN ('fail', 'warning') AND i.created_at <= ?
 			   AND NOT EXISTS (SELECT 1 FROM inspections r WHERE r.reinspection_of = i.id AND r.verdict = 'pass')`,
 		)
-		.bind(orgId, cutoff)
+		.bind(orgId, ...sandbox.params, cutoff)
 		.first<{ n: number }>();
 	return row?.n ?? 0;
 }
@@ -103,16 +104,18 @@ export function registerManager(
 		return p.orgId;
 	}
 
-	async function orgRows(orgId: string): Promise<(MetricRow & Record<string, unknown>)[]> {
+	/** The organization's inspections a manager may see (a demo visitor: seeded and their sandbox). */
+	async function orgRows(p: Principal, orgId: string): Promise<(MetricRow & Record<string, unknown>)[]> {
+		const sandbox = sandboxClause(p);
 		const { results } = await db
 			.prepare(
 				`SELECT i.id, i.author_id, u.name AS author_name, i.created_at, i.title, i.verdict, i.fixed_verdict,
 				   i.reinspection_of, i.failure_codes, i.truck_json, i.truck_size, i.truck_body, i.cargo_weight_kg,
 				   i.situations_passed, i.situations_total, ${PROVEN_BY} AS proven_by
 				 FROM inspections i JOIN users u ON u.id = i.author_id
-				 WHERE i.org_id = ? ORDER BY i.created_at DESC LIMIT 10000`,
+				 WHERE i.org_id = ?${sandbox.sql} ORDER BY i.created_at DESC LIMIT 10000`,
 			)
-			.bind(orgId)
+			.bind(orgId, ...sandbox.params)
 			.all<MetricRow & Record<string, unknown>>();
 		return results;
 	}
@@ -130,7 +133,7 @@ export function registerManager(
 		const to = at.toISOString();
 		const from = new Date(at.getTime() - days * 86_400_000).toISOString();
 		const weeksFrom = new Date(at.getTime() - Math.max(days, 56) * 86_400_000).toISOString();
-		const overview = computeOverview(await orgRows(orgId), { from, to, weeksFrom, at, alertHours: policies.alert_after_hours });
+		const overview = computeOverview(await orgRows(c.get("principal"), orgId), { from, to, weeksFrom, at, alertHours: policies.alert_after_hours });
 		return c.json({ ...overview, days, policies });
 	});
 
@@ -138,7 +141,7 @@ export function registerManager(
 		const orgId = managedOrg(c);
 		const at = new Date();
 		const policies = await orgPolicies(db, orgId);
-		const rows = (await orgRows(orgId)).filter((r) => isAlert(r, at, policies.alert_after_hours));
+		const rows = (await orgRows(c.get("principal"), orgId)).filter((r) => isAlert(r, at, policies.alert_after_hours));
 		return c.json({
 			alert_after_hours: policies.alert_after_hours,
 			alerts: rows
@@ -371,7 +374,7 @@ export function registerManager(
 		const id = c.req.param("id");
 		if (!CERTIFICATE_ID.test(id)) notFound();
 		const owner = await db
-			.prepare("SELECT i.id, i.org_id, i.author_id FROM certificates c JOIN inspections i ON i.id = c.inspection_id WHERE c.id = ?")
+			.prepare("SELECT i.id, i.org_id, i.author_id, i.seeded, i.sandbox_id FROM certificates c JOIN inspections i ON i.id = c.inspection_id WHERE c.id = ?")
 			.bind(id)
 			.first<Row>();
 		if (!owner || !canReadInspection(c.get("principal"), owner)) notFound();

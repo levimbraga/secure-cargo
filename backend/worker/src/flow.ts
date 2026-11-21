@@ -318,6 +318,8 @@ export function registerFlow(
 		const p = c.get("principal");
 		const manager = p.orgRole === "org_admin" && row.org_id !== null && row.org_id === p.orgId;
 		if (!canWriteInspection(p, row) && !manager) forbidden();
+		// Sharing writes a link on the inspection: a demo visitor only shares their own sandbox's.
+		if (p.sandboxId && (row as { sandbox_id?: string | null }).sandbox_id !== p.sandboxId) forbidden();
 		return row;
 	}
 

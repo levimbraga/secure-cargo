@@ -4,23 +4,19 @@
  * seven-situation batteries and proven fixes are static files on the site
  * (`backend/scripts/build_demo_inspections.py`), so the dashboard opens them with the API down.
  *
- * 1. Finds or creates the demo users and organization in Clerk (idempotent, by email and name).
- * 2. Writes `seed/out/demo.sql`, which replaces the demo inspections in D1. Recorded usage is never
- *    touched: it is what the monthly cap is computed from.
+ * The demo people and organization live in D1 only (since 2026-11-21): demo visitors enter with a
+ * Worker-issued session (`src/demo.ts`), not a Clerk account, so nobody can change their password,
+ * delete them or see other visitors' devices. Writes `seed/out/demo.sql`, which replaces the demo
+ * rows in D1. Recorded usage is never touched: it is what the monthly cap is computed from.
  *
- *   pnpm seed:demo                          # reads CLERK_SECRET_KEY from .dev.vars or the env
- *   SEED_ENV_FILE=.env.clerk-production pnpm seed:demo   # the production Clerk instance
+ *   pnpm run seed:demo
  *   npx wrangler d1 execute securecargo --remote --file seed/out/demo.sql
  *
- * Names are fictional and the emails are on our own demo subdomain (no mailbox; nothing is ever sent to
- * them): no real personal data.
+ * Names are fictional and nobody has an email: no real personal data.
  */
-import { randomBytes } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-
-import { createClerkClient } from "@clerk/backend";
 
 import { diffDrafts } from "../src/events";
 import { cargoTypes, failureCodes, packList } from "../src/summary";
@@ -29,84 +25,22 @@ import { type BatteryLike, STORED, verdictState } from "../src/verdict";
 const here = dirname(fileURLToPath(import.meta.url));
 const demoDir = join(here, "..", "..", "..", "frontend", "public", "demo");
 
-/** Key file (gitignored): `.dev.vars` for the development instance, or `SEED_ENV_FILE`. */
-const ENV_FILE = process.env.SEED_ENV_FILE ?? ".dev.vars";
-
-function secret(name: string): string {
-	if (process.env[name]) return process.env[name] as string;
-	try {
-		const line = readFileSync(join(here, "..", ENV_FILE), "utf8")
-			.split("\n")
-			.find((l) => l.startsWith(`${name}=`));
-		const value = line?.slice(name.length + 1).trim();
-		if (value) return value;
-	} catch {
-		// no .dev.vars
-	}
-	throw new Error(`${name} is not set (env or backend/worker/${ENV_FILE})`);
-}
-
-const clerk = createClerkClient({ secretKey: secret("CLERK_SECRET_KEY") });
-
 interface DemoPerson {
 	key: "manager" | "driver" | "driver2" | "driver3";
-	firstName: string;
-	lastName: string;
-	email: string;
+	/** Stable ids: the demo session principal is found by them (settings below). */
+	id: string;
+	name: string;
 	role: "org:admin" | "org:member";
 }
 
+/** The visitor's two personas are "Demo insurer" and "Demo driver"; the other drivers are colleagues. */
 const PEOPLE: DemoPerson[] = [
-	{ key: "manager", firstName: "Marina", lastName: "(demo)", email: "manager@demo.securecargo.app", role: "org:admin" },
-	{ key: "driver", firstName: "Rafael", lastName: "(demo)", email: "driver@demo.securecargo.app", role: "org:member" },
-	{ key: "driver2", firstName: "Joana", lastName: "(demo)", email: "driver2@demo.securecargo.app", role: "org:member" },
-	{ key: "driver3", firstName: "Tiago", lastName: "(demo)", email: "driver3@demo.securecargo.app", role: "org:member" },
+	{ key: "manager", id: "demo_insurer", name: "Demo insurer", role: "org:admin" },
+	{ key: "driver", id: "demo_driver", name: "Demo driver", role: "org:member" },
+	{ key: "driver2", id: "demo_driver_2", name: "Joana (demo)", role: "org:member" },
+	{ key: "driver3", id: "demo_driver_3", name: "Tiago (demo)", role: "org:member" },
 ];
-const ORG = { name: "Demo Insurer", type: "insurer" as const };
-
-async function findOrCreateUser(person: DemoPerson): Promise<string> {
-	const { data } = await clerk.users.getUserList({ emailAddress: [person.email] });
-	if (data[0]) {
-		// Names read the same in both languages ("Rafael (demo)"); keep Clerk in step with the seed.
-		if (data[0].firstName !== person.firstName || data[0].lastName !== person.lastName) {
-			await clerk.users.updateUser(data[0].id, { firstName: person.firstName, lastName: person.lastName });
-		}
-		return data[0].id;
-	}
-	const user = await clerk.users.createUser({
-		emailAddress: [person.email],
-		firstName: person.firstName,
-		lastName: person.lastName,
-		// Password is the only sign-in method, so Clerk needs one: a random one nobody keeps.
-		// Demo accounts enter only through the sign-in tickets the Worker mints.
-		password: `${randomBytes(24).toString("base64url")}-Demo9`,
-		publicMetadata: { demo: true },
-	});
-	return user.id;
-}
-
-async function findOrCreateOrg(createdBy: string): Promise<string> {
-	// Organization slugs are off by default in Clerk Core 3: find the demo org by name and metadata.
-	const { data } = await clerk.organizations.getOrganizationList({ query: ORG.name, limit: 20 });
-	const existing = data.find((o) => o.name === ORG.name && (o.publicMetadata as { demo?: boolean } | null)?.demo);
-	if (existing) return existing.id;
-	const org = await clerk.organizations.createOrganization({
-		name: ORG.name,
-		createdBy,
-		publicMetadata: { type: ORG.type, demo: true },
-	});
-	return org.id;
-}
-
-async function ensureMembership(orgId: string, userId: string, role: string): Promise<void> {
-	const { data } = await clerk.organizations.getOrganizationMembershipList({ organizationId: orgId, limit: 100 });
-	const current = data.find((m) => m.publicUserData?.userId === userId);
-	if (!current) {
-		await clerk.organizations.createOrganizationMembership({ organizationId: orgId, userId, role });
-	} else if (current.role !== role) {
-		await clerk.organizations.updateOrganizationMembership({ organizationId: orgId, userId, role });
-	}
-}
+const ORG = { id: "org_demo", name: "Demo Insurer", type: "insurer" as const };
 
 // ---- inspections from the gallery -------------------------------------------------------------
 
@@ -211,11 +145,9 @@ function resultRows(id: string, scenarioId: string, battery: Battery, at: string
 }
 
 async function main() {
-	const ids = new Map<DemoPerson["key"], string>();
-	for (const person of PEOPLE) ids.set(person.key, await findOrCreateUser(person));
+	const ids = new Map<DemoPerson["key"], string>(PEOPLE.map((person) => [person.key, person.id]));
 	const managerId = ids.get("manager") as string;
-	const orgId = await findOrCreateOrg(managerId);
-	for (const person of PEOPLE) await ensureMembership(orgId, ids.get(person.key) as string, person.role);
+	const orgId = ORG.id;
 
 	const index = readJson<GalleryIndex>("index.json");
 	const now = Date.now();
@@ -237,8 +169,8 @@ async function main() {
 	for (const person of PEOPLE) {
 		const id = ids.get(person.key) as string;
 		sql.push(
-			`INSERT INTO users (id, email, name, is_demo, created_at) VALUES (${q(id)}, ${q(person.email)}, ${q(`${person.firstName} ${person.lastName}`)}, 1, ${q(new Date(now).toISOString())})
-			 ON CONFLICT (id) DO UPDATE SET email = excluded.email, name = excluded.name, is_demo = 1;`,
+			`INSERT INTO users (id, email, name, is_demo, created_at) VALUES (${q(id)}, NULL, ${q(person.name)}, 1, ${q(new Date(now).toISOString())})
+			 ON CONFLICT (id) DO UPDATE SET email = NULL, name = excluded.name, is_demo = 1;`,
 			`INSERT INTO memberships (user_id, org_id, role, created_at) VALUES (${q(id)}, ${q(orgId)}, ${q(person.role === "org:admin" ? "org_admin" : "member")}, ${q(new Date(now).toISOString())})
 			 ON CONFLICT (user_id, org_id) DO UPDATE SET role = excluded.role;`,
 		);
@@ -253,8 +185,6 @@ async function main() {
 			 ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at;`,
 		);
 	}
-	// New tickets for the (possibly new) demo users.
-	sql.push("DELETE FROM demo_tickets;");
 
 	let events = 0;
 	const event = (inspectionId: string, actor: string, at: string, kind: string, detail: Record<string, unknown> = {}) =>
