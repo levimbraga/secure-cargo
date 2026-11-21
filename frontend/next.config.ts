@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
+import { assertAuthConfigured } from "./lib/auth-env.mjs";
+
+// Production never runs with sign-in silently off (CI and local builds may).
+assertAuthConfigured(process.env);
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
   experimental: {
