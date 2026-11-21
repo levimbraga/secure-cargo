@@ -83,8 +83,12 @@ fails, fixes). Demo accounts spend nothing except analyzing a new photo of their
   form on Clerk's hooks (`components/app/auth-panel.tsx`); no social login, email link, username, phone or
   MFA (2026-11-21). A new account without an organization picks "I was invited by my company" or "Create my
   company" (`org-choice.tsx`; Clerk marks that session "pending", which the app treats as signed in).
-  Demo buttons: the Worker mints a Clerk sign-in token for a seeded demo user and the page redeems it
-  (`ticket` strategy).
+  **Demo access has no Clerk account (2026-11-21):** "Enter as demo driver/insurer" gets a Worker-issued
+  session (`backend/worker/src/demo.ts`): an HMAC-signed token in an httpOnly, Secure, SameSite=Lax cookie
+  for 24 hours, with its own `sandbox_id`. A demo visitor sees the seeded Demo Insurer inspections plus only
+  their sandbox's (same authorization layer, `authz.ts`); driver and insurer in one browser share the
+  sandbox; sandbox data is purged after 24 h. The demo people and org are D1 rows only (`seed/demo.ts`).
+  The UI shows "Demo · Exit" instead of Clerk's user menu.
 - **The Worker (`backend/worker`, TypeScript + Hono) is the application backend:** it verifies the Clerk session
   JWT, enforces authorization, owns D1 (`migrations/`), R2, quotas, the budget cap and (Phase 6) the Anthropic
   call. The FastAPI container is a stateless physics engine reached only through the Worker. The authorization
