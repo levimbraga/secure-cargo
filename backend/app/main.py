@@ -1,10 +1,12 @@
 """FastAPI application entry point."""
 
-from collections.abc import AsyncIterator
+import hmac
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 
 import mujoco
 from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
@@ -28,6 +30,9 @@ from physics.live import build_live_model
 from physics.simulate import SimulationError
 
 
+INTERNAL_HEADER = "x-securecargo-internal"
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
 
@@ -45,6 +50,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         version=__version__,
         lifespan=lifespan,
     )
+    # Added before CORS so that it runs after it: a refused request still carries CORS headers.
+    @app.middleware("http")
+    async def only_the_worker(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        """Refuse every request that did not come through the Worker (see ``internal_token``)."""
+        expected = settings.internal_token
+        if expected:
+            given = request.headers.get(INTERNAL_HEADER, "")
+            if not hmac.compare_digest(given.encode(), expected.encode()):
+                detail = ErrorDetail(
+                    code="forbidden", message="The physics engine answers only the API Worker."
+                )
+                return JSONResponse(status_code=403, content={"detail": detail.model_dump()})
+        return await call_next(request)
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,

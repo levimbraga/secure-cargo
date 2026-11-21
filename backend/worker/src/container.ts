@@ -1,19 +1,26 @@
 /**
  * The FastAPI + MuJoCo container: a stateless physics engine reached only through the Worker.
+ * It has no public address, and it refuses requests without the token this object gives it
+ * (`internal.ts`).
  *
  * Every physics request is routed to one named container instance, which is started on demand
  * and stopped after a period without traffic (scale to zero).
  */
 import { DurableObject } from "cloudflare:workers";
 
+import { INTERNAL_HEADER, newInternalToken, toContainerRequest } from "./internal";
+
 const CONTAINER_PORT = 8080;
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000;
 const READINESS_POLL_MS = 200;
 const READINESS_TIMEOUT_MS = 60_000;
+const TOKEN_KEY = "internal_token";
 
 export class ApiContainer extends DurableObject<Env> {
 	private starting: Promise<void> | undefined;
 	private monitoring: Promise<void> | undefined;
+	/** The token the running container was started with (kept in storage across restarts). */
+	private token: string | undefined;
 
 	constructor(ctx: DurableObjectState, env: Env) {
 		super(ctx, env);
@@ -40,16 +47,24 @@ export class ApiContainer extends DurableObject<Env> {
 		});
 		await this.starting;
 
-		const url = new URL(request.url);
-		url.protocol = "http:";
-		url.host = "container";
-		const forwarded = new Request(url, request);
-		forwarded.headers.delete("host");
-		return container.getTcpPort(CONTAINER_PORT).fetch(forwarded);
+		const token = await this.currentToken();
+		return container.getTcpPort(CONTAINER_PORT).fetch(toContainerRequest(request, token));
+	}
+
+	private async currentToken(): Promise<string> {
+		this.token ??= await this.ctx.storage.get<string>(TOKEN_KEY);
+		if (!this.token) {
+			// Only possible if storage was lost while the container kept running: start over.
+			throw new Error("The API container has no internal token");
+		}
+		return this.token;
 	}
 
 	private async startAndWaitUntilReady(container: Container): Promise<void> {
 		if (!container.running) {
+			// A new token for every container start: only this Durable Object knows it.
+			this.token = newInternalToken();
+			await this.ctx.storage.put(TOKEN_KEY, this.token);
 			container.start({
 				image: container.images.api,
 				// 1/4 vCPU and 1 GiB: enough to import MuJoCo and serve the API.
@@ -58,6 +73,7 @@ export class ApiContainer extends DurableObject<Env> {
 				enableInternet: false,
 				env: {
 					SECURECARGO_CORS_ORIGINS: this.env.CORS_ORIGINS,
+					SECURECARGO_INTERNAL_TOKEN: this.token,
 				},
 			});
 		}
@@ -66,10 +82,12 @@ export class ApiContainer extends DurableObject<Env> {
 
 		// `running` only means that startup was requested; wait for the HTTP server itself.
 		const port = container.getTcpPort(CONTAINER_PORT);
+		const token = await this.currentToken();
 		const deadline = Date.now() + READINESS_TIMEOUT_MS;
 		while (Date.now() < deadline) {
 			try {
 				const response = await port.fetch("http://container/health", {
+					headers: { [INTERNAL_HEADER]: token },
 					signal: AbortSignal.timeout(1000),
 				});
 				await response.body?.cancel();

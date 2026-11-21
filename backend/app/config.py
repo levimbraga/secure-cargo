@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     # database gets its own scheme later (container disks are ephemeral).
     storage_url: str = "sqlite:///./data/securecargo.db"
 
+    # Token the Worker sends on every request it forwards (header ``x-securecargo-internal``).
+    # When set, any request without it is refused: the container answers only the Worker.
+    # Unset locally and in the tests, where nothing stands in front of the API.
+    internal_token: str = ""
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
