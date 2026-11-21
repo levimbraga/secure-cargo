@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { InspectionListItem } from "@/components/app/inspection-bits";
 import { DemoResetNote } from "@/components/app/demo-reset-note";
 import { useMe } from "@/components/app/me-provider";
+import { OrgChoice } from "@/components/app/org-choice";
 import { SignInPanel } from "@/components/app/sign-in-panel";
 import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
@@ -33,6 +34,8 @@ export function MemberHome() {
 
   if (!ready) return <p className="type-small text-gray">{t("loading")}</p>;
   if (!signedIn) return <SignInPanel />;
+  // First sign-in with no organization: join the company that invited you, or create yours.
+  if (me && !me.org && !me.user.is_demo) return <OrgChoice />;
 
   const allowance = me?.analysis;
   return (

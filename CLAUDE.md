@@ -79,8 +79,12 @@ fails, fixes). Demo accounts spend nothing except analyzing a new photo of their
 
 ### Auth and backend split (decided 2026-11-20)
 - **Clerk** holds identities, organizations, org roles (`org:admin` → `org_admin`, `org:member` → `member`) and
-  invitations. Sign-in: Google and email link. Demo buttons: the Worker mints a Clerk sign-in token for a seeded
-  demo user and the page redeems it (`ticket` strategy).
+  invitations. Sign-in: email + password only (two tabs, "Forgot password?" by an emailed code), our own
+  form on Clerk's hooks (`components/app/auth-panel.tsx`); no social login, email link, username, phone or
+  MFA (2026-11-21). A new account without an organization picks "I was invited by my company" or "Create my
+  company" (`org-choice.tsx`; Clerk marks that session "pending", which the app treats as signed in).
+  Demo buttons: the Worker mints a Clerk sign-in token for a seeded demo user and the page redeems it
+  (`ticket` strategy).
 - **The Worker (`backend/worker`, TypeScript + Hono) is the application backend:** it verifies the Clerk session
   JWT, enforces authorization, owns D1 (`migrations/`), R2, quotas, the budget cap and (Phase 6) the Anthropic
   call. The FastAPI container is a stateless physics engine reached only through the Worker. The authorization

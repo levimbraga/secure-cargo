@@ -36,7 +36,9 @@ export function SignedOutMeProvider({ children }: { children: React.ReactNode })
 
 /** Who is signed in, their organization, role and analysis allowance, from the API's `/me`. */
 export function MeProvider({ children }: { children: React.ReactNode }) {
-  const { isLoaded, isSignedIn, orgId, userId, getToken } = useAuth();
+  // A new account with no organization has a "pending" session (Clerk's choose-organization
+  // task). It is signed in for us: `/app` shows the "invited / create my company" choice.
+  const { isLoaded, isSignedIn, orgId, userId, getToken } = useAuth({ treatPendingAsSignedOut: false });
   const [me, setMe] = useState<Me | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
