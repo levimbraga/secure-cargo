@@ -168,7 +168,8 @@
       "curtain-sider": "Curtain-sider",
       "potholed-road": "Potholed road",
       "overloaded-strap": "Overloaded strap",
-      "us-steel-coils": "Steel coils on a 48 ft flatbed (US rules)"
+      "us-steel-coils": "Steel coils on a 48 ft flatbed (US rules)",
+      "eu-curtain-pallets": "Pallets in a code L curtain-sider (EU rules)"
     },
     "events": {
       "emergency-braking": "Emergency stop from {speed} km/h, dry road",
@@ -183,7 +184,8 @@
       "curtain-sider": "Sharp curve at {speed} km/h",
       "potholed-road": "Pothole at {speed} km/h, muddy deck",
       "overloaded-strap": "Emergency stop from {speed} km/h, dry road",
-      "us-steel-coils": "Emergency stop from {speed}, dry road"
+      "us-steel-coils": "Emergency stop from {speed}, dry road",
+      "eu-curtain-pallets": "Sharp curve at {speed}, dry road"
     },
     "sentences": {
       "emergency-braking": {
@@ -237,6 +239,10 @@
       "us-steel-coils": {
         "as_loaded": "The coils roll against their straps: 49 CFR 393.120 asks for a cradle and chains through the eye.",
         "fixed": "In cradles, chained through the eye forward and back, the coils hold and the load complies."
+      },
+      "eu-curtain-pallets": {
+        "as_loaded": "The pallets slide through the curtain and off the trailer: a code L curtain holds nothing, a dangerous deficiency at a roadside check.",
+        "fixed": "With two straps over each pallet they hold in the curve and the load complies with Annex III."
       }
     },
     "explanations": {
@@ -291,6 +297,10 @@
       "us-steel-coils": {
         "as_loaded": "Two 19,800 lb coils lying across a 48 ft flatbed, each under two straps over the top. Nothing stops them rolling.",
         "fixed": "Each coil sits in a cradle and is chained through its eye with four chains, two forward and two back."
+      },
+      "eu-curtain-pallets": {
+        "as_loaded": "Eleven 1.5 t pallets against the headboard of a 13.6 m code L curtain-sider, with no lashing. Friction alone (μ 0.45) is less than the 0.5 g the EU rules ask for sideways.",
+        "fixed": "Two straps over each pallet press it down: friction and straps hold more than half its weight sideways (EN 12195-1)."
       }
     },
     "variant": {
@@ -635,7 +645,12 @@
         "us_straight": "Straight truck",
         "us_flatbed_48": "48 ft flatbed",
         "us_dry_van_53": "53 ft dry van",
-        "us_step_deck": "Step deck"
+        "us_step_deck": "Step deck",
+        "eu_7_5t": "7.5 t rigid",
+        "eu_18t": "18 t rigid",
+        "eu_26t": "26 t rigid",
+        "eu_semi_136": "40 t articulated, 13.6 m",
+        "eu_flatbed_136": "40 t flatbed, 13.6 m"
       },
       "cargo": {
         "wood_pallet": "Wood pallets",
@@ -1364,7 +1379,12 @@
       "bodySentence": "The body decides what holds the cargo besides the straps.",
       "backToSize": "Change the size",
       "saveLabel": "Save to My trucks",
-      "readNoTruck": "We read {units, plural, one {# unit} other {# units}} on the photo, but not the truck: pick it below."
+      "readNoTruck": "We read {units, plural, one {# unit} other {# units}} on the photo, but not the truck: pick it below.",
+      "code": "code {code}",
+      "codeHint": {
+        "L": "The usual curtain-sider: the curtains keep the rain out but hold no cargo.",
+        "XL": "Reinforced: the curtains hold 40 % of the payload sideways (see the plate)."
+      }
     },
     "sizes": {
       "axles": "{count, plural, one {# axle} other {# axles}}",
@@ -1409,6 +1429,26 @@
       "us_step_deck": {
         "name": "Step deck",
         "hint": "Trailer with a 38 ft lower deck"
+      },
+      "eu_7_5t": {
+        "name": "7.5 t rigid",
+        "hint": "Two axles, city deliveries"
+      },
+      "eu_18t": {
+        "name": "18 t rigid",
+        "hint": "Two axles, regional distribution"
+      },
+      "eu_26t": {
+        "name": "26 t rigid",
+        "hint": "Three axles, driving tandem"
+      },
+      "eu_semi_136": {
+        "name": "40 t articulated, 13.6 m",
+        "hint": "Tractor and curtain-sider or box trailer"
+      },
+      "eu_flatbed_136": {
+        "name": "40 t articulated, flatbed",
+        "hint": "Tractor and 13.6 m flatbed trailer"
       }
     },
     "styles": {
@@ -1574,7 +1614,8 @@
         "rear": "rear axle",
         "tractor": "tractor's axles",
         "trailer": "trailer's axles",
-        "steer": "steer axle"
+        "steer": "steer axle",
+        "drive": "driving axle"
       },
       "rule": {
         "devices_allowed": "Ropes hold {unit}: ropes are banned as cargo lashing.",
@@ -1600,7 +1641,21 @@
         "us_axle": "The {axle} carry more than the federal limit.",
         "us_gross": "The truck and cargo weigh more than 80,000 lb.",
         "bridge": "A group of axles carries more than the bridge formula allows.",
-        "rear_projection": "The load sticks out more than 4 ft at the rear: it needs flags."
+        "rear_projection": "The load sticks out more than 4 ft at the rear: it needs flags.",
+        "eu_forward": "{unit} is not held forward: the securing holds less than 0.8 g.",
+        "eu_sideways": "{unit} is not held sideways: nothing but friction keeps it on the truck.",
+        "eu_rearward": "{unit} is not held towards the rear.",
+        "eu_tipping": "{unit} can tip over and nothing holds it upright.",
+        "eu_body_strength": "The curtains hold no cargo: this curtain-sider is code L.",
+        "eu_headboard_height": "{unit} is taller than the headboard it leans on.",
+        "eu_devices": "Ropes hold {unit}: a rope is not a rated lashing.",
+        "eu_lashing_points": "The lashing points are weaker than the lashings on them.",
+        "eu_axle": "The {axle} carries more than the EU limit.",
+        "eu_gross": "The truck and cargo weigh more than the EU limit.",
+        "eu_driving_share": "Too little weight on the driving axle: less than 25 % of the total.",
+        "eu_height": "The load is too tall: above 4.00 m from the road.",
+        "eu_width": "The load is wider than 2.55 m.",
+        "eu_length": "Truck and load are longer than the EU limit."
       }
     },
     "summary": {
@@ -1722,7 +1777,18 @@
         "bridge": "Axles {first} to {last} ({length} apart): {load} of {limit}",
         "bridgeExplain": "The bridge formula limits every group of axles by how many they are and how far apart: W = 500 (LN/(N−1) + 12N + 36).",
         "bridgeFix": "Spread the weight over more axles or a longer wheelbase, or carry less.",
-        "payloadUsExplain": "Stay within the payload on the truck's GVWR label."
+        "payloadUsExplain": "Stay within the payload on the truck's GVWR label.",
+        "eu_axle": "{axle, select, steer {Steer axle} drive {Driving axle} tractor {Tractor's axles} trailer {Trailer's axles} front {Front axle} other {Rear axle}}: {load} of {limit} allowed",
+        "eu_axleExplain": "EU limit for a single axle that does not drive: 10 t.",
+        "eu_drivingExplain": "EU limit for a driving axle: 11.5 t.",
+        "eu_groupExplain": "EU limit for a group of axles {spread} apart (Directive 96/53/EC Annex I).",
+        "eu_gross": "Truck and cargo {gross}; the limit is {limit}",
+        "eu_grossExplain": "International traffic: 18 t for two axles, 26 t for three, 40 t for an articulated vehicle.",
+        "eu_grossFix": "Take some of the load off.",
+        "eu_driving_share": "Weight on the driving axle: {share} of the total",
+        "eu_driving_shareExplain": "In international traffic the driving axle carries at least 25 % of the total weight, for grip.",
+        "eu_driving_shareFix": "Move the load forward, over the driving axle.",
+        "payloadEuExplain": "Stay within the weights on the manufacturer's plate."
       },
       "outcome": {
         "holds": "{situation}: holds",
@@ -1775,7 +1841,16 @@
         "us_heightFix": "Check the states on the route, or lower the load.",
         "rear_projection": "Load past the back of the truck: {value}",
         "rear_projectionExplain": "More than 4 ft past the rear, the load needs red or orange flags of at least 18 in at its end.",
-        "rear_projectionFix": "Fit the flags, or keep the load on the deck."
+        "rear_projectionFix": "Fit the flags, or keep the load on the deck.",
+        "eu_height": "Height from the road: {value} (limit {limit})",
+        "eu_heightExplain": "Truck and load together may not be taller than 4.00 m (some countries allow more at home).",
+        "eu_heightFix": "Lower the load or load less height.",
+        "eu_width": "Load width: {value} (limit {limit})",
+        "eu_widthExplain": "Truck and load together may not be wider than 2.55 m.",
+        "eu_widthFix": "Keep the load within the deck.",
+        "eu_length": "Truck and load: {value} long (limit {limit})",
+        "eu_lengthExplain": "Rigid trucks 12.00 m, articulated vehicles 16.50 m, load sticking out the back included.",
+        "eu_lengthFix": "Keep the load on the deck."
       },
       "themesUs": {
         "securing": "How it is secured · FMCSA 393",
@@ -1850,6 +1925,88 @@
           "confirm": "Ropes are allowed: confirm they have no knots and can be re-tightened.",
           "explain": "A tiedown may not contain knots, and the driver must be able to tighten it on the road. Unmarked rope counts with a low working load limit.",
           "fix": "Use ratchet straps, or ropes without knots on a tensioner."
+        }
+      },
+      "themesEu": {
+        "securing": "How it is secured · EU Directive 2014/47 Annex III",
+        "weight": "Weight and axles · EU Directive 96/53",
+        "dimensions": "Dimensions · EU Directive 96/53"
+      },
+      "physicsArticleEu": "MuJoCo simulation · Annex III loads (0.8 g forward, 0.5 g back and sideways)",
+      "eu": {
+        "values": {
+          "held": "Holds {held} of {mass} ({share}) · friction μ {mu}",
+          "friction": "Friction alone (μ {mu}) is enough in this direction.",
+          "blocked": "Blocked by beams or chocks.",
+          "walls": "Code {code}: headboard {front}, side walls {side}, rear wall {rear}",
+          "straps": "Straps: LC {lc} · STF {stf} (as on the label)",
+          "chains": "Chains: LC {lc} (as on the label)",
+          "points": "Lashing points: {point} each (a {vehicle} vehicle, EN 12640)",
+          "height": "Headboard {height}; the cargo reaches {top}"
+        },
+        "eu_forward": {
+          "pass": "Held forward in hard braking ({g} g).",
+          "fail": "Not held forward in hard braking ({g} g).",
+          "confirm": "Held forward only if the headboard is rated for it: confirm its EN 12642 code.",
+          "na": "No cargo to hold.",
+          "explain": "EU rules: the securing must hold 0.8 times the cargo's weight forward. Friction, straps, chains and a wall in contact add up (EN 12195-1).",
+          "fix": "Push the load against the headboard, add straps over it or diagonals in front."
+        },
+        "eu_sideways": {
+          "pass": "Held sideways in curves and lane changes ({g} g).",
+          "fail": "Not held sideways in curves and lane changes ({g} g).",
+          "confirm": "Held sideways only if the walls are rated for it.",
+          "na": "No cargo to hold.",
+          "explain": "The securing must hold half the cargo's weight sideways. A code L curtain holds nothing; an XL curtain or a box wall holds when the load touches it (15 cm of gap at most).",
+          "fix": "Add straps over the load, close the gaps across the width, or use a code XL body."
+        },
+        "eu_rearward": {
+          "pass": "Held towards the rear ({g} g).",
+          "fail": "Not held towards the rear ({g} g).",
+          "confirm": "Held towards the rear only if the rear wall is rated for it.",
+          "na": "No cargo to hold.",
+          "explain": "The securing must hold half the cargo's weight towards the rear (pulling away, going uphill).",
+          "fix": "Add straps over the load or diagonals behind it, or close the load up to the rear doors."
+        },
+        "eu_tipping": {
+          "pass": "Units that could tip over are held upright.",
+          "fail": "A unit that could tip over is not held upright.",
+          "confirm": "Confirm the tall units are held upright.",
+          "na": "Every unit is stable on its own.",
+          "explain": "Annex III asks the securing to prevent tilting and tipping. A unit taller than its base is wide tips before it slides.",
+          "fix": "Add straps over the top, diagonals attached high, or block it against a wall as tall as its centre."
+        },
+        "eu_body_strength": {
+          "pass": "The walls the load leans on are counted at their EN 12642 rating.",
+          "fail": "The curtains of a code L curtain-sider hold no cargo.",
+          "confirm": "The walls are taken as code L: check the code on the body's plate.",
+          "na": "A flatbed: no body walls are counted.",
+          "explain": "EN 12642 rates the body: code L headboard 40 % of the payload (5,000 daN at most), code XL 50 %; code XL walls and curtains 40 %. A code L curtain is weather protection only.",
+          "fix": "Lash the load as if there were no curtains, or load it in a code XL body."
+        },
+        "eu_headboard_height": {
+          "pass": "The headboard is as tall as the cargo leaning on it.",
+          "fail": "The cargo leaning on the headboard is taller than it.",
+          "confirm": "Confirm the headboard's height: the cargo leans on it.",
+          "na": "No cargo leans on a flatbed's headboard.",
+          "explain": "A front wall too low for the cargo it blocks is a dangerous deficiency (Annex III, Table 1 item 10.1.2).",
+          "fix": "Lower the load, or lash it so it does not rely on the headboard."
+        },
+        "eu_devices": {
+          "pass": "Rated straps or chains, marked with their LC and STF.",
+          "fail": "Ropes are used as lashings: they are not rated devices.",
+          "confirm": "Check the labels of the lashings.",
+          "na": "No lashings.",
+          "explain": "EU lashings follow EN 12195-2 (straps), -3 (chains) and -4 (wire ropes) and carry a label with their lashing capacity (LC) and standard tension (STF) in daN.",
+          "fix": "Replace the ropes with labelled ratchet straps."
+        },
+        "eu_lashing_points": {
+          "pass": "The lashing points hold what the lashings pull.",
+          "fail": "The lashing points are weaker than the lashings on them.",
+          "confirm": "Check the lashing points' rating.",
+          "na": "No lashings.",
+          "explain": "EN 12640: each lashing point holds 800 daN on a vehicle up to 7.5 t, 1,000 daN up to 12 t and 2,000 daN above. A chain can pull more than its point holds.",
+          "fix": "Use more lashing points per unit, or rated points (4,000 daN), and hook lashings to the frame, not the wooden floor."
         }
       }
     },
@@ -1959,7 +2116,24 @@
       "US": "🇺🇸 United States",
       "hint": "Same simulation; only the rules and units change.",
       "rechecking": "Checking the rules again…",
-      "unavailable": "The other country's rules need the API, which is not reachable right now."
+      "unavailable": "The other country's rules need the API, which is not reachable right now.",
+      "EU": "🇪🇺 European Union",
+      "code": "Body code (EN 12642)",
+      "codeHint": {
+        "L": "Code L: the headboard holds 40 % of the payload (at most 5,000 daN); curtains hold nothing.",
+        "XL": "Code XL: the headboard holds 50 % of the payload; walls and curtains 40 %."
+      },
+      "codeAssumed": "No code given: L is assumed."
+    },
+    "roadside": {
+      "none": "No deficiency",
+      "noneMeaning": "A roadside check would find the securing sufficient.",
+      "minor": "Minor deficiency",
+      "minorMeaning": "Secured, but the inspector would give safety advice.",
+      "major": "Major deficiency",
+      "majorMeaning": "Not secured enough: the load can shift or tip. The truck may be stopped until it is fixed.",
+      "dangerous": "Dangerous deficiency",
+      "dangerousMeaning": "Risk of losing the cargo: traffic is in direct danger. The truck is stopped until it is fixed."
     }
   },
   "Manager": {
@@ -2126,7 +2300,21 @@
       "anchor_points": "Hooked to the wooden floor",
       "us_axle": "Axle over the federal limit",
       "us_gross": "Over 80,000 lb",
-      "bridge": "Over the bridge formula"
+      "bridge": "Over the bridge formula",
+      "eu_forward": "Not held forward (EU)",
+      "eu_sideways": "Not held sideways (EU)",
+      "eu_rearward": "Not held rearward (EU)",
+      "eu_tipping": "Can tip over (EU)",
+      "eu_body_strength": "Code L curtains relied on",
+      "eu_headboard_height": "Above the headboard (EU)",
+      "eu_devices": "Unrated lashings (EU)",
+      "eu_lashing_points": "Lashing points too weak",
+      "eu_axle": "Axle over the EU limit",
+      "eu_gross": "Over the EU gross weight",
+      "eu_driving_share": "Too little on the driving axle",
+      "eu_height": "Above 4.00 m",
+      "eu_width": "Wider than 2.55 m",
+      "eu_length": "Over the EU length"
     }
   },
   "Audit": {

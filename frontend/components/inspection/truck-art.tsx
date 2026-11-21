@@ -50,6 +50,16 @@ function geometry(size: TruckSize): Geometry {
       return { width: 304, cab: [6, 48], bed: [56, 298], axles: [20, 54, 68, 262, 276], tractor: true, hood: true };
     case "us_step_deck":
       return { width: 288, cab: [6, 48], bed: [56, 282], axles: [20, 54, 68, 246, 260], tractor: true, hood: true, step: 96 };
+    // EU presets: flat-fronted cabs over the engine; a 4x2 tractor and a tri-axle semi-trailer.
+    case "eu_7_5t":
+      return { width: 140, cab: [6, 36], bed: [38, 134], axles: [22, 104] };
+    case "eu_18t":
+      return { width: 164, cab: [6, 40], bed: [42, 158], axles: [24, 126] };
+    case "eu_26t":
+      return { width: 196, cab: [6, 40], bed: [42, 190], axles: [24, 140, 154] };
+    case "eu_semi_136":
+    case "eu_flatbed_136":
+      return { width: 276, cab: [6, 40], bed: [48, 270], axles: [22, 54, 214, 228, 242], tractor: true };
   }
 }
 
@@ -95,9 +105,12 @@ export function TruckArt({
   style,
   className,
   title,
+  code = null,
 }: {
   size: TruckSize;
   style: BodyStyle;
+  /** EN 12642 code (EU mode): an XL body is drawn with its rated side walls marked. */
+  code?: "L" | "XL" | null;
   className?: string;
   /** Accessible name; without it the drawing is decorative. */
   title?: string;
@@ -122,6 +135,7 @@ export function TruckArt({
       data-truck-size={size}
       data-truck-style={style}
       data-axles={SIZE_INFO[size].axles}
+      data-body-code={code ?? undefined}
     >
       {title && <title>{title}</title>}
       {g.hood ? (
@@ -152,6 +166,11 @@ export function TruckArt({
       {/* Headboard, except on a closed body whose front wall is the box itself. */}
       {style !== "box" && style !== "curtain_sider" && !g.step && <path d={`M${b0} ${DECK}V${DECK - 16}`} strokeWidth={2} />}
       <Body style={style} x0={lower} x1={b1} />
+      {code && style !== "platform" && style !== "open_low_sides" && style !== "open_tall_rack" && (
+        <text x={b1 - 4} y={DECK - 4} textAnchor="end" fontSize={9} fill="currentColor" stroke="none" fontFamily="inherit">
+          {code}
+        </text>
+      )}
       {/* Wheels: one per axle. */}
       {g.axles.map((x) => (
         <circle key={x} cx={x} cy={GROUND - WHEEL} r={WHEEL} fill="var(--paper)" />

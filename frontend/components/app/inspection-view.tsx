@@ -179,7 +179,7 @@ export function InspectionView({ id }: { id: string }) {
             battery={results.asLoaded}
             plan={results.plan}
             readOnly
-            country={inspection.country === "US" ? "US" : "BR"}
+            country={inspection.country ?? "BR"}
             fetchRules={(draft) => checkRules(draft)}
             onCountryChange={
               me && inspection.author_id === me.user.id

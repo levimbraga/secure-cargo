@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * 🇧🇷 Brasil / 🇺🇸 United States: whose rules the load is checked against. Independent of the
- * page's language. Switching runs only the rules again: the simulation stays the same.
+ * 🇧🇷 Brasil / 🇺🇸 United States / 🇪🇺 European Union: whose rules the load is checked against.
+ * Independent of the page's language. Switching runs only the rules again: the simulation stays
+ * the same.
  */
 
 import { useTranslations } from "next-intl";
@@ -49,6 +50,37 @@ export function CountrySwitch({
       <p className="type-small mt-1 text-gray" aria-live="polite">
         {busy ? t("rechecking") : error ? t("unavailable") : hint ? t("hint") : null}
       </p>
+    </div>
+  );
+}
+
+/**
+ * EU mode: the body's EN 12642 code, L or XL (on its plate). Unlike the country, it changes the
+ * model: an XL curtain-sider's curtains are side walls, an L one's are not.
+ */
+export function BodyCodeSwitch({ code, onChange, className = "mb-6" }: { code: "L" | "XL" | null; onChange: (code: "L" | "XL") => void; className?: string }) {
+  const t = useTranslations("Driver.country");
+  const shown = code ?? "L";
+  return (
+    <div className={className} data-testid="body-code-switch">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="type-label">{t("code")}</span>
+        <div className="inline-flex rounded-full bg-surface p-1" role="group" aria-label={t("code")}>
+          {(["L", "XL"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={shown === value}
+              onClick={() => value !== shown && onChange(value)}
+              className={pill({ variant: shown === value ? "primary" : "secondary", className: "h-10 px-4" })}
+              data-testid={`code-${value}`}
+            >
+              {value}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="type-small mt-1 text-gray">{t(`codeHint.${shown}`)}{code ? "" : ` ${t("codeAssumed")}`}</p>
     </div>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
 /**
- * The checklist of an inspection, by theme: how the load is secured (CONTRAN 945), weight and
- * axles (CONTRAN 882), the trip's physics (the seven situations), protection, and dimensions.
- * Every item: a mark, a plain explanation, the article or standard, and how to fix it.
+ * The checklist of an inspection, by theme: how the load is secured (CONTRAN 945; FMCSA 393 in
+ * the US; Directive 2014/47/EU Annex III in the EU), weight and axles, the trip's physics (the
+ * seven situations), protection, and dimensions. Every item: a mark, a plain explanation, the
+ * article or standard, how to fix it and, in EU mode, the class a roadside check would give it.
  */
 
 import { useFormatter, useTranslations } from "next-intl";
@@ -35,10 +36,12 @@ export function useSituationName(): (id: SituationResult["id"]) => string {
 }
 
 const US_ONLY_IF_APPLICABLE = new Set(["van_contained", "rolling_articles", "metal_coils", "machinery", "rope_tiedowns"]);
+const EU_ONLY_IF_APPLICABLE = new Set(["eu_tipping", "eu_headboard_height", "eu_body_strength", "eu_devices", "eu_lashing_points"]);
+const EU_DIRECTIONS = new Set(["eu_forward", "eu_sideways", "eu_rearward"]);
 
 /** The article as the page shows it: the older Brazilian checks carry only "Art. 4". */
 function articleOf(article: string): string {
-  return /^(CONTRAN|49 CFR|23 CFR)/.test(article) ? article : `CONTRAN 945/2022, ${article}`;
+  return /^(CONTRAN|49 CFR|23 CFR|Directive|EN )/.test(article) ? article : `CONTRAN 945/2022, ${article}`;
 }
 
 export type Mark = "pass" | "fail" | "warn" | "na" | "advice";
@@ -68,6 +71,7 @@ function Item({
   fix,
   children,
   testId,
+  deficiency = null,
 }: {
   mark: Mark;
   title: ReactNode;
@@ -76,13 +80,28 @@ function Item({
   fix?: ReactNode;
   children?: ReactNode;
   testId?: string;
+  /** EU: the class a roadside inspection would give this failure. */
+  deficiency?: "minor" | "major" | "dangerous" | null;
 }) {
   const t = useTranslations("Driver.checks");
+  const roadside = useTranslations("Driver.roadside");
   return (
-    <li className="flex items-start gap-3 border-t border-hairline py-3" data-check={testId} data-mark={mark}>
+    <li className="flex items-start gap-3 border-t border-hairline py-3" data-check={testId} data-mark={mark} data-deficiency={deficiency ?? undefined}>
       <MarkIcon mark={mark} />
       <span className="min-w-0 flex-1">
         <span className="block text-ink">{title}</span>
+        {deficiency && (
+          <span className="type-small mt-1 block">
+            <span
+              className={`mr-2 inline-flex rounded-full px-2 py-0.5 text-[0.75rem] font-medium ${
+                deficiency === "dangerous" ? "bg-fail text-white" : deficiency === "major" ? "bg-warn-tint text-warn ring-1 ring-warn" : "bg-surface text-ink"
+              }`}
+            >
+              {roadside(deficiency)}
+            </span>
+            <span className="text-gray">{roadside(`${deficiency}Meaning`)}</span>
+          </span>
+        )}
         {detail && <span className="type-small mt-0.5 block text-gray">{detail}</span>}
         {fix && (mark === "fail" || mark === "warn" || mark === "advice") && (
           <span className="type-small mt-1 block text-ink">
@@ -165,20 +184,58 @@ export function Checklist({
   const { nameOf } = useReplayText();
   const country = useShownCountry();
   const us = country === "US";
+  const eu = country === "EU";
   const measure = useShownUnits();
   const situationName = useSituationName();
   const units = (ids: string[]) => ids.map((id) => nameOf(id)).join(", ");
   const tonnes = (kg: number) => measure.weight(kg, { metric: false });
   const metres = (m: number) => measure.length(m);
   const checklist = battery.checklist;
+  /** The numbers behind an EU check, in the page's units ("holds 14.5 t of 20.4 t: 71 %"). */
+  function euNumbers(code: string, values: Record<string, number>, status: string): string | null {
+    if (status === "not_applicable") return null;
+    if (EU_DIRECTIONS.has(code)) {
+      if (values.friction_alone) return t("eu.values.friction", { mu: format.number(values.friction ?? 0) });
+      if (values.blocked) return t("eu.values.blocked");
+      return t("eu.values.held", {
+        held: tonnes(values.held_kg ?? 0),
+        mass: tonnes(values.mass_kg ?? 0),
+        share: format.number(Math.min(values.ratio ?? 0, 9.99), { style: "percent", maximumFractionDigits: 0 }),
+        mu: format.number(values.friction ?? 0),
+      });
+    }
+    if (code === "eu_body_strength" && values.front_dan !== undefined) {
+      return t("eu.values.walls", {
+        code: values.xl ? "XL" : "L",
+        front: measure.capacity((values.front_dan ?? 0) * 10),
+        side: measure.capacity((values.side_dan ?? 0) * 10),
+        rear: measure.capacity((values.rear_dan ?? 0) * 10),
+      });
+    }
+    if (code === "eu_devices" && values.strap_lc_dan !== undefined) {
+      return t("eu.values.straps", { lc: measure.capacity(values.strap_lc_dan * 10), stf: measure.capacity((values.strap_stf_dan ?? 0) * 10) });
+    }
+    if (code === "eu_devices" && values.chain_lc_dan !== undefined) {
+      return t("eu.values.chains", { lc: measure.capacity(values.chain_lc_dan * 10) });
+    }
+    if (code === "eu_lashing_points") {
+      return t("eu.values.points", { point: measure.capacity((values.point_dan ?? 0) * 10), vehicle: tonnes(values.vehicle_kg ?? 0) });
+    }
+    if (code === "eu_headboard_height") {
+      return t("eu.values.height", { height: metres(values.height_m ?? 0), top: metres(values.load_top_m ?? 0) });
+    }
+    return null;
+  }
   const situations = SITUATION_IDS.map((id) => battery.situations.find((s) => s.id === id)).filter((s): s is SituationResult => Boolean(s));
 
   const contranMarks = battery.contran_945.map((check) => contranMark(check.status));
   const weightItems = checklist?.weight ?? [];
   const protectionItems = checklist?.protection ?? [];
   const dimensionItems = checklist?.dimensions ?? [];
-  // EN 12195-1 is the standard behind Brazil's rule; in US mode the CFR checks stand alone.
-  const en = us ? [] : battery.en_12195_1;
+  // EN 12195-1 is the standard behind Brazil's rule; in US mode the CFR checks stand alone, and in
+  // EU mode the EN 12195-1 calculation is the direction checks themselves.
+  const en = us || eu ? [] : battery.en_12195_1;
+  const themes = eu ? "themesEu" : us ? "themesUs" : "themes";
 
   return (
     <section className="mt-14" aria-labelledby="checklist-title" data-testid="checklist">
@@ -187,16 +244,19 @@ export function Checklist({
       </h2>
       <p className="type-small mt-1 text-gray">{t("sentence")}</p>
       <div className="mt-4 border-t border-hairline">
-        <Theme id="securing" title={t(us ? "themesUs.securing" : "themes.securing")} marks={[...contranMarks, ...en.map((c) => (c.meets_standard === false ? "advice" : "pass") as Mark)]}>
+        <Theme id="securing" title={t(`${themes}.securing` as never)} marks={[...contranMarks, ...en.map((c) => (c.meets_standard === false ? "advice" : "pass") as Mark)]}>
           {battery.contran_945
             // US commodity rules that do not apply to this load (no van, no coils...) stay out of the list.
             .filter((check) => !(us && check.status === "not_applicable" && US_ONLY_IF_APPLICABLE.has(check.code)))
+            .filter((check) => !(eu && check.status === "not_applicable" && EU_ONLY_IF_APPLICABLE.has(check.code)))
             .map((check) => {
             const state = check.status === "fail" ? "fail" : check.status === "to_confirm" ? "confirm" : check.status === "not_applicable" ? "na" : "pass";
-            const group = us ? "fmcsa" : "contran";
+            const group = eu ? "eu" : us ? "fmcsa" : "contran";
             const values = "values" in check ? (check.values ?? {}) : {};
-            const numbers =
-              us && check.status !== "not_applicable" && check.code === "aggregate_wll"
+            const deficiency = "deficiency" in check && check.status === "fail" ? (check.deficiency ?? null) : null;
+            const numbers = eu
+              ? euNumbers(check.code, values, check.status)
+              : us && check.status !== "not_applicable" && check.code === "aggregate_wll"
                 ? t("fmcsa.aggregate_wll.values", {
                     aggregate: measure.weight(values.aggregate_kg ?? 0, { metric: false }),
                     required: measure.weight(values.required_kg ?? 0, { metric: false }),
@@ -210,8 +270,9 @@ export function Checklist({
                       blocked: values.blocked ? "yes" : "no",
                     })
                   : null;
-            const title =
-              us && check.code === "front_end_structure" && check.status === "to_confirm"
+            const title = eu
+              ? t(`eu.${check.code}.${state}` as never, { g: format.number(values.acceleration_g ?? 0) } as never)
+              : us && check.code === "front_end_structure" && check.status === "to_confirm"
                 ? t("fmcsa.front_end_structure.confirm", {
                     demand: measure.weight(values.demand_kg ?? 0, { metric: false }),
                     height: measure.length(values.required_height_m ?? 1.22),
@@ -223,6 +284,7 @@ export function Checklist({
                 testId={check.code}
                 mark={contranMark(check.status)}
                 title={title}
+                deficiency={deficiency}
                 detail={
                   <>
                     {numbers && <span className="block">{numbers}</span>}
@@ -255,9 +317,47 @@ export function Checklist({
           ))}
         </Theme>
 
-        <Theme id="weight" title={t(us ? "themesUs.weight" : "themes.weight")} marks={weightItems.map(itemMark)}>
+        <Theme id="weight" title={t(`${themes}.weight` as never)} marks={weightItems.map(itemMark)}>
           {weightItems.map((item, index) => {
             const v = item.values;
+            if (item.code === "eu_axle") {
+              const ratio = v.ratio ?? 0;
+              const color = ratio > 1 ? "bg-fail" : ratio > 0.9 ? "bg-amber" : "bg-pass";
+              return (
+                <Item
+                  key={`eu_axle-${index}`}
+                  testId={`axle-${item.unit_ids[0] ?? index}`}
+                  mark={itemMark(item)}
+                  title={t("weight.eu_axle", { axle: item.unit_ids[0] ?? "rear", load: tonnes(v.load_kg ?? 0), limit: tonnes(v.limit_kg ?? 0) })}
+                  detail={t(v.axles && v.axles > 1 ? "weight.eu_groupExplain" : v.driving ? "weight.eu_drivingExplain" : "weight.eu_axleExplain", {
+                    spread: metres(v.spread_m ?? 0),
+                  })}
+                  article={item.article}
+                  fix={t("weight.us_axleFix")}
+                >
+                  <span className="mt-2 block h-2 w-full max-w-sm overflow-hidden rounded-full bg-surface" aria-hidden>
+                    <span className={`block h-full ${color}`} style={{ width: `${Math.min(ratio / 1.25, 1) * 100}%` }} />
+                  </span>
+                </Item>
+              );
+            }
+            if (item.code === "eu_gross" || item.code === "eu_driving_share") {
+              return (
+                <Item
+                  key={item.code}
+                  testId={item.code}
+                  mark={itemMark(item)}
+                  title={
+                    item.code === "eu_gross"
+                      ? t("weight.eu_gross", { gross: tonnes(v.gross_kg ?? 0), limit: tonnes(v.limit_kg ?? 0) })
+                      : t("weight.eu_driving_share", { share: format.number(v.share ?? 0, { style: "percent", maximumFractionDigits: 0 }) })
+                  }
+                  detail={t(`weight.${item.code}Explain` as never)}
+                  article={item.article}
+                  fix={t(`weight.${item.code}Fix` as never)}
+                />
+              );
+            }
             if (item.code === "us_axle" || item.code === "bridge") {
               const ratio = v.ratio ?? 0;
               const color = ratio > 1 ? "bg-fail" : ratio > 0.9 ? "bg-amber" : "bg-pass";
@@ -338,7 +438,7 @@ export function Checklist({
                 testId={item.code}
                 mark={itemMark(item)}
                 title={title}
-                detail={t((us && item.code === "payload" ? "weight.payloadUsExplain" : `weight.${item.code}Explain`) as never)}
+                detail={t((us && item.code === "payload" ? "weight.payloadUsExplain" : eu && item.code === "payload" ? "weight.payloadEuExplain" : `weight.${item.code}Explain`) as never)}
                 article={item.kind === "advice" ? t("advice") : item.article}
                 fix={t(`weight.${item.code}Fix` as never)}
               />
@@ -360,7 +460,7 @@ export function Checklist({
                   speed: measure.speed(situation.event.speed_kmh),
                   situation: situationName(situation.id),
                 })}
-                article={t(us ? "physicsArticleUs" : "physicsArticle")}
+                article={t(eu ? "physicsArticleEu" : us ? "physicsArticleUs" : "physicsArticle")}
                 fix={t("physicsFix")}
               >
                 {onOpenSituation && (
@@ -403,17 +503,19 @@ export function Checklist({
           ))}
         </Theme>
 
-        <Theme id="dimensions" title={t(us ? "themesUs.dimensions" : "themes.dimensions")} marks={dimensionItems.map(itemMark)}>
+        <Theme id="dimensions" title={t(`${themes}.dimensions` as never)} marks={dimensionItems.map(itemMark)}>
           {dimensionItems.map((item) => (
             <Item
               key={item.code}
               testId={item.code}
               mark={itemMark(item)}
               title={t(`dimensions.${item.code}` as never, {
-                value: metres(item.values.height_m ?? item.values.width_m ?? item.values.overhang_m ?? 0),
+                value: metres(item.values.height_m ?? item.values.width_m ?? item.values.length_m ?? item.values.overhang_m ?? 0),
                 limit: metres(item.values.limit_m ?? 0),
               } as never)}
-              detail={t((us && item.code === "width" ? "dimensions.widthUsExplain" : `dimensions.${item.code}Explain`) as never)}
+              detail={t(
+                (us && item.code === "width" ? "dimensions.widthUsExplain" : `dimensions.${item.code}Explain`) as never,
+              )}
               article={item.article}
               fix={t(`dimensions.${item.code}Fix` as never)}
             />

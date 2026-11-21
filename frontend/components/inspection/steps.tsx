@@ -12,7 +12,7 @@ import { type ReactNode, useEffect, useId, useState } from "react";
 import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
 import { fetchSamples, type Sample } from "@/lib/inspection/samples";
-import { SIZE_INFO, sizesOf, stylesOf, type TruckChoice } from "@/lib/inspection/trucks";
+import { bodyOptions, SIZE_INFO, sizesOf, stylesOf, type TruckChoice } from "@/lib/inspection/trucks";
 import { useMe } from "@/components/app/me-provider";
 import { MAX_PHOTOS, type Shot, type useInspectionFlow } from "@/lib/inspection/use-flow";
 import { describeSplit, perUnitMatches, withWeights } from "@/lib/inspection/weight";
@@ -467,17 +467,20 @@ export function TruckStep({ flow }: { flow: Flow }) {
           <StepHeader label={t("steps.truck")} title={t("truck.bodyTitle")} sentence={t("truck.bodySentence")} />
           <AnalysisLine flow={flow} />
           <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {stylesOf(size ?? "toco").map((option) => (
-              <li key={option}>
+            {bodyOptions(size ?? "toco", state.country).map(({ style: option, code }) => (
+              <li key={`${option}-${code ?? ""}`}>
                 <ChoiceCard
-                  onClick={() => flow.chooseStyle(option)}
-                  selected={state.truck?.style === option}
-                  testId={`style-${option}`}
-                  badge={guess?.style === option ? t("truck.aiPick") : null}
+                  onClick={() => flow.chooseStyle(option, code)}
+                  selected={state.truck?.style === option && (code === null || state.truck?.body_code === code)}
+                  testId={code ? `style-${option}-${code}` : `style-${option}`}
+                  badge={guess?.style === option && code !== "XL" ? t("truck.aiPick") : null}
                 >
-                  <TruckArt size={size ?? "toco"} style={option} className="max-h-16 w-auto self-start" />
-                  <span className="mt-3 block font-[450] text-ink">{t(`styles.${option}.name`)}</span>
-                  <span className="type-small block text-gray">{t(`styles.${option}.hint`)}</span>
+                  <TruckArt size={size ?? "toco"} style={option} code={code} className="max-h-16 w-auto self-start" />
+                  <span className="mt-3 block font-[450] text-ink">
+                    {t(`styles.${option}.name`)}
+                    {code && ` · ${t("truck.code", { code })}`}
+                  </span>
+                  <span className="type-small block text-gray">{code ? t(`truck.codeHint.${code}`) : t(`styles.${option}.hint`)}</span>
                 </ChoiceCard>
               </li>
             ))}

@@ -65,11 +65,33 @@ export function useMainProblem() {
       const when = t(`when.${problem.situation}` as never, { speed } as never);
       return t(`physics.${problem.code}` as never, { when, unit: unitName(problem.unitId) } as never);
     }
-    const axle = problem.code === "axle" || problem.code === "us_axle" ? t(`axleName.${problem.unitId ?? "rear"}` as never) : "";
+    const axle = problem.code === "axle" || problem.code === "us_axle" || problem.code === "eu_axle" ? t(`axleName.${problem.unitId ?? "rear"}` as never) : "";
     const sentence = t(`rule.${problem.code}` as never, { unit: unitName(problem.unitId), axle } as never);
     // "{unit} needs…" starts with a unit's name, written in lower case mid-sentence.
     return sentence.charAt(0).toLocaleUpperCase() + sentence.slice(1);
   };
+}
+
+const DEFICIENCY_RANK = { minor: 1, major: 2, dangerous: 3 } as const;
+
+/**
+ * EU mode: how a roadside inspection would class the load (Directive 2014/47/EU Annex III II.1:
+ * the highest class of its deficiencies), or that it would find none in the securing.
+ */
+export function RoadsideClass({ checks }: { checks: Battery["contran_945"] }) {
+  const t = useTranslations("Driver.roadside");
+  let worst: keyof typeof DEFICIENCY_RANK | null = null;
+  for (const check of checks) {
+    const deficiency = check.status === "fail" && "deficiency" in check ? check.deficiency : null;
+    if (deficiency && (!worst || DEFICIENCY_RANK[deficiency] > DEFICIENCY_RANK[worst])) worst = deficiency;
+  }
+  const tone = worst === "dangerous" ? "bg-fail text-white" : worst === "major" ? "bg-warn-tint text-warn ring-1 ring-warn" : worst ? "bg-surface text-ink" : "bg-pass-tint text-pass";
+  return (
+    <p className="mt-3 flex flex-wrap items-center gap-2" data-testid="roadside-class" data-class={worst ?? "none"}>
+      <span className={`inline-flex rounded-full px-3 py-1 text-[0.8125rem] font-medium ${tone}`}>{t(worst ?? "none")}</span>
+      <span className="type-small text-gray">{t(worst ? `${worst}Meaning` : "noneMeaning")}</span>
+    </p>
+  );
 }
 
 /** The verdict badge as lists and dashboards show it. */
@@ -219,6 +241,7 @@ export function ResultView({
         <p className="type-small mt-2 text-gray">
           {t("verdict.count", { passed: physicsPassed(shown), total: shown.situations.length })}
         </p>
+        {country === "EU" && <RoadsideClass checks={shown.contran_945} />}
         {weightSource === "estimated" && range && (
           <p className="mt-3 inline-flex rounded-full bg-warn-tint px-3 py-1 text-[0.8125rem] font-medium text-warn" data-testid="weight-estimated">
             <EstimatedRange low={range.low_kg} high={range.high_kg} />

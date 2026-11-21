@@ -10,7 +10,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useSyncExternalStore } from "react";
 
 import { UnitsProvider, useShownUnits } from "@/components/units-context";
-import { CountrySwitch } from "@/components/inspection/country-switch";
+import { BodyCodeSwitch, CountrySwitch } from "@/components/inspection/country-switch";
 import { useReasonSentence } from "@/components/lab/lab-result";
 import { Findings, ResultRows, useReplayText } from "@/components/scenario/replay-shared";
 import { SectionLabel } from "@/components/ui/section-label";
@@ -134,6 +134,9 @@ function ExplorerContent({ explorer }: { explorer: ReturnType<typeof useExplorer
         {/* The answer first, as everywhere in the app. */}
           <div className="order-1" aria-live="polite">
           <CountrySwitch country={explorer.country} onChange={explorer.setCountry} className="mb-6" />
+          {explorer.country === "EU" && draft && draft.truck.body !== "flatbed" && (
+            <BodyCodeSwitch code={draft.truck.body_code ?? null} onChange={(code) => explorer.choose("body_code", code)} />
+          )}
           {run && status ? (
             <>
               <VerdictBadge verdict={status === "pass" ? "pass" : "fail"}>{scenario(`verdict.${status}`)}</VerdictBadge>

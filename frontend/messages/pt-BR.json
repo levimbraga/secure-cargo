@@ -168,7 +168,8 @@
       "curtain-sider": "Sider (lona)",
       "potholed-road": "Estrada esburacada",
       "overloaded-strap": "Cinta sobrecarregada",
-      "us-steel-coils": "Bobinas de aço numa prancha de 48 pés (regras dos EUA)"
+      "us-steel-coils": "Bobinas de aço numa prancha de 48 pés (regras dos EUA)",
+      "eu-curtain-pallets": "Paletes num sider código L (regras da UE)"
     },
     "events": {
       "emergency-braking": "Freada de emergência a {speed} km/h, pista seca",
@@ -183,7 +184,8 @@
       "curtain-sider": "Curva fechada a {speed} km/h",
       "potholed-road": "Buraco a {speed} km/h, carroceria com lama",
       "overloaded-strap": "Frenagem de emergência a {speed} km/h, pista seca",
-      "us-steel-coils": "Parada de emergência a {speed}, pista seca"
+      "us-steel-coils": "Parada de emergência a {speed}, pista seca",
+      "eu-curtain-pallets": "Curva fechada a {speed}, pista seca"
     },
     "sentences": {
       "emergency-braking": {
@@ -237,6 +239,10 @@
       "us-steel-coils": {
         "as_loaded": "As bobinas rolam contra as cintas: o 49 CFR 393.120 pede berço e correntes pelo furo.",
         "fixed": "Nos berços, acorrentadas pelo furo para a frente e para trás, as bobinas seguram e a carga está conforme."
+      },
+      "eu-curtain-pallets": {
+        "as_loaded": "Os paletes escorregam pela lona e caem do semirreboque: lona código L não segura nada, deficiência perigosa numa fiscalização.",
+        "fixed": "Com duas cintas por cima de cada palete, eles seguram na curva e a carga cumpre o Anexo III."
       }
     },
     "explanations": {
@@ -291,6 +297,10 @@
       "us-steel-coils": {
         "as_loaded": "Duas bobinas de 19.800 lb atravessadas numa prancha de 48 pés, cada uma sob duas cintas por cima. Nada impede que rolem.",
         "fixed": "Cada bobina fica num berço e é acorrentada pelo furo com quatro correntes, duas para a frente e duas para trás."
+      },
+      "eu-curtain-pallets": {
+        "as_loaded": "Onze paletes de 1,5 t encostados na parede frontal de um sider código L de 13,6 m, sem amarração. Só o atrito (μ 0,45) é menos que os 0,5 g que as regras europeias pedem para os lados.",
+        "fixed": "Duas cintas por cima de cada palete o pressionam para baixo: atrito e cintas seguram mais da metade do peso para os lados (EN 12195-1)."
       }
     },
     "variant": {
@@ -635,7 +645,12 @@
         "us_straight": "Caminhão rígido (EUA)",
         "us_flatbed_48": "Prancha de 48 pés",
         "us_dry_van_53": "Baú de 53 pés",
-        "us_step_deck": "Carreta rebaixada"
+        "us_step_deck": "Carreta rebaixada",
+        "eu_7_5t": "Rígido 7,5 t",
+        "eu_18t": "Rígido 18 t",
+        "eu_26t": "Rígido 26 t",
+        "eu_semi_136": "Articulado 40 t, 13,6 m",
+        "eu_flatbed_136": "Plataforma 40 t, 13,6 m"
       },
       "cargo": {
         "wood_pallet": "Paletes de madeira",
@@ -1364,7 +1379,12 @@
       "bodySentence": "A carroceria decide o que segura a carga além das cintas.",
       "backToSize": "Trocar o tamanho",
       "saveLabel": "Salvar em Meus caminhões",
-      "readNoTruck": "Lemos {units, plural, one {# volume} other {# volumes}} na foto, mas não o caminhão: escolha abaixo."
+      "readNoTruck": "Lemos {units, plural, one {# volume} other {# volumes}} na foto, mas não o caminhão: escolha abaixo.",
+      "code": "código {code}",
+      "codeHint": {
+        "L": "O sider comum: a lona protege da chuva, mas não segura a carga.",
+        "XL": "Reforçado: as lonas seguram 40 % da carga útil para os lados (veja a plaqueta)."
+      }
     },
     "sizes": {
       "axles": "{count, plural, one {# eixo} other {# eixos}}",
@@ -1409,6 +1429,26 @@
       "us_step_deck": {
         "name": "Carreta rebaixada (step deck)",
         "hint": "Piso rebaixado de 38 pés"
+      },
+      "eu_7_5t": {
+        "name": "Rígido 7,5 t",
+        "hint": "Dois eixos, entregas urbanas"
+      },
+      "eu_18t": {
+        "name": "Rígido 18 t",
+        "hint": "Dois eixos, distribuição regional"
+      },
+      "eu_26t": {
+        "name": "Rígido 26 t",
+        "hint": "Três eixos, tração dupla"
+      },
+      "eu_semi_136": {
+        "name": "Articulado 40 t, 13,6 m",
+        "hint": "Cavalo e semirreboque sider ou baú"
+      },
+      "eu_flatbed_136": {
+        "name": "Articulado 40 t, plataforma",
+        "hint": "Cavalo e semirreboque plataforma de 13,6 m"
       }
     },
     "styles": {
@@ -1574,7 +1614,8 @@
         "rear": "eixo traseiro",
         "tractor": "eixos do cavalo",
         "trailer": "eixos da carreta",
-        "steer": "eixo direcional"
+        "steer": "eixo direcional",
+        "drive": "eixo de tração"
       },
       "rule": {
         "devices_allowed": "Cordas seguram {unit}: corda é proibida para amarrar carga.",
@@ -1600,7 +1641,21 @@
         "us_axle": "Os {axle} levam mais que o limite federal.",
         "us_gross": "Caminhão e carga pesam mais de 80.000 lb.",
         "bridge": "Um grupo de eixos leva mais do que a fórmula das pontes permite.",
-        "rear_projection": "A carga passa mais de 4 pés da traseira: precisa de bandeiras."
+        "rear_projection": "A carga passa mais de 4 pés da traseira: precisa de bandeiras.",
+        "eu_forward": "{unit} não está segura para a frente: a amarração segura menos de 0,8 g.",
+        "eu_sideways": "{unit} não está segura para os lados: só o atrito a mantém no caminhão.",
+        "eu_rearward": "{unit} não está segura para trás.",
+        "eu_tipping": "{unit} pode tombar e nada a mantém em pé.",
+        "eu_body_strength": "As lonas não seguram a carga: este sider é código L.",
+        "eu_headboard_height": "{unit} é mais alta que a parede frontal em que se apoia.",
+        "eu_devices": "Cordas seguram {unit}: corda não é amarração certificada.",
+        "eu_lashing_points": "Os pontos de amarração são mais fracos que as amarrações presas neles.",
+        "eu_axle": "O {axle} carrega mais que o limite europeu.",
+        "eu_gross": "Caminhão e carga pesam mais que o limite europeu.",
+        "eu_driving_share": "Pouco peso no eixo de tração: menos de 25 % do total.",
+        "eu_height": "A carga está alta demais: acima de 4,00 m do chão.",
+        "eu_width": "A carga tem mais de 2,55 m de largura.",
+        "eu_length": "Caminhão e carga passam do comprimento europeu."
       }
     },
     "summary": {
@@ -1722,7 +1777,18 @@
         "bridge": "Eixos {first} a {last} ({length} de distância): {load} de {limit}",
         "bridgeExplain": "A fórmula das pontes limita cada grupo de eixos pelo número e pela distância entre eles: W = 500 (LN/(N−1) + 12N + 36).",
         "bridgeFix": "Distribua o peso em mais eixos ou numa distância maior, ou leve menos.",
-        "payloadUsExplain": "Respeite a carga útil da etiqueta de GVWR do caminhão."
+        "payloadUsExplain": "Respeite a carga útil da etiqueta de GVWR do caminhão.",
+        "eu_axle": "{axle, select, steer {Eixo direcional} drive {Eixo de tração} tractor {Eixos do cavalo} trailer {Eixos do semirreboque} front {Eixo dianteiro} other {Eixo traseiro}}: {load} de {limit} permitidos",
+        "eu_axleExplain": "Limite europeu para um eixo simples sem tração: 10 t.",
+        "eu_drivingExplain": "Limite europeu para um eixo de tração: 11,5 t.",
+        "eu_groupExplain": "Limite europeu para um conjunto de eixos a {spread} um do outro (Diretiva 96/53/CE, Anexo I).",
+        "eu_gross": "Caminhão e carga {gross}; o limite é {limit}",
+        "eu_grossExplain": "Tráfego internacional: 18 t com dois eixos, 26 t com três, 40 t para um articulado.",
+        "eu_grossFix": "Tire parte da carga.",
+        "eu_driving_share": "Peso no eixo de tração: {share} do total",
+        "eu_driving_shareExplain": "No tráfego internacional, o eixo de tração carrega pelo menos 25 % do peso total, para ter aderência.",
+        "eu_driving_shareFix": "Leve a carga para a frente, sobre o eixo de tração.",
+        "payloadEuExplain": "Respeite os pesos da plaqueta do fabricante."
       },
       "outcome": {
         "holds": "{situation}: aguenta",
@@ -1775,7 +1841,16 @@
         "us_heightFix": "Confira os estados da rota, ou abaixe a carga.",
         "rear_projection": "Carga além da traseira: {value}",
         "rear_projectionExplain": "Mais de 4 pés além da traseira, a carga precisa de bandeiras vermelhas ou laranja de pelo menos 18 pol na ponta.",
-        "rear_projectionFix": "Ponha as bandeiras, ou mantenha a carga no piso."
+        "rear_projectionFix": "Ponha as bandeiras, ou mantenha a carga no piso.",
+        "eu_height": "Altura a partir do chão: {value} (limite {limit})",
+        "eu_heightExplain": "Caminhão e carga juntos não podem passar de 4,00 m de altura (alguns países permitem mais internamente).",
+        "eu_heightFix": "Abaixe a carga ou carregue menos altura.",
+        "eu_width": "Largura da carga: {value} (limite {limit})",
+        "eu_widthExplain": "Caminhão e carga juntos não podem passar de 2,55 m de largura.",
+        "eu_widthFix": "Mantenha a carga dentro da carroceria.",
+        "eu_length": "Caminhão e carga: {value} de comprimento (limite {limit})",
+        "eu_lengthExplain": "Rígidos 12,00 m, articulados 16,50 m, incluindo a carga que passa da traseira.",
+        "eu_lengthFix": "Mantenha a carga sobre a carroceria."
       },
       "themesUs": {
         "securing": "Como está amarrada · FMCSA 393",
@@ -1850,6 +1925,88 @@
           "confirm": "Cordas são permitidas: confirme que não têm nós e podem ser reapertadas.",
           "explain": "Uma amarração não pode ter nós, e o motorista precisa poder apertá-la na estrada. Corda sem marcação conta com uma carga de trabalho baixa.",
           "fix": "Use cintas com catraca, ou cordas sem nós num tensor."
+        }
+      },
+      "themesEu": {
+        "securing": "Como está amarrada · Diretiva UE 2014/47, Anexo III",
+        "weight": "Peso e eixos · Diretiva UE 96/53",
+        "dimensions": "Dimensões · Diretiva UE 96/53"
+      },
+      "physicsArticleEu": "Simulação MuJoCo · cargas do Anexo III (0,8 g para a frente, 0,5 g para trás e para os lados)",
+      "eu": {
+        "values": {
+          "held": "Segura {held} de {mass} ({share}) · atrito μ {mu}",
+          "friction": "Só o atrito (μ {mu}) basta nesta direção.",
+          "blocked": "Travada por vigas ou calços.",
+          "walls": "Código {code}: parede frontal {front}, laterais {side}, traseira {rear}",
+          "straps": "Cintas: LC {lc} · STF {stf} (como na etiqueta)",
+          "chains": "Correntes: LC {lc} (como na etiqueta)",
+          "points": "Pontos de amarração: {point} cada (veículo de {vehicle}, EN 12640)",
+          "height": "Parede frontal {height}; a carga chega a {top}"
+        },
+        "eu_forward": {
+          "pass": "Segura para a frente numa freada forte ({g} g).",
+          "fail": "Não segura para a frente numa freada forte ({g} g).",
+          "confirm": "Segura para a frente só se a parede frontal for certificada para isso: confirme o código EN 12642.",
+          "na": "Sem carga para segurar.",
+          "explain": "Regra europeia: a amarração precisa segurar 0,8 vez o peso da carga para a frente. Atrito, cintas, correntes e uma parede encostada somam (EN 12195-1).",
+          "fix": "Encoste a carga na parede frontal, ponha cintas por cima ou diagonais na frente."
+        },
+        "eu_sideways": {
+          "pass": "Segura para os lados em curvas e mudanças de faixa ({g} g).",
+          "fail": "Não segura para os lados em curvas e mudanças de faixa ({g} g).",
+          "confirm": "Segura para os lados só se as paredes forem certificadas para isso.",
+          "na": "Sem carga para segurar.",
+          "explain": "A amarração precisa segurar metade do peso da carga para os lados. Lona código L não segura nada; lona XL ou parede de baú segura quando a carga encosta nela (no máximo 15 cm de folga).",
+          "fix": "Ponha cintas por cima da carga, feche as folgas na largura ou use uma carroceria código XL."
+        },
+        "eu_rearward": {
+          "pass": "Segura para trás ({g} g).",
+          "fail": "Não segura para trás ({g} g).",
+          "confirm": "Segura para trás só se a parede traseira for certificada para isso.",
+          "na": "Sem carga para segurar.",
+          "explain": "A amarração precisa segurar metade do peso da carga para trás (arrancadas, subidas).",
+          "fix": "Ponha cintas por cima ou diagonais atrás, ou encoste a carga nas portas traseiras."
+        },
+        "eu_tipping": {
+          "pass": "Os volumes que poderiam tombar estão presos em pé.",
+          "fail": "Um volume que pode tombar não está preso em pé.",
+          "confirm": "Confirme que os volumes altos estão presos em pé.",
+          "na": "Todos os volumes ficam em pé sozinhos.",
+          "explain": "O Anexo III pede que a amarração impeça a carga de inclinar e tombar. Um volume mais alto do que largo tomba antes de escorregar.",
+          "fix": "Ponha cintas por cima, diagonais presas no alto, ou encoste numa parede da altura do centro dele."
+        },
+        "eu_body_strength": {
+          "pass": "As paredes em que a carga se apoia contam pela certificação EN 12642.",
+          "fail": "As lonas de um sider código L não seguram carga.",
+          "confirm": "Consideramos as paredes código L: confira o código na plaqueta da carroceria.",
+          "na": "Plataforma: nenhuma parede da carroceria conta.",
+          "explain": "A EN 12642 classifica a carroceria: parede frontal código L segura 40 % da carga útil (no máximo 5.000 daN), código XL 50 %; paredes e lonas XL seguram 40 %. Lona código L é só proteção contra chuva.",
+          "fix": "Amarre a carga como se não houvesse lona, ou carregue numa carroceria código XL."
+        },
+        "eu_headboard_height": {
+          "pass": "A parede frontal é da altura da carga apoiada nela.",
+          "fail": "A carga apoiada na parede frontal é mais alta que ela.",
+          "confirm": "Confirme a altura da parede frontal: a carga se apoia nela.",
+          "na": "Nenhuma carga se apoia na parede frontal de uma plataforma.",
+          "explain": "Uma parede frontal baixa demais para a carga que trava é deficiência perigosa (Anexo III, Tabela 1, item 10.1.2).",
+          "fix": "Abaixe a carga, ou amarre de modo que ela não dependa da parede frontal."
+        },
+        "eu_devices": {
+          "pass": "Cintas ou correntes certificadas, com LC e STF na etiqueta.",
+          "fail": "Cordas usadas como amarração: não são dispositivos certificados.",
+          "confirm": "Confira as etiquetas das amarrações.",
+          "na": "Sem amarrações.",
+          "explain": "Na UE, as amarrações seguem a EN 12195-2 (cintas), -3 (correntes) e -4 (cabos de aço) e trazem etiqueta com a capacidade (LC) e a tensão padrão (STF) em daN.",
+          "fix": "Troque as cordas por cintas com catraca e etiqueta."
+        },
+        "eu_lashing_points": {
+          "pass": "Os pontos de amarração aguentam o que as amarrações puxam.",
+          "fail": "Os pontos de amarração são mais fracos que as amarrações presas neles.",
+          "confirm": "Confira a certificação dos pontos de amarração.",
+          "na": "Sem amarrações.",
+          "explain": "EN 12640: cada ponto de amarração aguenta 800 daN num veículo de até 7,5 t, 1.000 daN até 12 t e 2.000 daN acima disso. Uma corrente pode puxar mais do que o ponto aguenta.",
+          "fix": "Use mais pontos por volume ou pontos certificados (4.000 daN), e prenda no chassi, não no assoalho de madeira."
         }
       }
     },
@@ -1959,7 +2116,24 @@
       "US": "🇺🇸 Estados Unidos",
       "hint": "A mesma simulação; só mudam as regras e as unidades.",
       "rechecking": "Conferindo as regras de novo…",
-      "unavailable": "As regras do outro país precisam da API, que não está respondendo agora."
+      "unavailable": "As regras do outro país precisam da API, que não está respondendo agora.",
+      "EU": "🇪🇺 União Europeia",
+      "code": "Código da carroceria (EN 12642)",
+      "codeHint": {
+        "L": "Código L: a parede frontal segura 40 % da carga útil (no máximo 5.000 daN); as lonas não seguram nada.",
+        "XL": "Código XL: a parede frontal segura 50 % da carga útil; paredes e lonas, 40 %."
+      },
+      "codeAssumed": "Código não informado: consideramos L."
+    },
+    "roadside": {
+      "none": "Sem deficiência",
+      "noneMeaning": "Numa fiscalização na estrada, a amarração seria considerada suficiente.",
+      "minor": "Deficiência leve",
+      "minorMeaning": "Amarrada, mas o fiscal daria uma orientação de segurança.",
+      "major": "Deficiência grave",
+      "majorMeaning": "Amarração insuficiente: a carga pode se deslocar ou tombar. O caminhão pode ser retido até corrigir.",
+      "dangerous": "Deficiência perigosa",
+      "dangerousMeaning": "Risco de perder a carga: perigo direto no trânsito. O caminhão fica retido até corrigir."
     }
   },
   "Manager": {
@@ -2126,7 +2300,21 @@
       "anchor_points": "Presa no assoalho de madeira",
       "us_axle": "Eixo acima do limite federal",
       "us_gross": "Acima de 80.000 lb",
-      "bridge": "Acima da fórmula das pontes"
+      "bridge": "Acima da fórmula das pontes",
+      "eu_forward": "Solta para a frente (UE)",
+      "eu_sideways": "Solta para os lados (UE)",
+      "eu_rearward": "Solta para trás (UE)",
+      "eu_tipping": "Pode tombar (UE)",
+      "eu_body_strength": "Confia em lona código L",
+      "eu_headboard_height": "Acima da parede frontal (UE)",
+      "eu_devices": "Amarração sem certificação (UE)",
+      "eu_lashing_points": "Pontos de amarração fracos",
+      "eu_axle": "Eixo acima do limite europeu",
+      "eu_gross": "Acima do peso bruto europeu",
+      "eu_driving_share": "Pouco peso no eixo de tração",
+      "eu_height": "Acima de 4,00 m",
+      "eu_width": "Mais de 2,55 m de largura",
+      "eu_length": "Acima do comprimento europeu"
     }
   },
   "Audit": {
