@@ -9,6 +9,7 @@
 import type { ReactNode, Ref } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 
+import { useShownUnits } from "@/components/units-context";
 import type { ChartsLabels } from "@/components/scenario/charts";
 import type { LabelFormat, ViewMode } from "@/components/scene/keyframe-player";
 import type { UnitPanelLabels } from "@/components/scene/unit-panel";
@@ -305,10 +306,11 @@ export function Hud({
   /** More lines, as `<dd>` elements. */
   children?: ReactNode;
 }) {
-  const { t, number, truckState } = useReplayText();
+  const { t, truckState } = useReplayText();
+  const units = useShownUnits();
   return (
     <dl className="pointer-events-none absolute top-2 left-2 rounded-sm bg-paper/90 px-2 py-1 font-mono text-[0.75rem] leading-snug text-ink tabular-nums sm:text-[0.8125rem]">
-      <dd>{t("hud.speed", { value: number(speedMps * 3.6, 0) })}</dd>
+      <dd>{t("hud.speed", { value: units.speed(Math.round(speedMps * 3.6)) })}</dd>
       <dd>{truckState(bedAccel)}</dd>
       {slow && <dd className="text-gray">{t("speed.slow")} 0.25×</dd>}
       {children}

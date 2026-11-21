@@ -48,6 +48,12 @@ export function runBattery(draft: LoadDraft, signal?: AbortSignal): Promise<Batt
   return postJson("/battery", { draft }, LONG_MS, signal);
 }
 
+/** Both countries' rule checks of a load: no simulation, no AI (`POST /battery/checks`). */
+export async function checkRules(draft: LoadDraft, signal?: AbortSignal): Promise<Battery["rules"]> {
+  const checks = await postJson<{ rules?: Battery["rules"] }>("/battery/checks", { draft }, SHORT_MS * 2, signal);
+  return checks.rules ?? null;
+}
+
 export function runPlan(draft: LoadDraft, signal?: AbortSignal): Promise<Plan> {
   return postJson("/plan", { draft }, LONG_MS, signal);
 }
@@ -98,5 +104,8 @@ export function flowCalls(request: <T>(path: string, init?: RequestInit) => Prom
     simulate: (id: string) => post<Battery>(`/inspections/${encodeURIComponent(id)}/simulate`),
     fix: (id: string) => post<Plan>(`/inspections/${encodeURIComponent(id)}/fix`),
     battery: (id: string, kind: "as_loaded" | "fixed") => request<Battery>(`/inspections/${encodeURIComponent(id)}/battery/${kind}`),
+    /** Check the saved load against the other country's rules (no simulation). */
+    setCountry: (id: string, country: "BR" | "US") =>
+      request<{ country: string; verdict: string | null }>(`/inspections/${encodeURIComponent(id)}/country`, { method: "PUT", body: JSON.stringify({ country }) }),
   };
 }

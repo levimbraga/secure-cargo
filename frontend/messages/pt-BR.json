@@ -167,7 +167,8 @@
       "full-trip": "Viagem completa",
       "curtain-sider": "Sider (lona)",
       "potholed-road": "Estrada esburacada",
-      "overloaded-strap": "Cinta sobrecarregada"
+      "overloaded-strap": "Cinta sobrecarregada",
+      "us-steel-coils": "Bobinas de aço numa prancha de 48 pés (regras dos EUA)"
     },
     "events": {
       "emergency-braking": "Freada de emergência a {speed} km/h, pista seca",
@@ -181,7 +182,8 @@
       "full-trip": "Descendo a serra até o porto a {speed} km/h, chuva forte",
       "curtain-sider": "Curva fechada a {speed} km/h",
       "potholed-road": "Buraco a {speed} km/h, carroceria com lama",
-      "overloaded-strap": "Frenagem de emergência a {speed} km/h, pista seca"
+      "overloaded-strap": "Frenagem de emergência a {speed} km/h, pista seca",
+      "us-steel-coils": "Parada de emergência a {speed}, pista seca"
     },
     "sentences": {
       "emergency-braking": {
@@ -231,6 +233,10 @@
       "overloaded-strap": {
         "as_loaded": "A bobina rola contra as duas cintas e as puxa além da capacidade nominal.",
         "fixed": "No berço a bobina não rola; as duas cintas só a mantêm no lugar."
+      },
+      "us-steel-coils": {
+        "as_loaded": "As bobinas rolam contra as cintas: o 49 CFR 393.120 pede berço e correntes pelo furo.",
+        "fixed": "Nos berços, acorrentadas pelo furo para a frente e para trás, as bobinas seguram e a carga está conforme."
       }
     },
     "explanations": {
@@ -281,6 +287,10 @@
       "overloaded-strap": {
         "as_loaded": "Uma bobina de 10 t atravessada numa carreta sob duas cintas por cima. Nada à frente segura o rolamento, então as cintas o recebem.",
         "fixed": "Dois calços de 20 cm seguram a bobina num berço; as mesmas duas cintas a prendem."
+      },
+      "us-steel-coils": {
+        "as_loaded": "Duas bobinas de 19.800 lb atravessadas numa prancha de 48 pés, cada uma sob duas cintas por cima. Nada impede que rolem.",
+        "fixed": "Cada bobina fica num berço e é acorrentada pelo furo com quatro correntes, duas para a frente e duas para trás."
       }
     },
     "variant": {
@@ -394,7 +404,7 @@
       "slow": "câmera lenta"
     },
     "hud": {
-      "speed": "{value} km/h",
+      "speed": "{value}",
       "braking": "{value} g freando",
       "sideways": "{value} g de lado",
       "vertical": "{value} g na vertical",
@@ -467,31 +477,31 @@
       "progress": "Andamento da simulação"
     },
     "reason": {
-      "slides": "Inércia {inertia} kN > atrito {friction} kN: {unit} desliza {slide} cm.",
-      "slidesIntoHeadboard": "Inércia {inertia} kN > atrito {friction} kN: {unit} desliza {slide} cm e bate no painel frontal.",
-      "slidesLoose": "A inércia, {inertia} kN, chega perto do atrito disponível, {friction} kN: {unit} desliza {slide} cm.",
-      "tips": "Momento de tombamento {overturning} kN·m > momento que segura {restoring} kN·m: {unit} inclina {tilt}°.",
-      "leavesBed": "Inércia {inertia} kN > atrito {friction} kN: {unit} desliza para fora do caminhão.",
+      "slides": "Inércia {inertia} > atrito {friction}: {unit} desliza {slide}.",
+      "slidesIntoHeadboard": "Inércia {inertia} > atrito {friction}: {unit} desliza {slide} e bate no painel frontal.",
+      "slidesLoose": "A inércia, {inertia}, chega perto do atrito disponível, {friction}: {unit} desliza {slide}.",
+      "tips": "Momento de tombamento {overturning} > momento que segura {restoring}: {unit} inclina {tilt}°.",
+      "leavesBed": "Inércia {inertia} > atrito {friction}: {unit} desliza para fora do caminhão.",
       "leavesBedPlain": "{unit} cai do caminhão.",
-      "lashingOverloaded": "Uma amarração carrega {force} kN, mais que a capacidade dela, {capacity} kN.",
-      "lashingBroke": "Uma amarração rompe: {force} kN contra uma resistência à ruptura de {capacity} kN.",
-      "headboardOverloaded": "A carga empurra o painel frontal com {force} kN; ele aguenta {capacity} kN (suposição: parede EN 12642 L, 40 % da carga útil, no máximo 50 kN).",
-      "axleOverloaded": "O eixo {axle, select, front {dianteiro} tractor {do cavalo} trailer {da carreta} other {traseiro}} carrega {load} t; o limite legal é {limit} t.",
-      "holds": "Atrito {friction} kN ≥ inércia {inertia} kN: nada se move.",
-      "holdsLashed": "Inércia {inertia} kN > atrito {friction} kN, e as amarrações seguram a diferença: nada se move.",
-      "holdsBarely": "Atrito {friction} kN ≥ inércia {inertia} kN: a carga segura, com pouca folga.",
-      "holdsBarelyLashed": "Inércia {inertia} kN > atrito {friction} kN: as amarrações seguram a carga, com pouca folga.",
-      "slidesIntoWall": "Inércia {inertia} kN > atrito {friction} kN: {unit} desliza {slide} cm e bate na parede frontal com {force} kN; ela aguenta {capacity} kN (suposição: parede EN 12642 L, 40 % da carga útil, no máximo 50 kN).",
-      "slidesAfterLoosening": "A vibração afrouxou as cintas de {before} kN para {after} kN; depois, inércia {inertia} kN > atrito {friction} kN: {unit} desliza {slide} cm.",
-      "rolls": "Nada impede uma carga redonda de rolar: com {inertia} kN de inércia, {unit} rola {slide} cm.",
-      "rollsIntoHeadboard": "Nada impede uma carga redonda de rolar: com {inertia} kN de inércia, {unit} rola {slide} cm até o painel frontal.",
-      "holdsUpright": "Momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} fica em pé, e nada desliza.",
-      "holdsUprightBarely": "Momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} fica em pé, com pouca folga.",
-      "holdsTall": "Atrito {friction} kN ≥ inércia {inertia} kN, e momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} não desliza nem tomba.",
-      "holdsTallLashed": "Inércia {inertia} kN > atrito {friction} kN, e as amarrações seguram a diferença; momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} não desliza nem tomba.",
-      "holdsBlocked": "Inércia {inertia} kN > atrito {friction} kN, e as paredes e travas seguram a diferença: nada se move.",
-      "holdsBarelyBlocked": "Inércia {inertia} kN > atrito {friction} kN: as paredes e travas seguram a carga, com pouca folga.",
-      "holdsTallBlocked": "Inércia {inertia} kN > atrito {friction} kN, e as paredes e travas seguram a diferença; momento de tombamento {overturning} kN·m < momento que segura {restoring} kN·m: {unit} não desliza nem tomba."
+      "lashingOverloaded": "Uma amarração carrega {force}, mais que a capacidade dela, {capacity}.",
+      "lashingBroke": "Uma amarração rompe: {force} contra uma resistência à ruptura de {capacity}.",
+      "headboardOverloaded": "A carga empurra o painel frontal com {force}; ele aguenta {capacity} (suposição: parede EN 12642 L, 40 % da carga útil, no máximo 50 kN).",
+      "axleOverloaded": "O eixo {axle, select, front {dianteiro} tractor {do cavalo} trailer {da carreta} other {traseiro}} carrega {load}; o limite legal é {limit}.",
+      "holds": "Atrito {friction} ≥ inércia {inertia}: nada se move.",
+      "holdsLashed": "Inércia {inertia} > atrito {friction}, e as amarrações seguram a diferença: nada se move.",
+      "holdsBarely": "Atrito {friction} ≥ inércia {inertia}: a carga segura, com pouca folga.",
+      "holdsBarelyLashed": "Inércia {inertia} > atrito {friction}: as amarrações seguram a carga, com pouca folga.",
+      "slidesIntoWall": "Inércia {inertia} > atrito {friction}: {unit} desliza {slide} e bate na parede frontal com {force}; ela aguenta {capacity} (suposição: parede EN 12642 L, 40 % da carga útil, no máximo 50 kN).",
+      "slidesAfterLoosening": "A vibração afrouxou as cintas de {before} para {after}; depois, inércia {inertia} > atrito {friction}: {unit} desliza {slide}.",
+      "rolls": "Nada impede uma carga redonda de rolar: com {inertia} de inércia, {unit} rola {slide}.",
+      "rollsIntoHeadboard": "Nada impede uma carga redonda de rolar: com {inertia} de inércia, {unit} rola {slide} até o painel frontal.",
+      "holdsUpright": "Momento de tombamento {overturning} < momento que segura {restoring}: {unit} fica em pé, e nada desliza.",
+      "holdsUprightBarely": "Momento de tombamento {overturning} < momento que segura {restoring}: {unit} fica em pé, com pouca folga.",
+      "holdsTall": "Atrito {friction} ≥ inércia {inertia}, e momento de tombamento {overturning} < momento que segura {restoring}: {unit} não desliza nem tomba.",
+      "holdsTallLashed": "Inércia {inertia} > atrito {friction}, e as amarrações seguram a diferença; momento de tombamento {overturning} < momento que segura {restoring}: {unit} não desliza nem tomba.",
+      "holdsBlocked": "Inércia {inertia} > atrito {friction}, e as paredes e travas seguram a diferença: nada se move.",
+      "holdsBarelyBlocked": "Inércia {inertia} > atrito {friction}: as paredes e travas seguram a carga, com pouca folga.",
+      "holdsTallBlocked": "Inércia {inertia} > atrito {friction}, e as paredes e travas seguram a diferença; momento de tombamento {overturning} < momento que segura {restoring}: {unit} não desliza nem tomba."
     },
     "live": {
       "badge": "Ao vivo, não certificado",
@@ -516,7 +526,7 @@
       "hint": "Cada mudança simula a carga de novo.",
       "event": "Evento",
       "speed": "Velocidade",
-      "speedValue": "{value} km/h",
+      "speedValue": "{value}",
       "surface": "Pista",
       "straps": "Cintas por volume",
       "strapsAsLoaded": "como carregado",
@@ -549,7 +559,7 @@
       "mud": "Lama",
       "gravel": "Cascalho"
     },
-    "eventLine": "{event} · {speed} km/h · {surface}",
+    "eventLine": "{event} · {speed} · {surface}",
     "transport": {
       "stepBack": "Voltar um quadro (1/30 s)",
       "stepForward": "Avançar um quadro (1/30 s)",
@@ -620,7 +630,12 @@
         "toco": "Toco (2 eixos)",
         "truck": "Truck (3 eixos)",
         "semi": "Carreta",
-        "three_quarter": "3/4 (leve, 2 eixos)"
+        "three_quarter": "3/4 (leve, 2 eixos)",
+        "us_box": "Caminhão baú (Classe 6)",
+        "us_straight": "Caminhão rígido (EUA)",
+        "us_flatbed_48": "Prancha de 48 pés",
+        "us_dry_van_53": "Baú de 53 pés",
+        "us_step_deck": "Carreta rebaixada"
       },
       "cargo": {
         "wood_pallet": "Paletes de madeira",
@@ -649,7 +664,8 @@
         "rope": "Corda",
         "blocking": "Travamento",
         "mat": "Tapete antiderrapante e cintas",
-        "cradle": "Berço para bobina"
+        "cradle": "Berço para bobina",
+        "cradle_chain": "Berço e correntes"
       },
       "road": {
         "straight": "Rodovia reta",
@@ -675,13 +691,17 @@
         "mountain_descent": "Descida longa",
         "long_vibration": "Vibração prolongada",
         "full_trip": "Viagem completa"
+      },
+      "country": {
+        "BR": "Brasil (CONTRAN)",
+        "US": "Estados Unidos (FMCSA)"
       }
     },
     "selectors": {
       "load": "Caminhão e carga",
       "trip": "Viagem",
-      "speedValue": "{value} km/h",
-      "massValue": "{value} kg",
+      "speedValue": "{value}",
+      "massValue": "{value}",
       "fewerUnits": "Um volume a menos",
       "moreUnits": "Um volume a mais",
       "fromOutside": "Esta carga veio de fora do explorador: os seletores mudam o caminhão, a amarração e a viagem; o editor muda os volumes."
@@ -698,7 +718,7 @@
       "refused": "Esse lugar já está ocupado por outro volume.",
       "axles": "Carga por eixo, limite legal (CONTRAN 882/2021)",
       "axle": "{axle, select, front {Eixo dianteiro} rear {Eixos traseiros} tractor {Eixos do cavalo} trailer {Eixos da carreta} other {Eixo {axle}}}",
-      "axleValue": "{load} t de {limit} t · {percent}",
+      "axleValue": "{load} de {limit} · {percent}",
       "units": "Volumes",
       "straps": "{count, plural, =0 {sem cinta} one {# cinta} other {# cintas}}",
       "fewer": "Uma cinta a menos em {unit}",
@@ -757,7 +777,8 @@
         "road": "Estrada",
         "weather": "Pista e clima",
         "event": "Evento",
-        "outcome": "Resultado"
+        "outcome": "Resultado",
+        "country": "Regras"
       },
       "speed": {
         "20_40": "20–40 km/h",
@@ -1183,19 +1204,19 @@
     },
     "situations": {
       "emergency_braking": {
-        "name": "Frenagem de emergência a 80 km/h"
+        "name": "Frenagem de emergência a {speed}"
       },
       "lane_change": {
-        "name": "Mudança brusca de faixa a 80 km/h"
+        "name": "Mudança brusca de faixa a {speed}"
       },
       "sharp_curve": {
-        "name": "Curva fechada a 60 km/h"
+        "name": "Curva fechada a {speed}"
       },
       "pothole": {
-        "name": "Buraco a 60 km/h"
+        "name": "Buraco a {speed}"
       },
       "speed_bump": {
-        "name": "Lombada a 30 km/h"
+        "name": "Lombada a {speed}"
       },
       "mountain_descent": {
         "name": "Descida de serra com chuva forte"
@@ -1259,14 +1280,15 @@
       "restraint": "Amarre a carga com {to} em vez de {from}.",
       "diagonalSets": "{unit}: {to} {chains, select, yes {correntes} other {cintas diagonais}}, que juntas aguentam pelo menos o dobro do peso (CONTRAN 945, art. 4).",
       "spread": "Desempilhe a carga: coloque {count, plural, one {# volume} other {# volumes}} no piso, à frente onde houver espaço. Carga mais baixa tomba menos e não fica acima do painel frontal (CONTRAN 945, art. 8).",
-      "closeGaps": "Empurre a carga {distance} cm para a frente, contra a cabeceira: sem espaço para correr, a cabeceira a segura.",
-      "closeGapsAxles": "Empurre a carga {distance} cm para a frente, até onde os limites dos eixos permitem.",
-      "balanceForward": "Mova a carga {distance} cm para a frente: um eixo levava {load} t, acima do limite de {limit} t.",
-      "balanceBack": "Mova a carga {distance} cm para trás: um eixo levava {load} t, acima do limite de {limit} t.",
+      "closeGaps": "Empurre a carga {distance} para a frente, contra a cabeceira: sem espaço para correr, a cabeceira a segura.",
+      "closeGapsAxles": "Empurre a carga {distance} para a frente, até onde os limites dos eixos permitem.",
+      "balanceForward": "Mova a carga {distance} para a frente: um eixo levava {load}, acima do limite de {limit}.",
+      "balanceBack": "Mova a carga {distance} para trás: um eixo levava {load}, acima do limite de {limit}.",
       "replace_rope": "Troque as cordas por cintas com catraca.",
       "reanchor": "Prenda as amarrações nos pontos de amarração da estrutura metálica, não no assoalho de madeira.",
-      "overweight": "A carga pesa {mass} t; este caminhão pode levar {payload} t. Use um caminhão maior ou divida a carga.",
-      "edge_protectors": "Coloque cantoneiras sob as cintas onde elas cruzam a carga frágil."
+      "overweight": "A carga pesa {mass}; este caminhão pode levar {payload}. Use um caminhão maior ou divida a carga.",
+      "edge_protectors": "Coloque cantoneiras sob as cintas onde elas cruzam a carga frágil.",
+      "replaceRopeUs": "Troque as cordas por cintas com catraca."
     },
     "fix": {
       "title": "Como corrigir",
@@ -1346,7 +1368,7 @@
     },
     "sizes": {
       "axles": "{count, plural, one {# eixo} other {# eixos}}",
-      "line": "{axles, plural, one {# eixo} other {# eixos}} · cerca de {payload} t de carga",
+      "line": "{axles, plural, one {# eixo} other {# eixos}} · cerca de {payload} de carga",
       "vuc": {
         "name": "VUC",
         "hint": "Caminhão urbano pequeno"
@@ -1366,6 +1388,27 @@
       "semi": {
         "name": "Carreta",
         "hint": "Cavalo e semirreboque"
+      },
+      "lineUs": "{axles, plural, one {# eixo} other {# eixos}} · cerca de {payload} de carga · {bed}",
+      "us_box": {
+        "name": "Caminhão baú (Classe 6)",
+        "hint": "Baú de 26 pés, dois eixos"
+      },
+      "us_straight": {
+        "name": "Caminhão rígido",
+        "hint": "Carroceria de 24 pés, eixo duplo atrás"
+      },
+      "us_flatbed_48": {
+        "name": "Prancha de 48 pés",
+        "hint": "Cavalo e carreta prancha"
+      },
+      "us_dry_van_53": {
+        "name": "Baú de 53 pés",
+        "hint": "Cavalo e carreta baú"
+      },
+      "us_step_deck": {
+        "name": "Carreta rebaixada (step deck)",
+        "hint": "Piso rebaixado de 38 pés"
       }
     },
     "styles": {
@@ -1452,15 +1495,15 @@
       "title": "Quanto pesa a carga?",
       "sentence": "A foto não mostra peso, e ele muda tudo: atrito, cintas e eixos.",
       "type": "Digitar o peso",
-      "typeHint": "O total em kg, da nota fiscal ou da balança.",
+      "typeHint": "O total em {unit}, da nota fiscal ou da balança.",
       "invoice": "Ler da nota fiscal",
       "invoiceHint": "Uma foto do DANFE: lemos o peso bruto.",
       "unknown": "Não sei",
       "unknownHint": "Estimamos uma faixa pelo que a foto mostra.",
       "kgLabel": "Peso total da carga",
-      "sampleInvoice": "A nota do exemplo diz {weight} kg.",
+      "sampleInvoice": "A nota do exemplo diz {weight}.",
       "invoiceReading": "Lendo a nota…",
-      "invoiceSays": "A nota diz {weight} kg. Está certo?",
+      "invoiceSays": "A nota diz {weight}. Está certo?",
       "invoiceText": "Impresso como “{text}” no campo PESO BRUTO.",
       "invoiceConfirm": "Sim, usar",
       "invoiceUsed": "Em uso",
@@ -1469,17 +1512,17 @@
       "invoiceNotFound": "Não conseguimos ler o peso bruto nessa foto. Tente mais perto, ou digite.",
       "invoicePhoto": "Fotografar a nota",
       "invoiceWhy": "Só copiamos o número impresso no campo PESO BRUTO; você confirma.",
-      "estimate": "Estimado: de {low} a {high} kg, pelo tipo de carga e pelo tamanho.",
-      "estimateWhy": "Testamos o lado mais pesado, {high} kg, e o resultado diz “peso estimado”.",
+      "estimate": "Estimado: de {low} a {high}, pelo tipo de carga e pelo tamanho.",
+      "estimateWhy": "Testamos o lado mais pesado, {high}, e o resultado diz “peso estimado”.",
       "estimateWaiting": "Esperando a leitura da foto para estimar o peso…",
-      "splitEqual": "≈{each} kg cada, em {count, plural, one {# volume} other {# volumes}}",
-      "splitVaried": "De {min} a {max} kg cada, em {count, plural, one {# volume} other {# volumes}} (pelo tamanho)",
+      "splitEqual": "≈{each} cada, em {count, plural, one {# volume} other {# volumes}}",
+      "splitVaried": "De {min} a {max} cada, em {count, plural, one {# volume} other {# volumes}} (pelo tamanho)",
       "different": "Os volumes têm pesos diferentes?",
       "unit": "Volume {number} (kg)",
-      "perUnitSum": "{sum} de {total} kg. Os volumes precisam somar o total.",
+      "perUnitSum": "{sum} de {total}. Os volumes precisam somar o total.",
       "waitingForPhoto": "Lendo a foto…",
       "next": "Ver o resultado",
-      "same": "Mesmo peso da primeira inspeção: {weight} kg ({source}).",
+      "same": "Mesmo peso da primeira inspeção: {weight} ({source}).",
       "sources": {
         "measured": "digitado",
         "invoice": "da nota fiscal",
@@ -1502,17 +1545,17 @@
         "title": "Não chega inteira."
       },
       "count": "Aguenta {passed} de {total} situações.",
-      "estimated": "Peso estimado: {low}–{high} kg, testado no limite de cima",
+      "estimated": "Peso estimado: {low}–{high}, testado no limite de cima",
       "proven": "Corrigida e comprovada por uma nova foto"
     },
     "problem": {
       "theLoad": "a carga",
       "when": {
-        "emergency_braking": "Numa freada forte a 80 km/h",
-        "lane_change": "Numa troca brusca de faixa a 80 km/h",
-        "sharp_curve": "Numa curva fechada a 60 km/h",
-        "pothole": "Num buraco a 60 km/h",
-        "speed_bump": "Numa lombada a 30 km/h",
+        "emergency_braking": "Numa freada forte a {speed}",
+        "lane_change": "Numa troca brusca de faixa a {speed}",
+        "sharp_curve": "Numa curva fechada a {speed}",
+        "pothole": "Num buraco a {speed}",
+        "speed_bump": "Numa lombada a {speed}",
         "mountain_descent": "Numa descida de serra com chuva forte",
         "long_vibration": "Numa estrada de terra longa"
       },
@@ -1530,7 +1573,8 @@
         "front": "eixo dianteiro",
         "rear": "eixo traseiro",
         "tractor": "eixos do cavalo",
-        "trailer": "eixos da carreta"
+        "trailer": "eixos da carreta",
+        "steer": "eixo direcional"
       },
       "rule": {
         "devices_allowed": "Cordas seguram {unit}: corda é proibida para amarrar carga.",
@@ -1544,7 +1588,19 @@
         "gross": "Caminhão e carga pesam mais que o limite legal.",
         "height": "A carga está alta demais: acima de 4,40 m do chão.",
         "width": "A carga é mais larga que 2,60 m.",
-        "overhang": "A carga passa da traseira do caminhão."
+        "overhang": "A carga passa da traseira do caminhão.",
+        "aggregate_wll": "As amarrações de {unit} somam menos que metade do peso.",
+        "min_tiedowns": "{unit} tem menos amarrações do que o comprimento e o peso pedem.",
+        "front_end_structure": "A cabeceira é baixa ou fraca demais para a carga encostada nela.",
+        "van_contained": "{unit} tem espaço para se mover dentro do baú.",
+        "rolling_articles": "{unit} pode rolar: precisa de calços ou berço.",
+        "metal_coils": "{unit} precisa de berço e correntes pelo furo.",
+        "machinery": "{unit} precisa de pelo menos quatro amarrações na frente e atrás.",
+        "anchor_points": "As amarrações estão presas no assoalho de madeira, não em pontos de ancoragem.",
+        "us_axle": "Os {axle} levam mais que o limite federal.",
+        "us_gross": "Caminhão e carga pesam mais de 80.000 lb.",
+        "bridge": "Um grupo de eixos leva mais do que a fórmula das pontes permite.",
+        "rear_projection": "A carga passa mais de 4 pés da traseira: precisa de bandeiras."
       }
     },
     "summary": {
@@ -1552,7 +1608,7 @@
       "line": "{truck} · {axles, plural, one {# eixo} other {# eixos}} · {units, plural, one {# volume} other {# volumes}} ({cargo}) · {restraint} · {position}",
       "position": {
         "headboard": "encostada na cabeceira",
-        "gap": "a {gap} m da cabeceira"
+        "gap": "a {gap} da cabeceira"
       },
       "restraint": {
         "straps": "{count, plural, =0 {sem cintas} one {# cinta} other {# cintas}}",
@@ -1639,24 +1695,34 @@
         "fix": "Acrescente cintas até cada volume ter as que a norma pede."
       },
       "weight": {
-        "axle": "{axle, select, front {Eixo dianteiro} tractor {Eixos do cavalo} trailer {Eixos da carreta} other {Eixo traseiro}}: {load} t de {limit} t permitidas",
-        "axleExplain": "A balança multa acima de {tolerance} t (tolerância de 12,5 %), mas o carregamento deve respeitar o próprio limite.",
+        "axle": "{axle, select, front {Eixo dianteiro} tractor {Eixos do cavalo} trailer {Eixos da carreta} other {Eixo traseiro}}: {load} de {limit} permitidas",
+        "axleExplain": "A balança multa acima de {tolerance} (tolerância de 12,5 %), mas o carregamento deve respeitar o próprio limite.",
         "axleFix": "Mova a carga para frente ou para trás para dividir entre os eixos, ou tire uma parte.",
-        "payload": "Carga de {cargo} t; este caminhão leva cerca de {payload} t",
+        "payload": "Carga de {cargo}; este caminhão leva cerca de {payload}",
         "payloadExplain": "Nenhum caminhão pode levar mais que o fabricante permite (a lotação na plaqueta).",
         "payloadFix": "Use um caminhão maior ou divida a carga.",
-        "gross": "Caminhão e carga com {gross} t; o limite é {limit} t",
+        "gross": "Caminhão e carga com {gross}; o limite é {limit}",
         "grossExplain": "O peso bruto de um caminhão sem reboque é limitado a 29 t.",
         "grossFix": "Tire parte da carga.",
         "lateralOk": "O peso está centralizado de um lado ao outro.",
-        "lateral": "O peso está {offset} cm fora do centro, para um lado.",
+        "lateral": "O peso está {offset} fora do centro, para um lado.",
         "lateral_balanceExplain": "Peso de um lado inclina o caminhão nas curvas e sobrecarrega uma fileira de pneus.",
         "lateral_balanceFix": "Leve os volumes pesados para o meio do assoalho.",
         "frontOk": "Fica peso suficiente no eixo dianteiro para esterçar.",
         "front": "Só {share} do peso está no eixo dianteiro.",
         "front_axle_shareExplain": "Com pouco peso na frente, o caminhão esterça e freia pior.",
         "front_axle_shareFix": "Leve os volumes pesados para a frente, perto da cabine.",
-        "none": "Nada para conferir aqui."
+        "none": "Nada a conferir aqui.",
+        "us_axle": "{axle, select, steer {Eixo direcional} tractor {Eixos de tração} trailer {Eixos da carreta} front {Eixo dianteiro} other {Eixo traseiro}}: {load} de {limit} permitidos",
+        "us_axleExplain": "Limite federal: 20.000 lb num eixo, 34.000 lb num eixo duplo (tandem). Os limites já incluem as tolerâncias.",
+        "us_axleFix": "Mova a carga para a frente ou para trás para dividir entre os eixos, ou tire uma parte.",
+        "us_gross": "Caminhão e carga com {gross}; o limite é {limit}",
+        "us_grossExplain": "Nenhum veículo pode pesar mais de 80.000 lb nas rodovias interestaduais.",
+        "us_grossFix": "Tire uma parte da carga.",
+        "bridge": "Eixos {first} a {last} ({length} de distância): {load} de {limit}",
+        "bridgeExplain": "A fórmula das pontes limita cada grupo de eixos pelo número e pela distância entre eles: W = 500 (LN/(N−1) + 12N + 36).",
+        "bridgeFix": "Distribua o peso em mais eixos ou numa distância maior, ou leve menos.",
+        "payloadUsExplain": "Respeite a carga útil da etiqueta de GVWR do caminhão."
       },
       "outcome": {
         "holds": "{situation}: aguenta",
@@ -1667,7 +1733,7 @@
         "hits": "{situation}: a carga bate na cabine",
         "strap": "{situation}: uma cinta cede"
       },
-      "physicsExplain": "Simulado no motor de física: o caminhão, esta carga e as cintas, a {speed} km/h.",
+      "physicsExplain": "Simulado no motor de física: o caminhão, esta carga e as cintas, a {speed}.",
       "physicsArticle": "Simulação MuJoCo · cargas da EN 12195-1",
       "physicsFix": "Veja “Como deixar segura” abaixo.",
       "seeIt": "Ver acontecer",
@@ -1686,22 +1752,105 @@
           "explain": "Onde a cinta cruza caixas ou sacos, ela corta e perde tensão; a cantoneira espalha a força.",
           "fix": "Coloque uma cantoneira sob cada cinta nas quinas da carga."
         },
-        "headboardKnown": "Cabeceira de {height} m; a carga chega a {top} m.",
-        "headboardConfirm": "Altura da cabeceira a confirmar: usamos {height} m; a carga chega a {top} m.",
+        "headboardKnown": "Cabeceira de {height}; a carga chega a {top}.",
+        "headboardConfirm": "Altura da cabeceira a confirmar: usamos {height}; a carga chega a {top}.",
         "headboardExplain": "A cabeceira (a parede atrás da cabine) só segura a carga numa freada até a altura dela.",
-        "headboardLabel": "Altura da cabeceira (m)",
-        "headboardSave": "Conferir de novo"
+        "headboardLabel": "Altura da cabeceira ({unit})",
+        "headboardSave": "Conferir de novo",
+        "headboardExplainUs": "A cabeceira segura a carga numa freada forte só até a sua altura; contra a carga, deve chegar a 4 pés ou à altura da carga."
       },
       "dimensions": {
-        "height": "Altura do chão: {value} m (limite {limit} m)",
+        "height": "Altura do chão: {value} (limite {limit})",
         "heightExplain": "Caminhão e carga juntos não podem passar de 4,40 m de altura.",
         "heightFix": "Abaixe a carga ou carregue menos altura.",
-        "width": "Largura da carga: {value} m (limite {limit} m)",
+        "width": "Largura da carga: {value} (limite {limit})",
         "widthExplain": "Caminhão e carga juntos não podem passar de 2,60 m de largura.",
         "widthFix": "Mantenha a carga dentro do assoalho.",
-        "overhang": "Carga além da traseira: {value} m",
+        "overhang": "Carga além da traseira: {value}",
         "overhangExplain": "Carga para fora da traseira aumenta o comprimento e exige sinalização.",
-        "overhangFix": "Mantenha a carga no assoalho, ou sinalize e confira o limite de comprimento."
+        "overhangFix": "Mantenha a carga no assoalho, ou sinalize e confira o limite de comprimento.",
+        "widthUsExplain": "Na rede nacional, veículo e carga podem ter até 102 polegadas de largura.",
+        "us_height": "Altura do chão: {value} (a maioria dos estados permite {limit})",
+        "us_heightExplain": "Não há limite federal de altura; os estados permitem de 13 pés e 6 pol a 14 pés e 6 pol.",
+        "us_heightFix": "Confira os estados da rota, ou abaixe a carga.",
+        "rear_projection": "Carga além da traseira: {value}",
+        "rear_projectionExplain": "Mais de 4 pés além da traseira, a carga precisa de bandeiras vermelhas ou laranja de pelo menos 18 pol na ponta.",
+        "rear_projectionFix": "Ponha as bandeiras, ou mantenha a carga no piso."
+      },
+      "themesUs": {
+        "securing": "Como está amarrada · FMCSA 393",
+        "weight": "Peso e eixos · 23 CFR 658",
+        "dimensions": "Dimensões · limites federais"
+      },
+      "physicsArticleUs": "Simulação MuJoCo · cargas do 49 CFR 393.102 (0,8 g para a frente, 0,5 g para trás e para os lados)",
+      "fmcsa": {
+        "aggregate_wll": {
+          "pass": "A carga de trabalho (WLL) das amarrações soma pelo menos metade do peso.",
+          "fail": "A carga de trabalho (WLL) das amarrações soma menos que metade do peso.",
+          "na": "As paredes do baú seguram a carga: não há amarrações a somar.",
+          "values": "Pior volume: {aggregate} de {required} necessários · {indirect} por cima, {direct} diretas.",
+          "explain": "Uma amarração por cima, de um lado ao outro, conta a WLL inteira; uma do caminhão até a carga (direta) conta metade.",
+          "fix": "Ponha mais amarrações por cima, ou use outras com WLL maior (na etiqueta)."
+        },
+        "min_tiedowns": {
+          "pass": "Amarrações suficientes para o comprimento e o peso de cada volume.",
+          "fail": "Poucas amarrações para o comprimento e o peso de um volume.",
+          "na": "Nenhum volume preso por amarrações.",
+          "values": "{installed} instaladas, {required} exigidas{blocked, select, yes { (travado na frente)} other {}}.",
+          "explain": "Até 5 pés e 1.100 lb: 1; até 10 pés: 2; depois, mais uma a cada 10 pés. Travado na frente: uma a cada 10 pés.",
+          "fix": "Ponha mais amarrações, ou encoste a carga na cabeceira para travá-la na frente."
+        },
+        "front_end_structure": {
+          "pass": "A cabeceira é alta e forte o bastante para a carga encostada.",
+          "fail": "A cabeceira é baixa ou fraca demais para a carga encostada.",
+          "na": "Nenhuma carga encosta na cabeceira.",
+          "confirm": "Confirme a cabeceira: ela deve aguentar {demand} para a frente e chegar a {height}.",
+          "explain": "Contra a carga que trava, a cabeceira deve chegar a 4 pés (ou à altura da carga) e aguentar metade do peso da carga (0,4 se tiver 6 pés ou mais).",
+          "fix": "Use uma cabeceira mais alta ou certificada, ou segure a carga com amarrações."
+        },
+        "van_contained": {
+          "pass": "Todo volume encosta na parede da frente ou na carga à frente.",
+          "fail": "A carga tem espaço para se mover dentro do baú.",
+          "na": "Vale dentro de um baú.",
+          "explain": "Num baú com paredes resistentes, a carga deve estar encostada, ou bem perto, de uma parede ou de outra carga.",
+          "fix": "Feche os vãos, ou ponha calços, escoras ou barras de carga."
+        },
+        "rolling_articles": {
+          "pass": "Tudo o que pode rolar está calçado ou num berço.",
+          "fail": "Algo redondo pode rolar.",
+          "na": "Nada no piso tende a rolar.",
+          "explain": "Tubos, bobinas e outras cargas redondas precisam de calços, cunhas ou berço que não se soltem.",
+          "fix": "Calce ou ponha num berço a carga redonda."
+        },
+        "metal_coils": {
+          "pass": "Toda bobina está num berço e acorrentada pelo furo, para a frente e para trás.",
+          "fail": "Uma bobina está sem berço ou sem correntes pelo furo.",
+          "na": "Nenhuma bobina de 5.000 lb ou mais.",
+          "explain": "Uma bobina de 5.000 lb ou mais com o furo atravessado precisa de um berço que a tire do piso e de amarrações pelo furo contra o movimento para a frente e para trás; cintas por cima não bastam.",
+          "fix": "Ponha cada bobina num berço e acorrente-a pelo furo, para a frente e para trás."
+        },
+        "machinery": {
+          "pass": "Cada máquina tem pelo menos quatro amarrações na frente e atrás.",
+          "fail": "Uma máquina tem menos de quatro amarrações na frente e atrás.",
+          "na": "Nenhuma máquina de 10.000 lb ou mais.",
+          "explain": "Máquinas de 10.000 lb ou mais, com rodas ou esteiras, precisam de pelo menos quatro amarrações, perto da frente e da traseira.",
+          "fix": "Acorrente a máquina em quatro pontos, dois na frente e dois atrás."
+        },
+        "anchor_points": {
+          "pass": "As amarrações estão nos pontos de ancoragem do caminhão.",
+          "fail": "As amarrações estão presas no assoalho ou na grade de madeira.",
+          "na": "Nenhuma amarração a conferir.",
+          "explain": "Os pontos de ancoragem precisam aguentar a carga; assoalho ou grade de madeira não são um deles.",
+          "fix": "Prenda cada amarração num ponto de ancoragem no chassi."
+        },
+        "rope_tiedowns": {
+          "pass": "Sem cordas.",
+          "fail": "Há cordas.",
+          "na": "Sem cordas.",
+          "confirm": "Cordas são permitidas: confirme que não têm nós e podem ser reapertadas.",
+          "explain": "Uma amarração não pode ter nós, e o motorista precisa poder apertá-la na estrada. Corda sem marcação conta com uma carga de trabalho baixa.",
+          "fix": "Use cintas com catraca, ou cordas sem nós num tensor."
+        }
       }
     },
     "fix": {
@@ -1780,8 +1929,8 @@
       "nickname": "Apelido (opcional)",
       "size": "Tamanho",
       "body": "Carroceria",
-      "bedLength": "Comprimento da carroceria (m)",
-      "headboard": "Altura da cabeceira (m)",
+      "bedLength": "Comprimento da carroceria ({unit})",
+      "headboard": "Altura da cabeceira ({unit})",
       "anchors": "Pontos de amarração por lado",
       "save": "Salvar caminhão",
       "saving": "Salvando…",
@@ -1803,6 +1952,14 @@
       "estimated": "Peso estimado, testado no limite de cima",
       "disclaimer": "O SecureCargo é uma ferramenta de apoio à decisão, não uma certificação de engenharia.",
       "try": "Confira a sua carga"
+    },
+    "country": {
+      "label": "Regras",
+      "BR": "🇧🇷 Brasil",
+      "US": "🇺🇸 Estados Unidos",
+      "hint": "A mesma simulação; só mudam as regras e as unidades.",
+      "rechecking": "Conferindo as regras de novo…",
+      "unavailable": "As regras do outro país precisam da API, que não está respondendo agora."
     }
   },
   "Manager": {
@@ -1958,7 +2115,18 @@
       "gross": "Acima do peso bruto",
       "height": "Alta demais",
       "width": "Larga demais",
-      "overhang": "Passa da traseira"
+      "overhang": "Passa da traseira",
+      "aggregate_wll": "Amarrações abaixo de metade do peso",
+      "min_tiedowns": "Poucas amarrações",
+      "front_end_structure": "Cabeceira baixa ou fraca",
+      "van_contained": "Espaço para se mover no baú",
+      "rolling_articles": "Pode rolar, sem calços",
+      "metal_coils": "Bobina sem berço e correntes",
+      "machinery": "Máquina com menos de 4 amarrações",
+      "anchor_points": "Presa no assoalho de madeira",
+      "us_axle": "Eixo acima do limite federal",
+      "us_gross": "Acima de 80.000 lb",
+      "bridge": "Acima da fórmula das pontes"
     }
   },
   "Audit": {
@@ -2010,7 +2178,8 @@
       "reinspected": "Foto nova tirada depois da correção",
       "shared": "Link público compartilhado",
       "unshared": "Link público desligado",
-      "certificate_issued": "Certificado {id} emitido"
+      "certificate_issued": "Certificado {id} emitido",
+      "country_changed": "Regras trocadas para {country, select, US {os Estados Unidos} other {o Brasil}}"
     },
     "weightSource": {
       "measured": "digitado",

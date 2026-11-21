@@ -12,12 +12,14 @@ import { type ReactNode, useEffect, useId, useState } from "react";
 import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
 import { fetchSamples, type Sample } from "@/lib/inspection/samples";
-import { BODY_STYLES, SIZE_INFO, TRUCK_SIZES, type TruckChoice } from "@/lib/inspection/trucks";
+import { SIZE_INFO, sizesOf, stylesOf, type TruckChoice } from "@/lib/inspection/trucks";
 import { useMe } from "@/components/app/me-provider";
 import { MAX_PHOTOS, type Shot, type useInspectionFlow } from "@/lib/inspection/use-flow";
 import { describeSplit, perUnitMatches, withWeights } from "@/lib/inspection/weight";
+import { useUnits } from "@/lib/units";
 
 import { GuidedCamera, Silhouette } from "./camera";
+import { CountrySwitch } from "./country-switch";
 import { TruckArt } from "./truck-art";
 
 type Flow = ReturnType<typeof useInspectionFlow>;
@@ -418,15 +420,17 @@ export function TruckStep({ flow }: { flow: Flow }) {
   const stage = state.truckStage;
   const size = state.truck?.size ?? null;
   const style = state.truck?.style ?? guess?.style ?? "open_low_sides";
+  const units = useUnits(state.country);
 
   return (
     <section aria-labelledby="truck-title" data-testid="truck-step" data-stage={stage}>
       {stage === "size" ? (
         <>
           <StepHeader label={t("steps.truck")} title={t("truck.sizeTitle")} sentence={t("truck.sizeSentence")} />
+          <CountrySwitch country={state.country} onChange={flow.setCountry} className="mt-6" hint={false} />
           <AnalysisLine flow={flow} />
           <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {TRUCK_SIZES.map((option) => (
+            {sizesOf(state.country).map((option) => (
               <li key={option}>
                 <ChoiceCard
                   onClick={() => flow.chooseSize(option)}
@@ -434,13 +438,23 @@ export function TruckStep({ flow }: { flow: Flow }) {
                   testId={`size-${option}`}
                   badge={guess?.size === option ? t("truck.aiPick") : null}
                 >
-                  <TruckArt size={option} style={style} className="max-h-16 w-auto self-start" />
+                  <TruckArt
+                    size={option}
+                    style={stylesOf(option).includes(style) ? style : (stylesOf(option)[0] ?? style)}
+                    className="max-h-16 w-auto self-start"
+                  />
                   <span className="mt-3 block font-[450] text-ink">{t(`sizes.${option}.name`)}</span>
                   <span className="type-small block text-gray">
-                    {t("sizes.line", {
-                      axles: SIZE_INFO[option].axles,
-                      payload: format.number(SIZE_INFO[option].payloadT),
-                    })}
+                    {SIZE_INFO[option].payloadLb
+                      ? t("sizes.lineUs", {
+                          axles: SIZE_INFO[option].axles,
+                          payload: units.weight(0, { lb: SIZE_INFO[option].payloadLb, metric: false }),
+                          bed: units.length(SIZE_INFO[option].bedM),
+                        })
+                      : t("sizes.line", {
+                          axles: SIZE_INFO[option].axles,
+                          payload: `${format.number(SIZE_INFO[option].payloadT)} t`,
+                        })}
                   </span>
                   <span className="type-small block text-gray">{t(`sizes.${option}.hint`)}</span>
                 </ChoiceCard>
@@ -453,7 +467,7 @@ export function TruckStep({ flow }: { flow: Flow }) {
           <StepHeader label={t("steps.truck")} title={t("truck.bodyTitle")} sentence={t("truck.bodySentence")} />
           <AnalysisLine flow={flow} />
           <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {BODY_STYLES.map((option) => (
+            {stylesOf(size ?? "toco").map((option) => (
               <li key={option}>
                 <ChoiceCard
                   onClick={() => flow.chooseStyle(option)}
@@ -481,7 +495,6 @@ export function TruckStep({ flow }: { flow: Flow }) {
 
 export function WeightStep({ flow, title }: { flow: Flow; title: string }) {
   const t = useTranslations("Driver");
-  const format = useFormatter();
   const { state } = flow;
   const inputId = useId();
   const invoiceId = useId();
@@ -497,7 +510,9 @@ export function WeightStep({ flow, title }: { flow: Flow; title: string }) {
             : null,
   );
   const [perUnitOpen, setPerUnitOpen] = useState(false);
-  const kg = (value: number) => format.number(Math.round(value));
+  const measure = useUnits(state.country);
+  const kg = (value: number) => measure.mass(value);
+  const us = state.country === "US";
   const perception = state.perception;
   const units = perception?.draft.units ?? [];
   const simulated = flow.simulatedKg;
@@ -528,7 +543,7 @@ export function WeightStep({ flow, title }: { flow: Flow; title: string }) {
         <li>
           <ChoiceCard selected={mode === "type"} onClick={() => setMode("type")} testId="weight-type">
             <span className="block font-[450] text-ink">{t("weight.type")}</span>
-            <span className="type-small block text-gray">{t("weight.typeHint")}</span>
+            <span className="type-small block text-gray">{t("weight.typeHint", { unit: measure.weightUnit })}</span>
           </ChoiceCard>
         </li>
         <li>
@@ -563,14 +578,22 @@ export function WeightStep({ flow, title }: { flow: Flow; title: string }) {
               type="number"
               inputMode="numeric"
               min={1}
-              max={80000}
+              max={us ? 176000 : 80000}
               autoFocus
-              value={state.weightSource === "measured" || (state.weightSource === "invoice" && state.sample) ? (state.totalKg ?? "") : ""}
-              onChange={(event) => flow.setWeight("measured", event.target.value ? Number(event.target.value) : null)}
+              value={
+                state.weightSource === "measured" || (state.weightSource === "invoice" && state.sample)
+                  ? state.totalKg
+                    ? Math.round(measure.weightOut(state.totalKg))
+                    : ""
+                  : ""
+              }
+              onChange={(event) =>
+                flow.setWeight("measured", event.target.value ? Math.round(measure.weightIn(Number(event.target.value)) * 10) / 10 : null)
+              }
               className="h-14 w-48 rounded border border-control bg-paper px-3 font-mono text-lg"
               data-testid="weight-input"
             />
-            <span className="text-gray">kg</span>
+            <span className="text-gray">{measure.weightUnit}</span>
           </div>
           {state.sample && state.weightSource === "invoice" && <p className="type-small mt-2 text-gray">{t("weight.sampleInvoice", { weight: kg(state.sample.weight_kg) })}</p>}
         </div>

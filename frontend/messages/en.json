@@ -167,7 +167,8 @@
       "full-trip": "Full trip",
       "curtain-sider": "Curtain-sider",
       "potholed-road": "Potholed road",
-      "overloaded-strap": "Overloaded strap"
+      "overloaded-strap": "Overloaded strap",
+      "us-steel-coils": "Steel coils on a 48 ft flatbed (US rules)"
     },
     "events": {
       "emergency-braking": "Emergency stop from {speed} km/h, dry road",
@@ -181,7 +182,8 @@
       "full-trip": "Down the mountain to the port at {speed} km/h, heavy rain",
       "curtain-sider": "Sharp curve at {speed} km/h",
       "potholed-road": "Pothole at {speed} km/h, muddy deck",
-      "overloaded-strap": "Emergency stop from {speed} km/h, dry road"
+      "overloaded-strap": "Emergency stop from {speed} km/h, dry road",
+      "us-steel-coils": "Emergency stop from {speed}, dry road"
     },
     "sentences": {
       "emergency-braking": {
@@ -231,6 +233,10 @@
       "overloaded-strap": {
         "as_loaded": "The coil rolls against its two straps and pulls them past their rated capacity.",
         "fixed": "In a cradle the coil cannot roll; the two straps just keep it in place."
+      },
+      "us-steel-coils": {
+        "as_loaded": "The coils roll against their straps: 49 CFR 393.120 asks for a cradle and chains through the eye.",
+        "fixed": "In cradles, chained through the eye forward and back, the coils hold and the load complies."
       }
     },
     "explanations": {
@@ -281,6 +287,10 @@
       "overloaded-strap": {
         "as_loaded": "A 10 t coil lying across a semi-trailer under two top-over straps. Nothing in front of it stops the roll, so the straps take it.",
         "fixed": "Two 20 cm chocks hold the coil in a cradle; the same two straps hold it down."
+      },
+      "us-steel-coils": {
+        "as_loaded": "Two 19,800 lb coils lying across a 48 ft flatbed, each under two straps over the top. Nothing stops them rolling.",
+        "fixed": "Each coil sits in a cradle and is chained through its eye with four chains, two forward and two back."
       }
     },
     "variant": {
@@ -394,7 +404,7 @@
       "slow": "slow motion"
     },
     "hud": {
-      "speed": "{value} km/h",
+      "speed": "{value}",
       "braking": "{value} g braking",
       "sideways": "{value} g sideways",
       "vertical": "{value} g vertical",
@@ -467,31 +477,31 @@
       "progress": "Simulation progress"
     },
     "reason": {
-      "slides": "Inertia {inertia} kN > friction {friction} kN: {unit} slides {slide} cm.",
-      "slidesIntoHeadboard": "Inertia {inertia} kN > friction {friction} kN: {unit} slides {slide} cm and hits the headboard.",
-      "slidesLoose": "Inertia {inertia} kN is close to the friction available, {friction} kN: {unit} slides {slide} cm.",
-      "tips": "Overturning moment {overturning} kN·m > holding moment {restoring} kN·m: {unit} tips {tilt}°.",
-      "leavesBed": "Inertia {inertia} kN > friction {friction} kN: {unit} slides off the truck.",
+      "slides": "Inertia {inertia} > friction {friction}: {unit} slides {slide}.",
+      "slidesIntoHeadboard": "Inertia {inertia} > friction {friction}: {unit} slides {slide} and hits the headboard.",
+      "slidesLoose": "Inertia {inertia} is close to the friction available, {friction}: {unit} slides {slide}.",
+      "tips": "Overturning moment {overturning} > holding moment {restoring}: {unit} tips {tilt}°.",
+      "leavesBed": "Inertia {inertia} > friction {friction}: {unit} slides off the truck.",
       "leavesBedPlain": "{unit} falls off the truck.",
-      "lashingOverloaded": "A lashing carries {force} kN, more than its capacity of {capacity} kN.",
-      "lashingBroke": "A lashing breaks: {force} kN against a breaking strength of {capacity} kN.",
-      "headboardOverloaded": "The cargo presses on the headboard with {force} kN; it is rated for {capacity} kN (assumed: an EN 12642 L wall, 40 % of the payload, at most 50 kN).",
-      "axleOverloaded": "The {axle, select, front {front} tractor {tractor} trailer {trailer} other {rear}} axle carries {load} t; the legal limit is {limit} t.",
-      "holds": "Friction {friction} kN ≥ inertia {inertia} kN: nothing moves.",
-      "holdsLashed": "Inertia {inertia} kN > friction {friction} kN, and the lashings take the difference: nothing moves.",
-      "holdsBarely": "Friction {friction} kN ≥ inertia {inertia} kN: the load holds, with little margin.",
-      "holdsBarelyLashed": "Inertia {inertia} kN > friction {friction} kN: the lashings hold the load, with little margin.",
-      "slidesIntoWall": "Inertia {inertia} kN > friction {friction} kN: {unit} slides {slide} cm and hits the front wall with {force} kN; it is rated for {capacity} kN (assumed: an EN 12642 L wall, 40 % of the payload, at most 50 kN).",
-      "slidesAfterLoosening": "Vibration loosened the straps from {before} kN to {after} kN; then inertia {inertia} kN > friction {friction} kN: {unit} slides {slide} cm.",
-      "rolls": "Nothing stops a round load from rolling: with {inertia} kN of inertia, {unit} rolls {slide} cm.",
-      "rollsIntoHeadboard": "Nothing stops a round load from rolling: with {inertia} kN of inertia, {unit} rolls {slide} cm into the headboard.",
-      "holdsUpright": "Overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} stays upright, and nothing slides.",
-      "holdsUprightBarely": "Overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} stays upright, with little margin.",
-      "holdsTall": "Friction {friction} kN ≥ inertia {inertia} kN, and overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} neither slides nor tips.",
-      "holdsTallLashed": "Inertia {inertia} kN > friction {friction} kN, and the lashings take the difference; overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} neither slides nor tips.",
-      "holdsBlocked": "Inertia {inertia} kN > friction {friction} kN, and the walls and blocks take the difference: nothing moves.",
-      "holdsBarelyBlocked": "Inertia {inertia} kN > friction {friction} kN: the walls and blocks hold the load, with little margin.",
-      "holdsTallBlocked": "Inertia {inertia} kN > friction {friction} kN, and the walls and blocks take the difference; overturning moment {overturning} kN·m < holding moment {restoring} kN·m: {unit} neither slides nor tips."
+      "lashingOverloaded": "A lashing carries {force}, more than its capacity of {capacity}.",
+      "lashingBroke": "A lashing breaks: {force} against a breaking strength of {capacity}.",
+      "headboardOverloaded": "The cargo presses on the headboard with {force}; it is rated for {capacity} (assumed: an EN 12642 L wall, 40 % of the payload, at most 50 kN).",
+      "axleOverloaded": "The {axle, select, front {front} tractor {tractor} trailer {trailer} other {rear}} axle carries {load}; the legal limit is {limit}.",
+      "holds": "Friction {friction} ≥ inertia {inertia}: nothing moves.",
+      "holdsLashed": "Inertia {inertia} > friction {friction}, and the lashings take the difference: nothing moves.",
+      "holdsBarely": "Friction {friction} ≥ inertia {inertia}: the load holds, with little margin.",
+      "holdsBarelyLashed": "Inertia {inertia} > friction {friction}: the lashings hold the load, with little margin.",
+      "slidesIntoWall": "Inertia {inertia} > friction {friction}: {unit} slides {slide} and hits the front wall with {force}; it is rated for {capacity} (assumed: an EN 12642 L wall, 40 % of the payload, at most 50 kN).",
+      "slidesAfterLoosening": "Vibration loosened the straps from {before} to {after}; then inertia {inertia} > friction {friction}: {unit} slides {slide}.",
+      "rolls": "Nothing stops a round load from rolling: with {inertia} of inertia, {unit} rolls {slide}.",
+      "rollsIntoHeadboard": "Nothing stops a round load from rolling: with {inertia} of inertia, {unit} rolls {slide} into the headboard.",
+      "holdsUpright": "Overturning moment {overturning} < holding moment {restoring}: {unit} stays upright, and nothing slides.",
+      "holdsUprightBarely": "Overturning moment {overturning} < holding moment {restoring}: {unit} stays upright, with little margin.",
+      "holdsTall": "Friction {friction} ≥ inertia {inertia}, and overturning moment {overturning} < holding moment {restoring}: {unit} neither slides nor tips.",
+      "holdsTallLashed": "Inertia {inertia} > friction {friction}, and the lashings take the difference; overturning moment {overturning} < holding moment {restoring}: {unit} neither slides nor tips.",
+      "holdsBlocked": "Inertia {inertia} > friction {friction}, and the walls and blocks take the difference: nothing moves.",
+      "holdsBarelyBlocked": "Inertia {inertia} > friction {friction}: the walls and blocks hold the load, with little margin.",
+      "holdsTallBlocked": "Inertia {inertia} > friction {friction}, and the walls and blocks take the difference; overturning moment {overturning} < holding moment {restoring}: {unit} neither slides nor tips."
     },
     "live": {
       "badge": "Live, not certified",
@@ -516,7 +526,7 @@
       "hint": "Every change simulates the load again.",
       "event": "Event",
       "speed": "Speed",
-      "speedValue": "{value} km/h",
+      "speedValue": "{value}",
       "surface": "Road surface",
       "straps": "Straps per unit",
       "strapsAsLoaded": "as loaded",
@@ -549,7 +559,7 @@
       "mud": "Mud",
       "gravel": "Gravel"
     },
-    "eventLine": "{event} · {speed} km/h · {surface}",
+    "eventLine": "{event} · {speed} · {surface}",
     "transport": {
       "stepBack": "One frame back (1/30 s)",
       "stepForward": "One frame forward (1/30 s)",
@@ -620,7 +630,12 @@
         "toco": "Toco (2 axles)",
         "truck": "Truck (3 axles)",
         "semi": "Semi-trailer",
-        "three_quarter": "3/4 (light, 2 axles)"
+        "three_quarter": "3/4 (light, 2 axles)",
+        "us_box": "Box truck (Class 6)",
+        "us_straight": "Straight truck",
+        "us_flatbed_48": "48 ft flatbed",
+        "us_dry_van_53": "53 ft dry van",
+        "us_step_deck": "Step deck"
       },
       "cargo": {
         "wood_pallet": "Wood pallets",
@@ -649,7 +664,8 @@
         "rope": "Rope",
         "blocking": "Blocking",
         "mat": "Anti-slip mat and straps",
-        "cradle": "Coil cradle"
+        "cradle": "Coil cradle",
+        "cradle_chain": "Coil cradle and chains"
       },
       "road": {
         "straight": "Straight highway",
@@ -675,13 +691,17 @@
         "mountain_descent": "Long descent",
         "long_vibration": "Long vibration",
         "full_trip": "Full trip"
+      },
+      "country": {
+        "BR": "Brazil (CONTRAN)",
+        "US": "United States (FMCSA)"
       }
     },
     "selectors": {
       "load": "Truck and load",
       "trip": "Trip",
-      "speedValue": "{value} km/h",
-      "massValue": "{value} kg",
+      "speedValue": "{value}",
+      "massValue": "{value}",
       "fewerUnits": "One unit fewer",
       "moreUnits": "One unit more",
       "fromOutside": "This load came from outside the explorer: the selectors change the truck, the securing and the trip; the editor changes the units."
@@ -698,7 +718,7 @@
       "refused": "That place is taken by another unit.",
       "axles": "Axle loads, legal limit (CONTRAN 882/2021)",
       "axle": "{axle, select, front {Front axle} rear {Rear axles} tractor {Tractor axles} trailer {Trailer axles} other {Axle {axle}}}",
-      "axleValue": "{load} t of {limit} t · {percent}",
+      "axleValue": "{load} of {limit} · {percent}",
       "units": "Units",
       "straps": "{count, plural, =0 {no strap} one {# strap} other {# straps}}",
       "fewer": "One strap fewer on {unit}",
@@ -757,7 +777,8 @@
         "road": "Road",
         "weather": "Surface and weather",
         "event": "Event",
-        "outcome": "Outcome"
+        "outcome": "Outcome",
+        "country": "Rules"
       },
       "speed": {
         "20_40": "20–40 km/h",
@@ -1183,19 +1204,19 @@
     },
     "situations": {
       "emergency_braking": {
-        "name": "Emergency braking at 80 km/h"
+        "name": "Emergency braking at {speed}"
       },
       "lane_change": {
-        "name": "Sudden lane change at 80 km/h"
+        "name": "Sudden lane change at {speed}"
       },
       "sharp_curve": {
-        "name": "Sharp curve at 60 km/h"
+        "name": "Sharp curve at {speed}"
       },
       "pothole": {
-        "name": "Pothole at 60 km/h"
+        "name": "Pothole at {speed}"
       },
       "speed_bump": {
-        "name": "Speed bump at 30 km/h"
+        "name": "Speed bump at {speed}"
       },
       "mountain_descent": {
         "name": "Mountain descent in heavy rain"
@@ -1259,14 +1280,15 @@
       "restraint": "Secure the load with {to} instead of {from}.",
       "diagonalSets": "{unit}: {to} {chains, select, yes {chains} other {diagonal straps}}, rated together for at least twice its weight (CONTRAN 945, art. 4).",
       "spread": "Unstack the load: set {count, plural, one {# unit} other {# units}} down on the floor, forward where there is room. Lower cargo tips less and is not above the headboard (CONTRAN 945, art. 8).",
-      "closeGaps": "Push the load {distance} cm forward against the headboard: with no room to travel, the headboard stops it.",
-      "closeGapsAxles": "Push the load {distance} cm forward, as far as the axle limits allow.",
-      "balanceForward": "Move the load {distance} cm forward: an axle carried {load} t, over its {limit} t limit.",
-      "balanceBack": "Move the load {distance} cm back: an axle carried {load} t, over its {limit} t limit.",
+      "closeGaps": "Push the load {distance} forward against the headboard: with no room to travel, the headboard stops it.",
+      "closeGapsAxles": "Push the load {distance} forward, as far as the axle limits allow.",
+      "balanceForward": "Move the load {distance} forward: an axle carried {load}, over its {limit} limit.",
+      "balanceBack": "Move the load {distance} back: an axle carried {load}, over its {limit} limit.",
       "replace_rope": "Replace the ropes with ratchet straps.",
       "reanchor": "Hook the lashings to the lashing points on the metal frame, not the wooden floor.",
-      "overweight": "The cargo weighs {mass} t; this truck may carry {payload} t. Use a larger truck or split the load.",
-      "edge_protectors": "Put edge protectors under the straps where they cross fragile cargo."
+      "overweight": "The cargo weighs {mass}; this truck may carry {payload}. Use a larger truck or split the load.",
+      "edge_protectors": "Put edge protectors under the straps where they cross fragile cargo.",
+      "replaceRopeUs": "Replace the ropes with ratchet straps."
     },
     "fix": {
       "title": "How to fix it",
@@ -1346,7 +1368,7 @@
     },
     "sizes": {
       "axles": "{count, plural, one {# axle} other {# axles}}",
-      "line": "{axles, plural, one {# axle} other {# axles}} · about {payload} t of cargo",
+      "line": "{axles, plural, one {# axle} other {# axles}} · about {payload} of cargo",
       "vuc": {
         "name": "VUC",
         "hint": "Small urban truck"
@@ -1366,6 +1388,27 @@
       "semi": {
         "name": "Semi-trailer",
         "hint": "Tractor and trailer"
+      },
+      "lineUs": "{axles, plural, one {# axle} other {# axles}} · about {payload} of cargo · {bed}",
+      "us_box": {
+        "name": "Box truck (Class 6)",
+        "hint": "26 ft box, two axles"
+      },
+      "us_straight": {
+        "name": "Straight truck",
+        "hint": "24 ft bed, tandem rear axles"
+      },
+      "us_flatbed_48": {
+        "name": "48 ft flatbed",
+        "hint": "Tractor and flatbed trailer"
+      },
+      "us_dry_van_53": {
+        "name": "53 ft dry van",
+        "hint": "Tractor and enclosed trailer"
+      },
+      "us_step_deck": {
+        "name": "Step deck",
+        "hint": "Trailer with a 38 ft lower deck"
       }
     },
     "styles": {
@@ -1452,15 +1495,15 @@
       "title": "How much does the cargo weigh?",
       "sentence": "A photo cannot show weight, and it changes everything: friction, straps and axles.",
       "type": "Type the weight",
-      "typeHint": "The total in kg, from the invoice or the scale.",
+      "typeHint": "The total in {unit}, from the invoice or the scale.",
       "invoice": "Read from invoice",
       "invoiceHint": "A photo of the DANFE: we read the gross weight.",
       "unknown": "I don't know",
       "unknownHint": "We estimate a range from what the photo shows.",
       "kgLabel": "Total cargo weight",
-      "sampleInvoice": "The sample's invoice says {weight} kg.",
+      "sampleInvoice": "The sample's invoice says {weight}.",
       "invoiceReading": "Reading the invoice…",
-      "invoiceSays": "The invoice says {weight} kg. Is that right?",
+      "invoiceSays": "The invoice says {weight}. Is that right?",
       "invoiceText": "Printed as “{text}” in the PESO BRUTO box.",
       "invoiceConfirm": "Yes, use it",
       "invoiceUsed": "Using it",
@@ -1469,17 +1512,17 @@
       "invoiceNotFound": "We could not read the gross weight on that photo. Try again closer, or type it.",
       "invoicePhoto": "Photograph the invoice",
       "invoiceWhy": "We only copy the number printed in the gross weight (PESO BRUTO) box; you confirm it.",
-      "estimate": "Estimated: {low} to {high} kg, from the cargo type and its size.",
-      "estimateWhy": "We test the heavier end, {high} kg, and the result says “weight estimated”.",
+      "estimate": "Estimated: {low} to {high}, from the cargo type and its size.",
+      "estimateWhy": "We test the heavier end, {high}, and the result says “weight estimated”.",
       "estimateWaiting": "Waiting for the photo reading to estimate the weight…",
-      "splitEqual": "≈{each} kg each across {count, plural, one {# unit} other {# units}}",
-      "splitVaried": "{min} to {max} kg each across {count, plural, one {# unit} other {# units}} (by size)",
+      "splitEqual": "≈{each} each across {count, plural, one {# unit} other {# units}}",
+      "splitVaried": "{min} to {max} each across {count, plural, one {# unit} other {# units}} (by size)",
       "different": "Units have different weights?",
       "unit": "Unit {number} (kg)",
-      "perUnitSum": "{sum} of {total} kg. The units must add up to the total.",
+      "perUnitSum": "{sum} of {total}. The units must add up to the total.",
       "waitingForPhoto": "Reading the photo…",
       "next": "See the result",
-      "same": "Same weight as the first inspection: {weight} kg ({source}).",
+      "same": "Same weight as the first inspection: {weight} ({source}).",
       "sources": {
         "measured": "typed",
         "invoice": "from the invoice",
@@ -1502,17 +1545,17 @@
         "title": "Does not arrive intact."
       },
       "count": "Holds in {passed} of {total} situations.",
-      "estimated": "Weight estimated: {low}–{high} kg, tested at the upper end",
+      "estimated": "Weight estimated: {low}–{high}, tested at the upper end",
       "proven": "Fixed and proven by a new photo"
     },
     "problem": {
       "theLoad": "the load",
       "when": {
-        "emergency_braking": "In hard braking at 80 km/h",
-        "lane_change": "In a sudden lane change at 80 km/h",
-        "sharp_curve": "In a sharp curve at 60 km/h",
-        "pothole": "Over a pothole at 60 km/h",
-        "speed_bump": "Over a speed bump at 30 km/h",
+        "emergency_braking": "In hard braking at {speed}",
+        "lane_change": "In a sudden lane change at {speed}",
+        "sharp_curve": "In a sharp curve at {speed}",
+        "pothole": "Over a pothole at {speed}",
+        "speed_bump": "Over a speed bump at {speed}",
         "mountain_descent": "On a mountain descent in heavy rain",
         "long_vibration": "On a long dirt road"
       },
@@ -1530,7 +1573,8 @@
         "front": "front axle",
         "rear": "rear axle",
         "tractor": "tractor's axles",
-        "trailer": "trailer's axles"
+        "trailer": "trailer's axles",
+        "steer": "steer axle"
       },
       "rule": {
         "devices_allowed": "Ropes hold {unit}: ropes are banned as cargo lashing.",
@@ -1544,7 +1588,19 @@
         "gross": "The truck and cargo weigh more than the legal limit.",
         "height": "The load is too tall: above 4.40 m from the road.",
         "width": "The load is wider than 2.60 m.",
-        "overhang": "The load sticks out past the back of the truck."
+        "overhang": "The load sticks out past the back of the truck.",
+        "aggregate_wll": "The tiedowns on {unit} add up to less than half its weight.",
+        "min_tiedowns": "{unit} has fewer tiedowns than its length and weight call for.",
+        "front_end_structure": "The headboard is too low or too weak for the cargo against it.",
+        "van_contained": "{unit} has room to move inside the van.",
+        "rolling_articles": "{unit} could roll: it needs chocks or a cradle.",
+        "metal_coils": "{unit} needs a cradle and chains through the eye.",
+        "machinery": "{unit} needs at least four tiedowns at its front and rear.",
+        "anchor_points": "The tiedowns are hooked to the wooden floor, not rated anchor points.",
+        "us_axle": "The {axle} carry more than the federal limit.",
+        "us_gross": "The truck and cargo weigh more than 80,000 lb.",
+        "bridge": "A group of axles carries more than the bridge formula allows.",
+        "rear_projection": "The load sticks out more than 4 ft at the rear: it needs flags."
       }
     },
     "summary": {
@@ -1552,7 +1608,7 @@
       "line": "{truck} · {axles, plural, one {# axle} other {# axles}} · {units, plural, one {# unit} other {# units}} ({cargo}) · {restraint} · {position}",
       "position": {
         "headboard": "against the headboard",
-        "gap": "{gap} m from the headboard"
+        "gap": "{gap} from the headboard"
       },
       "restraint": {
         "straps": "{count, plural, =0 {no straps} one {# strap} other {# straps}}",
@@ -1639,24 +1695,34 @@
         "fix": "Add straps until each unit has as many as the standard asks for."
       },
       "weight": {
-        "axle": "{axle, select, front {Front axle} tractor {Tractor axles} trailer {Trailer axles} other {Rear axle}}: {load} t of {limit} t allowed",
-        "axleExplain": "Scales fine above {tolerance} t (the 12.5 % tolerance), but loading must respect the limit itself.",
+        "axle": "{axle, select, front {Front axle} tractor {Tractor axles} trailer {Trailer axles} other {Rear axle}}: {load} of {limit} allowed",
+        "axleExplain": "Scales fine above {tolerance} (the 12.5 % tolerance), but loading must respect the limit itself.",
         "axleFix": "Move the load forward or back to share it between the axles, or take some off.",
-        "payload": "Cargo {cargo} t; this truck carries about {payload} t",
+        "payload": "Cargo {cargo}; this truck carries about {payload}",
         "payloadExplain": "No truck may carry more than its maker allows (the payload on the door sticker).",
         "payloadFix": "Use a bigger truck or split the load.",
-        "gross": "Truck and cargo {gross} t; the limit is {limit} t",
+        "gross": "Truck and cargo {gross}; the limit is {limit}",
         "grossExplain": "The gross weight of a rigid truck is limited to 29 t.",
         "grossFix": "Take some of the load off.",
         "lateralOk": "The weight is centred side to side.",
-        "lateral": "The weight sits {offset} cm off centre, to one side.",
+        "lateral": "The weight sits {offset} off centre, to one side.",
         "lateral_balanceExplain": "Weight on one side leans the truck in curves and loads one row of tyres.",
         "lateral_balanceFix": "Move heavy units towards the middle of the deck.",
         "frontOk": "Enough weight stays on the front axle to steer.",
         "front": "Only {share} of the weight is on the front axle.",
         "front_axle_shareExplain": "With too little weight up front, the truck steers and brakes worse.",
         "front_axle_shareFix": "Move heavy units forward, towards the cab.",
-        "none": "Nothing to check here."
+        "none": "Nothing to check here.",
+        "us_axle": "{axle, select, steer {Steer axle} tractor {Drive axles} trailer {Trailer axles} front {Front axle} other {Rear axle}}: {load} of {limit} allowed",
+        "us_axleExplain": "Federal limit: 20,000 lb on one axle, 34,000 lb on a tandem. The limits include every tolerance.",
+        "us_axleFix": "Move the load forward or back to share it between the axles, or take some off.",
+        "us_gross": "Truck and cargo {gross}; the limit is {limit}",
+        "us_grossExplain": "No vehicle may weigh more than 80,000 lb on the Interstate System.",
+        "us_grossFix": "Take some of the load off.",
+        "bridge": "Axles {first} to {last} ({length} apart): {load} of {limit}",
+        "bridgeExplain": "The bridge formula limits every group of axles by how many they are and how far apart: W = 500 (LN/(N−1) + 12N + 36).",
+        "bridgeFix": "Spread the weight over more axles or a longer wheelbase, or carry less.",
+        "payloadUsExplain": "Stay within the payload on the truck's GVWR label."
       },
       "outcome": {
         "holds": "{situation}: holds",
@@ -1667,7 +1733,7 @@
         "hits": "{situation}: the load hits the cab",
         "strap": "{situation}: a strap gives way"
       },
-      "physicsExplain": "Simulated with the physics engine: the truck, this load and its straps, at {speed} km/h.",
+      "physicsExplain": "Simulated with the physics engine: the truck, this load and its straps, at {speed}.",
       "physicsArticle": "MuJoCo simulation · EN 12195-1 loads",
       "physicsFix": "See “How to make it safe” below.",
       "seeIt": "See it happen",
@@ -1686,22 +1752,105 @@
           "explain": "Where a strap crosses cartons or sacks it cuts in and loses tension; a corner protector spreads the force.",
           "fix": "Put a corner protector under each strap on the cargo's edges."
         },
-        "headboardKnown": "Headboard {height} m; the load reaches {top} m.",
-        "headboardConfirm": "Headboard height to confirm: we used {height} m; the load reaches {top} m.",
+        "headboardKnown": "Headboard {height}; the load reaches {top}.",
+        "headboardConfirm": "Headboard height to confirm: we used {height}; the load reaches {top}.",
         "headboardExplain": "The headboard (the wall behind the cab) stops the load in hard braking only up to its height.",
-        "headboardLabel": "Headboard height (m)",
-        "headboardSave": "Re-check"
+        "headboardLabel": "Headboard height ({unit})",
+        "headboardSave": "Re-check",
+        "headboardExplainUs": "The headboard stops the load in hard braking only up to its height; against cargo it must reach 4 ft or the cargo's height."
       },
       "dimensions": {
-        "height": "Height from the road: {value} m (limit {limit} m)",
+        "height": "Height from the road: {value} (limit {limit})",
         "heightExplain": "Truck and load together may not be taller than 4.40 m.",
         "heightFix": "Lower the load or load less height.",
-        "width": "Load width: {value} m (limit {limit} m)",
+        "width": "Load width: {value} (limit {limit})",
         "widthExplain": "Truck and load together may not be wider than 2.60 m.",
         "widthFix": "Keep the load within the deck.",
-        "overhang": "Load past the back of the truck: {value} m",
+        "overhang": "Load past the back of the truck: {value}",
         "overhangExplain": "Cargo sticking out the back adds to the truck's length and needs a warning sign.",
-        "overhangFix": "Keep the load on the deck, or signal it and check the length limit."
+        "overhangFix": "Keep the load on the deck, or signal it and check the length limit.",
+        "widthUsExplain": "On the National Network a vehicle and its load may be 102 in wide.",
+        "us_height": "Height from the road: {value} (most states allow {limit})",
+        "us_heightExplain": "There is no federal height limit; states allow 13 ft 6 in to 14 ft 6 in.",
+        "us_heightFix": "Check the states on the route, or lower the load.",
+        "rear_projection": "Load past the back of the truck: {value}",
+        "rear_projectionExplain": "More than 4 ft past the rear, the load needs red or orange flags of at least 18 in at its end.",
+        "rear_projectionFix": "Fit the flags, or keep the load on the deck."
+      },
+      "themesUs": {
+        "securing": "How it is secured · FMCSA 393",
+        "weight": "Weight and axles · 23 CFR 658",
+        "dimensions": "Dimensions · federal limits"
+      },
+      "physicsArticleUs": "MuJoCo simulation · 49 CFR 393.102 loads (0.8 g forward, 0.5 g back and sideways)",
+      "fmcsa": {
+        "aggregate_wll": {
+          "pass": "The tiedowns' working load limits add up to at least half the weight.",
+          "fail": "The tiedowns' working load limits add up to less than half the weight.",
+          "na": "The van's walls hold the load: no tiedowns to count.",
+          "values": "Worst article: {aggregate} of {required} needed · {indirect} over the top, {direct} direct.",
+          "explain": "A tiedown over the top, side to side, counts its full WLL; one from the truck to the cargo (direct) counts half.",
+          "fix": "Add tiedowns over the top, or use ones with a higher WLL (on the label)."
+        },
+        "min_tiedowns": {
+          "pass": "Enough tiedowns for each article's length and weight.",
+          "fail": "Too few tiedowns for an article's length and weight.",
+          "na": "No articles held by tiedowns.",
+          "values": "{installed} installed, {required} required{blocked, select, yes { (blocked in front)} other {}}.",
+          "explain": "Up to 5 ft and 1,100 lb: 1; up to 10 ft: 2; then one more for every 10 ft. Blocked in front: one per 10 ft.",
+          "fix": "Add tiedowns, or push the cargo against the headboard so it is blocked in front."
+        },
+        "front_end_structure": {
+          "pass": "The headboard is tall and strong enough for the cargo against it.",
+          "fail": "The headboard is too low or too weak for the cargo against it.",
+          "na": "No cargo touches the headboard.",
+          "confirm": "Confirm the headboard: it must hold {demand} forward and reach {height}.",
+          "explain": "Against the cargo it blocks, the headboard must reach 4 ft (or the cargo's height) and hold half the cargo's weight (0.4 if 6 ft or taller).",
+          "fix": "Use a taller or rated headboard, or hold the cargo with tiedowns instead."
+        },
+        "van_contained": {
+          "pass": "Every article touches the front wall or the cargo ahead.",
+          "fail": "Cargo has room to move inside the van.",
+          "na": "Applies inside a van.",
+          "explain": "Cargo in a van with walls of adequate strength must be in contact with, or close to, a wall or other cargo.",
+          "fix": "Close the gaps, or add blocking, bracing or load bars."
+        },
+        "rolling_articles": {
+          "pass": "Everything that could roll is chocked or cradled.",
+          "fail": "Something round could roll.",
+          "na": "Nothing on the deck is likely to roll.",
+          "explain": "Pipes, coils and other round cargo need chocks, wedges or a cradle that cannot come loose.",
+          "fix": "Chock or cradle the round cargo."
+        },
+        "metal_coils": {
+          "pass": "Every coil is cradled and chained through the eye, forward and back.",
+          "fail": "A coil lacks a cradle or chains through its eye.",
+          "na": "No metal coils of 5,000 lb or more.",
+          "explain": "A coil of 5,000 lb or more with its eye crosswise needs a cradle that lifts it off the deck and tiedowns through the eye against forward and rearward motion; straps over the top are not enough.",
+          "fix": "Put each coil in a cradle and chain it through the eye, forward and back."
+        },
+        "machinery": {
+          "pass": "Each machine has at least four tiedowns at its front and rear.",
+          "fail": "A machine has fewer than four tiedowns at its front and rear.",
+          "na": "No machinery of 10,000 lb or more.",
+          "explain": "Machinery of 10,000 lb or more on wheels or tracks needs at least four tiedowns, close to its front and rear.",
+          "fix": "Chain the machine at four points, two at the front and two at the rear."
+        },
+        "anchor_points": {
+          "pass": "Tiedowns are hooked to the truck's anchor points.",
+          "fail": "Tiedowns are hooked to the wooden floor or rails.",
+          "na": "No tiedowns to check.",
+          "explain": "Anchor points must be strong enough for the load; a wooden floor or rail is not one.",
+          "fix": "Hook every tiedown to a rated anchor point on the frame."
+        },
+        "rope_tiedowns": {
+          "pass": "No ropes.",
+          "fail": "Ropes are used.",
+          "na": "No ropes.",
+          "confirm": "Ropes are allowed: confirm they have no knots and can be re-tightened.",
+          "explain": "A tiedown may not contain knots, and the driver must be able to tighten it on the road. Unmarked rope counts with a low working load limit.",
+          "fix": "Use ratchet straps, or ropes without knots on a tensioner."
+        }
       }
     },
     "fix": {
@@ -1780,8 +1929,8 @@
       "nickname": "Nickname (optional)",
       "size": "Size",
       "body": "Body",
-      "bedLength": "Bed length (m)",
-      "headboard": "Headboard height (m)",
+      "bedLength": "Bed length ({unit})",
+      "headboard": "Headboard height ({unit})",
       "anchors": "Lashing points per side",
       "save": "Save truck",
       "saving": "Saving…",
@@ -1803,6 +1952,14 @@
       "estimated": "Weight estimated, tested at the upper end",
       "disclaimer": "SecureCargo is a decision-support tool, not an engineering certification.",
       "try": "Check your own load"
+    },
+    "country": {
+      "label": "Rules",
+      "BR": "🇧🇷 Brasil",
+      "US": "🇺🇸 United States",
+      "hint": "Same simulation; only the rules and units change.",
+      "rechecking": "Checking the rules again…",
+      "unavailable": "The other country's rules need the API, which is not reachable right now."
     }
   },
   "Manager": {
@@ -1958,7 +2115,18 @@
       "gross": "Over the gross weight",
       "height": "Too tall",
       "width": "Too wide",
-      "overhang": "Sticks out at the rear"
+      "overhang": "Sticks out at the rear",
+      "aggregate_wll": "Tiedowns under half the weight",
+      "min_tiedowns": "Too few tiedowns",
+      "front_end_structure": "Headboard too low or weak",
+      "van_contained": "Room to move in the van",
+      "rolling_articles": "Could roll, no chocks",
+      "metal_coils": "Coil without cradle and chains",
+      "machinery": "Machine with under 4 tiedowns",
+      "anchor_points": "Hooked to the wooden floor",
+      "us_axle": "Axle over the federal limit",
+      "us_gross": "Over 80,000 lb",
+      "bridge": "Over the bridge formula"
     }
   },
   "Audit": {
@@ -2010,7 +2178,8 @@
       "reinspected": "New photo taken after the fix",
       "shared": "Public link shared",
       "unshared": "Public link turned off",
-      "certificate_issued": "Certificate {id} issued"
+      "certificate_issued": "Certificate {id} issued",
+      "country_changed": "Rules switched to {country, select, US {the United States} other {Brazil}}"
     },
     "weightSource": {
       "measured": "typed",

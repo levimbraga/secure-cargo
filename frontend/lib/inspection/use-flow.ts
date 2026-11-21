@@ -25,6 +25,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useMe } from "@/components/app/me-provider";
 import { AppApiError, type InspectionDetail, useAppApi } from "@/lib/app-api";
+import { type Country, rememberCountry, useCountry } from "@/lib/country";
 import { fetchDraftLoad } from "@/lib/explorer/client";
 import type { LoadDraft } from "@/lib/explorer/draft";
 
@@ -33,7 +34,7 @@ import { PhotoError, preparePhoto } from "./image";
 import { checkBlob, CONFIRM_WHOLE, type QualityIssue } from "./photo-quality";
 import { weightsComplete } from "./review";
 import { fetchSample, type Sample, type SampleData } from "./samples";
-import { choiceOf, draftTruck, type SavedTruck, sizeOfGuess, styleOfGuess, type TruckChoice } from "./trucks";
+import { choiceOf, draftTruck, type SavedTruck, sizeOfGuess, styleOfGuess, stylesOf, type TruckChoice } from "./trucks";
 import type { AnalysisAnswer, Battery, PerceptionDraft, Plan } from "./types";
 import { verdictOf } from "./verdict";
 import { estimateRange, simulatedWeight, type WeightRange, type WeightSource, withWeights } from "./weight";
@@ -72,6 +73,8 @@ export type FlowState = {
   analyzing: boolean;
   savedTrucks: SavedTruck[] | null;
   truck: TruckChoice | null;
+  /** Whose rules the load is checked against (the truck cards follow it); null: the visitor's. */
+  country: Country | null;
   /** The truck came from "My trucks" or a re-inspection: the truck questions are skipped. */
   truckFixed: boolean;
   weightSource: WeightSource | null;
@@ -107,6 +110,7 @@ const INITIAL: FlowState = {
   analyzing: false,
   savedTrucks: null,
   truck: null,
+  country: null,
   truckFixed: false,
   weightSource: null,
   totalKg: null,
@@ -158,6 +162,7 @@ export function useInspectionFlow() {
   const request = useAppApi();
   const calls = useMemo(() => flowCalls(request), [request]);
   const [state, setState] = useState<FlowState>(INITIAL);
+  const [preferredCountry] = useCountry();
   const latest = useRef(state);
   useEffect(() => {
     latest.current = state;
@@ -348,7 +353,15 @@ export function useInspectionFlow() {
 
   function chooseSize(size: TruckChoice["size"]) {
     const current = latest.current.truck;
-    patch({ truck: { style: current?.style ?? guess?.style ?? "open_low_sides", ...current, size, truck_id: null }, truckStage: "body" });
+    const styles = stylesOf(size);
+    if (styles.length === 1) {
+      // A US preset with one body (a dry van, a flatbed): no body question.
+      patch({ truck: { ...current, size, style: styles[0] as TruckChoice["style"], truck_id: null }, step: "weight" });
+      void buildPerception();
+      return;
+    }
+    const style = current?.style ?? guess?.style ?? "open_low_sides";
+    patch({ truck: { ...current, size, style: styles.includes(style) ? style : (styles[0] as TruckChoice["style"]), truck_id: null }, truckStage: "body" });
   }
 
   function chooseStyle(style: TruckChoice["style"]) {
@@ -429,9 +442,10 @@ export function useInspectionFlow() {
     if (!perception || !truck || !kg) return;
     // An unchanged sample keeps its own weights, so its stored results still apply.
     const asSample = sample && !perUnit && sampleApplies(sample, truck, kg) && same(perception.draft.units.map((u) => u.id), sample.perception.draft.units.map((u) => u.id));
+    const country = latest.current.country ?? preferredCountry;
     const draft = asSample
-      ? { ...sample.perception.draft, truck: draftTruck(truck) }
-      : withWeights({ ...perception.draft, truck: draftTruck(truck) }, kg, perUnit);
+      ? { ...sample.perception.draft, truck: draftTruck(truck), country }
+      : { ...withWeights({ ...perception.draft, truck: draftTruck(truck) }, kg, perUnit), country };
     patch({ draft, confirmed: {}, plan: null });
     fetchDraftLoad(draft)
       .then(({ load }) => patch({ load }))
@@ -458,7 +472,8 @@ export function useInspectionFlow() {
         });
         battery = await calls.simulate(inspectionId);
       } else if (sample && same(draft.units, sample.perception.draft.units) && sampleApplies(sample, truck, kg)) {
-        battery = sample.battery;
+        // The sample's recorded battery carries both countries' rules: shown under the chosen one.
+        battery = { ...sample.battery, country: draft.country ?? "BR" };
       } else {
         battery = await runBattery(draft);
       }
@@ -521,7 +536,15 @@ export function useInspectionFlow() {
     try {
       let plan: Plan;
       if (inspectionId) plan = await calls.fix(inspectionId);
-      else if (sample && same(draft.units, sample.perception.draft.units) && sampleApplies(sample, truck, totalKg)) plan = sample.plan;
+      else if (
+        sample &&
+        same(draft.units, sample.perception.draft.units) &&
+        sampleApplies(sample, truck, totalKg) &&
+        // The sample's fix was planned for Brazil's rules: it stands if it also passes these.
+        sample.plan.battery &&
+        verdictOf({ ...sample.plan.battery, country: draft.country ?? "BR" }).state === "approved"
+      )
+        plan = sample.plan;
       else plan = await runPlan(draft);
       patch({ plan, busy: null, startedAt: null });
     } catch (cause) {
@@ -604,7 +627,8 @@ export function useInspectionFlow() {
   );
 
   return {
-    state,
+    // The country shown and used: the one chosen in this flow, else the visitor's.
+    state: { ...state, country: state.country ?? preferredCountry },
     saving,
     guess,
     canSimulate,
@@ -622,6 +646,19 @@ export function useInspectionFlow() {
     chooseSize,
     chooseStyle,
     setTruckStage: (truckStage: FlowState["truckStage"]) => patch({ truckStage }),
+    setCountry: (country: Country) => {
+      rememberCountry(country);
+      patch({ country });
+    },
+    /** The result page switched country: a saved inspection stores it (only the rules run again). */
+    saveCountry: (country: Country) => {
+      const { draft, plan } = latest.current;
+      // A fix proven for the other country's rules stays only if it also passes these.
+      const planHolds = plan?.battery ? verdictOf({ ...plan.battery, country }).state === "approved" : false;
+      patch({ country, draft: draft ? { ...draft, country } : draft, ...(planHolds ? {} : { plan: null }) });
+      const id = latest.current.inspectionId;
+      if (id) void calls.setCountry(id, country).catch(() => undefined);
+    },
     buildPerception: () => buildPerception(),
     readInvoice,
     setWeight,

@@ -1,8 +1,9 @@
 "use client";
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { type ReactNode, useId, useState } from "react";
 
+import { useShownUnits } from "@/components/units-context";
 import { DIMENSIONS, type Dimension, type ExplorerConfig, SPEED_MAX, SPEED_MIN } from "@/lib/explorer/config";
 
 const SELECT =
@@ -53,7 +54,7 @@ export function Selectors({
   onChoose: <K extends Dimension | "speed_kmh" | "count" | "mass_kg">(dimension: K, value: ExplorerConfig[K]) => void;
 }) {
   const t = useTranslations("Explorer");
-  const format = useFormatter();
+  const shown = useShownUnits();
   const id = useId();
   const [speed, setSpeed] = useState<number | null>(null);
   const shownSpeed = speed ?? config.speed_kmh;
@@ -119,7 +120,7 @@ export function Selectors({
           <Field
             label={t("dims.mass")}
             htmlFor={`${id}-mass`}
-            value={t("selectors.massValue", { value: format.number(massKg, { maximumFractionDigits: 0 }) })}
+            value={t("selectors.massValue", { value: shown.mass(massKg) })}
           >
             <input
               id={`${id}-mass`}
@@ -142,7 +143,7 @@ export function Selectors({
         <Field
           label={t("dims.speed")}
           htmlFor={`${id}-speed`}
-          value={t("selectors.speedValue", { value: format.number(shownSpeed) })}
+          value={t("selectors.speedValue", { value: shown.speed(shownSpeed) })}
         >
           <input
             id={`${id}-speed`}

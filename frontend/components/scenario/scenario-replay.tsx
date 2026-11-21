@@ -53,6 +53,7 @@ const VIEW: Record<DemoId, CameraView> = {
   "curtain-sider": "rear",
   "potholed-road": "hero",
   "overloaded-strap": "hero",
+  "us-steel-coils": "hero",
 };
 
 export type ScenarioReplayProps = {

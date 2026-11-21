@@ -5,6 +5,7 @@
  * (`backend/planner/plan.py`).
  */
 
+import type { Country } from "@/lib/country";
 import type { AxleLoad, Finding, Margins, RunSummary, StandardCheck, Status } from "@/lib/demo";
 import type { LoadDraft } from "@/lib/explorer/draft";
 import type { ExplorerScenario } from "@/lib/explorer/draft";
@@ -107,6 +108,16 @@ export type ContranCheck = {
   message: string;
 };
 
+/** A securing check of either country (`backend/rules/fmcsa393.py`, `rules/country.py`). */
+export type RuleCheck = {
+  code: string;
+  article: string;
+  status: "pass" | "fail" | "not_applicable" | "to_confirm";
+  unit_ids: string[];
+  values?: Record<string, number>;
+  message: string;
+};
+
 /** One item of the checklist themes besides CONTRAN 945 (`backend/rules/checklist.py`). */
 export type ChecklistItem = {
   code: string;
@@ -118,6 +129,8 @@ export type ChecklistItem = {
 };
 
 export type Checklist = { weight: ChecklistItem[]; protection: ChecklistItem[]; dimensions: ChecklistItem[] };
+
+export type RuleSet = { country: Country; securing: RuleCheck[]; checklist: Checklist };
 
 export type ChangeCode =
   | "replace_rope"
@@ -155,9 +168,13 @@ export type Battery = {
   worst_result: ServerRunResult;
   axle_loads: AxleLoad[];
   en_12195_1: StandardCheck[];
-  contran_945: ContranCheck[];
+  /** The Brazilian checks; with `activeBattery`, the shown country's securing checks. */
+  contran_945: (ContranCheck | RuleCheck)[];
   /** Absent on batteries stored before 2026-11-21. */
   checklist?: Checklist | null;
+  /** Whose rules the verdict uses, and both countries' rule checks (since US mode, 2026-11-21). */
+  country?: Country;
+  rules?: Partial<Record<Country, RuleSet>> | null;
   cpu_time_s?: number;
   recommendation?: { draft: LoadDraft; changes: Change[] } | null;
 };
@@ -173,4 +190,21 @@ export type Plan = {
 /** A load passes when it is approved: every situation holds and every rule passes. */
 export function batteryPasses(battery: BatteryLike): boolean {
   return verdictOf(battery).state === "approved";
+}
+
+/**
+ * The battery as one country's rules see it: that country's securing checks in `contran_945`'s
+ * place and its checklist. The physics (situations, keyframes) is the same object. A battery
+ * without rule sets (stored before US mode) can only be shown under Brazil's rules.
+ */
+export function activeBattery(battery: Battery, country?: Country | null): Battery {
+  const chosen = country ?? battery.country ?? "BR";
+  const rules = battery.rules?.[chosen];
+  if (!rules) return { ...battery, country: "BR" };
+  return { ...battery, country: chosen, contran_945: rules.securing, checklist: rules.checklist };
+}
+
+/** Whether a battery can be shown under a country's rules without asking the API. */
+export function hasRules(battery: Battery, country: Country): boolean {
+  return country === "BR" || Boolean(battery.rules?.[country]);
 }

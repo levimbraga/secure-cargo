@@ -9,6 +9,8 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { useSyncExternalStore } from "react";
 
+import { UnitsProvider, useShownUnits } from "@/components/units-context";
+import { CountrySwitch } from "@/components/inspection/country-switch";
 import { useReasonSentence } from "@/components/lab/lab-result";
 import { Findings, ResultRows, useReplayText } from "@/components/scenario/replay-shared";
 import { SectionLabel } from "@/components/ui/section-label";
@@ -57,9 +59,18 @@ function ExplorerHeader() {
 function ExplorerSession() {
   // Read once: afterwards the explorer writes the address itself.
   const explorer = useExplorer(sourceFromLocation(window.location));
+  return (
+    <UnitsProvider country={explorer.country}>
+      <ExplorerContent explorer={explorer} />
+    </UnitsProvider>
+  );
+}
+
+function ExplorerContent({ explorer }: { explorer: ReturnType<typeof useExplorer> }) {
   const t = useTranslations("Explorer");
   const lab = useTranslations("Lab");
   const format = useFormatter();
+  const units = useShownUnits();
   const { t: scenario, standardValue } = useReplayText();
   const sentence = useReasonSentence();
   const { run, load, draft } = explorer;
@@ -110,7 +121,7 @@ function ExplorerSession() {
                 run={run.summary}
                 event={lab("eventLine", {
                   event: lab(`events.${load?.event.kind ?? "emergency_braking"}` as never),
-                  speed: format.number(load?.event.speed_kmh ?? 0),
+                  speed: units.speed(load?.event.speed_kmh ?? 0),
                   surface: lab(`surfaces.${load?.event.road_surface ?? "dry"}` as never),
                 })}
               />
@@ -122,6 +133,7 @@ function ExplorerSession() {
         <aside className="contents lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:block">
         {/* The answer first, as everywhere in the app. */}
           <div className="order-1" aria-live="polite">
+          <CountrySwitch country={explorer.country} onChange={explorer.setCountry} className="mb-6" />
           {run && status ? (
             <>
               <VerdictBadge verdict={status === "pass" ? "pass" : "fail"}>{scenario(`verdict.${status}`)}</VerdictBadge>

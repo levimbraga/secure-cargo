@@ -17,6 +17,7 @@ import { Link } from "@/i18n/navigation";
 import { AppApiError, type InspectionDetail, usePhotoSrc, useAppApi } from "@/lib/app-api";
 import { encodeDraft, type LoadDraft } from "@/lib/explorer/draft";
 import type { Battery, Change, Plan } from "@/lib/inspection/types";
+import { checkRules } from "@/lib/inspection/client";
 
 /** The inspection named by `?id=`. */
 export function InspectionFromQuery() {
@@ -178,6 +179,17 @@ export function InspectionView({ id }: { id: string }) {
             battery={results.asLoaded}
             plan={results.plan}
             readOnly
+            country={inspection.country === "US" ? "US" : "BR"}
+            fetchRules={(draft) => checkRules(draft)}
+            onCountryChange={
+              me && inspection.author_id === me.user.id
+                ? (country) =>
+                    void request(`/inspections/${encodeURIComponent(inspection.id)}/country`, {
+                      method: "PUT",
+                      body: JSON.stringify({ country }),
+                    }).catch(() => undefined)
+                : undefined
+            }
             truck={truckOf(inspection)}
             weightSource={inspection.weight_source ?? null}
             range={inspection.weight_range_json ? JSON.parse(inspection.weight_range_json) : null}

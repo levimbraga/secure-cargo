@@ -65,7 +65,7 @@ function application(env: Env): ReturnType<typeof createApp> {
 }
 
 /** Physics endpoints that run a simulation or build a model: limited per IP for anonymous callers. */
-const LIMITED_PHYSICS = new Set(["/simulate", "/mjcf", "/explorer/draft", "/perception/draft"]);
+const LIMITED_PHYSICS = new Set(["/simulate", "/mjcf", "/explorer/draft", "/perception/draft", "/battery/checks"]);
 /** The battery (7 simulations) and the planner (up to 30): a tighter limit per IP. */
 const LIMITED_BATTERY = new Set(["/battery", "/plan"]);
 

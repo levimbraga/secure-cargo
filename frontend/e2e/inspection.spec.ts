@@ -62,3 +62,25 @@ test("the weight must be given before the result", async ({ page }) => {
   await page.getByTestId("weight-input").fill("");
   await expect(page.getByTestId("weight-next")).toBeDisabled();
 });
+
+test("switching country re-checks only the rules: same simulation, another checklist", async ({ page }) => {
+  const physics: string[] = [];
+  page.on("request", (request) => {
+    if (/\/(battery|plan|simulate)$/.test(new URL(request.url()).pathname)) physics.push(request.url());
+  });
+  const result = await throughTheQuestions(page, "concrete-pipes");
+  await expect(result).toHaveAttribute("data-country", "BR");
+  await expect(result).toHaveAttribute("data-state", "approved");
+  await expect(page.locator('[data-theme="securing"] summary')).toContainText("CONTRAN 945");
+  const passed = await result.getAttribute("data-passed");
+
+  await page.getByTestId("country-US").click();
+  await expect(result).toHaveAttribute("data-country", "US");
+  // Round pipes need chocks under 49 CFR 393.106(c)(1); the physics is the same 7 of 7.
+  await expect(result).toHaveAttribute("data-state", "holds_noncompliant");
+  await expect(result).toHaveAttribute("data-passed", passed ?? "7");
+  await expect(page.locator('[data-theme="securing"] summary')).toContainText("FMCSA 393");
+  await expect(page.locator('[data-check="rolling_articles"]')).toHaveAttribute("data-mark", "fail");
+  await expect(page.getByTestId("main-problem")).toContainText("roll");
+  expect(physics).toEqual([]);
+});

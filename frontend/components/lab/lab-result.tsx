@@ -5,6 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 
 import { useReplayText } from "@/components/scenario/replay-shared";
 import { VerdictBadge } from "@/components/ui/verdict-badge";
+import { useShownUnits } from "@/components/units-context";
 import type { Reason } from "@/lib/live/reason";
 import type { FallbackReason, LabError, LabRun } from "@/lib/live/use-live-lab";
 
@@ -45,17 +46,21 @@ export function useReasonSentence(): (reason: Reason) => string {
   const t = useTranslations("Lab.reason");
   const format = useFormatter();
   const { nameOf } = useReplayText();
+  const units = useShownUnits();
   const fixed = (value: number, digits: number) =>
     format.number(value, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  // The reason's values: forces in kN, moments in kN·m, distances in cm, weights in t.
+  const force = (kn: number) => units.force(kn * 1000, { metric: false });
+  const moment = (knm: number) => units.moment(knm * 1000);
 
   return (reason) => {
     const value = (key: string) => reason.values[key] ?? 0;
     const unit = nameOf(reason.subject);
-    const inertia = fixed(value("inertia"), 1);
-    const friction = fixed(value("friction"), 1);
-    const slide = fixed(value("slide"), value("slide") >= 10 ? 0 : 1);
-    const overturning = fixed(value("overturning"), 1);
-    const restoring = fixed(value("restoring"), 1);
+    const inertia = force(value("inertia"));
+    const friction = force(value("friction"));
+    const slide = units.short(value("slide") / 100);
+    const overturning = moment(value("overturning"));
+    const restoring = moment(value("restoring"));
     switch (reason.key) {
       case "slides":
       case "slidesIntoHeadboard":
@@ -67,13 +72,13 @@ export function useReasonSentence(): (reason: Reason) => string {
           friction,
           unit,
           slide,
-          force: fixed(value("force"), 0),
-          capacity: fixed(value("capacity"), 1),
+          force: force(value("force")),
+          capacity: force(value("capacity")),
         });
       case "slidesAfterLoosening":
         return t("slidesAfterLoosening", {
-          before: fixed(value("before"), 1),
-          after: fixed(value("after"), 1),
+          before: force(value("before")),
+          after: force(value("after")),
           inertia,
           friction,
           unit,
@@ -94,20 +99,20 @@ export function useReasonSentence(): (reason: Reason) => string {
         return value("inertia") > 0 ? t("leavesBed", { inertia, friction, unit }) : t("leavesBedPlain", { unit });
       case "tips":
         return t("tips", {
-          overturning: fixed(value("overturning"), 1),
-          restoring: fixed(value("restoring"), 1),
+          overturning,
+          restoring,
           unit,
           tilt: fixed(value("tilt"), 0),
         });
       case "lashingOverloaded":
       case "lashingBroke":
       case "headboardOverloaded":
-        return t(reason.key, { force: fixed(value("force"), 1), capacity: fixed(value("capacity"), 1) });
+        return t(reason.key, { force: force(value("force")), capacity: force(value("capacity")) });
       case "axleOverloaded":
         return t("axleOverloaded", {
           axle: reason.subject ?? "rear",
-          load: fixed(value("load"), 2),
-          limit: format.number(value("limit"), { maximumFractionDigits: 1 }),
+          load: units.weight(value("load") * 1000, { metric: false }),
+          limit: units.weight(value("limit") * 1000, { metric: false }),
         });
       case "holds":
       case "holdsBarely":

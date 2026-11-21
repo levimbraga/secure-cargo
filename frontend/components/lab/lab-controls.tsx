@@ -3,6 +3,7 @@
 import { type ReactNode, useId, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 
+import { useShownUnits } from "@/components/units-context";
 import { type LabControls, MASS_FACTOR_RANGE, PRETENSION_RANGE, SPEED_RANGE } from "@/lib/live/controls";
 import { EVENT_KINDS, type EventKind, ROAD_SURFACES, type RoadSurface } from "@/lib/live/scenario";
 import type { LabLimits } from "@/lib/live/use-live-lab";
@@ -69,6 +70,7 @@ export function LabControlsPanel({
 }) {
   const t = useTranslations("Lab");
   const format = useFormatter();
+  const units = useShownUnits();
   const id = useId();
   // What is typed in the strap field while it is not a number yet (empty, for example).
   const [strapDraft, setStrapDraft] = useState<string | null>(null);
@@ -121,7 +123,7 @@ export function LabControlsPanel({
         <Field
           label={t("controls.speed")}
           htmlFor={`${id}-speed`}
-          value={t("controls.speedValue", { value: format.number(controls.speedKmh) })}
+          value={t("controls.speedValue", { value: units.speed(controls.speedKmh) })}
         >
           <input
             id={`${id}-speed`}

@@ -15,20 +15,33 @@
  * Used by the new-inspection flow and, read only, by a saved inspection's page.
  */
 
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { useReplayText } from "@/components/scenario/replay-shared";
 import { pill } from "@/components/ui/pill";
 import { VerdictBadge } from "@/components/ui/verdict-badge";
+import { UnitsProvider, useShownUnits } from "@/components/units-context";
+import { type Country, useCountry } from "@/lib/country";
 import { footprints } from "@/lib/explorer/draft";
 import { cutOffUnits } from "@/lib/inspection/photo-quality";
 import { SIZE_INFO, type TruckChoice } from "@/lib/inspection/trucks";
-import { type Battery, type Change, type PhotoAnalysis, type Plan, SITUATION_IDS, type SituationId, type UnitLink } from "@/lib/inspection/types";
+import {
+  activeBattery,
+  type Battery,
+  type Change,
+  hasRules,
+  type PhotoAnalysis,
+  type Plan,
+  SITUATION_IDS,
+  type SituationId,
+  type UnitLink,
+} from "@/lib/inspection/types";
 import { physicsPassed, verdictOf, type MainProblem, type VerdictState } from "@/lib/inspection/verdict";
 import type { WeightRange, WeightSource } from "@/lib/inspection/weight";
 
-import { Checklist } from "./checklist";
+import { Checklist, SITUATION_SPEED_KMH, useSituationName } from "./checklist";
+import { CountrySwitch } from "./country-switch";
 import { SimulationPanel } from "./simulation-panel";
 import { TruckArt } from "./truck-art";
 
@@ -43,14 +56,16 @@ export const STATE_BADGE: Record<VerdictState, "pass" | "warn" | "fail"> = {
 export function useMainProblem() {
   const t = useTranslations("Driver.problem");
   const { nameOf } = useReplayText();
+  const units = useShownUnits();
   const unitName = (id: string | null) => (id ? lower(nameOf(id)) : t("theLoad"));
   return (problem: MainProblem | null): string | null => {
     if (!problem) return null;
     if (problem.kind === "physics") {
-      const when = t(`when.${problem.situation}` as never);
+      const speed = units.speed(SITUATION_SPEED_KMH[problem.situation as SituationId] ?? 80);
+      const when = t(`when.${problem.situation}` as never, { speed } as never);
       return t(`physics.${problem.code}` as never, { when, unit: unitName(problem.unitId) } as never);
     }
-    const axle = problem.code === "axle" ? t(`axleName.${problem.unitId ?? "rear"}` as never) : "";
+    const axle = problem.code === "axle" || problem.code === "us_axle" ? t(`axleName.${problem.unitId ?? "rear"}` as never) : "";
     return t(`rule.${problem.code}` as never, { unit: unitName(problem.unitId), axle } as never);
   };
 }
@@ -81,6 +96,9 @@ export function ResultView({
   share,
   before = null,
   provenBy = null,
+  country: initialCountry = null,
+  onCountryChange,
+  fetchRules,
 }: {
   battery: Battery;
   plan: Plan | null;
@@ -104,17 +122,56 @@ export function ResultView({
   before?: Battery | null;
   /** The re-inspection that proved this inspection's fix. */
   provenBy?: ReactNode;
+  /** Whose rules to show first: the inspection's (saved), else the visitor's choice. */
+  country?: Country | null;
+  /** The visitor switched country (a saved inspection's author: store it). */
+  onCountryChange?: (country: Country) => void;
+  /** Both countries' rules of a load, without simulating it, for a battery stored without them. */
+  fetchRules?: (draft: Battery["draft"]) => Promise<Battery["rules"]>;
 }) {
   const t = useTranslations("Driver");
-  const fixed = plan?.battery ?? null;
+  const [preferred, choose] = useCountry();
+  const [chosen, setCountry] = useState<Country | null>(null);
+  const country = chosen ?? initialCountry ?? preferred;
+  // Rule sets fetched for batteries stored before US mode (no simulation, no AI).
+  const [rules, setRules] = useState<{ as_loaded?: Battery["rules"]; fixed?: Battery["rules"] }>({});
+  const [checking, setChecking] = useState(false);
+  const [rulesError, setRulesError] = useState(false);
+  const withRules = (b: Battery, kind: Variant) => (rules[kind] ? { ...b, rules: { ...rules[kind], ...b.rules } } : b);
+  const base = withRules(battery, "as_loaded");
+  const fixed = plan?.battery ? withRules(plan.battery, "fixed") : null;
   const [variant, setVariant] = useState<Variant>("as_loaded");
-  const shown = variant === "fixed" && fixed ? fixed : battery;
+  const shown = activeBattery(variant === "fixed" && fixed ? fixed : base, country);
   const verdict = verdictOf(shown);
+
+  const switchCountry = async (next: Country) => {
+    setRulesError(false);
+    if (!hasRules(base, next) || (fixed && !hasRules(fixed, next))) {
+      if (!fetchRules) {
+        setRulesError(true);
+        return;
+      }
+      setChecking(true);
+      try {
+        const [loaded, fixedRules] = await Promise.all([
+          hasRules(base, next) ? Promise.resolve(base.rules) : fetchRules({ ...battery.draft, country: next }),
+          fixed && !hasRules(fixed, next) && plan ? fetchRules({ ...plan.draft, country: next }) : Promise.resolve(fixed?.rules),
+        ]);
+        setRules({ as_loaded: loaded ?? undefined, fixed: fixedRules ?? undefined });
+      } catch {
+        setRulesError(true);
+        setChecking(false);
+        return;
+      }
+      setChecking(false);
+    }
+    setCountry(next);
+    choose(next);
+    onCountryChange?.(next);
+  };
   const problem = useMainProblem();
   const [simulation, setSimulation] = useState<SituationId | null>(null);
   const simRef = useRef<HTMLDivElement>(null);
-  const format = useFormatter();
-  const kg = (value: number) => format.number(Math.round(value));
 
   const open = (id: SituationId) => {
     setSimulation(id);
@@ -122,7 +179,9 @@ export function ResultView({
   };
 
   return (
-    <div data-testid="inspection-result" data-state={verdict.state} data-variant={variant} data-passed={physicsPassed(shown)}>
+    <UnitsProvider country={country}>
+    <div data-testid="inspection-result" data-state={verdict.state} data-variant={variant} data-passed={physicsPassed(shown)} data-country={country}>
+      <CountrySwitch country={country} onChange={switchCountry} busy={checking} error={rulesError} />
       {fixed && (
         <div className="mb-6 inline-flex rounded-full bg-surface p-1" role="group" aria-label={t("fix.variant")}>
           {(["as_loaded", "fixed"] as const).map((value) => (
@@ -160,7 +219,7 @@ export function ResultView({
         </p>
         {weightSource === "estimated" && range && (
           <p className="mt-3 inline-flex rounded-full bg-warn-tint px-3 py-1 text-[0.8125rem] font-medium text-warn" data-testid="weight-estimated">
-            {t("verdict.estimated", { low: kg(range.low_kg), high: kg(range.high_kg) })}
+            <EstimatedRange low={range.low_kg} high={range.high_kg} />
           </p>
         )}
         {provenBy && <div className="mt-3">{provenBy}</div>}
@@ -177,7 +236,7 @@ export function ResultView({
         </div>
       </section>
 
-      {before && <BeforeAfter before={before} after={battery} />}
+      {before && <BeforeAfter before={activeBattery(before, country)} after={activeBattery(base, country)} />}
 
       <ReadingSummary battery={battery} truck={truck} analysis={analysis} links={links} onCorrect={readOnly ? undefined : onCorrect} />
 
@@ -197,8 +256,8 @@ export function ResultView({
 
       {variant === "as_loaded" && !readOnly && (
         <FixPanel
-          battery={battery}
-          plan={plan}
+          battery={activeBattery(base, country)}
+          plan={plan && fixed ? { ...plan, battery: activeBattery(fixed, country) } : plan}
           fixing={fixing}
           startedAt={fixStartedAt}
           onApplyFix={onApplyFix}
@@ -217,6 +276,7 @@ export function ResultView({
       )}
       {(readOnly || variant === "fixed") && plan && plan.changes.length > 0 && <ChangeList changes={plan.changes} title={t("fix.applied")} />}
     </div>
+    </UnitsProvider>
   );
 }
 
@@ -238,7 +298,7 @@ function ReadingSummary({
   const t = useTranslations("Driver.summary");
   const names = useTranslations("Driver");
   const options = useTranslations("Explorer.options");
-  const format = useFormatter();
+  const measure = useShownUnits();
   const draft = battery.draft;
   const choice = truck ?? { size: draft.truck.size, style: draft.truck.style ?? (draft.truck.body === "flatbed" ? "open_low_sides" : draft.truck.body) };
   const units = footprints(draft, battery.scenario);
@@ -246,7 +306,7 @@ function ReadingSummary({
   const straps = draft.units.reduce((sum, u) => sum + u.straps, 0);
   const halfBed = battery.scenario.bed.length_m / 2;
   const gap = Math.max(0, halfBed - Math.max(...units.map((u) => u.x + u.length / 2)));
-  const position = gap <= 0.15 ? t("position.headboard") : t("position.gap", { gap: format.number(gap, { maximumFractionDigits: 1 }) });
+  const position = gap <= 0.15 ? t("position.headboard") : t("position.gap", { gap: measure.length(gap) });
   const restraint =
     draft.restraint === "top_over" || draft.restraint === "rope"
       ? t(draft.restraint === "rope" ? "restraint.ropes" : "restraint.straps", { count: straps })
@@ -337,10 +397,10 @@ function lower(label: string): string {
 export function useChangeSentence() {
   const t = useTranslations("Flow");
   const { nameOf } = useReplayText();
-  const format = useFormatter();
   const restraint = useTranslations("Explorer.options");
+  const units = useShownUnits();
   return (change: Change): string => {
-    const cm = (m: number | undefined) => format.number(Math.abs((m ?? 0) * 100), { maximumFractionDigits: 0 });
+    const cm = (m: number | undefined) => units.short(Math.abs(m ?? 0));
     switch (change.code) {
       case "straps": {
         const ids = (change as Change & { unit_ids?: string[] }).unit_ids ?? [change.unit_id];
@@ -369,13 +429,13 @@ export function useChangeSentence() {
       case "balance_axles":
         return t((change.values.shift_m ?? 0) > 0 ? "changes.balanceForward" : "changes.balanceBack", {
           distance: cm(change.values.shift_m),
-          load: format.number((change.values.load_kg ?? 0) / 1000, { maximumFractionDigits: 2 }),
-          limit: format.number((change.values.limit_kg ?? 0) / 1000, { maximumFractionDigits: 1 }),
+          load: units.weight(change.values.load_kg ?? 0, { metric: false }),
+          limit: units.weight(change.values.limit_kg ?? 0, { metric: false }),
         });
       case "overweight":
         return t("changes.overweight", {
-          mass: format.number((change.values.mass_kg ?? 0) / 1000, { maximumFractionDigits: 1 }),
-          payload: format.number((change.values.payload_kg ?? 0) / 1000, { maximumFractionDigits: 1 }),
+          mass: units.weight(change.values.mass_kg ?? 0, { metric: false }),
+          payload: units.weight(change.values.payload_kg ?? 0, { metric: false }),
         });
       default:
         return t(`changes.${change.code}`);
@@ -497,6 +557,7 @@ function FixPanel({
 /** A long server run: what is happening and how long it has taken so far. */
 export function Running({ startedAt, label, situations = false }: { startedAt: number | null; label: string; situations?: boolean }) {
   const t = useTranslations("Flow");
+  const situationName = useSituationName();
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 500);
@@ -513,10 +574,16 @@ export function Running({ startedAt, label, situations = false }: { startedAt: n
       {situations && (
         <ul className="type-small mt-4 grid grid-cols-1 gap-1 text-gray sm:grid-cols-2">
           {SITUATION_IDS.map((id) => (
-            <li key={id}>· {t(`situations.${id}.name`)}</li>
+            <li key={id}>· {situationName(id)}</li>
           ))}
         </ul>
       )}
     </div>
   );
+}
+
+function EstimatedRange({ low, high }: { low: number; high: number }) {
+  const t = useTranslations("Driver");
+  const units = useShownUnits();
+  return <>{t("verdict.estimated", { low: units.mass(low), high: units.mass(high) })}</>;
 }

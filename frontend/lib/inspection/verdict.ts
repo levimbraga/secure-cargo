@@ -20,11 +20,15 @@ export type MainProblem =
 type SituationLike = { id: string; severity?: number; findings?: Finding[] | { code?: string; severity?: string; unit_id?: string | null }[] };
 type CheckLike = { code: string; status: string; article?: string; unit_ids?: string[] };
 type ItemLike = { code: string; kind: "rule" | "advice"; status: string; article?: string; unit_ids?: string[] };
+type ChecklistLike = { weight?: ItemLike[]; protection?: ItemLike[]; dimensions?: ItemLike[] };
 export type BatteryLike = {
   situations: SituationLike[];
   contran_945: CheckLike[];
-  checklist?: { weight?: ItemLike[]; protection?: ItemLike[]; dimensions?: ItemLike[] } | null;
+  checklist?: ChecklistLike | null;
   axle_loads?: { axle_group_id: string; load_kg: number; limit_kg: number }[];
+  /** Whose rules the verdict uses, and both countries' checks (since US mode; absent: BR). */
+  country?: string;
+  rules?: Partial<Record<string, { securing: CheckLike[]; checklist: ChecklistLike }>> | null;
 };
 
 const RULE_FINDINGS = new Set(["axle_overloaded"]);
@@ -52,7 +56,10 @@ export function physicsPassed(battery: BatteryLike): number {
   return battery.situations.filter(holds).length;
 }
 
-function firstRuleFailure(battery: BatteryLike): MainProblem | null {
+function firstRuleFailure(input: BatteryLike): MainProblem | null {
+  // The battery's country's rules, when it carries both countries' (the Worker and Python do the same).
+  const rules = input.rules?.[input.country ?? "BR"];
+  const battery = rules ? { ...input, contran_945: rules.securing, checklist: rules.checklist } : input;
   const contran = battery.contran_945.find((check) => check.status === "fail");
   if (contran) {
     return { kind: "rule", code: contran.code, unitId: contran.unit_ids?.[0] ?? null, article: contran.article ?? null, theme: "securing" };

@@ -5,8 +5,13 @@
  * the key of the static cache in `public/demo/explorer/index.json`.
  */
 
+import type { Country } from "@/lib/country";
+
 export const BODIES = ["flatbed", "box", "curtain_sider"] as const;
-export const SIZES = ["vuc", "three_quarter", "toco", "truck", "semi"] as const;
+export const BR_SIZES = ["vuc", "three_quarter", "toco", "truck", "semi"] as const;
+/** US presets (US mode, `notes/us-rules.md` section 4): typical values, not a specific model. */
+export const US_SIZES = ["us_box", "us_straight", "us_flatbed_48", "us_dry_van_53", "us_step_deck"] as const;
+export const SIZES = [...BR_SIZES, ...US_SIZES] as const;
 export const CARGOES = [
   "wood_pallet",
   "plastic_pallet",
@@ -20,7 +25,7 @@ export const CARGOES = [
   "stacked_boxes",
 ] as const;
 export const POSITIONS = ["headboard", "gap", "rear", "side", "stacked"] as const;
-export const RESTRAINTS = ["none", "top_over", "direct", "chain", "rope", "blocking", "mat", "cradle"] as const;
+export const RESTRAINTS = ["none", "top_over", "direct", "chain", "rope", "blocking", "mat", "cradle", "cradle_chain"] as const;
 export const ROADS = ["straight", "curvy", "mountain", "dirt", "potholed", "urban"] as const;
 export const WEATHERS = ["dry", "wet", "heavy_rain", "mud", "fog"] as const;
 export const EVENTS = [
@@ -64,6 +69,8 @@ export type ExplorerConfig = {
   /** Lashings over each unit (each stack), in unit order. */
   straps: number[] | null;
   moves: UnitMove[];
+  /** Whose rules the load is checked against (changes no physics). */
+  country: Country;
 };
 
 /** The dimensions with a selector, in the order the page shows them. */
@@ -93,6 +100,7 @@ export const DEFAULT_CONFIG: ExplorerConfig = {
   mass_kg: null,
   straps: null,
   moves: [],
+  country: "BR",
 };
 
 /** Two decimals, without a sign on zero, exactly as the server writes them. */
@@ -123,6 +131,7 @@ export function toQuery(config: ExplorerConfig): string {
       config.moves.map((move) => `${move.index}_${coordinate(move.x_m)}_${coordinate(move.y_m)}`).join("*"),
     ]);
   }
+  if (config.country !== "BR") parts.push(["country", config.country]);
   return parts.map(([key, value]) => `${key}=${value}`).join("&");
 }
 
@@ -168,6 +177,7 @@ export function fromSearch(search: string): ExplorerConfig {
     mass_kg: integer(get("kg"), 10, 30_000),
     straps: strapList && strapList.every((value) => value !== null) ? (strapList as number[]) : null,
     moves,
+    country: get("country") === "US" ? "US" : "BR",
   };
 }
 

@@ -21,6 +21,7 @@ export const DEMO_IDS = [
   "curtain-sider",
   "potholed-road",
   "overloaded-strap",
+  "us-steel-coils",
 ] as const;
 export type DemoId = (typeof DEMO_IDS)[number];
 

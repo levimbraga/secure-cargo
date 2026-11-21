@@ -23,9 +23,18 @@ import { simulateOnServer } from "@/lib/live/client";
 import type { LiveRun } from "@/lib/live/engine";
 import { explain, type Reason } from "@/lib/live/reason";
 import { type FallbackReason, RunnerError, type RunSource } from "@/lib/live/runner";
+import type { Country } from "@/lib/country";
 
 import { ExplorerError, fetchConfigLoad, fetchDraftLoad, type LoadedExplorer } from "./client";
 import { choose, type Dimension, type ExplorerConfig, fromSearch, toQuery } from "./config";
+
+/** The address with the country's rules in it (`country=US`; Brazil is the default). */
+function withCountry(address: string, country: Country): string {
+  const [query, hash = ""] = address.split("#");
+  const params = (query ?? "").replace(/^\?/, "").split("&").filter((part) => part && !part.startsWith("country="));
+  if (country === "US") params.push("country=US");
+  return `${params.length ? `?${params.join("&")}` : ""}${hash ? `#${hash}` : ""}`;
+}
 import { editsToConfig, encodeDraft, type ExplorerLoad, type LoadDraft, parseDraft } from "./draft";
 
 /** An edit waits this long for the next one before it goes to the API [ms]. */
@@ -55,6 +64,9 @@ export type ExplorerState = {
   fallback: FallbackReason | null;
   engine: RefObject<LiveRun | null>;
   choose: <K extends Dimension | "speed_kmh" | "count" | "mass_kg">(dimension: K, value: ExplorerConfig[K]) => void;
+  /** Whose rules and units are shown; switching it runs no simulation. */
+  country: Country;
+  setCountry: (country: Country) => void;
   edit: (draft: LoadDraft) => void;
   /** Back to the load the configuration describes, without the editor's edits. */
   resetEdits: () => void;
@@ -101,6 +113,10 @@ export function useExplorer(initial: Source): ExplorerState {
   const runner = useRef(browserRunner());
 
   const config = source.kind === "config" ? source.config : fromSearch("");
+  // Whose rules and units the page shows. Switching it changes no physics: no new simulation.
+  const [country, setCountry] = useState<Country>(() =>
+    source.kind === "config" ? source.config.country : source.draft.country === "US" ? "US" : "BR",
+  );
 
   const simulate = useCallback(async (next: LoadedExplorer, signal: AbortSignal) => {
     const { load, serverRun } = next;
@@ -203,10 +219,11 @@ export function useExplorer(initial: Source): ExplorerState {
     } else {
       address = `${window.location.search}${explorerDraftHash(draft)}`;
     }
+    address = withCountry(address, country);
     if (address !== `${window.location.search}${window.location.hash}`) {
       window.history.replaceState(null, "", address);
     }
-  }, [draft, base, source]);
+  }, [draft, base, source, country]);
 
   useEffect(
     () => () => {
@@ -263,6 +280,8 @@ export function useExplorer(initial: Source): ExplorerState {
     fallback,
     engine,
     choose: chooseValue,
+    country,
+    setCountry,
     edit: setDraft,
     resetEdits,
     edited,

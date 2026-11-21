@@ -5,6 +5,7 @@ import { memo, type ReactNode, useMemo, useRef, useState, useSyncExternalStore }
 import { useFormatter, useTranslations } from "next-intl";
 import { RotateCcw, StepBack, StepForward } from "lucide-react";
 
+import { useShownUnits } from "@/components/units-context";
 import { LabControlsPanel } from "@/components/lab/lab-controls";
 import { LabProgress, LabResult } from "@/components/lab/lab-result";
 import { type PushDirection, useLabClock } from "@/components/lab/use-lab-clock";
@@ -174,6 +175,7 @@ const LabBody = memo(function LabBody({
 }) {
   const t = useTranslations("Lab");
   const format = useFormatter();
+  const units = useShownUnits();
   const text = useReplayText();
   const scenario = text.t;
   const { run } = lab;
@@ -524,7 +526,7 @@ const LabBody = memo(function LabBody({
                 run={run.summary}
                 event={t("eventLine", {
                   event: t(`events.${run.controls.event}`),
-                  speed: format.number(run.controls.speedKmh),
+                  speed: units.speed(run.controls.speedKmh),
                   surface: t(`surfaces.${run.controls.surface}`),
                 })}
               />

@@ -66,6 +66,8 @@ export interface InspectionSummary {
   truck_json?: string | null;
   weight_source?: "measured" | "invoice" | "estimated" | null;
   weight_range_json?: string | null;
+  /** Whose rules the inspection is checked against (since US mode; absent: BR). */
+  country?: "BR" | "US" | null;
   invoice_json?: string | null;
   /** The inspection this one re-checks ("I fixed it: take a new photo"). */
   reinspection_of?: string | null;

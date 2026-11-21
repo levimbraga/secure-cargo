@@ -17,6 +17,7 @@ export const GALLERY_TITLE_IDS: Record<string, string> = {
   "Curtain-sider": "curtain-sider",
   "Potholed road": "potholed-road",
   "Overloaded strap": "overloaded-strap",
+  "Steel coils on a 48 ft flatbed (US rules)": "us-steel-coils",
 };
 
 export const SAMPLE_TITLES_PT: Record<string, string> = {

@@ -14,6 +14,7 @@ import { useEffect, useRef } from "react";
 import { useMe } from "@/components/app/me-provider";
 import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
+import { checkRules } from "@/lib/inspection/client";
 import { fetchSamples } from "@/lib/inspection/samples";
 import { type Step, useInspectionFlow } from "@/lib/inspection/use-flow";
 import { verdictOf } from "@/lib/inspection/verdict";
@@ -103,6 +104,9 @@ export function NewInspection() {
               <ResultView
                 battery={state.battery}
                 plan={state.plan}
+                country={state.country}
+                fetchRules={(draft) => checkRules(draft)}
+                onCountryChange={flow.saveCountry}
                 fixing={state.busy === "plan"}
                 fixStartedAt={state.startedAt}
                 onApplyFix={() => void flow.applyFix()}

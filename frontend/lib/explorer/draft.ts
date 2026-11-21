@@ -8,6 +8,8 @@
  * server (`POST /explorer/draft`) to become the scenario the physics engine simulates.
  */
 
+import type { Country } from "@/lib/country";
+
 import type { LiveModel } from "@/lib/live/model";
 import type { Scenario, TripEventInput } from "@/lib/live/scenario";
 
@@ -35,6 +37,8 @@ export type DraftUnit = {
 export type LoadDraft = {
   version: 1;
   source: "explorer" | "photo" | "manual";
+  /** Whose rules the load is checked against; absent: Brazil (`backend/app/explorer/draft.py`). */
+  country?: Country;
   truck: {
     body: Body;
     size: Size;
@@ -201,8 +205,40 @@ export const AXLE_LIMIT_KG: Record<AxleGroup["kind"], number> = {
   tandem_3_axles: 25_500,
 };
 
-/** Load on each axle group: tare plus the cargo, shared by a moment balance (beam statics). */
-export function axleLoads(vehicle: ExplorerScenario["vehicle"], units: Footprint[]): AxleLoad[] {
+const LB_KG = 0.45359237;
+const US_SIZES = new Set(["us_box", "us_straight", "us_flatbed_48", "us_dry_van_53", "us_step_deck"]);
+// US mode (`backend/rules/us_weights.py`, `group_limits_kg`): 20,000 lb on one axle, 34,000 lb on
+// a tandem, a Brazilian triple at the bridge formula's 42,000 lb (its axles are 98 in apart).
+// A US semi's kingpin group is the drive tandem: its limit keeps the steer and drive axles legal.
+export const US_AXLE_LIMIT_KG: Record<AxleGroup["kind"], number> = {
+  single_2_tyres: 20_000 * LB_KG,
+  single_4_tyres: 20_000 * LB_KG,
+  tandem_2_axles: 34_000 * LB_KG,
+  tandem_3_axles: 42_000 * LB_KG,
+};
+const STEER_TARE_KG = 11_000 * LB_KG;
+const DRIVE_TARE_KG = 8_000 * LB_KG;
+const TO_STEER = 0.3 / 5.6; // fifth wheel 0.3 m ahead of the drive tandem, 5.6 m wheelbase
+
+function usLimitKg(group: AxleGroup, size: string | undefined): number {
+  if (group.id === "tractor" && size && US_SIZES.has(size)) {
+    const bySteer = (20_000 * LB_KG - STEER_TARE_KG) / TO_STEER;
+    const byDrive = (34_000 * LB_KG - DRIVE_TARE_KG) / (1 - TO_STEER);
+    return DRIVE_TARE_KG + Math.min(bySteer, byDrive);
+  }
+  return US_AXLE_LIMIT_KG[group.kind];
+}
+
+/**
+ * Load on each axle group: tare plus the cargo, shared by a moment balance (beam statics), against
+ * the limits of the country's rules (Brazil: CONTRAN 882; US: 23 CFR 658.17).
+ */
+export function axleLoads(
+  vehicle: ExplorerScenario["vehicle"],
+  units: Footprint[],
+  country: "BR" | "US" = "BR",
+  size?: string,
+): AxleLoad[] {
   if (!vehicle) return [];
   const [front, rear] = vehicle.axle_groups;
   const span = front.position_x_m - rear.position_x_m;
@@ -219,7 +255,7 @@ export function axleLoads(vehicle: ExplorerScenario["vehicle"], units: Footprint
   ].map(([group, cargo]) => {
     const axle = group as AxleGroup;
     const loadKg = axle.tare_load_kg + (cargo as number);
-    const limitKg = AXLE_LIMIT_KG[axle.kind];
+    const limitKg = country === "US" ? usLimitKg(axle, size) : AXLE_LIMIT_KG[axle.kind];
     return { id: axle.id, kind: axle.kind, loadKg, limitKg, ratio: loadKg / limitKg };
   });
 }

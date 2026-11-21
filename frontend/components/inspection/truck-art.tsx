@@ -14,7 +14,17 @@ const GROUND = 56;
 const WHEEL = 5.5;
 const DECK = 38;
 
-type Geometry = { width: number; cab: [number, number]; bed: [number, number]; axles: number[]; tractor?: boolean };
+type Geometry = {
+  width: number;
+  cab: [number, number];
+  bed: [number, number];
+  axles: number[];
+  tractor?: boolean;
+  /** A US conventional cab: the engine under a hood in front of the cab. */
+  hood?: boolean;
+  /** A step deck: the upper deck ends at this x, the lower deck runs from here to the rear. */
+  step?: number;
+};
 
 /** X positions in a box that is as long as the truck (cab on the left, facing left). */
 function geometry(size: TruckSize): Geometry {
@@ -29,6 +39,17 @@ function geometry(size: TruckSize): Geometry {
       return { width: 184, cab: [6, 40], bed: [42, 178], axles: [24, 132, 146] };
     case "semi":
       return { width: 232, cab: [6, 40], bed: [48, 226], axles: [22, 46, 60, 182, 196, 210], tractor: true };
+    // US presets: conventional cabs (hood), drawn to the same scale as the others.
+    case "us_box":
+      return { width: 176, cab: [6, 46], bed: [48, 170], axles: [20, 134], hood: true };
+    case "us_straight":
+      return { width: 184, cab: [6, 46], bed: [48, 178], axles: [20, 136, 150], hood: true };
+    case "us_flatbed_48":
+      return { width: 288, cab: [6, 48], bed: [56, 282], axles: [20, 54, 68, 246, 260], tractor: true, hood: true };
+    case "us_dry_van_53":
+      return { width: 304, cab: [6, 48], bed: [56, 298], axles: [20, 54, 68, 262, 276], tractor: true, hood: true };
+    case "us_step_deck":
+      return { width: 288, cab: [6, 48], bed: [56, 282], axles: [20, 54, 68, 246, 260], tractor: true, hood: true, step: 96 };
   }
 }
 
@@ -85,6 +106,8 @@ export function TruckArt({
   const [c0, c1] = g.cab;
   const [b0, b1] = g.bed;
   const cabTop = size === "vuc" || size === "three_quarter" ? 18 : 12;
+  // A step deck's lower deck (what is loaded) starts at the step; its upper deck is higher.
+  const lower = g.step ?? b0;
   return (
     <svg
       viewBox={`0 0 ${g.width} ${H}`}
@@ -101,16 +124,34 @@ export function TruckArt({
       data-axles={SIZE_INFO[size].axles}
     >
       {title && <title>{title}</title>}
-      {/* Cab: a box with a sloped windscreen and a window. */}
-      <path d={`M${c1} ${DECK + 6}V${cabTop}H${c0 + 10}L${c0} ${cabTop + 12}V${DECK + 6}Z`} />
-      <path d={`M${c0 + 11} ${cabTop + 3}H${c1 - 4}V${cabTop + 12}H${c0 + 5}Z`} strokeWidth={1} />
+      {g.hood ? (
+        <>
+          {/* Conventional cab: a hood in front, then the cab with its window. */}
+          <path d={`M${c1} ${DECK + 6}V${cabTop}H${c0 + 20}L${c0 + 16} ${cabTop + 12}H${c0 + 2}L${c0} ${cabTop + 16}V${DECK + 6}Z`} />
+          <path d={`M${c0 + 21} ${cabTop + 3}H${c1 - 4}V${cabTop + 11}H${c0 + 18}Z`} strokeWidth={1} />
+        </>
+      ) : (
+        <>
+          {/* Cab: a box with a sloped windscreen and a window. */}
+          <path d={`M${c1} ${DECK + 6}V${cabTop}H${c0 + 10}L${c0} ${cabTop + 12}V${DECK + 6}Z`} />
+          <path d={`M${c0 + 11} ${cabTop + 3}H${c1 - 4}V${cabTop + 12}H${c0 + 5}Z`} strokeWidth={1} />
+        </>
+      )}
       {/* Chassis and deck. */}
       <path d={`M${c1} ${DECK + 6}H${b1}`} />
-      <rect x={b0} y={DECK} width={b1 - b0} height={4} />
+      {g.step ? (
+        <>
+          <rect x={b0} y={DECK - 7} width={lower - b0} height={4} />
+          <path d={`M${lower} ${DECK - 3}V${DECK}`} />
+          <rect x={lower} y={DECK} width={b1 - lower} height={4} />
+        </>
+      ) : (
+        <rect x={b0} y={DECK} width={b1 - b0} height={4} />
+      )}
       {g.tractor && <path d={`M${c1} ${DECK + 2}H${b0 + 20}`} strokeDasharray="2 2" strokeWidth={1} />}
       {/* Headboard, except on a closed body whose front wall is the box itself. */}
-      {style !== "box" && style !== "curtain_sider" && <path d={`M${b0} ${DECK}V${DECK - 16}`} strokeWidth={2} />}
-      <Body style={style} x0={b0} x1={b1} />
+      {style !== "box" && style !== "curtain_sider" && !g.step && <path d={`M${b0} ${DECK}V${DECK - 16}`} strokeWidth={2} />}
+      <Body style={style} x0={lower} x1={b1} />
       {/* Wheels: one per axle. */}
       {g.axles.map((x) => (
         <circle key={x} cx={x} cy={GROUND - WHEEL} r={WHEEL} fill="var(--paper)" />

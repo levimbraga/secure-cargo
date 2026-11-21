@@ -13,6 +13,7 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { type KeyboardEvent, type PointerEvent, useMemo, useRef, useState } from "react";
 
+import { useShownCountry, useShownUnits } from "@/components/units-context";
 import { useReplayText } from "@/components/scenario/replay-shared";
 import {
   axleLoads,
@@ -77,7 +78,6 @@ export function LoadEditor({
   hideUnitList?: boolean;
 }) {
   const t = useTranslations("Explorer.editor");
-  const format = useFormatter();
   const { nameOf } = useReplayText();
   const svg = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -95,7 +95,8 @@ export function LoadEditor({
     return units.map((unit) => (stack.has(unit.id) ? { ...unit, x: drag.x, y: drag.y } : unit));
   }, [units, drag]);
   const floor = shown.filter((unit) => !unit.on);
-  const axles = axleLoads(load.scenario.vehicle, shown);
+  const country = useShownCountry();
+  const axles = axleLoads(load.scenario.vehicle, shown, country, draft.truck.size);
   const centre = centreOfMass(shown);
 
   const view = {
@@ -184,7 +185,6 @@ export function LoadEditor({
     }
   }
 
-  const tonnes = (kg: number) => format.number(kg / 1000, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const strapsOf = (unit: Footprint) => lashedUnit(shown, unit.id)?.straps ?? 0;
   const stackSize = (unit: Footprint) => {
     let size = 1;
@@ -371,7 +371,7 @@ export function LoadEditor({
         </p>
       )}
 
-      <AxleBars axles={axles} tonnes={tonnes} />
+      <AxleBars axles={axles} />
 
       {!hideUnitList && <UnitList load={load} draft={draft} units={units} onEdit={onEdit} />}
     </section>
@@ -450,9 +450,10 @@ function UnitList({
 }
 
 /** Load on each axle group against its legal limit, updated while units move. */
-export function AxleBars({ axles, tonnes }: { axles: ReturnType<typeof axleLoads>; tonnes: (kg: number) => string }) {
+export function AxleBars({ axles }: { axles: ReturnType<typeof axleLoads> }) {
   const t = useTranslations("Explorer.editor");
   const format = useFormatter();
+  const shown = useShownUnits();
   if (!axles.length) return null;
   return (
     <div className="mt-5" data-testid="axle-loads">
@@ -468,8 +469,8 @@ export function AxleBars({ axles, tonnes }: { axles: ReturnType<typeof axleLoads
                 <span className="text-ink">{t("axle", { axle: axle.id })}</span>
                 <span className={`font-mono text-[0.8125rem] ${over ? "text-fail" : "text-gray"}`}>
                   {t("axleValue", {
-                    load: tonnes(axle.loadKg),
-                    limit: format.number(axle.limitKg / 1000, { maximumFractionDigits: 1 }),
+                    load: shown.weight(axle.loadKg, { metric: false }),
+                    limit: shown.weight(axle.limitKg, { metric: false }),
                     percent: format.number(axle.ratio, { style: "percent", maximumFractionDigits: 0 }),
                   })}
                 </span>
