@@ -723,7 +723,8 @@
     "signIn": "Sign in",
     "menu": "App sections",
     "demoBadge": "Demo account",
-    "switchDemo": "Switch demo account"
+    "switchDemo": "Switch demo account",
+    "demoResets": "Demo data resets daily."
   },
   "Auth": {
     "label": "Sign in",

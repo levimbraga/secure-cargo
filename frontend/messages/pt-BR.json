@@ -723,7 +723,8 @@
     "signIn": "Entrar",
     "menu": "Seções do app",
     "demoBadge": "Conta de demonstração",
-    "switchDemo": "Trocar de conta demo"
+    "switchDemo": "Trocar de conta demo",
+    "demoResets": "Os dados de demonstração são reiniciados todos os dias."
   },
   "Auth": {
     "label": "Entrar",

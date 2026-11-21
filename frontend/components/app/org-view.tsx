@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 
 import { InspectionVerdict, useDates, useTruckLabel } from "@/components/app/inspection-bits";
+import { DemoResetNote } from "@/components/app/demo-reset-note";
 import { useMe } from "@/components/app/me-provider";
 import { pill } from "@/components/ui/pill";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -83,6 +84,7 @@ export function OrgView() {
       </p>
       <h1 className="type-hero mt-5 text-balance">{t("title", { org: header.name })}</h1>
       <p className="type-body mt-4">{t("summary", { total: inspections.length, failing, fixed })}</p>
+      <DemoResetNote className="mt-2" />
 
       <section className="mt-12">
         <div className="flex flex-wrap items-center justify-between gap-4">

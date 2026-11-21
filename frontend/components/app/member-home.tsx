@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import { InspectionListItem } from "@/components/app/inspection-bits";
+import { DemoResetNote } from "@/components/app/demo-reset-note";
 import { useMe } from "@/components/app/me-provider";
 import { SignInPanel } from "@/components/app/sign-in-panel";
 import { pill } from "@/components/ui/pill";
@@ -59,6 +60,7 @@ export function MemberHome() {
                 })}
           </p>
         )}
+        <DemoResetNote className="mt-2" />
       </section>
 
       <section className="mt-14">
