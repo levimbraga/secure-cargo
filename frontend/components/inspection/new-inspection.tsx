@@ -62,7 +62,8 @@ export function NewInspection() {
         ))}
       </ol>
 
-      {state.step === "photos" && <PhotoStep flow={flow} signedIn={signedIn} />}
+      {state.step === "photos" &&
+        (ready ? <PhotoStep flow={flow} signedIn={signedIn} /> : <p className="type-small text-gray">{t("loading")}</p>)}
       {state.step === "details" && <DetailsStep flow={flow} />}
       {state.step === "review" && <ReviewStep flow={flow} />}
       {state.step === "result" && (

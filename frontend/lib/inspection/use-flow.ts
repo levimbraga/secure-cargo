@@ -99,7 +99,8 @@ export function useInspectionFlow() {
     latest.current = state;
   });
   const patch = useCallback((next: Partial<FlowState>) => setState((current) => ({ ...current, ...next })), []);
-  const saving = signedIn && Boolean(me?.org || me?.user);
+  // Signed in, everything is saved; this must not wait for /me (a photo can come first).
+  const saving = signedIn;
 
   // ---- photos -------------------------------------------------------------------------------
 

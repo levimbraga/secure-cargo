@@ -1129,7 +1129,8 @@
       "balanceForward": "Mova a carga {distance} cm para a frente: um eixo levava {load} t, acima do limite de {limit} t.",
       "balanceBack": "Mova a carga {distance} cm para trás: um eixo levava {load} t, acima do limite de {limit} t.",
       "replace_rope": "Troque as cordas por cintas com catraca.",
-      "reanchor": "Prenda as amarrações nos pontos de amarração da estrutura metálica, não no assoalho de madeira."
+      "reanchor": "Prenda as amarrações nos pontos de amarração da estrutura metálica, não no assoalho de madeira.",
+      "overweight": "A carga pesa {mass} t; este caminhão pode levar {payload} t. Use um caminhão maior ou divida a carga."
     },
     "fix": {
       "title": "Como corrigir",
@@ -1179,6 +1180,7 @@
       "forbidden": "Seu papel não permite isso.",
       "unit_unsupported": "Uma unidade não está apoiada em nada.",
       "cannot_stack": "Essa unidade não pode levar outra em cima."
-    }
+    },
+    "loading": "Carregando…"
   }
 }

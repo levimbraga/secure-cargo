@@ -104,7 +104,7 @@ export type ContranCheck = {
   message: string;
 };
 
-export type ChangeCode = "replace_rope" | "reanchor" | "close_gaps" | "balance_axles" | "straps" | "restraint";
+export type ChangeCode = "replace_rope" | "reanchor" | "close_gaps" | "balance_axles" | "straps" | "restraint" | "overweight";
 
 export type Change = {
   code: ChangeCode;

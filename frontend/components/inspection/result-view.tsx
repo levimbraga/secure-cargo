@@ -375,6 +375,11 @@ export function useChangeSentence() {
           load: format.number((change.values.load_kg ?? 0) / 1000, { maximumFractionDigits: 2 }),
           limit: format.number((change.values.limit_kg ?? 0) / 1000, { maximumFractionDigits: 1 }),
         });
+      case "overweight":
+        return t("changes.overweight", {
+          mass: format.number((change.values.mass_kg ?? 0) / 1000, { maximumFractionDigits: 1 }),
+          payload: format.number((change.values.payload_kg ?? 0) / 1000, { maximumFractionDigits: 1 }),
+        });
       default:
         return t(`changes.${change.code}`);
     }

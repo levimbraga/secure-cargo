@@ -1129,7 +1129,8 @@
       "balanceForward": "Move the load {distance} cm forward: an axle carried {load} t, over its {limit} t limit.",
       "balanceBack": "Move the load {distance} cm back: an axle carried {load} t, over its {limit} t limit.",
       "replace_rope": "Replace the ropes with ratchet straps.",
-      "reanchor": "Hook the lashings to the lashing points on the metal frame, not the wooden floor."
+      "reanchor": "Hook the lashings to the lashing points on the metal frame, not the wooden floor.",
+      "overweight": "The cargo weighs {mass} t; this truck may carry {payload} t. Use a larger truck or split the load."
     },
     "fix": {
       "title": "How to fix it",
@@ -1179,6 +1180,7 @@
       "forbidden": "Your role cannot do this.",
       "unit_unsupported": "A unit is not resting on anything.",
       "cannot_stack": "That unit cannot carry another one."
-    }
+    },
+    "loading": "Loading…"
   }
 }
