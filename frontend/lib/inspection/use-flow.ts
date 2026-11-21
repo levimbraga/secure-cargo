@@ -353,8 +353,9 @@ export function useInspectionFlow() {
 
   /** The load as the photo shows it on the chosen truck, without weights (for the split). */
   async function buildPerception(): Promise<PerceptionDraft | null> {
-    const { truck, analysis, sample, parent } = latest.current;
-    if (!truck) return null;
+    const { truck, analysis, sample, parent, analyzing } = latest.current;
+    // The photo is still being read: the load is built once it is (see toTruck).
+    if (!truck || analyzing) return null;
     patch({ busy: latest.current.busy ?? "draft" });
     try {
       let perception: PerceptionDraft;
