@@ -75,6 +75,13 @@ class LoadDraft(_Model):
         ),
     )
     units: list[DraftUnit] = Field(min_length=1, max_length=40)
+    anchored_on_wood: bool = Field(
+        default=False,
+        description=(
+            "Seen on a photo: lashings fixed to the wooden floor or rails instead of the metal "
+            "frame (CONTRAN Resolution 945/2022, art. 6). Changes no physics, only the rule check."
+        ),
+    )
 
     @model_validator(mode="after")
     def _consistent(self) -> Self:
