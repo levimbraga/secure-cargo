@@ -488,6 +488,7 @@ def draft_from_config(config: ExplorerConfig) -> LoadDraft:
             )
     return LoadDraft(
         source="explorer",
+        country=config.country,
         truck=DraftTruck(body=config.body, size=config.size),
         trip=DraftTrip(
             speed_kmh=config.speed_kmh,

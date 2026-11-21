@@ -11,7 +11,8 @@
     "full-trip",
     "curtain-sider",
     "potholed-road",
-    "overloaded-strap"
+    "overloaded-strap",
+    "us-steel-coils"
   ],
   "dimensions": [
     {
@@ -98,6 +99,14 @@
             },
             {
               "example": "overloaded-strap",
+              "variant": "fixed"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
               "variant": "fixed"
             }
           ]
@@ -257,6 +266,125 @@
       ]
     },
     {
+      "id": "country",
+      "options": [
+        {
+          "id": "BR",
+          "covered_by": [
+            {
+              "example": "emergency-braking",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "weigh-station",
+              "variant": "fixed"
+            },
+            {
+              "example": "box-truck",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "box-truck",
+              "variant": "fixed"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "dirt-road",
+              "variant": "fixed"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "anti-slip-mat",
+              "variant": "fixed"
+            },
+            {
+              "example": "full-trip",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "curtain-sider",
+              "variant": "fixed"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "potholed-road",
+              "variant": "fixed"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "US",
+          "covered_by": [
+            {
+              "example": "us-steel-coils",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "fixed"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "cargo",
       "options": [
         {
@@ -336,6 +464,14 @@
             },
             {
               "example": "overloaded-strap",
+              "variant": "fixed"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
               "variant": "fixed"
             }
           ]
@@ -489,6 +625,14 @@
             {
               "example": "overloaded-strap",
               "variant": "fixed"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "fixed"
             }
           ]
         },
@@ -599,6 +743,10 @@
             {
               "example": "overloaded-strap",
               "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "as_loaded"
             }
           ]
         },
@@ -668,6 +816,15 @@
             },
             {
               "example": "overloaded-strap",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "cradle_chain",
+          "covered_by": [
+            {
+              "example": "us-steel-coils",
               "variant": "fixed"
             }
           ]
@@ -785,6 +942,14 @@
             {
               "example": "overloaded-strap",
               "variant": "fixed"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "fixed"
             }
           ]
         }
@@ -834,6 +999,14 @@
             },
             {
               "example": "overloaded-strap",
+              "variant": "fixed"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
               "variant": "fixed"
             }
           ]
@@ -982,6 +1155,14 @@
             {
               "example": "overloaded-strap",
               "variant": "fixed"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "fixed"
             }
           ]
         },
@@ -1101,6 +1282,14 @@
             },
             {
               "example": "overloaded-strap",
+              "variant": "fixed"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
               "variant": "fixed"
             }
           ]
@@ -1285,6 +1474,10 @@
             {
               "example": "overloaded-strap",
               "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
+              "variant": "as_loaded"
             }
           ]
         },
@@ -1331,6 +1524,10 @@
           "covered_by": [
             {
               "example": "overloaded-strap",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "us-steel-coils",
               "variant": "as_loaded"
             }
           ]

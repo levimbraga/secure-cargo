@@ -3314,5 +3314,224 @@
     "meets_standard": null
    }
   ]
+ },
+ "us-steel-coils.as_loaded": {
+  "event": {
+   "kind": "emergency_braking",
+   "segments": null,
+   "speed_kmh": 80.0,
+   "road_surface": "dry",
+   "fog": false,
+   "curve_radius_m": null,
+   "grade_percent": null
+  },
+  "duration_s": 4.172,
+  "engine": {
+   "mujoco_version": "4.0.1",
+   "timestep_s": 0.002
+  },
+  "profile": {
+   "speed_kmh": 80.0,
+   "road_surface": "dry",
+   "tyre_friction": 0.756,
+   "braking_limited_by": "tyre_road_friction",
+   "reaction_time_s": 1.0,
+   "peak_forward_g": 0.756,
+   "peak_lateral_g": 0.0,
+   "peak_vertical_g": 0.0
+  },
+  "verdict": {
+   "status": "fail",
+   "findings": [
+    {
+     "code": "unit_rolled",
+     "severity": "fail",
+     "unit_id": "coil-1",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 0.30391,
+     "limit": 0.05,
+     "message": "Unit coil-1 rolled 30.4 cm."
+    },
+    {
+     "code": "unit_rolled",
+     "severity": "fail",
+     "unit_id": "coil-2",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 0.47496,
+     "limit": 0.05,
+     "message": "Unit coil-2 rolled 47.5 cm."
+    },
+    {
+     "code": "lashing_overloaded",
+     "severity": "fail",
+     "unit_id": "coil-1",
+     "lashing_id": "coil-1-s1",
+     "axle_group_id": null,
+     "value": 60070.4,
+     "limit": 25000.0,
+     "message": "Lashing coil-1-s1 reached 240 % of its rated capacity."
+    },
+    {
+     "code": "lashing_overloaded",
+     "severity": "fail",
+     "unit_id": "coil-2",
+     "lashing_id": "coil-2-s1",
+     "axle_group_id": null,
+     "value": 74636.1,
+     "limit": 25000.0,
+     "message": "Lashing coil-2-s1 reached 299 % of its rated capacity."
+    }
+   ]
+  },
+  "units": [
+   {
+    "id": "coil-1",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.30391,
+    "max_tilt_deg": 0.013,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "coil-2",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.47496,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   }
+  ],
+  "margins": {
+   "max_slide_m": 0.47496,
+   "slide_limit_m": 0.05,
+   "max_tilt_deg": 0.013,
+   "peak_friction_use": 1.0,
+   "peak_lashing_force_n": 74636.1,
+   "peak_lashing_force_ratio": 2.9854,
+   "lashing_capacity_reserve": -1.9854
+  },
+  "axle_loads": [
+   {
+    "axle_group_id": "tractor",
+    "load_kg": 13596.8,
+    "limit_kg": 17000.0,
+    "ratio": 0.7998
+   },
+   {
+    "axle_group_id": "trailer",
+    "load_kg": 12568.2,
+    "limit_kg": 17000.0,
+    "ratio": 0.7393
+   }
+  ],
+  "en_12195_1": [
+   {
+    "unit_id": "coil-1",
+    "method": "not_assessed",
+    "installed_lashings": 2,
+    "required_lashings": null,
+    "meets_standard": null
+   },
+   {
+    "unit_id": "coil-2",
+    "method": "not_assessed",
+    "installed_lashings": 2,
+    "required_lashings": null,
+    "meets_standard": null
+   }
+  ]
+ },
+ "us-steel-coils.fixed": {
+  "event": {
+   "kind": "emergency_braking",
+   "segments": null,
+   "speed_kmh": 80.0,
+   "road_surface": "dry",
+   "fog": false,
+   "curve_radius_m": null,
+   "grade_percent": null
+  },
+  "duration_s": 4.172,
+  "engine": {
+   "mujoco_version": "4.0.1",
+   "timestep_s": 0.002
+  },
+  "profile": {
+   "speed_kmh": 80.0,
+   "road_surface": "dry",
+   "tyre_friction": 0.756,
+   "braking_limited_by": "tyre_road_friction",
+   "reaction_time_s": 1.0,
+   "peak_forward_g": 0.756,
+   "peak_lateral_g": 0.0,
+   "peak_vertical_g": 0.0
+  },
+  "verdict": {
+   "status": "pass",
+   "findings": []
+  },
+  "units": [
+   {
+    "id": "coil-1",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00245,
+    "max_tilt_deg": 0.008,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "coil-2",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00245,
+    "max_tilt_deg": 0.008,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   }
+  ],
+  "margins": {
+   "max_slide_m": 0.00245,
+   "slide_limit_m": 0.05,
+   "max_tilt_deg": 0.008,
+   "peak_friction_use": 1.0,
+   "peak_lashing_force_n": 7545.3,
+   "peak_lashing_force_ratio": 0.1886,
+   "lashing_capacity_reserve": 0.8114
+  },
+  "axle_loads": [
+   {
+    "axle_group_id": "tractor",
+    "load_kg": 13596.8,
+    "limit_kg": 17000.0,
+    "ratio": 0.7998
+   },
+   {
+    "axle_group_id": "trailer",
+    "load_kg": 12568.2,
+    "limit_kg": 17000.0,
+    "ratio": 0.7393
+   }
+  ],
+  "en_12195_1": [
+   {
+    "unit_id": "coil-1",
+    "method": "not_assessed",
+    "installed_lashings": 4,
+    "required_lashings": null,
+    "meets_standard": null
+   },
+   {
+    "unit_id": "coil-2",
+    "method": "not_assessed",
+    "installed_lashings": 4,
+    "required_lashings": null,
+    "meets_standard": null
+   }
+  ]
  }
 }

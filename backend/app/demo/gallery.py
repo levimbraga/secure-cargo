@@ -9,7 +9,17 @@ from dataclasses import dataclass
 
 from app.explorer import ExplorerConfig
 
-_TRIP_FIELDS = ("speed_kmh", "road", "weather", "event", "size", "body", "cargo", "mass_kg")
+_TRIP_FIELDS = (
+    "speed_kmh",
+    "road",
+    "weather",
+    "event",
+    "size",
+    "body",
+    "cargo",
+    "mass_kg",
+    "country",
+)
 
 
 @dataclass(frozen=True)
@@ -263,6 +273,28 @@ GALLERY: tuple[GalleryExample, ...] = (
         fixed=_config(
             "size=semi&cargo=steel_coil&position=gap&restraint=cradle&speed=80"
             "&event=emergency_braking&straps=2"
+        ),
+    ),
+    # US mode (2026-11-21): checked against 49 CFR 393 and 23 CFR 658 instead of CONTRAN.
+    GalleryExample(
+        id="us-steel-coils",
+        title="Steel coils on a 48 ft flatbed (US rules)",
+        summary=(
+            "Two 9 t (19,800 lb) steel coils on a 48 ft flatbed, eyes crosswise, each under two "
+            "straps over the top: in an emergency stop from 50 mph they roll, and 49 CFR 393.120 "
+            "asks for a cradle and chains through the eye. In a cradle with four chains each, "
+            "they hold in every situation and the load complies."
+        ),
+        as_loaded_name="Coils under two straps each",
+        fixed_name="Coils in cradles, chained through the eye",
+        as_loaded=_config(
+            "size=us_flatbed_48&cargo=steel_coil&position=gap&restraint=top_over&speed=80"
+            "&event=emergency_braking&n=2&kg=9000&moves=0_1.00_0.00*1_-1.00_0.00&country=US"
+        ),
+        fixed=_config(
+            "size=us_flatbed_48&cargo=steel_coil&position=gap&restraint=cradle_chain&speed=80"
+            "&event=emergency_braking&n=2&kg=9000&straps=0.0&moves=0_1.00_0.00*1_-1.00_0.00"
+            "&country=US"
         ),
     ),
 )

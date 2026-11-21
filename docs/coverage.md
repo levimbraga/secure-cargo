@@ -7,13 +7,13 @@ show it (`/app/examples`). Load and trip options come from each example's explor
 configuration; outcomes come from what the simulation of the "as loaded" version
 reported. Events marked "in a full trip" appear as a segment of the full-trip example.
 
-**61 of 61 options covered** by 12 examples.
+**64 of 64 options covered** by 13 examples.
 
 ## Body
 
 | Option | Examples |
 |---|---|
-| flatbed | anti-slip-mat, dirt-road, emergency-braking, full-trip, overloaded-strap, potholed-road, rope-lashing, sharp-curve, steel-coil, weigh-station |
+| flatbed | anti-slip-mat, dirt-road, emergency-braking, full-trip, overloaded-strap, potholed-road, rope-lashing, sharp-curve, steel-coil, us-steel-coils, weigh-station |
 | box | box-truck |
 | curtain_sider | curtain-sider |
 
@@ -27,6 +27,13 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 | truck | anti-slip-mat, potholed-road, steel-coil |
 | semi | full-trip, overloaded-strap |
 
+## Country
+
+| Option | Examples |
+|---|---|
+| BR | anti-slip-mat, box-truck, curtain-sider, dirt-road, emergency-braking, full-trip, overloaded-strap, potholed-road, rope-lashing, sharp-curve, steel-coil, weigh-station |
+| US | us-steel-coils |
+
 ## Cargo
 
 | Option | Examples |
@@ -35,7 +42,7 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 | plastic_pallet | anti-slip-mat, rope-lashing |
 | crate | full-trip |
 | drum | curtain-sider |
-| steel_coil | overloaded-strap, steel-coil |
+| steel_coil | overloaded-strap, steel-coil, us-steel-coils |
 | machine | weigh-station |
 | tall_cabinet | sharp-curve |
 | sacks | dirt-road |
@@ -47,7 +54,7 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 | Option | Examples |
 |---|---|
 | headboard | sharp-curve |
-| gap | anti-slip-mat, dirt-road, emergency-braking, full-trip, overloaded-strap, potholed-road, rope-lashing, steel-coil |
+| gap | anti-slip-mat, dirt-road, emergency-braking, full-trip, overloaded-strap, potholed-road, rope-lashing, steel-coil, us-steel-coils |
 | rear | box-truck, weigh-station |
 | side | curtain-sider |
 | stacked | box-truck |
@@ -57,13 +64,14 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 | Option | Examples |
 |---|---|
 | none | box-truck, curtain-sider, full-trip, potholed-road, sharp-curve, steel-coil |
-| top_over | anti-slip-mat, curtain-sider, dirt-road, emergency-braking, full-trip, overloaded-strap, sharp-curve |
+| top_over | anti-slip-mat, curtain-sider, dirt-road, emergency-braking, full-trip, overloaded-strap, sharp-curve, us-steel-coils |
 | direct | dirt-road |
 | chain | potholed-road, weigh-station |
 | rope | rope-lashing |
 | blocking | box-truck |
 | mat | anti-slip-mat, rope-lashing |
 | cradle | overloaded-strap, steel-coil |
+| cradle_chain | us-steel-coils |
 
 ## Speed
 
@@ -71,13 +79,13 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 |---|---|
 | 20_40 | dirt-road, weigh-station |
 | 50_70 | anti-slip-mat, box-truck, curtain-sider, full-trip, potholed-road, sharp-curve, steel-coil |
-| 80_100 | emergency-braking, overloaded-strap, rope-lashing |
+| 80_100 | emergency-braking, overloaded-strap, rope-lashing, us-steel-coils |
 
 ## Road
 
 | Option | Examples |
 |---|---|
-| straight | anti-slip-mat, emergency-braking, overloaded-strap, rope-lashing, steel-coil |
+| straight | anti-slip-mat, emergency-braking, overloaded-strap, rope-lashing, steel-coil, us-steel-coils |
 | curvy | curtain-sider, sharp-curve |
 | mountain | full-trip |
 | dirt | dirt-road |
@@ -88,7 +96,7 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 
 | Option | Examples |
 |---|---|
-| dry | curtain-sider, dirt-road, emergency-braking, overloaded-strap, rope-lashing, sharp-curve, weigh-station |
+| dry | curtain-sider, dirt-road, emergency-braking, overloaded-strap, rope-lashing, sharp-curve, us-steel-coils, weigh-station |
 | wet | anti-slip-mat, steel-coil |
 | heavy_rain | full-trip |
 | mud | potholed-road |
@@ -98,7 +106,7 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 
 | Option | Examples |
 |---|---|
-| emergency_braking | anti-slip-mat, box-truck, emergency-braking, full-trip (in a full trip), overloaded-strap, steel-coil |
+| emergency_braking | anti-slip-mat, box-truck, emergency-braking, full-trip (in a full trip), overloaded-strap, steel-coil, us-steel-coils |
 | lane_change | rope-lashing |
 | sharp_curve | curtain-sider, sharp-curve |
 | pothole | potholed-road |
@@ -113,9 +121,9 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 |---|---|
 | slide | anti-slip-mat, box-truck, curtain-sider, dirt-road, emergency-braking, full-trip, potholed-road, rope-lashing, sharp-curve |
 | tip_over | sharp-curve |
-| roll | overloaded-strap, potholed-road, steel-coil |
+| roll | overloaded-strap, potholed-road, steel-coil, us-steel-coils |
 | hit_headboard | anti-slip-mat, box-truck, emergency-braking, full-trip, potholed-road, steel-coil |
 | fall_off_side | sharp-curve |
-| strap_overload | overloaded-strap |
+| strap_overload | overloaded-strap, us-steel-coils |
 | axle_overload | weigh-station |
 | pretension_loss | dirt-road |

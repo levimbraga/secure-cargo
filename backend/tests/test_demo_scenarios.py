@@ -31,6 +31,7 @@ def test_the_gallery_examples_are_in_order() -> None:
         "curtain-sider",
         "potholed-road",
         "overloaded-strap",
+        "us-steel-coils",
     )
 
 

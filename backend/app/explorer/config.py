@@ -131,6 +131,8 @@ class ExplorerConfig(BaseModel):
         default=None, description="Lashings over each unit, in unit order."
     )
     moves: tuple[UnitMove, ...] = ()
+    # Whose rules the load is checked against; changes no physics (``country`` in the query).
+    country: Country = Country.BR
 
     @model_validator(mode="after")
     def _valid(self) -> Self:
@@ -173,6 +175,8 @@ class ExplorerConfig(BaseModel):
                     ),
                 )
             )
+        if self.country is not Country.BR:
+            parts.append(("country", self.country.value))
         return "&".join(f"{key}={value}" for key, value in parts)
 
     @classmethod
@@ -192,6 +196,7 @@ class ExplorerConfig(BaseModel):
             "kg",
             "straps",
             "moves",
+            "country",
         }
         unknown = set(values) - known
         if unknown:
@@ -207,6 +212,8 @@ class ExplorerConfig(BaseModel):
             data["speed_kmh"] = values["speed"]
         if "n" in values:
             data["count"] = values["n"]
+        if "country" in values:
+            data["country"] = values["country"]
         if "kg" in values:
             data["mass_kg"] = values["kg"]
         if values.get("straps"):

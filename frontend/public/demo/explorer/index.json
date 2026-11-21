@@ -120,6 +120,16 @@
       "live": "live/overloaded-strap.fixed.json",
       "run": "overloaded-strap.fixed.json"
     },
+    "body=flatbed&size=us_flatbed_48&cargo=steel_coil&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&n=2&kg=9000&moves=0_1.00_0.00*1_-1.00_0.00&country=US": {
+      "file": "explorer/us-steel-coils.as_loaded.json",
+      "live": "live/us-steel-coils.as_loaded.json",
+      "run": "us-steel-coils.as_loaded.json"
+    },
+    "body=flatbed&size=us_flatbed_48&cargo=steel_coil&position=gap&restraint=cradle_chain&speed=80&road=straight&weather=dry&event=emergency_braking&n=2&kg=9000&straps=0.0&moves=0_1.00_0.00*1_-1.00_0.00&country=US": {
+      "file": "explorer/us-steel-coils.fixed.json",
+      "live": "live/us-steel-coils.fixed.json",
+      "run": "us-steel-coils.fixed.json"
+    },
     "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking": {
       "file": "explorer/default.json",
       "live": "live/explorer-default.json"
