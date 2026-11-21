@@ -314,13 +314,15 @@ export function useInspectionFlow() {
     const id = latest.current.inspectionId;
     if (!id || latest.current.sample) return;
     patch({ analyzing: true });
+    let answer: AnalysisAnswer;
     try {
-      const answer = await calls.analyze(id);
+      answer = await calls.analyze(id);
       patch({ analysis: answer, analyzing: false });
     } catch (cause) {
-      patch({ analyzing: false, analysis: { mode: "demo", analysis: null, reason: null }, error: errorCode(cause) });
+      answer = { mode: "demo", analysis: null, reason: null };
+      patch({ analyzing: false, analysis: answer, error: errorCode(cause) });
     }
-    if (latest.current.step === "weight") void buildPerception();
+    if (latest.current.step === "weight") void buildPerception(answer);
   }
 
   // ---- truck --------------------------------------------------------------------------------
@@ -352,10 +354,11 @@ export function useInspectionFlow() {
   // ---- weight -------------------------------------------------------------------------------
 
   /** The load as the photo shows it on the chosen truck, without weights (for the split). */
-  async function buildPerception(): Promise<PerceptionDraft | null> {
-    const { truck, analysis, sample, parent, analyzing } = latest.current;
+  async function buildPerception(read?: AnalysisAnswer): Promise<PerceptionDraft | null> {
+    const { truck, sample, parent, analyzing } = latest.current;
+    const analysis = read ?? latest.current.analysis;
     // The photo is still being read: the load is built once it is (see toTruck).
-    if (!truck || analyzing) return null;
+    if (!truck || (analyzing && !read)) return null;
     patch({ busy: latest.current.busy ?? "draft" });
     try {
       let perception: PerceptionDraft;
@@ -610,7 +613,7 @@ export function useInspectionFlow() {
     chooseSize,
     chooseStyle,
     setTruckStage: (truckStage: FlowState["truckStage"]) => patch({ truckStage }),
-    buildPerception,
+    buildPerception: () => buildPerception(),
     readInvoice,
     setWeight,
     setRange: (range: WeightRange | null) => patch({ range }),
