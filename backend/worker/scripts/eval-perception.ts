@@ -7,20 +7,28 @@
  *
  * Inputs: the workspace's photo set (`photos/stock/loads/manifest.json`, outside the public
  * repository; override with PHOTOS_DIR) and ANTHROPIC_API_KEY from the environment or
- * `.dev.vars`. Answers are cached per model and photo in `<PHOTOS_DIR>/analyses/`, so a re-run
+ * `.dev.vars`. Each photo is first scaled as the phone scales it before upload (long edge
+ * 1568 px, `frontend/lib/inspection/image.ts`; needs ffmpeg), so tokens and cost match
+ * production. Answers are cached per prompt version, model and photo in
+ * `<PHOTOS_DIR>/analyses/prompt-v<n>/`, so a re-run
  * only pays for what is missing. Writes `docs/perception-eval.json` (the numbers) for
  * `docs/perception-eval.md`.
  */
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { analyzePhotos, type AnalysisCall } from "../src/perception/claude";
+import { PROMPT_VERSION } from "../src/perception/schema";
 import { toBase64 } from "../src/perception/metadata";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PHOTOS_DIR = process.env.PHOTOS_DIR ?? join(here, "..", "..", "..", "..", "photos", "stock", "loads");
 const OUT = join(here, "..", "..", "..", "docs", "perception-eval.json");
+/** The long edge the phone scales photos to before upload (frontend/lib/inspection/image.ts). */
+const MAX_EDGE_PX = 1568;
+
 const MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"];
 
 interface GroundTruth {
@@ -60,11 +68,19 @@ function apiKey(): string {
 
 type Cached = AnalysisCall & { seconds: number };
 
+/** The photo as the phone uploads it: long edge at most 1568 px, JPEG. */
+function asUploaded(path: string): Buffer {
+	const scale = `scale='if(gt(iw,ih),min(iw,${MAX_EDGE_PX}),-2)':'if(gt(iw,ih),-2,min(ih,${MAX_EDGE_PX}))'`;
+	return execFileSync("ffmpeg", ["-loglevel", "error", "-i", path, "-vf", scale, "-q:v", "3", "-f", "mjpeg", "pipe:1"], {
+		maxBuffer: 32 * 1024 * 1024,
+	});
+}
+
 async function analyse(key: string, model: string, photo: Photo): Promise<Cached> {
-	const dir = join(PHOTOS_DIR, "analyses", model);
+	const dir = join(PHOTOS_DIR, "analyses", `prompt-v${PROMPT_VERSION}`, model);
 	const cache = join(dir, `${photo.file}.json`);
 	if (existsSync(cache)) return JSON.parse(readFileSync(cache, "utf8")) as Cached;
-	const bytes = new Uint8Array(readFileSync(join(PHOTOS_DIR, photo.file)));
+	const bytes = new Uint8Array(asUploaded(join(PHOTOS_DIR, photo.file)));
 	const started = Date.now();
 	const call = await analyzePhotos(key, [{ mediaType: "image/jpeg", base64: toBase64(bytes), position: photo.view }], model);
 	const result = { ...call, seconds: (Date.now() - started) / 1000 };
@@ -168,7 +184,7 @@ async function main() {
 		};
 		console.log(`\n${model}: done`);
 	}
-	writeFileSync(OUT, `${JSON.stringify({ evaluated_on: new Date().toISOString().slice(0, 10), report }, null, 1)}\n`);
+	writeFileSync(OUT, `${JSON.stringify({ evaluated_on: new Date().toISOString().slice(0, 10), max_edge_px: MAX_EDGE_PX, prompt_version: PROMPT_VERSION, report }, null, 1)}\n`);
 	console.log(`Wrote ${OUT}`);
 }
 

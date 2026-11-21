@@ -10,7 +10,7 @@
  * length and width give them a scale (see `backend/perception/draft.py`).
  */
 
-export const PROMPT_VERSION = "1";
+export const PROMPT_VERSION = "2";
 
 export const CARGO_TYPES = [
 	"wood_pallet",

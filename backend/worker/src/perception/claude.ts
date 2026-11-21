@@ -9,7 +9,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { ANALYSIS_SCHEMA, CARGO_TYPES, type PhotoAnalysis, sanitizeAnalysis } from "./schema";
 
 /** Chosen by measuring accuracy against cost on our photos (docs/perception-eval.md). */
-export const DEFAULT_MODEL = "claude-sonnet-5-5";
+export const DEFAULT_MODEL = "claude-opus-5-5";
 
 /** US$ per million tokens (input, output), from the Anthropic price list (checked 2026-11-20). */
 export const PRICES_PER_MTOK: Record<string, { input: number; output: number }> = {
@@ -74,7 +74,10 @@ Conventions:
 - Never estimate weight or mass. It cannot be seen; the user provides it.
 - If the photos do not show cargo on a truck, set is_truck_load to false and leave the lists
   empty.
-- Cargo types: ${CARGO_TYPES.join(", ")}.`;
+- Cargo types: ${CARGO_TYPES.join(", ")}. "long_pipes" is only for round things lying lengthwise
+  (pipes, tubes, round bars, logs); it is drawn as a bundle of cylinders. A square-sided block
+  (a bundle of sawn lumber, boards or profiles, a wrapped package) is a "crate" with its real
+  length, width and height. Use the closest type when nothing matches and say so in "uncertain".`;
 
 /** Ask Claude for the analysis of 1 to 4 photos of one load. */
 export async function analyzePhotos(
