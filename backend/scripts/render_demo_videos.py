@@ -47,6 +47,7 @@ AZIMUTH = {
     "potholed-road": 62.0,
     "overloaded-strap": 62.0,
     "us-steel-coils": 62.0,
+    "eu-curtain-pallets": 28.0,
 }
 # Camera distance for the 6.2 m bed of a "toco"; longer beds are filmed from farther away.
 DISTANCE_M = 8.6

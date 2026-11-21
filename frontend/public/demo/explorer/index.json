@@ -130,6 +130,16 @@
       "live": "live/us-steel-coils.fixed.json",
       "run": "us-steel-coils.fixed.json"
     },
+    "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=none&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=1500&country=EU": {
+      "file": "explorer/eu-curtain-pallets.as_loaded.json",
+      "live": "live/eu-curtain-pallets.as_loaded.json",
+      "run": "eu-curtain-pallets.as_loaded.json"
+    },
+    "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=top_over&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=1500&straps=3.3.3.3.3.3.3.3.3.3.3&country=EU": {
+      "file": "explorer/eu-curtain-pallets.fixed.json",
+      "live": "live/eu-curtain-pallets.fixed.json",
+      "run": "eu-curtain-pallets.fixed.json"
+    },
     "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking": {
       "file": "explorer/default.json",
       "live": "live/explorer-default.json"

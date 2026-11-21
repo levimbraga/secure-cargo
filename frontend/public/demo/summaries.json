@@ -3533,5 +3533,802 @@
     "meets_standard": null
    }
   ]
+ },
+ "eu-curtain-pallets.as_loaded": {
+  "event": {
+   "kind": "sharp_curve",
+   "segments": null,
+   "speed_kmh": 70.0,
+   "road_surface": "dry",
+   "fog": false,
+   "curve_radius_m": 60.0,
+   "grade_percent": null
+  },
+  "duration_s": 5.4,
+  "engine": {
+   "mujoco_version": "4.0.1",
+   "timestep_s": 0.002
+  },
+  "profile": {
+   "speed_kmh": 70.0,
+   "road_surface": "dry",
+   "tyre_friction": 0.756,
+   "curve_radius_m": 60.0,
+   "lateral_limited_by": "en_12195_1_design_value",
+   "peak_forward_g": 0.0,
+   "peak_lateral_g": 0.5,
+   "peak_vertical_g": 0.0
+  },
+  "verdict": {
+   "status": "fail",
+   "findings": [
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-1",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.00492,
+     "limit": 0.0,
+     "message": "Unit pallet-1 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-1",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.00492,
+     "limit": 0.05,
+     "message": "Unit pallet-1 slid 900.5 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-1",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 92.275,
+     "limit": 5.0,
+     "message": "Unit pallet-1 tilted 92.3 degrees."
+    },
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-2",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.05101,
+     "limit": 0.0,
+     "message": "Unit pallet-2 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-2",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.05101,
+     "limit": 0.05,
+     "message": "Unit pallet-2 slid 905.1 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-2",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 92.189,
+     "limit": 5.0,
+     "message": "Unit pallet-2 tilted 92.2 degrees."
+    },
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-3",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.05128,
+     "limit": 0.0,
+     "message": "Unit pallet-3 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-3",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.05128,
+     "limit": 0.05,
+     "message": "Unit pallet-3 slid 905.1 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-3",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 92.2,
+     "limit": 5.0,
+     "message": "Unit pallet-3 tilted 92.2 degrees."
+    },
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-4",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.0515,
+     "limit": 0.0,
+     "message": "Unit pallet-4 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-4",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.0515,
+     "limit": 0.05,
+     "message": "Unit pallet-4 slid 905.2 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-4",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 92.208,
+     "limit": 5.0,
+     "message": "Unit pallet-4 tilted 92.2 degrees."
+    },
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-5",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.33461,
+     "limit": 0.0,
+     "message": "Unit pallet-5 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-5",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.33461,
+     "limit": 0.05,
+     "message": "Unit pallet-5 slid 933.5 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-5",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 93.518,
+     "limit": 5.0,
+     "message": "Unit pallet-5 tilted 93.5 degrees."
+    },
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-6",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.33493,
+     "limit": 0.0,
+     "message": "Unit pallet-6 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-6",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.33493,
+     "limit": 0.05,
+     "message": "Unit pallet-6 slid 933.5 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-6",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 93.495,
+     "limit": 5.0,
+     "message": "Unit pallet-6 tilted 93.5 degrees."
+    },
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-7",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.33558,
+     "limit": 0.0,
+     "message": "Unit pallet-7 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-7",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.33558,
+     "limit": 0.05,
+     "message": "Unit pallet-7 slid 933.6 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-7",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 93.474,
+     "limit": 5.0,
+     "message": "Unit pallet-7 tilted 93.5 degrees."
+    },
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-8",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.33088,
+     "limit": 0.0,
+     "message": "Unit pallet-8 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-8",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.33088,
+     "limit": 0.05,
+     "message": "Unit pallet-8 slid 933.1 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-8",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 93.462,
+     "limit": 5.0,
+     "message": "Unit pallet-8 tilted 93.5 degrees."
+    },
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-9",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.33674,
+     "limit": 0.0,
+     "message": "Unit pallet-9 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-9",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.33674,
+     "limit": 0.05,
+     "message": "Unit pallet-9 slid 933.7 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-9",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 93.409,
+     "limit": 5.0,
+     "message": "Unit pallet-9 tilted 93.4 degrees."
+    },
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-10",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.34438,
+     "limit": 0.0,
+     "message": "Unit pallet-10 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-10",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 9.34438,
+     "limit": 0.05,
+     "message": "Unit pallet-10 slid 934.4 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-10",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 94.116,
+     "limit": 5.0,
+     "message": "Unit pallet-10 tilted 94.1 degrees."
+    },
+    {
+     "code": "unit_left_bed",
+     "severity": "fail",
+     "unit_id": "pallet-11",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 10.9292,
+     "limit": 0.0,
+     "message": "Unit pallet-11 left the truck bed."
+    },
+    {
+     "code": "unit_slid",
+     "severity": "fail",
+     "unit_id": "pallet-11",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 10.9292,
+     "limit": 0.05,
+     "message": "Unit pallet-11 slid 1092.9 cm."
+    },
+    {
+     "code": "unit_tilted",
+     "severity": "fail",
+     "unit_id": "pallet-11",
+     "lashing_id": null,
+     "axle_group_id": null,
+     "value": 93.661,
+     "limit": 5.0,
+     "message": "Unit pallet-11 tilted 93.7 degrees."
+    }
+   ]
+  },
+  "units": [
+   {
+    "id": "pallet-1",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 9.00492,
+    "max_tilt_deg": 92.275,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   },
+   {
+    "id": "pallet-2",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 9.05101,
+    "max_tilt_deg": 92.189,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   },
+   {
+    "id": "pallet-3",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 9.05128,
+    "max_tilt_deg": 92.2,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   },
+   {
+    "id": "pallet-4",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 9.0515,
+    "max_tilt_deg": 92.208,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   },
+   {
+    "id": "pallet-5",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 9.33461,
+    "max_tilt_deg": 93.518,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   },
+   {
+    "id": "pallet-6",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 9.33493,
+    "max_tilt_deg": 93.495,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   },
+   {
+    "id": "pallet-7",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 9.33558,
+    "max_tilt_deg": 93.474,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   },
+   {
+    "id": "pallet-8",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 9.33088,
+    "max_tilt_deg": 93.462,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   },
+   {
+    "id": "pallet-9",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 9.33674,
+    "max_tilt_deg": 93.409,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   },
+   {
+    "id": "pallet-10",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 9.34438,
+    "max_tilt_deg": 94.116,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   },
+   {
+    "id": "pallet-11",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 10.9292,
+    "max_tilt_deg": 93.661,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": true
+   }
+  ],
+  "margins": {
+   "max_slide_m": 10.9292,
+   "slide_limit_m": 0.05,
+   "max_tilt_deg": 94.116,
+   "peak_friction_use": 1.0,
+   "peak_lashing_force_n": null,
+   "peak_lashing_force_ratio": null,
+   "lashing_capacity_reserve": null
+  },
+  "axle_loads": [
+   {
+    "axle_group_id": "tractor",
+    "load_kg": 10323.1,
+    "limit_kg": 17000.0,
+    "ratio": 0.6072
+   },
+   {
+    "axle_group_id": "trailer",
+    "load_kg": 15376.9,
+    "limit_kg": 25500.0,
+    "ratio": 0.603
+   }
+  ],
+  "en_12195_1": [
+   {
+    "unit_id": "pallet-1",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "pallet-2",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "pallet-3",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "pallet-4",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "pallet-5",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "pallet-6",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "pallet-7",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "pallet-8",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "pallet-9",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "pallet-10",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   },
+   {
+    "unit_id": "pallet-11",
+    "method": "unsecured",
+    "installed_lashings": 0,
+    "required_lashings": null,
+    "meets_standard": false
+   }
+  ]
+ },
+ "eu-curtain-pallets.fixed": {
+  "event": {
+   "kind": "sharp_curve",
+   "segments": null,
+   "speed_kmh": 70.0,
+   "road_surface": "dry",
+   "fog": false,
+   "curve_radius_m": 60.0,
+   "grade_percent": null
+  },
+  "duration_s": 5.4,
+  "engine": {
+   "mujoco_version": "4.0.1",
+   "timestep_s": 0.002
+  },
+  "profile": {
+   "speed_kmh": 70.0,
+   "road_surface": "dry",
+   "tyre_friction": 0.756,
+   "curve_radius_m": 60.0,
+   "lateral_limited_by": "en_12195_1_design_value",
+   "peak_forward_g": 0.0,
+   "peak_lateral_g": 0.5,
+   "peak_vertical_g": 0.0
+  },
+  "verdict": {
+   "status": "pass",
+   "findings": []
+  },
+  "units": [
+   {
+    "id": "pallet-1",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 4e-05,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-2",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 8e-05,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 0.996,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-3",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00012,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 0.982,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-4",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 0.00011,
+    "max_tilt_deg": 0.003,
+    "peak_friction_use": 1.0,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-5",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 2e-05,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 0.552,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-6",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 2e-05,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 0.552,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-7",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 2e-05,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 0.552,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-8",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 2e-05,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 0.552,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-9",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 2e-05,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 0.552,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-10",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 2e-05,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 0.552,
+    "hit_headboard": false,
+    "left_bed": false
+   },
+   {
+    "id": "pallet-11",
+    "friction_coefficient": 0.45,
+    "max_slide_m": 2e-05,
+    "max_tilt_deg": 0.002,
+    "peak_friction_use": 0.552,
+    "hit_headboard": false,
+    "left_bed": false
+   }
+  ],
+  "margins": {
+   "max_slide_m": 0.00012,
+   "slide_limit_m": 0.05,
+   "max_tilt_deg": 0.003,
+   "peak_friction_use": 1.0,
+   "peak_lashing_force_n": 3002.6,
+   "peak_lashing_force_ratio": 0.1201,
+   "lashing_capacity_reserve": 0.8799
+  },
+  "axle_loads": [
+   {
+    "axle_group_id": "tractor",
+    "load_kg": 10323.1,
+    "limit_kg": 17000.0,
+    "ratio": 0.6072
+   },
+   {
+    "axle_group_id": "trailer",
+    "load_kg": 15376.9,
+    "limit_kg": 25500.0,
+    "ratio": 0.603
+   }
+  ],
+  "en_12195_1": [
+   {
+    "unit_id": "pallet-1",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "pallet-2",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "pallet-3",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "pallet-4",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "pallet-5",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "pallet-6",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "pallet-7",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "pallet-8",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "pallet-9",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "pallet-10",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   },
+   {
+    "unit_id": "pallet-11",
+    "method": "top_over",
+    "installed_lashings": 3,
+    "required_lashings": 3,
+    "meets_standard": true
+   }
+  ]
  }
 }

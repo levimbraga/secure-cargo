@@ -32,6 +32,7 @@ def test_the_gallery_examples_are_in_order() -> None:
         "potholed-road",
         "overloaded-strap",
         "us-steel-coils",
+        "eu-curtain-pallets",
     )
 
 
@@ -126,6 +127,7 @@ def test_the_as_loaded_versions_fall_short_of_the_standard_where_the_lashing_is_
         "overloaded-strap": False,
         # Coils lying across the deck are outside EN 12195-1's closed-form check (None).
         "us-steel-coils": False,
+        "eu-curtain-pallets": False,
     }
 
 

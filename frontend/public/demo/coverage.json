@@ -12,7 +12,8 @@
     "curtain-sider",
     "potholed-road",
     "overloaded-strap",
-    "us-steel-coils"
+    "us-steel-coils",
+    "eu-curtain-pallets"
   ],
   "dimensions": [
     {
@@ -133,6 +134,14 @@
             },
             {
               "example": "curtain-sider",
+              "variant": "fixed"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
               "variant": "fixed"
             }
           ]
@@ -381,6 +390,19 @@
               "variant": "fixed"
             }
           ]
+        },
+        {
+          "id": "EU",
+          "covered_by": [
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "fixed"
+            }
+          ]
         }
       ]
     },
@@ -396,6 +418,14 @@
             },
             {
               "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
               "variant": "fixed"
             }
           ]
@@ -556,6 +586,14 @@
             {
               "example": "sharp-curve",
               "variant": "fixed"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "fixed"
             }
           ]
         },
@@ -706,6 +744,10 @@
             {
               "example": "potholed-road",
               "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "as_loaded"
             }
           ]
         },
@@ -747,6 +789,10 @@
             {
               "example": "us-steel-coils",
               "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "fixed"
             }
           ]
         },
@@ -913,6 +959,14 @@
             {
               "example": "potholed-road",
               "variant": "fixed"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "fixed"
             }
           ]
         },
@@ -1028,6 +1082,14 @@
             },
             {
               "example": "curtain-sider",
+              "variant": "fixed"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
               "variant": "fixed"
             }
           ]
@@ -1162,6 +1224,14 @@
             },
             {
               "example": "us-steel-coils",
+              "variant": "fixed"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
               "variant": "fixed"
             }
           ]
@@ -1325,6 +1395,14 @@
             {
               "example": "curtain-sider",
               "variant": "fixed"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "fixed"
             }
           ]
         },
@@ -1448,6 +1526,10 @@
             {
               "example": "potholed-road",
               "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
+              "variant": "as_loaded"
             }
           ]
         },
@@ -1456,6 +1538,10 @@
           "covered_by": [
             {
               "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
               "variant": "as_loaded"
             }
           ]
@@ -1515,6 +1601,10 @@
           "covered_by": [
             {
               "example": "sharp-curve",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "eu-curtain-pallets",
               "variant": "as_loaded"
             }
           ]

@@ -103,7 +103,7 @@ describe("demo summaries", () => {
       expect(summary.runs.fixed.en_12195_1.some((check) => check.meets_standard === false)).toBe(false);
       expect(summary.runs.fixed.margins.max_slide_m).toBeLessThan(0.01);
       expect(JSON.stringify(summary)).not.toContain("keyframes");
-      expect(JSON.stringify(summary).length).toBeLessThan(12_000);
+      expect(JSON.stringify(summary).length).toBeLessThan(16_000); // the EU example has eleven units
     }
   });
 

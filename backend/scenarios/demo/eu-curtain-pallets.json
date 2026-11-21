@@ -1,0 +1,2282 @@
+{
+  "id": "eu-curtain-pallets",
+  "title": "Pallets in a code L curtain-sider (EU rules)",
+  "summary": "Eleven 1.5 t pallets against the headboard of a 13.6 m code L curtain-sider, no lashing: in a sharp curve at 70 km/h they slide through the curtain and off the trailer. A code L curtain holds nothing (EN 12642), so a roadside check would class it a dangerous deficiency. With three straps over each pallet they hold and the load complies; a code XL body holds them only if the load fills its width.",
+  "event": {
+    "kind": "sharp_curve",
+    "segments": null,
+    "speed_kmh": 70.0,
+    "road_surface": "dry",
+    "fog": false,
+    "curve_radius_m": 60.0,
+    "grade_percent": null
+  },
+  "as_loaded": {
+    "schema_version": 1,
+    "id": "eu-curtain-pallets-as-loaded",
+    "name": "Eleven pallets, no lashing, code L curtains",
+    "bed": {
+      "length_m": 13.6,
+      "width_m": 2.48,
+      "floor_height_m": 1.2,
+      "floor_material": "plywood_laminate",
+      "headboard": {
+        "height_m": 2.7,
+        "rated_capacity_n": 50000.0
+      },
+      "body": "curtain_sider",
+      "side_rail_height_m": 0.0,
+      "rear_wall_height_m": 2.7,
+      "anchor_points": [
+        {
+          "id": "L0",
+          "position_m": [
+            -6.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R0",
+          "position_m": [
+            -6.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L1",
+          "position_m": [
+            -6.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R1",
+          "position_m": [
+            -6.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L2",
+          "position_m": [
+            -5.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R2",
+          "position_m": [
+            -5.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L3",
+          "position_m": [
+            -5.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R3",
+          "position_m": [
+            -5.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L4",
+          "position_m": [
+            -5.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R4",
+          "position_m": [
+            -5.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L5",
+          "position_m": [
+            -4.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R5",
+          "position_m": [
+            -4.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L6",
+          "position_m": [
+            -4.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R6",
+          "position_m": [
+            -4.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L7",
+          "position_m": [
+            -3.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R7",
+          "position_m": [
+            -3.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L8",
+          "position_m": [
+            -3.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R8",
+          "position_m": [
+            -3.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L9",
+          "position_m": [
+            -3.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R9",
+          "position_m": [
+            -3.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L10",
+          "position_m": [
+            -2.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R10",
+          "position_m": [
+            -2.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L11",
+          "position_m": [
+            -2.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R11",
+          "position_m": [
+            -2.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L12",
+          "position_m": [
+            -1.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R12",
+          "position_m": [
+            -1.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L13",
+          "position_m": [
+            -1.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R13",
+          "position_m": [
+            -1.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L14",
+          "position_m": [
+            -1.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R14",
+          "position_m": [
+            -1.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L15",
+          "position_m": [
+            -0.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R15",
+          "position_m": [
+            -0.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L16",
+          "position_m": [
+            -0.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R16",
+          "position_m": [
+            -0.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L17",
+          "position_m": [
+            0.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R17",
+          "position_m": [
+            0.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L18",
+          "position_m": [
+            0.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R18",
+          "position_m": [
+            0.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L19",
+          "position_m": [
+            1.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R19",
+          "position_m": [
+            1.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L20",
+          "position_m": [
+            1.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R20",
+          "position_m": [
+            1.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L21",
+          "position_m": [
+            1.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R21",
+          "position_m": [
+            1.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L22",
+          "position_m": [
+            2.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R22",
+          "position_m": [
+            2.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L23",
+          "position_m": [
+            2.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R23",
+          "position_m": [
+            2.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L24",
+          "position_m": [
+            3.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R24",
+          "position_m": [
+            3.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L25",
+          "position_m": [
+            3.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R25",
+          "position_m": [
+            3.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L26",
+          "position_m": [
+            3.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R26",
+          "position_m": [
+            3.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L27",
+          "position_m": [
+            4.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R27",
+          "position_m": [
+            4.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L28",
+          "position_m": [
+            4.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R28",
+          "position_m": [
+            4.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L29",
+          "position_m": [
+            5.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R29",
+          "position_m": [
+            5.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L30",
+          "position_m": [
+            5.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R30",
+          "position_m": [
+            5.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L31",
+          "position_m": [
+            5.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R31",
+          "position_m": [
+            5.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L32",
+          "position_m": [
+            6.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R32",
+          "position_m": [
+            6.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L33",
+          "position_m": [
+            6.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R33",
+          "position_m": [
+            6.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        }
+      ],
+      "blocks": []
+    },
+    "vehicle": {
+      "axle_groups": [
+        {
+          "id": "tractor",
+          "kind": "tandem_2_axles",
+          "position_x_m": 5.2,
+          "tare_load_kg": 4400.0
+        },
+        {
+          "id": "trailer",
+          "kind": "tandem_3_axles",
+          "position_x_m": -2.6,
+          "tare_load_kg": 4800.0
+        }
+      ],
+      "payload_kg": 25000.0
+    },
+    "units": [
+      {
+        "id": "pallet-1",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          6.2,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-2",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          5.0,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-3",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          3.8,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-4",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          2.6,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-5",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          1.4,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-6",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          0.2,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-7",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          -1.0,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-8",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          -2.2,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-9",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          -3.4,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-10",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          -4.6,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-11",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          -5.8,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      }
+    ],
+    "lashings": []
+  },
+  "fixed": {
+    "schema_version": 1,
+    "id": "eu-curtain-pallets-fixed",
+    "name": "Eleven pallets, three straps each",
+    "bed": {
+      "length_m": 13.6,
+      "width_m": 2.48,
+      "floor_height_m": 1.2,
+      "floor_material": "plywood_laminate",
+      "headboard": {
+        "height_m": 2.7,
+        "rated_capacity_n": 50000.0
+      },
+      "body": "curtain_sider",
+      "side_rail_height_m": 0.0,
+      "rear_wall_height_m": 2.7,
+      "anchor_points": [
+        {
+          "id": "L0",
+          "position_m": [
+            -6.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R0",
+          "position_m": [
+            -6.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L1",
+          "position_m": [
+            -6.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R1",
+          "position_m": [
+            -6.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L2",
+          "position_m": [
+            -5.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R2",
+          "position_m": [
+            -5.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L3",
+          "position_m": [
+            -5.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R3",
+          "position_m": [
+            -5.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L4",
+          "position_m": [
+            -5.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R4",
+          "position_m": [
+            -5.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L5",
+          "position_m": [
+            -4.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R5",
+          "position_m": [
+            -4.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L6",
+          "position_m": [
+            -4.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R6",
+          "position_m": [
+            -4.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L7",
+          "position_m": [
+            -3.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R7",
+          "position_m": [
+            -3.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L8",
+          "position_m": [
+            -3.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R8",
+          "position_m": [
+            -3.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L9",
+          "position_m": [
+            -3.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R9",
+          "position_m": [
+            -3.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L10",
+          "position_m": [
+            -2.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R10",
+          "position_m": [
+            -2.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L11",
+          "position_m": [
+            -2.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R11",
+          "position_m": [
+            -2.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L12",
+          "position_m": [
+            -1.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R12",
+          "position_m": [
+            -1.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L13",
+          "position_m": [
+            -1.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R13",
+          "position_m": [
+            -1.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L14",
+          "position_m": [
+            -1.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R14",
+          "position_m": [
+            -1.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L15",
+          "position_m": [
+            -0.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R15",
+          "position_m": [
+            -0.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L16",
+          "position_m": [
+            -0.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R16",
+          "position_m": [
+            -0.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L17",
+          "position_m": [
+            0.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R17",
+          "position_m": [
+            0.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L18",
+          "position_m": [
+            0.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R18",
+          "position_m": [
+            0.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L19",
+          "position_m": [
+            1.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R19",
+          "position_m": [
+            1.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L20",
+          "position_m": [
+            1.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R20",
+          "position_m": [
+            1.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L21",
+          "position_m": [
+            1.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R21",
+          "position_m": [
+            1.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L22",
+          "position_m": [
+            2.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R22",
+          "position_m": [
+            2.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L23",
+          "position_m": [
+            2.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R23",
+          "position_m": [
+            2.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L24",
+          "position_m": [
+            3.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R24",
+          "position_m": [
+            3.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L25",
+          "position_m": [
+            3.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R25",
+          "position_m": [
+            3.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L26",
+          "position_m": [
+            3.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R26",
+          "position_m": [
+            3.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L27",
+          "position_m": [
+            4.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R27",
+          "position_m": [
+            4.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L28",
+          "position_m": [
+            4.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R28",
+          "position_m": [
+            4.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L29",
+          "position_m": [
+            5.0,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R29",
+          "position_m": [
+            5.0,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L30",
+          "position_m": [
+            5.4,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R30",
+          "position_m": [
+            5.4,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L31",
+          "position_m": [
+            5.8,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R31",
+          "position_m": [
+            5.8,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L32",
+          "position_m": [
+            6.2,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R32",
+          "position_m": [
+            6.2,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "L33",
+          "position_m": [
+            6.6,
+            1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        },
+        {
+          "id": "R33",
+          "position_m": [
+            6.6,
+            -1.24,
+            0.0
+          ],
+          "rated_capacity_n": null
+        }
+      ],
+      "blocks": []
+    },
+    "vehicle": {
+      "axle_groups": [
+        {
+          "id": "tractor",
+          "kind": "tandem_2_axles",
+          "position_x_m": 5.2,
+          "tare_load_kg": 4400.0
+        },
+        {
+          "id": "trailer",
+          "kind": "tandem_3_axles",
+          "position_x_m": -2.6,
+          "tare_load_kg": 4800.0
+        }
+      ],
+      "payload_kg": 25000.0
+    },
+    "units": [
+      {
+        "id": "pallet-1",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          6.2,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-2",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          5.0,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-3",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          3.8,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-4",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          2.6,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-5",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          1.4,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-6",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          0.2,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-7",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          -1.0,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-8",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          -2.2,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-9",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          -3.4,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-10",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          -4.6,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      },
+      {
+        "id": "pallet-11",
+        "label": "Palletised cargo",
+        "shape": "box",
+        "axis": null,
+        "inner_diameter_m": null,
+        "size_m": [
+          1.2,
+          1.0,
+          1.1
+        ],
+        "mass_kg": 1500.0,
+        "position_m": [
+          -5.8,
+          0.0,
+          0.0
+        ],
+        "material": "sawn_wood",
+        "friction_coefficient": null,
+        "stackable": true
+      }
+    ],
+    "lashings": [
+      {
+        "id": "pallet-1-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-1",
+        "anchor_ids": [
+          "L31",
+          "R31"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-1-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-1",
+        "anchor_ids": [
+          "L32",
+          "R32"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-1-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-1",
+        "anchor_ids": [
+          "L33",
+          "R33"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-2-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-2",
+        "anchor_ids": [
+          "L28",
+          "R28"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-2-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-2",
+        "anchor_ids": [
+          "L29",
+          "R29"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-2-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-2",
+        "anchor_ids": [
+          "L30",
+          "R30"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-3-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-3",
+        "anchor_ids": [
+          "L25",
+          "R25"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-3-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-3",
+        "anchor_ids": [
+          "L26",
+          "R26"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-3-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-3",
+        "anchor_ids": [
+          "L27",
+          "R27"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-4-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-4",
+        "anchor_ids": [
+          "L22",
+          "R22"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-4-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-4",
+        "anchor_ids": [
+          "L23",
+          "R23"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-4-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-4",
+        "anchor_ids": [
+          "L24",
+          "R24"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-5-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-5",
+        "anchor_ids": [
+          "L19",
+          "R19"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-5-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-5",
+        "anchor_ids": [
+          "L20",
+          "R20"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-5-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-5",
+        "anchor_ids": [
+          "L21",
+          "R21"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-6-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-6",
+        "anchor_ids": [
+          "L16",
+          "R16"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-6-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-6",
+        "anchor_ids": [
+          "L17",
+          "R17"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-6-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-6",
+        "anchor_ids": [
+          "L18",
+          "R18"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-7-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-7",
+        "anchor_ids": [
+          "L13",
+          "R13"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-7-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-7",
+        "anchor_ids": [
+          "L14",
+          "R14"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-7-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-7",
+        "anchor_ids": [
+          "L15",
+          "R15"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-8-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-8",
+        "anchor_ids": [
+          "L10",
+          "R10"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-8-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-8",
+        "anchor_ids": [
+          "L11",
+          "R11"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-8-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-8",
+        "anchor_ids": [
+          "L12",
+          "R12"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-9-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-9",
+        "anchor_ids": [
+          "L7",
+          "R7"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-9-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-9",
+        "anchor_ids": [
+          "L8",
+          "R8"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-9-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-9",
+        "anchor_ids": [
+          "L9",
+          "R9"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-10-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-10",
+        "anchor_ids": [
+          "L4",
+          "R4"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-10-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-10",
+        "anchor_ids": [
+          "L5",
+          "R5"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-10-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-10",
+        "anchor_ids": [
+          "L6",
+          "R6"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-11-s1",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-11",
+        "anchor_ids": [
+          "L1",
+          "R1"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-11-s2",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-11",
+        "anchor_ids": [
+          "L2",
+          "R2"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-11-s3",
+        "kind": "strap",
+        "routing": "top_over",
+        "unit_id": "pallet-11",
+        "anchor_ids": [
+          "L3",
+          "R3"
+        ],
+        "attachment_point_m": null,
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      }
+    ]
+  },
+  "explorer": {
+    "as_loaded": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=none&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=1500&country=EU",
+    "fixed": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=top_over&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=1500&straps=3.3.3.3.3.3.3.3.3.3.3&country=EU"
+  }
+}

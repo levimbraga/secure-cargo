@@ -11,7 +11,7 @@ from typing import Any
 from app.demo.fixtures import Variant
 from app.demo.gallery import GalleryExample
 from app.explorer import Cargo, ExplorerConfig, Position, Restraint, Road, Size, Weather
-from app.explorer.config import US_SIZES, Country
+from app.explorer.config import EU_SIZES, US_SIZES, Country
 from app.scenario import BodyType, EventKind
 from physics.results import SimulationResult
 
@@ -65,8 +65,8 @@ def coverage(
 ) -> dict[str, Any]:
     dimensions: dict[str, list[str]] = {
         "body": [item.value for item in BodyType],
-        # The Brazilian sizes; the US presets are part of the "country" dimension's US mode.
-        "size": [item.value for item in Size if item not in US_SIZES],
+        # The Brazilian sizes; the US and EU presets are part of the "country" dimension.
+        "size": [item.value for item in Size if item not in US_SIZES | EU_SIZES],
         "country": [item.value for item in Country],
         "cargo": [item.value for item in Cargo],
         "position": [item.value for item in Position],
@@ -91,7 +91,7 @@ def coverage(
         for variant in ("as_loaded", "fixed"):
             config: ExplorerConfig = getattr(example, variant)
             add("body", config.body.value, example.id, variant)
-            if config.size not in US_SIZES:
+            if config.size not in US_SIZES | EU_SIZES:
                 add("size", config.size.value, example.id, variant)
             add("country", config.country.value, example.id, variant)
             add("cargo", config.cargo.value, example.id, variant)

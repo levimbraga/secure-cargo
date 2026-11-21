@@ -297,4 +297,27 @@ GALLERY: tuple[GalleryExample, ...] = (
             "&country=US"
         ),
     ),
+    # EU mode (2026-11-21): Directive 2014/47/EU Annex III and EN 12642 instead of CONTRAN.
+    GalleryExample(
+        id="eu-curtain-pallets",
+        title="Pallets in a code L curtain-sider (EU rules)",
+        summary=(
+            "Eleven 1.5 t pallets against the headboard of a 13.6 m code L curtain-sider, no "
+            "lashing: in a sharp curve at 70 km/h they slide through the curtain and off the "
+            "trailer. A code L curtain holds nothing (EN 12642), so a roadside check would class "
+            "it a dangerous deficiency. With three straps over each pallet they hold and the load "
+            "complies; a code XL body holds them only if the load fills its width."
+        ),
+        as_loaded_name="Eleven pallets, no lashing, code L curtains",
+        fixed_name="Eleven pallets, three straps each",
+        as_loaded=_config(
+            "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard"
+            "&restraint=none&speed=70&road=curvy&event=sharp_curve&n=11&kg=1500&country=EU"
+        ),
+        fixed=_config(
+            "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard"
+            "&restraint=top_over&speed=70&road=curvy&event=sharp_curve&n=11&kg=1500"
+            "&straps=3.3.3.3.3.3.3.3.3.3.3&country=EU"
+        ),
+    ),
 )

@@ -24,6 +24,7 @@ DEMO_ORDER = (
     "potholed-road",
     "overloaded-strap",
     "us-steel-coils",
+    "eu-curtain-pallets",
 )
 
 Variant = Literal["as_loaded", "fixed"]
