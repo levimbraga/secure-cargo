@@ -439,9 +439,14 @@ def _securing_changes(before: LoadDraft, after: LoadDraft) -> list[Change]:
 # --- 4. Proof --------------------------------------------------------------------------------
 
 
-def _proof_order() -> tuple[Situation, ...]:
+def _proof_order(original: BatteryResult | None = None) -> tuple[Situation, ...]:
+    """What the load failed worst first (a weak candidate is rejected sooner), then the rest."""
     by_id = {s.id: s for s in SITUATIONS}
-    return tuple(by_id[i] for i in _PROOF_ORDER)
+    order = list(_PROOF_ORDER)
+    if original is not None:
+        severity = {s.id: s.severity for s in original.situations}
+        order.sort(key=lambda i: -severity.get(i, 0.0))  # stable: ties keep the usual order
+    return tuple(by_id[i] for i in order)
 
 
 def recommend(draft: LoadDraft) -> tuple[LoadDraft, list[Change]]:
@@ -471,7 +476,9 @@ def plan(storage: Storage, draft: LoadDraft) -> Plan:
     rounds = 0
     for candidate in candidates[:MAX_ROUNDS]:
         rounds += 1
-        runs = run_situations(storage, candidate.draft, _proof_order(), stop_at_first_failure=True)
+        runs = run_situations(
+            storage, candidate.draft, _proof_order(original), stop_at_first_failure=True
+        )
         if all(result.verdict.status != "fail" for _, result, _ in runs) and len(runs) == len(
             SITUATIONS
         ):
