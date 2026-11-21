@@ -6,6 +6,8 @@
  *   POST   /inspections            create an inspection in my active organization
  *   GET    /inspections/:id        one inspection with its photos, scenarios, results, fixes
  *   PATCH  /inspections/:id        change an inspection (author only)
+ *   GET    /share/:token           the public summary of a shared inspection (no sign-in)
+ *   GET    /trucks ...             "My trucks" (trucks.ts)
  *   GET    /org                    my organization: members, pending invitations (org_admin)
  *   POST   /org/invitations        invite a member (org_admin)
  *   GET    /admin/overview         usage vs the monthly cap, settings (platform admin)
@@ -34,6 +36,7 @@ import { type FlowDeps, registerFlow } from "./flow";
 import { ApiError, fail, field, forbidden, jsonBody, notFound } from "./http";
 import type { IdentityProvider } from "./identity";
 import { resolvePrincipal } from "./principal";
+import { registerTrucks } from "./trucks";
 import { analysisAllowance, monthSpendUsd, readSettings } from "./quota";
 
 export interface AppDeps extends FlowDeps {
@@ -49,7 +52,7 @@ export interface AppDeps extends FlowDeps {
 
 type Env = { Variables: { principal: Principal } };
 
-export const APP_ROUTE_PREFIXES = ["/me", "/inspections", "/org", "/admin", "/demo"] as const;
+export const APP_ROUTE_PREFIXES = ["/me", "/inspections", "/org", "/admin", "/demo", "/trucks", "/share"] as const;
 
 export function isAppRoute(pathname: string): boolean {
 	return APP_ROUTE_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
@@ -68,7 +71,9 @@ const DEMO_TICKET_MARGIN_MS = 10 * 60 * 1000;
 
 const INSPECTION_COLUMNS = `i.id, i.org_id, i.author_id, i.created_at, i.updated_at, i.status, i.title,
 	i.truck_body, i.truck_size, i.cargo_weight_kg, i.notes, i.plate, i.situations_passed,
-	i.situations_total, i.verdict, i.fixed_verdict, i.sample, u.name AS author_name, o.name AS org_name,
+	i.situations_total, i.verdict, i.fixed_verdict, i.sample, i.truck_json, i.weight_source, i.weight_range_json,
+	i.invoice_json, i.reinspection_of, i.share_token, u.name AS author_name, o.name AS org_name,
+	(SELECT r.id FROM inspections r WHERE r.reinspection_of = i.id AND r.verdict = 'pass' ORDER BY r.created_at DESC LIMIT 1) AS proven_by,
 	(SELECT p.r2_key FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at LIMIT 1) AS cover_photo,
 	(SELECT p.id FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at LIMIT 1) AS cover_photo_id`;
 
@@ -175,11 +180,18 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		const sampleId = field.optionalString(body, "sample", 40);
 		const sample = sampleId ? deps.samples[sampleId] : undefined;
 		if (sampleId && !sample) fail(422, "unknown_sample", "No such sample photo.");
+		// "I fixed it: take a new photo": only the author of an inspection re-inspects it.
+		const parentId = field.optionalString(body, "reinspection_of", 60);
+		if (parentId) {
+			const parent = await db.prepare("SELECT id, org_id, author_id FROM inspections WHERE id = ?").bind(parentId).first<InspectionRow>();
+			if (!parent || !canReadInspection(p, parent)) notFound();
+			if (!canWriteInspection(p, parent)) forbidden();
+		}
 		await db
 			.prepare(
 				`INSERT INTO inspections (id, org_id, author_id, created_at, updated_at, status, title,
-				 truck_body, truck_size, cargo_weight_kg, notes, plate, sample)
-				 VALUES (?, ?, ?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?, ?)`,
+				 truck_body, truck_size, cargo_weight_kg, notes, plate, sample, reinspection_of)
+				 VALUES (?, ?, ?, ?, ?, 'draft', ?, ?, ?, ?, ?, ?, ?, ?)`,
 			)
 			.bind(
 				id,
@@ -194,6 +206,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
 				field.optionalString(body, "notes", 2000) ?? "",
 				field.optionalString(body, "plate", 10) ?? null,
 				sample?.id ?? null,
+				parentId ?? null,
 			)
 			.run();
 		// A sample inspection starts with the sample's photos (public files on the site).
@@ -253,6 +266,80 @@ export function createApp(deps: AppDeps): Hono<Env> {
 	}
 
 	registerFlow(app, deps, authenticated, readableInspection);
+	registerTrucks(app, db, authenticated);
+
+	// ---- public summary ---------------------------------------------------------------------
+
+	app.get("/share/:token", async (c) => {
+		const ip = c.req.header("CF-Connecting-IP") ?? "unknown";
+		if (!(await deps.limitAnonymous(`share:${ip}`))) fail(429, "rate_limited", "Too many requests. Try again in a minute.");
+		const token = c.req.param("token");
+		if (!/^[A-Za-z0-9_-]{20,64}$/.test(token)) notFound();
+		const row = await db
+			.prepare(
+				`SELECT i.id, i.title, i.created_at, i.verdict, i.fixed_verdict, i.situations_passed, i.situations_total,
+				 i.truck_json, i.truck_body, i.truck_size, i.cargo_weight_kg, i.weight_source, i.sample,
+				 u.name AS author_name, o.name AS org_name, o.share_driver_name,
+				 (SELECT r.id FROM inspections r WHERE r.reinspection_of = i.id AND r.verdict = 'pass' LIMIT 1) AS proven_by
+				 FROM inspections i JOIN users u ON u.id = i.author_id LEFT JOIN organizations o ON o.id = i.org_id
+				 WHERE i.share_token = ?`,
+			)
+			.bind(token)
+			.first<Record<string, unknown> & { id: string; share_driver_name: number | null; author_name: string | null }>();
+		if (!row) notFound();
+		const photo = await db
+			.prepare("SELECT r2_key FROM photos WHERE inspection_id = ? ORDER BY created_at LIMIT 1")
+			.bind(row.id)
+			.first<{ r2_key: string }>();
+		const scenario = await db
+			.prepare("SELECT battery_ref FROM scenarios WHERE inspection_id = ? AND kind = 'as_loaded' ORDER BY created_at DESC LIMIT 1")
+			.bind(row.id)
+			.first<{ battery_ref: string | null }>();
+		let checks: unknown = null;
+		if (scenario?.battery_ref && deps.photos) {
+			const object = await deps.photos.get(scenario.battery_ref);
+			if (object) {
+				const battery = JSON.parse(new TextDecoder().decode(object.bytes)) as Record<string, unknown>;
+				checks = {
+					situations: (battery.situations as { id: string; status: string; findings: unknown[] }[] | undefined)?.map((s) => ({
+						id: s.id,
+						status: s.status,
+						findings: s.findings,
+					})),
+					contran_945: battery.contran_945,
+					checklist: battery.checklist ?? null,
+					axle_loads: battery.axle_loads,
+				};
+			}
+		}
+		const { share_driver_name, author_name, id, ...rest } = row;
+		return c.json(
+			{
+				...rest,
+				driver_name: share_driver_name === 1 ? author_name : null,
+				photo: photo ? (photo.r2_key.startsWith("sample:") ? { path: photo.r2_key.slice(7) } : { path: `/share/${token}/photo` }) : null,
+				checks,
+			},
+			200,
+			{ "Cache-Control": "no-store" },
+		);
+	});
+
+	app.get("/share/:token/photo", async (c) => {
+		const token = c.req.param("token");
+		if (!/^[A-Za-z0-9_-]{20,64}$/.test(token) || !deps.photos) notFound();
+		const photo = await db
+			.prepare(
+				`SELECT p.r2_key, p.content_type FROM photos p JOIN inspections i ON i.id = p.inspection_id
+				 WHERE i.share_token = ? ORDER BY p.created_at LIMIT 1`,
+			)
+			.bind(token)
+			.first<{ r2_key: string; content_type: string }>();
+		if (!photo || photo.r2_key.startsWith("sample:")) notFound();
+		const object = await deps.photos.get(photo.r2_key);
+		if (!object) notFound();
+		return c.body(object.bytes as Uint8Array<ArrayBuffer>, 200, { "Content-Type": object.contentType, "Cache-Control": "private, max-age=600" });
+	});
 
 	// ---- organization -----------------------------------------------------------------------
 
@@ -489,8 +576,13 @@ async function loadInspection(db: Db, id: string) {
 		db.prepare("SELECT id, scenario_id, situation, verdict, metrics_json, keyframes_ref, created_at FROM results WHERE inspection_id = ? ORDER BY created_at").bind(id).all<{ metrics_json: string }>(),
 		db.prepare("SELECT id, from_scenario_id, to_scenario_id, changes_json, passes, created_at FROM fixes WHERE inspection_id = ? ORDER BY created_at").bind(id).all<{ changes_json: string; passes: number }>(),
 	]);
+	const reinspections = await db
+		.prepare("SELECT id, created_at, verdict, situations_passed, situations_total FROM inspections WHERE reinspection_of = ? ORDER BY created_at")
+		.bind(id)
+		.all();
 	return {
 		...inspection,
+		reinspections: reinspections.results,
 		photos: photos.results,
 		scenarios: scenarios.results.map(({ draft_json, ...rest }) => ({ ...rest, draft: JSON.parse(draft_json) })),
 		results: results.results.map(({ metrics_json, ...rest }) => ({ ...rest, metrics: JSON.parse(metrics_json) })),

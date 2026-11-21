@@ -64,7 +64,7 @@ const BATTERY = {
 	situations: ["emergency_braking", "lane_change", "sharp_curve", "pothole", "speed_bump", "mountain_descent", "long_vibration"].map((id, n) => ({
 		id,
 		status: n < 3 ? "fail" : "pass",
-		findings: [],
+		findings: n < 3 ? [{ code: "unit_slid", severity: "fail", unit_id: "unit-1" }] : [],
 		margins: {},
 		event: { kind: id },
 		trip: {},
@@ -85,7 +85,13 @@ function fakePhysics(): Physics & { calls: string[] } {
 		},
 		async plan() {
 			calls.push("/plan");
-			const passing = { ...BATTERY, passed: 7, status: "pass", contran_945: [{ code: "four_terminals", status: "pass" }] };
+			const passing = {
+				...BATTERY,
+				passed: 7,
+				status: "pass",
+				situations: BATTERY.situations.map((s) => ({ ...s, status: "pass", findings: [] })),
+				contran_945: [{ code: "four_terminals", status: "pass" }],
+			};
 			return { draft: { version: 1 }, changes: [{ code: "straps" }], verified: true, rounds: 1, battery: passing as unknown as BatteryJson };
 		},
 	};

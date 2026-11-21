@@ -10,6 +10,7 @@
  * The answers have the shapes of the container's own `POST /battery` and `POST /plan`.
  */
 import { ApiError, fail } from "./http";
+import { verdictState } from "./verdict";
 
 /** A POST to a container instance (only the Worker can reach them). `instance` names it. */
 export type ContainerCall = (path: string, body: unknown, instance?: string) => Promise<Response>;
@@ -51,6 +52,8 @@ export interface BatteryJson {
 	axle_loads: unknown[];
 	en_12195_1: unknown[];
 	contran_945: { status: string }[];
+	checklist: Record<string, { status: string; kind: string }[]> | null;
+	verdict: { state: string } | null;
 	wall_time_s: number;
 	recommendation: unknown;
 }
@@ -91,15 +94,24 @@ export function worstIndex(situations: Pick<Situation, "status" | "severity">[])
 	return best;
 }
 
-export function passesRules(battery: Pick<BatteryJson, "passed" | "total" | "contran_945">): boolean {
-	return battery.passed === battery.total && battery.contran_945.every((check) => check.status !== "fail");
+/** Approved: every situation holds and every rule passes (`verdict.ts`). */
+export function passesRules(battery: Pick<BatteryJson, "situations" | "contran_945" | "checklist">): boolean {
+	return verdictState(battery) === "approved";
 }
 
 /** The seven situations side by side, then the battery as the container would have answered. */
 export async function runBattery(call: ContainerCall, draft: unknown, withRecommendation = true): Promise<BatteryJson> {
 	const started = Date.now();
 	const [checks, ...runs] = await Promise.all([
-		post<{ draft: unknown; scenario: unknown; axle_loads: unknown[]; en_12195_1: unknown[]; contran_945: { status: string }[]; recommendation: unknown }>(
+		post<{
+			draft: unknown;
+			scenario: unknown;
+			axle_loads: unknown[];
+			en_12195_1: unknown[];
+			contran_945: { status: string }[];
+			checklist?: BatteryJson["checklist"];
+			recommendation: unknown;
+		}>(
 			call,
 			"/battery/checks",
 			{ draft },
@@ -123,9 +135,12 @@ export async function runBattery(call: ContainerCall, draft: unknown, withRecomm
 		axle_loads: checks.axle_loads,
 		en_12195_1: checks.en_12195_1,
 		contran_945: checks.contran_945,
+		checklist: checks.checklist ?? null,
+		verdict: null,
 		wall_time_s: (Date.now() - started) / 1000,
 		recommendation: null,
 	};
+	battery.verdict = { state: verdictState(battery) };
 	if (withRecommendation && !passesRules(battery)) battery.recommendation = checks.recommendation;
 	return battery;
 }

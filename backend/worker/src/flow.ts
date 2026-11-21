@@ -9,6 +9,10 @@
  *   POST   /inspections/:id/simulate            the seven-situation battery, on the server
  *   POST   /inspections/:id/fix                 the planner's fix, proven through the battery
  *   GET    /inspections/:id/battery/:kind       a stored battery (as_loaded | fixed)
+ *   POST   /inspections/:id/invoice             read the gross weight off a DANFE photo (shown
+ *                                               for confirmation; never invented)
+ *   POST   /inspections/:id/share               a public summary link (author or org_admin)
+ *   DELETE /inspections/:id/share               stop sharing
  *
  * Status: draft (photos) -> analyzed -> confirmed (draft saved) -> simulated.
  * Only the author changes an inspection; readers (org_admin, platform admin) may read it.
@@ -20,9 +24,11 @@ import type { BatteryJson, PlanJson } from "./fanout";
 import { type Db, newId, now } from "./db";
 import { fail, forbidden, jsonBody } from "./http";
 import type { AnalysisCall, PhotoInput } from "./perception/claude";
+import { INVOICE_PROMPT_VERSION, type InvoiceCall, type InvoiceReading } from "./perception/invoice";
 import { sha256Hex, stripMetadata, toBase64, UnsupportedImage } from "./perception/metadata";
 import { type PhotoAnalysis, PROMPT_VERSION } from "./perception/schema";
 import { analysisAllowance } from "./quota";
+import { type BatteryLike, STORED, verdictState } from "./verdict";
 
 export interface PhotoStore {
 	put(key: string, bytes: Uint8Array, contentType: string): Promise<void>;
@@ -40,6 +46,11 @@ export interface Analyzer {
 	analyze(photos: PhotoInput[]): Promise<AnalysisCall>;
 }
 
+export interface InvoiceReader {
+	model: string;
+	read(photo: PhotoInput): Promise<InvoiceCall>;
+}
+
 export interface SamplePhoto {
 	id: string;
 	/** Public site path of each photo, and its hash. */
@@ -52,6 +63,7 @@ export interface FlowDeps {
 	photos: PhotoStore | null;
 	physics: Physics | null;
 	analyzer: Analyzer | null;
+	invoiceReader?: InvoiceReader | null;
 	samples: Record<string, SamplePhoto>;
 }
 
@@ -62,6 +74,9 @@ export const MAX_PHOTOS = 4;
 export const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const POSITIONS = ["front", "left", "right", "rear", "other"] as const;
 const KINDS = ["as_loaded", "fixed"] as const;
+/** Sizes the `inspections.truck_size` column accepts (a "3/4" lives in `truck_json` only). */
+const LEGACY_SIZES = ["vuc", "toco", "truck", "semi"];
+const WEIGHT_SOURCES = ["measured", "invoice", "estimated"] as const;
 /** Weights the user gave must add up to the cargo weight, within this share (rounding). */
 const WEIGHT_TOLERANCE = 0.01;
 
@@ -221,6 +236,87 @@ export function registerFlow(
 		return c.json({ mode: "live", analysis: call.analysis, model: call.model, cost_usd: round(call.costUsd) });
 	});
 
+	// ---- invoice (DANFE) -------------------------------------------------------------------
+
+	app.post("/inspections/:id/invoice", authenticated, async (c) => {
+		const p = c.get("principal");
+		const inspection = await writable(c);
+		const raw = new Uint8Array(await c.req.arrayBuffer());
+		if (raw.length === 0) fail(422, "empty_photo", "Send the invoice photo as the request body.");
+		if (raw.length > MAX_PHOTO_BYTES) fail(413, "photo_too_large", "Photos must be at most 5 MB.");
+		let stripped: ReturnType<typeof stripMetadata>;
+		try {
+			stripped = stripMetadata(raw);
+		} catch (error) {
+			if (error instanceof UnsupportedImage) fail(415, "unsupported_photo", error.message);
+			throw error;
+		}
+		const sha256 = await sha256Hex(stripped.bytes);
+		const key = `invoices/${sha256}.${stripped.kind === "image/png" ? "png" : "jpg"}`;
+		const reader = deps.invoiceReader ?? null;
+		const save = async (reading: InvoiceReading, model: string | null) => {
+			if (deps.photos) await deps.photos.put(key, stripped.bytes, stripped.kind);
+			const stored = { ...reading, photo_key: deps.photos ? key : null, model };
+			await touch(inspection.id, { invoice_json: JSON.stringify(stored) });
+			return stored;
+		};
+		if (!reader) return c.json({ mode: "demo", reason: "not_configured", reading: null });
+		const cached = await db
+			.prepare("SELECT output_json FROM analyses WHERE photo_sha256 = ? AND model = ? AND prompt_version = ?")
+			.bind(sha256, reader.model, INVOICE_PROMPT_VERSION)
+			.first<{ output_json: string }>();
+		if (cached) {
+			await recordUsage(db, p, { model: reader.model, inputTokens: 0, outputTokens: 0, costUsd: 0, cached: true });
+			return c.json({ mode: "cached", reading: await save(JSON.parse(cached.output_json) as InvoiceReading, reader.model) });
+		}
+		const allowance = await analysisAllowance(db, p);
+		if (!allowance.allowed) return c.json({ mode: "demo", reason: allowance.reason, reading: null, allowance });
+		let call: InvoiceCall;
+		try {
+			call = await reader.read({
+				mediaType: stripped.kind === "image/png" ? "image/png" : "image/jpeg",
+				base64: toBase64(stripped.bytes),
+				position: "invoice",
+			});
+		} catch (error) {
+			console.error("Invoice reading failed:", error);
+			fail(502, "invoice_failed", "The invoice could not be read. Type the weight instead.");
+		}
+		await db
+			.prepare(
+				`INSERT INTO analyses (id, photo_sha256, model, prompt_version, output_json, input_tokens, output_tokens, cost_usd, created_at)
+				 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (photo_sha256, model, prompt_version) DO NOTHING`,
+			)
+			.bind(newId("ana"), sha256, call.model, INVOICE_PROMPT_VERSION, JSON.stringify(call.reading), call.inputTokens, call.outputTokens, call.costUsd, now())
+			.run();
+		await recordUsage(db, p, { ...call, cached: false });
+		return c.json({ mode: "live", reading: await save(call.reading, call.model) });
+	});
+
+	// ---- sharing ---------------------------------------------------------------------------
+
+	async function shareable(c: Context<Env>): Promise<Row> {
+		const row = await readable(c);
+		const p = c.get("principal");
+		const manager = p.orgRole === "org_admin" && row.org_id !== null && row.org_id === p.orgId;
+		if (!canWriteInspection(p, row) && !manager) forbidden();
+		return row;
+	}
+
+	app.post("/inspections/:id/share", authenticated, async (c) => {
+		const inspection = await shareable(c);
+		const existing = await db.prepare("SELECT share_token FROM inspections WHERE id = ?").bind(inspection.id).first<{ share_token: string | null }>();
+		const token = existing?.share_token ?? shareToken();
+		if (!existing?.share_token) await touch(inspection.id, { share_token: token });
+		return c.json({ token, path: `/app/share?t=${token}` });
+	});
+
+	app.delete("/inspections/:id/share", authenticated, async (c) => {
+		const inspection = await shareable(c);
+		await touch(inspection.id, { share_token: null });
+		return c.json({ shared: false });
+	});
+
 	// ---- confirmed load -------------------------------------------------------------------
 
 	app.put("/inspections/:id/draft", authenticated, async (c) => {
@@ -232,6 +328,8 @@ export function registerFlow(
 		checkWeights(draft, total);
 		const notes = typeof body.notes === "string" ? body.notes.slice(0, 2000) : undefined;
 		const title = typeof body.title === "string" ? body.title.trim().slice(0, 120) : undefined;
+		const weight = checkWeightSource(body, total);
+		const truckId = typeof body.truck_id === "string" ? body.truck_id.slice(0, 40) : null;
 		const at = now();
 		const id = newId("scn");
 		// A confirmed load replaces the previous one, and with it every result and fix.
@@ -244,8 +342,11 @@ export function registerFlow(
 		await touch(inspection.id, {
 			status: "confirmed",
 			truck_body: draft.truck.body,
-			truck_size: draft.truck.size,
+			truck_size: LEGACY_SIZES.includes(draft.truck.size) ? draft.truck.size : null,
+			truck_json: JSON.stringify({ ...draft.truck, truck_id: truckId }),
 			cargo_weight_kg: total,
+			weight_source: weight.source,
+			weight_range_json: weight.range ? JSON.stringify(weight.range) : null,
 			situations_passed: null,
 			situations_total: null,
 			verdict: null,
@@ -350,10 +451,9 @@ export function registerFlow(
 	});
 }
 
-/** "pass" only when every situation passes and no CONTRAN 945 rule is broken. */
-export function verdictOf(battery: Pick<BatteryJson, "passed" | "total" | "contran_945">): "pass" | "fail" {
-	const rules = battery.contran_945.every((check) => check.status !== "fail");
-	return battery.passed === battery.total && rules ? "pass" : "fail";
+/** The stored verdict: pass (approved), warning (holds, out of compliance), fail (does not hold). */
+export function verdictOf(battery: BatteryLike): "pass" | "warning" | "fail" {
+	return STORED[verdictState(battery)];
 }
 
 /** Cache key of an analysis: the photos' hashes, in any order. */
@@ -422,4 +522,32 @@ async function recordUsage(
 
 function round(value: number): number {
 	return Math.round(value * 1_000_000) / 1_000_000;
+}
+
+/** A public share token: 24 random bytes, URL-safe. */
+export function shareToken(): string {
+	const bytes = new Uint8Array(24);
+	crypto.getRandomValues(bytes);
+	return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/**
+ * Where the weight came from. An estimate carries its range and is simulated at the upper
+ * bound: the total must be the range's high end, so an estimate can never pass as measured.
+ */
+export function checkWeightSource(
+	body: Record<string, unknown>,
+	totalKg: number,
+): { source: (typeof WEIGHT_SOURCES)[number]; range: { low_kg: number; high_kg: number } | null } {
+	const source = (body.weight_source ?? "measured") as (typeof WEIGHT_SOURCES)[number];
+	if (!WEIGHT_SOURCES.includes(source)) fail(422, "invalid_field", `weight_source must be one of ${WEIGHT_SOURCES.join(", ")}.`);
+	if (source !== "estimated") return { source, range: null };
+	const range = body.weight_range as { low_kg?: unknown; high_kg?: unknown } | undefined;
+	const low = typeof range?.low_kg === "number" ? range.low_kg : NaN;
+	const high = typeof range?.high_kg === "number" ? range.high_kg : NaN;
+	if (!(low > 0 && high >= low && high <= 80_000)) fail(422, "invalid_weight_range", "An estimated weight needs its range.");
+	if (Math.abs(totalKg - high) > Math.max(1, high * 0.001)) {
+		fail(422, "estimate_not_upper_bound", "An estimated weight is simulated at the upper end of its range.");
+	}
+	return { source, range: { low_kg: low, high_kg: high } };
 }
