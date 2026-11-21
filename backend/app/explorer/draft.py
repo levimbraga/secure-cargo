@@ -18,6 +18,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from app.explorer.config import (
     MAX_DIAGONAL_SETS,
     MAX_STRAPS_PER_UNIT,
+    BodyCode,
     Cargo,
     Country,
     Restraint,
@@ -72,6 +73,13 @@ class DraftTruck(_Model):
     bed_length_m: float | None = Field(default=None, ge=2.0, le=15.0)
     headboard_height_m: float | None = Field(default=None, gt=0, le=4.0)
     anchors_per_side: int | None = Field(default=None, ge=2, le=40)
+    body_code: BodyCode | None = Field(
+        default=None,
+        description=(
+            "EN 12642 strength code of the body (L or XL), from its plate. None: not given; the "
+            "model then assumes code L walls. An XL curtain-sider's curtains are side walls."
+        ),
+    )
 
     @model_validator(mode="after")
     def _style_matches(self) -> Self:
@@ -120,7 +128,8 @@ class LoadDraft(_Model):
     country: Country = Field(
         default=Country.BR,
         description=(
-            "Whose rules the load is checked against (BR: CONTRAN, US: FMCSA and 23 CFR 658). "
+            "Whose rules the load is checked against (BR: CONTRAN, US: FMCSA and 23 CFR 658, "
+            "EU: Directive 2014/47/EU Annex III and Directive 96/53/EC). "
             "Changes no physics, only the rule checks and the planner's legal targets."
         ),
     )

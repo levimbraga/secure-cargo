@@ -29,11 +29,21 @@ class Size(StrEnum):
     US_FLATBED_48 = "us_flatbed_48"  # tractor and 48 ft flatbed semitrailer, five axles
     US_DRY_VAN_53 = "us_dry_van_53"  # tractor and 53 ft dry van, five axles
     US_STEP_DECK = "us_step_deck"  # tractor and 48 ft step deck (the lower deck is modelled)
+    # EU presets (2026-11-21, EU mode): typical values, ``notes/eu-rules.md`` section 4.
+    EU_7_5T = "eu_7_5t"  # 7.5 t rigid, two axles
+    EU_18T = "eu_18t"  # 18 t rigid, two axles
+    EU_26T = "eu_26t"  # 26 t rigid, three axles (driving tandem)
+    EU_SEMI_136 = "eu_semi_136"  # 40 t articulated: 4x2 tractor and a 13.6 m tri-axle semi
+    EU_FLATBED_136 = "eu_flatbed_136"  # 40 t articulated with a 13.6 m flatbed semi-trailer
 
 
 US_SIZES = frozenset(
     {Size.US_BOX, Size.US_STRAIGHT, Size.US_FLATBED_48, Size.US_DRY_VAN_53, Size.US_STEP_DECK}
 )
+EU_SIZES = frozenset(
+    {Size.EU_7_5T, Size.EU_18T, Size.EU_26T, Size.EU_SEMI_136, Size.EU_FLATBED_136}
+)
+EU_ARTICULATED = frozenset({Size.EU_SEMI_136, Size.EU_FLATBED_136})
 
 
 class Country(StrEnum):
@@ -41,6 +51,14 @@ class Country(StrEnum):
 
     BR = "BR"  # CONTRAN Resolutions 945/2022 and 882/2021
     US = "US"  # 49 CFR 393 subpart I and 23 CFR 658
+    EU = "EU"  # Directive 2014/47/EU Annex III (EN 12195-1, EN 12642) and Directive 96/53/EC
+
+
+class BodyCode(StrEnum):
+    """The body's strength code of EN 12642 (on its plate). Changes the walls in the model."""
+
+    L = "L"  # headboard 0.4 P (at most 5,000 daN); a curtain holds nothing
+    XL = "XL"  # headboard 0.5 P, side walls (curtains too) 0.4 P, rear wall 0.3 P
 
 
 class Cargo(StrEnum):
@@ -133,6 +151,8 @@ class ExplorerConfig(BaseModel):
     moves: tuple[UnitMove, ...] = ()
     # Whose rules the load is checked against; changes no physics (``country`` in the query).
     country: Country = Country.BR
+    # The body's EN 12642 code (``code`` in the query); None: not given (code L assumed).
+    body_code: BodyCode | None = None
 
     @model_validator(mode="after")
     def _valid(self) -> Self:
@@ -177,6 +197,8 @@ class ExplorerConfig(BaseModel):
             )
         if self.country is not Country.BR:
             parts.append(("country", self.country.value))
+        if self.body_code is not None:
+            parts.append(("code", self.body_code.value))
         return "&".join(f"{key}={value}" for key, value in parts)
 
     @classmethod
@@ -197,6 +219,7 @@ class ExplorerConfig(BaseModel):
             "straps",
             "moves",
             "country",
+            "code",
         }
         unknown = set(values) - known
         if unknown:
@@ -214,6 +237,8 @@ class ExplorerConfig(BaseModel):
             data["count"] = values["n"]
         if "country" in values:
             data["country"] = values["country"]
+        if "code" in values:
+            data["body_code"] = values["code"]
         if "kg" in values:
             data["mass_kg"] = values["kg"]
         if values.get("straps"):

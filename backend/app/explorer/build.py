@@ -10,7 +10,16 @@ from dataclasses import dataclass, replace
 
 from pydantic import ValidationError
 
-from app.explorer.config import Cargo, ExplorerConfig, Position, Restraint, Road, Size, Weather
+from app.explorer.config import (
+    BodyCode,
+    Cargo,
+    ExplorerConfig,
+    Position,
+    Restraint,
+    Road,
+    Size,
+    Weather,
+)
 from app.explorer.draft import DraftTrip, DraftTruck, DraftUnit, LoadDraft
 from app.scenario import (
     AnchorPoint,
@@ -179,6 +188,108 @@ US_TRUCKS: dict[Size, TruckSpec] = {
 }
 
 
+# EU presets (notes/eu-rules.md, section 4): typical values, our assumptions, not a specific model.
+# A 40 t articulated vehicle is modelled like the other semis: the bed rests on a group at the
+# kingpin (the tractor carries it) and on the trailer's tri-axle. Under EU rules the kingpin load
+# is shared between the 4x2 tractor's steer and driving axles (rules/eu_weights.py); under
+# Brazil's and the US rules the kingpin group is checked as one tandem group.
+EU_TRUCKS: dict[Size, TruckSpec] = {
+    # 7.5 t rigid: 6.2 m body, wheelbase 4.2 m, plated 7.5 t.
+    Size.EU_7_5T: TruckSpec(
+        length_m=6.2,
+        width_m=2.45,
+        floor_height_m=1.0,
+        wall_height_m=2.3,
+        front=AxleGroup(
+            id="front", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=3.3, tare_load_kg=2700
+        ),
+        rear=AxleGroup(
+            id="rear", kind=AxleGroupKind.SINGLE_4_TYRES, position_x_m=-0.9, tare_load_kg=1600
+        ),
+        payload_kg=3200,
+    ),
+    # 18 t rigid, two axles: 7.3 m body, wheelbase 5.0 m.
+    Size.EU_18T: TruckSpec(
+        length_m=7.3,
+        width_m=2.48,
+        floor_height_m=1.25,
+        wall_height_m=2.5,
+        front=AxleGroup(
+            id="front", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=3.9, tare_load_kg=4600
+        ),
+        rear=AxleGroup(
+            id="rear", kind=AxleGroupKind.SINGLE_4_TYRES, position_x_m=-1.1, tare_load_kg=2900
+        ),
+        payload_kg=10500,
+    ),
+    # 26 t rigid, three axles: 9.5 m body, driving tandem 1.37 m apart (twin tyres, air).
+    Size.EU_26T: TruckSpec(
+        length_m=9.5,
+        width_m=2.48,
+        floor_height_m=1.3,
+        wall_height_m=2.5,
+        front=AxleGroup(
+            id="front", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=4.6, tare_load_kg=5700
+        ),
+        rear=AxleGroup(
+            id="rear", kind=AxleGroupKind.TANDEM_2_AXLES, position_x_m=-0.8, tare_load_kg=4800
+        ),
+        payload_kg=15500,
+    ),
+    # 13.6 m semi-trailer (2.48 m wide, 2.70 m inside): kingpin 1.6 m behind the front (12.0 m
+    # to the rear, the 96/53/EC maximum), tri-axle centre 7.8 m behind the kingpin. The kingpin
+    # group carries the tractor's driving-axle tare (2,400 kg) and the trailer's front share.
+    Size.EU_SEMI_136: TruckSpec(
+        length_m=13.6,
+        width_m=2.48,
+        floor_height_m=1.2,
+        wall_height_m=2.7,
+        front=AxleGroup(
+            id="tractor",
+            kind=AxleGroupKind.TANDEM_2_AXLES,
+            position_x_m=5.2,
+            tare_load_kg=2400 + 2000,
+        ),
+        rear=AxleGroup(
+            id="trailer",
+            kind=AxleGroupKind.TANDEM_3_AXLES,
+            position_x_m=-2.6,
+            tare_load_kg=4800,
+        ),
+        payload_kg=25000,
+    ),
+    # 13.6 m flatbed semi-trailer with a 1.6 m headboard.
+    Size.EU_FLATBED_136: TruckSpec(
+        length_m=13.6,
+        width_m=2.48,
+        floor_height_m=1.3,
+        wall_height_m=2.7,
+        front=AxleGroup(
+            id="tractor",
+            kind=AxleGroupKind.TANDEM_2_AXLES,
+            position_x_m=5.2,
+            tare_load_kg=2400 + 1800,
+        ),
+        rear=AxleGroup(
+            id="trailer",
+            kind=AxleGroupKind.TANDEM_3_AXLES,
+            position_x_m=-2.6,
+            tare_load_kg=4200,
+        ),
+        payload_kg=25000,
+        headboard_m=1.6,
+    ),
+}
+# Overall length of each EU preset [m], for 96/53/EC Annex I 1.1 (cab and coupling included).
+EU_OVERALL_LENGTH_M: dict[Size, float] = {
+    Size.EU_7_5T: 8.5,
+    Size.EU_18T: 10.0,
+    Size.EU_26T: 11.9,
+    Size.EU_SEMI_136: 16.5,
+    Size.EU_FLATBED_136: 16.5,
+}
+
+
 TRUCKS: dict[Size, TruckSpec] = {
     Size.VUC: TruckSpec(
         length_m=4.2,
@@ -253,6 +364,7 @@ TRUCKS: dict[Size, TruckSpec] = {
         payload_kg=28000,
     ),
     **US_TRUCKS,
+    **EU_TRUCKS,
 }
 FLATBED_HEADBOARD_M = 1.2
 # ASSUMPTION: the front wall of a box or curtain-sider body is an EN 12642 code L wall, rated for
@@ -261,6 +373,17 @@ FLATBED_HEADBOARD_M = 1.2
 # (section 2.2), which agree (checked 2026-11-21). A real truck's wall may be weaker or stronger.
 FRONT_WALL_SHARE_OF_PAYLOAD = 0.4
 FRONT_WALL_MAX_N = 50_000.0
+# EN 12642 code XL (the same guidelines, section 2.2 and figure 6): the headboard holds 0.5 P
+# with no cap, and the side walls, curtains included, 0.4 P. An XL curtain-sider's curtains are
+# modelled as side walls (rigid, like a box body's); the rules check the 0.4 P they are rated for.
+FRONT_WALL_XL_SHARE = 0.5
+
+
+def wall_strength_n(code: BodyCode | None, payload_kg: float) -> float:
+    """The front wall's rated strength [N] for an EN 12642 code (None: code L assumed)."""
+    if code is BodyCode.XL:
+        return FRONT_WALL_XL_SHARE * payload_kg * STANDARD_GRAVITY_MPS2
+    return min(FRONT_WALL_SHARE_OF_PAYLOAD * payload_kg * STANDARD_GRAVITY_MPS2, FRONT_WALL_MAX_N)
 
 
 # --- Cargo -----------------------------------------------------------------------------
@@ -489,7 +612,7 @@ def draft_from_config(config: ExplorerConfig) -> LoadDraft:
     return LoadDraft(
         source="explorer",
         country=config.country,
-        truck=DraftTruck(body=config.body, size=config.size),
+        truck=DraftTruck(body=config.body, size=config.size, body_code=config.body_code),
         trip=DraftTrip(
             speed_kmh=config.speed_kmh,
             road=config.road,
@@ -573,6 +696,7 @@ def build_draft(
         truck,
         headboard_m=draft.truck.headboard_height_m,
         anchors_per_side=draft.truck.anchors_per_side,
+        code=draft.truck.body_code,
     )
     restraint = draft.restraint
 
@@ -682,21 +806,27 @@ def _bed(
     *,
     headboard_m: float | None = None,
     anchors_per_side: int | None = None,
+    code: BodyCode | None = None,
 ) -> TruckBed:
     anchors = _anchors(truck, anchors_per_side)
     if body is BodyType.FLATBED:
+        # A flatbed's headboard has no rating unless the driver gives its EN 12642 code.
         return TruckBed(
             length_m=truck.length_m,
             width_m=truck.width_m,
             floor_height_m=truck.floor_height_m,
             floor_material=FloorMaterial.PLYWOOD_LAMINATE,
-            headboard=Headboard(height_m=headboard_m or truck.headboard_m or FLATBED_HEADBOARD_M),
+            headboard=Headboard(
+                height_m=headboard_m or truck.headboard_m or FLATBED_HEADBOARD_M,
+                rated_capacity_n=(
+                    round(wall_strength_n(code, truck.payload_kg), 1) if code else None
+                ),
+            ),
             anchor_points=anchors,
         )
-    rated = min(
-        FRONT_WALL_SHARE_OF_PAYLOAD * truck.payload_kg * STANDARD_GRAVITY_MPS2, FRONT_WALL_MAX_N
-    )
+    rated = wall_strength_n(code, truck.payload_kg)
     walls = truck.wall_height_m
+    sides = body is BodyType.BOX or code is BodyCode.XL
     return TruckBed(
         length_m=truck.length_m,
         width_m=truck.width_m,
@@ -704,8 +834,9 @@ def _bed(
         floor_material=FloorMaterial.PLYWOOD_LAMINATE,
         headboard=Headboard(height_m=walls, rated_capacity_n=round(rated, 1)),
         body=body,
-        # A curtain does not restrain cargo: a curtain-sider has no side walls in the model.
-        side_rail_height_m=walls if body is BodyType.BOX else 0.0,
+        # A code L curtain does not restrain cargo: that curtain-sider has no side walls in the
+        # model. An XL curtain is rated for 0.4 P: modelled as a wall.
+        side_rail_height_m=walls if sides else 0.0,
         rear_wall_height_m=walls,
         anchor_points=anchors,
     )
