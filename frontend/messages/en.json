@@ -1218,7 +1218,8 @@
       "bodyTitle": "What body does it have?",
       "bodySentence": "The body decides what holds the cargo besides the straps.",
       "backToSize": "Change the size",
-      "saveLabel": "Save to My trucks"
+      "saveLabel": "Save to My trucks",
+      "readNoTruck": "We read {units, plural, one {# unit} other {# units}} on the photo, but not the truck: pick it below."
     },
     "sizes": {
       "axles": "{count, plural, one {# axle} other {# axles}}",

@@ -345,6 +345,13 @@ function AnalysisLine({ flow }: { flow: Flow }) {
       </p>
     );
   }
+  if (answer?.analysis) {
+    return (
+      <p className="mt-4 rounded bg-surface px-3 py-2 text-[0.9375rem] text-ink" data-testid="analysis-status" data-mode={answer.mode}>
+        {t("truck.readNoTruck", { units: answer.analysis.units.length })}
+      </p>
+    );
+  }
   return null;
 }
 

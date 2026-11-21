@@ -1218,7 +1218,8 @@
       "bodyTitle": "Qual é a carroceria?",
       "bodySentence": "A carroceria decide o que segura a carga além das cintas.",
       "backToSize": "Trocar o tamanho",
-      "saveLabel": "Salvar em Meus caminhões"
+      "saveLabel": "Salvar em Meus caminhões",
+      "readNoTruck": "Lemos {units, plural, one {# volume} other {# volumes}} na foto, mas não o caminhão: escolha abaixo."
     },
     "sizes": {
       "axles": "{count, plural, one {# eixo} other {# eixos}}",
