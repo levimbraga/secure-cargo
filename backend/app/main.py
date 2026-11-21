@@ -259,7 +259,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.post("/battery/checks", response_model=ChecksResponse, tags=["inspection"])
     def battery_rule_checks(body: DraftRequest) -> ChecksResponse:
-        """Axle loads, EN 12195-1, CONTRAN 945 and the planner's recommendation (no simulation)."""
+        """Axle loads, EN 12195-1, both countries' rules and the planner's fix (no simulation)."""
         try:
             checks = battery_checks(body.draft)
             fixed, changes = recommend(body.draft)

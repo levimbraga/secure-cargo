@@ -19,7 +19,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.explorer import build_draft
-from app.explorer.config import Road, Weather
+from app.explorer.config import Country, Road, Weather
 from app.explorer.draft import DraftTrip, LoadDraft
 from app.inspection.verdict import RULE_FINDINGS, Verdict, verdict_of
 from app.scenario import EventKind, Scenario, TripEvent
@@ -36,6 +36,7 @@ from physics.results import (
 from rules.axle_loads import axle_loads
 from rules.checklist import Checklist, checklist
 from rules.contran945 import ContranCheck, check_contran_945
+from rules.country import RuleSet, rule_sets
 from rules.en12195 import check_scenario
 
 SituationId = Literal[
@@ -109,6 +110,11 @@ class BatteryResult(_Model):
     en_12195_1: list[StandardCheck]
     contran_945: list[ContranCheck]
     checklist: Checklist
+    country: Country = Field(description="Whose rules the verdict uses (the draft's).")
+    rules: dict[Country, RuleSet] = Field(
+        description="Both countries' rule checks: a page switches country without a simulation."
+    )
+    verdicts: dict[Country, Verdict] = Field(description="The verdict under each country's rules.")
     verdict: Verdict
     cpu_time_s: float
 
@@ -191,6 +197,8 @@ class BatteryChecks(_Model):
     en_12195_1: list[StandardCheck]
     contran_945: list[ContranCheck]
     checklist: Checklist
+    country: Country
+    rules: dict[Country, RuleSet]
 
 
 def headboard_known(draft: LoadDraft) -> bool:
@@ -216,7 +224,24 @@ def battery_checks(draft: LoadDraft) -> BatteryChecks:
             restraint=draft.restraint.value,
             headboard_known=known,
         ),
+        country=draft.country,
+        rules=rule_sets(scenario, draft, headboard_known=known),
     )
+
+
+def verdicts_of(situations: list[SituationResult], checks: BatteryChecks) -> dict[Country, Verdict]:
+    """The verdict under each country's rules (the physics is the same)."""
+    runs = [s.model_dump() for s in situations]
+    return {
+        country: verdict_of(
+            {
+                "situations": runs,
+                "country": country.value,
+                "rules": {country.value: rules.model_dump()},
+            }
+        )
+        for country, rules in checks.rules.items()
+    }
 
 
 def worst_of(situations: list[SituationResult]) -> int:
@@ -238,13 +263,7 @@ def run_battery(storage: Storage, draft: LoadDraft) -> BatteryResult:
         "fail" if "fail" in statuses else "warning" if "warning" in statuses else "pass"
     )
     checks = battery_checks(draft)
-    verdict = verdict_of(
-        {
-            "situations": [s.model_dump() for s in situations],
-            "contran_945": [c.model_dump() for c in checks.contran_945],
-            "checklist": checks.checklist.model_dump(),
-        }
-    )
+    verdicts = verdicts_of(situations, checks)
     return BatteryResult(
         draft=draft,
         scenario=checks.scenario,
@@ -258,6 +277,9 @@ def run_battery(storage: Storage, draft: LoadDraft) -> BatteryResult:
         en_12195_1=checks.en_12195_1,
         contran_945=checks.contran_945,
         checklist=checks.checklist,
-        verdict=verdict,
+        country=checks.country,
+        rules=checks.rules,
+        verdicts=verdicts,
+        verdict=verdicts[checks.country],
         cpu_time_s=round(time.thread_time() - started, 3),
     )

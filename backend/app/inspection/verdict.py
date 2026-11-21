@@ -96,14 +96,24 @@ def verdict_of(battery: Json) -> Verdict:
     )
 
 
+def active_rules(battery: Json) -> tuple[list[Json], Json]:
+    """The securing checks and checklist the verdict uses: the battery's country's, if it has the
+    rule sets of both countries (since 2026-11-21); else the Brazilian ones it always carried."""
+    country = battery.get("country") or "BR"
+    rules = (battery.get("rules") or {}).get(country)
+    if rules:
+        return rules.get("securing", []), rules.get("checklist") or {}
+    return battery.get("contran_945", []), battery.get("checklist") or {}
+
+
 def _first_rule_failure(battery: Json) -> MainProblem | None:
-    for check in battery.get("contran_945", []):
+    securing, checklist = active_rules(battery)
+    for check in securing:
         if check.get("status") == "fail":
             ids = check.get("unit_ids") or [None]
             return MainProblem(
                 kind="rule", code=check["code"], unit_id=ids[0], article=check.get("article")
             )
-    checklist = battery.get("checklist") or {}
     for theme in ("weight", "dimensions", "protection"):
         for item in checklist.get(theme, []):
             if item.get("kind") == "rule" and item.get("status") == "fail":

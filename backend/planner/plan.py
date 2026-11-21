@@ -29,7 +29,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.explorer import BuildError, build_draft
 from app.explorer.build import CARGO, strap_room
-from app.explorer.config import MAX_DIAGONAL_SETS, MAX_STRAPS_PER_UNIT, Cargo, Restraint
+from app.explorer.config import (
+    MAX_DIAGONAL_SETS,
+    MAX_STRAPS_PER_UNIT,
+    Cargo,
+    Country,
+    Restraint,
+)
 from app.explorer.draft import LoadDraft
 from app.inspection.battery import (
     SITUATIONS,
@@ -41,9 +47,13 @@ from app.inspection.battery import (
 )
 from app.scenario import BodyType, CylinderAxis, Scenario, UnitShape
 from app.storage import Storage
+from physics.results import AxleLoad
 from rules.axle_loads import axle_loads
 from rules.contran945 import check_contran_945
+from rules.country import breaks_a_rule, rule_set, securing_checks
 from rules.en12195 import check_scenario
+from rules.fmcsa393 import aggregate_wll, min_tiedowns
+from rules.us_weights import group_limits_kg
 
 # Simulated candidates at most; each costs up to one battery.
 MAX_ROUNDS = 5
@@ -80,6 +90,22 @@ STEP_EFFORT: dict[str, int] = {
     "spread": 4,
     "chain": 5,
 }
+# The article behind a change, by country.
+ARTICLES: dict[str, dict[Country, str]] = {
+    "replace_rope": {Country.BR: "CONTRAN 945/2022 art. 4 §3"},
+    "reanchor": {Country.BR: "CONTRAN 945/2022 art. 6", Country.US: "49 CFR 393.104(c)"},
+    "balance_axles": {Country.BR: "CONTRAN 882/2021 art. 6", Country.US: "23 CFR 658.17"},
+    "close_gaps": {Country.BR: "CONTRAN 945/2022 art. 7", Country.US: "49 CFR 393.110(c)"},
+    "diagonal_sets": {Country.BR: "CONTRAN 945/2022 art. 4", Country.US: "49 CFR 393.106(d)"},
+    "straps": {Country.BR: "EN 12195-1; CONTRAN 945/2022 art. 5", Country.US: "49 CFR 393.110"},
+}
+
+
+def _article(code: str, draft: LoadDraft) -> str | None:
+    by_country = ARTICLES.get(code, {})
+    return by_country.get(draft.country) or by_country.get(Country.BR)
+
+
 FRAGILE_CARGO = {Cargo.STACKED_BOXES, Cargo.SACKS, Cargo.PLASTIC_PALLET}
 
 # Battery situations in the order the planner tries them: the ones most loads fail first, so a
@@ -147,7 +173,8 @@ class _Candidate:
 
 def _rule_fixes(draft: LoadDraft) -> tuple[LoadDraft, list[Change]]:
     changes: list[Change] = []
-    if draft.restraint is Restraint.ROPE:
+    # Ropes are prohibited in Brazil; in the US they are allowed without knots (to confirm).
+    if draft.restraint is Restraint.ROPE and draft.country is Country.BR:
         draft = draft.model_copy(update={"restraint": Restraint.TOP_OVER})
         changes.append(
             Change(
@@ -163,7 +190,7 @@ def _rule_fixes(draft: LoadDraft) -> tuple[LoadDraft, list[Change]]:
         changes.append(
             Change(
                 code="reanchor",
-                article="CONTRAN 945/2022 art. 6",
+                article=_article("reanchor", draft),
                 message=(
                     "Hook the lashings to the lashing points on the metal frame, "
                     "not the wooden floor."
@@ -218,14 +245,30 @@ def _close_gaps(draft: LoadDraft, scenario: Scenario) -> tuple[LoadDraft, float]
     return _with_positions(draft, xs), moved
 
 
-def _axle_shift(scenario: Scenario) -> float | None:
+def _limited_loads(scenario: Scenario, draft: LoadDraft) -> list[AxleLoad]:
+    """The modelled groups' loads against the draft's country's limits."""
+    loads = axle_loads(scenario)
+    if draft.country is Country.BR:
+        return loads
+    limits = group_limits_kg(scenario, draft.truck.size)
+    if limits is None:
+        return loads
+    return [
+        load.model_copy(
+            update={"limit_kg": round(limit, 1), "ratio": round(load.load_kg / limit, 4)}
+        )
+        for load, limit in zip(loads, limits, strict=True)
+    ]
+
+
+def _axle_shift(scenario: Scenario, draft: LoadDraft) -> float | None:
     """The smallest shift of the whole load [m, + forward] that keeps every axle group legal.
 
     0 when the axles are already within their limits, None when no shift on the bed works.
     """
     if scenario.vehicle is None:
         return 0.0
-    loads = axle_loads(scenario)
+    loads = _limited_loads(scenario, draft)
     if all(load.load_kg <= load.limit_kg for load in loads):
         return 0.0
     front, rear = scenario.vehicle.axle_groups
@@ -248,8 +291,8 @@ def _axle_shift(scenario: Scenario) -> float | None:
     return math.ceil(shift * 20) / 20 if shift > 0 else math.floor(shift * 20) / 20
 
 
-def _axles_legal(scenario: Scenario) -> bool:
-    return all(load.load_kg <= load.limit_kg for load in axle_loads(scenario))
+def _axles_legal(scenario: Scenario, draft: LoadDraft) -> bool:
+    return all(load.load_kg <= load.limit_kg for load in _limited_loads(scenario, draft))
 
 
 def _placement(draft: LoadDraft, scenario: Scenario) -> tuple[LoadDraft, list[Change]]:
@@ -261,8 +304,8 @@ def _placement(draft: LoadDraft, scenario: Scenario) -> tuple[LoadDraft, list[Ch
     placed, _ = _close_gaps(draft, scenario)
     placed_scenario, _ = build_draft(placed)
     limited_by_axles = False
-    if not _axles_legal(placed_scenario):
-        shift = _axle_shift(placed_scenario)
+    if not _axles_legal(placed_scenario, placed):
+        shift = _axle_shift(placed_scenario, placed)
         if shift is not None:
             xs = {
                 u.id: u.position_m[0] + shift for u in placed_scenario.units if u.position_m[2] == 0
@@ -280,13 +323,13 @@ def _placement(draft: LoadDraft, scenario: Scenario) -> tuple[LoadDraft, list[Ch
     net = max(moves, key=abs, default=0.0)
     if abs(net) <= 0.05:
         return draft, []
-    loads = axle_loads(scenario)
+    loads = _limited_loads(scenario, draft)
     over = max(loads, key=lambda load: load.ratio) if loads else None
     if net < 0 or (over is not None and over.load_kg > over.limit_kg):
         assert over is not None
         change = Change(
             code="balance_axles",
-            article="CONTRAN 882/2021 art. 6",
+            article=_article("balance_axles", draft),
             values={"shift_m": round(net, 2), "load_kg": over.load_kg, "limit_kg": over.limit_kg},
             message=(
                 f"Move the load {abs(net) * 100:.0f} cm {'forward' if net > 0 else 'back'}: "
@@ -297,7 +340,7 @@ def _placement(draft: LoadDraft, scenario: Scenario) -> tuple[LoadDraft, list[Ch
     else:
         change = Change(
             code="close_gaps",
-            article="CONTRAN 945/2022 art. 7",
+            article=_article("close_gaps", draft),
             values={"moved_m": round(net, 2), "limited_by_axles": float(limited_by_axles)},
             message=(
                 f"Push the load {net * 100:.0f} cm forward"
@@ -416,7 +459,7 @@ def _enough_diagonals(draft: LoadDraft) -> LoadDraft:
 
     Only for a load secured with diagonals or chains; a heavy unit gets as many sets as it takes.
     """
-    if draft.restraint not in (Restraint.DIRECT, Restraint.CHAIN):
+    if draft.restraint not in (Restraint.DIRECT, Restraint.CHAIN, Restraint.CRADLE_CHAIN):
         return draft
     floor = set(_floor_ids(draft))
     base_of: dict[str, str] = {}
@@ -428,10 +471,15 @@ def _enough_diagonals(draft: LoadDraft) -> LoadDraft:
             scenario, _ = build_draft(current)
         except BuildError:
             return current
-        check = next(c for c in check_contran_945(scenario) if c.code == "safety_factor")
-        if check.status != "fail":
+        if current.country is Country.US:
+            check = aggregate_wll(scenario)
+            failing, ids = check.status == "fail", check.unit_ids
+        else:
+            contran = next(c for c in check_contran_945(scenario) if c.code == "safety_factor")
+            failing, ids = contran.status == "fail", contran.unit_ids
+        if not failing:
             return current
-        short = {base_of.get(uid, uid) for uid in check.unit_ids} & floor
+        short = {base_of.get(uid, uid) for uid in ids} & floor
         units = [
             unit.model_copy(update={"diagonal_sets": unit.diagonal_sets + 1})
             if unit.id in short and unit.diagonal_sets < MAX_DIAGONAL_SETS
@@ -476,6 +524,17 @@ def _required_top_over(draft: LoadDraft, restraint: Restraint) -> dict[str, int]
                 return None
             straps[uid] = wanted
             short = True
+        if draft.country is Country.US:
+            for rule in (aggregate_wll(scenario), min_tiedowns(scenario, trial, True)):
+                if rule.status != "fail":
+                    continue
+                for uid in rule.unit_ids:
+                    if uid not in straps:
+                        continue
+                    if straps[uid] + 1 > room[uid]:
+                        return None
+                    straps[uid] += 1
+                    short = True
         if not short:
             return straps
     return None
@@ -524,6 +583,15 @@ def _securing(draft: LoadDraft) -> list[_Candidate]:
                 steps=("chain",),
             )
         )
+        if draft.country is Country.US:
+            # 49 CFR 393.120(c): a cradle and chains through the eye, forward and rearward.
+            out.append(
+                _Candidate(
+                    "cradle_chain",
+                    _enough_diagonals(_with_straps(draft, {}, Restraint.CRADLE_CHAIN)),
+                    steps=("cradle", "chain"),
+                )
+            )
         return out
     # The load as it is (after the rules): enough when only the placement was wrong.
     out.append(_Candidate("as_is", draft, steps=()))
@@ -635,7 +703,10 @@ def _on_paper(candidate: _Candidate) -> bool:
         scenario, _ = build_draft(candidate.draft)
     except BuildError:
         return False
-    if any(c.status == "fail" for c in check_contran_945(scenario)):
+    if any(
+        c.status == "fail"
+        for c in securing_checks(scenario, candidate.draft, candidate.draft.country)
+    ):
         return False
     # In a box body the walls and the blocks hold unlashed cargo; EN 12195-1's friction check
     # of an "unsecured" unit does not apply there (the simulation decides).
@@ -660,12 +731,13 @@ def _securing_changes(before: LoadDraft, after: LoadDraft) -> list[Change]:
                 ),
             )
         )
-    if after.restraint in (Restraint.DIRECT, Restraint.CHAIN):
+    chained = (Restraint.CHAIN, Restraint.CRADLE_CHAIN)
+    if after.restraint in (Restraint.DIRECT, *chained):
         sets_before = {
-            u.id: u.diagonal_sets if before.restraint in (Restraint.DIRECT, Restraint.CHAIN) else 0
+            u.id: u.diagonal_sets if before.restraint in (Restraint.DIRECT, *chained) else 0
             for u in before.units
         }
-        device = "chains" if after.restraint is Restraint.CHAIN else "diagonal straps"
+        device = "chains" if after.restraint in chained else "diagonal straps"
         for unit in after.units:
             if unit.diagonal_sets > 1 and unit.diagonal_sets != sets_before.get(unit.id, 0):
                 changes.append(
@@ -674,11 +746,15 @@ def _securing_changes(before: LoadDraft, after: LoadDraft) -> list[Change]:
                         unit_id=unit.id,
                         before=float(4 * sets_before.get(unit.id, 0)),
                         after=float(4 * unit.diagonal_sets),
-                        article="CONTRAN 945/2022 art. 4",
-                        values={"chains": 1.0 if after.restraint is Restraint.CHAIN else 0.0},
+                        article=_article("diagonal_sets", after),
+                        values={"chains": 1.0 if after.restraint in chained else 0.0},
                         message=(
                             f"{unit.id}: {4 * unit.diagonal_sets} {device}, so their working "
-                            "capacity adds up to at least twice its weight."
+                            + (
+                                "load limits add up to at least half its weight."
+                                if after.country is Country.US
+                                else "capacity adds up to at least twice its weight."
+                            )
                         ),
                     )
                 )
@@ -691,7 +767,7 @@ def _securing_changes(before: LoadDraft, after: LoadDraft) -> list[Change]:
                     unit_id=unit.id,
                     before=float(old.get(unit.id, 0)),
                     after=float(unit.straps),
-                    article="EN 12195-1; CONTRAN 945/2022 art. 5",
+                    article=_article("straps", after),
                     message=f"{unit.id}: {old.get(unit.id, 0)} → {unit.straps} straps over it.",
                 )
             )
@@ -805,13 +881,18 @@ def proof_candidates(options: list[_Candidate]) -> list[_Candidate]:
 
 
 def _rules_ok(candidate: _Candidate) -> bool:
-    """Every CONTRAN 945 check and every axle group within its limit (no simulation)."""
+    """Every securing check and every axle group within its limit (no simulation).
+
+    US: every legal item of the federal rule set (securing, axles, bridge formula, gross, width).
+    """
     try:
         scenario, _ = build_draft(candidate.draft)
     except BuildError:
         return False
+    if candidate.draft.country is Country.US:
+        return not breaks_a_rule(rule_set(scenario, candidate.draft, Country.US))
     rules = check_contran_945(scenario, anchored_on_wood=candidate.draft.anchored_on_wood)
-    return all(c.status != "fail" for c in rules) and _axles_legal(scenario)
+    return all(c.status != "fail" for c in rules) and _axles_legal(scenario, candidate.draft)
 
 
 def _holds(storage: Storage, draft: LoadDraft, order: tuple[Situation, ...]) -> bool:
