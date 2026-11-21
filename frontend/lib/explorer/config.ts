@@ -6,7 +6,7 @@
  */
 
 export const BODIES = ["flatbed", "box", "curtain_sider"] as const;
-export const SIZES = ["vuc", "toco", "truck", "semi"] as const;
+export const SIZES = ["vuc", "three_quarter", "toco", "truck", "semi"] as const;
 export const CARGOES = [
   "wood_pallet",
   "plastic_pallet",

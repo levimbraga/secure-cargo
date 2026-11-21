@@ -10,8 +10,10 @@ import type { LoadDraft } from "@/lib/explorer/draft";
 import type { ExplorerScenario } from "@/lib/explorer/draft";
 import type { TripEventInput } from "@/lib/live/scenario";
 
+import { type BatteryLike, verdictOf } from "./verdict";
+
 export type Body = "flatbed" | "box" | "curtain_sider";
-export type Size = "vuc" | "toco" | "truck" | "semi";
+export type Size = "vuc" | "three_quarter" | "toco" | "truck" | "semi";
 
 export type AnalysisUnit = {
   number: number;
@@ -100,12 +102,32 @@ export type SituationResult = {
 export type ContranCheck = {
   code: "devices_allowed" | "safety_factor" | "four_terminals" | "anchoring" | "diagonals_for_gaps" | "above_headboard";
   article: string;
-  status: "pass" | "fail" | "not_applicable";
+  status: "pass" | "fail" | "not_applicable" | "to_confirm";
   unit_ids: string[];
   message: string;
 };
 
-export type ChangeCode = "replace_rope" | "reanchor" | "close_gaps" | "balance_axles" | "straps" | "restraint" | "overweight";
+/** One item of the checklist themes besides CONTRAN 945 (`backend/rules/checklist.py`). */
+export type ChecklistItem = {
+  code: string;
+  kind: "rule" | "advice";
+  status: "pass" | "fail" | "not_applicable" | "to_confirm" | "advice";
+  article: string;
+  values: Record<string, number>;
+  unit_ids: string[];
+};
+
+export type Checklist = { weight: ChecklistItem[]; protection: ChecklistItem[]; dimensions: ChecklistItem[] };
+
+export type ChangeCode =
+  | "replace_rope"
+  | "reanchor"
+  | "close_gaps"
+  | "balance_axles"
+  | "straps"
+  | "restraint"
+  | "overweight"
+  | "edge_protectors";
 
 export type Change = {
   code: ChangeCode;
@@ -132,7 +154,9 @@ export type Battery = {
   axle_loads: AxleLoad[];
   en_12195_1: StandardCheck[];
   contran_945: ContranCheck[];
-  cpu_time_s: number;
+  /** Absent on batteries stored before 2026-11-21. */
+  checklist?: Checklist | null;
+  cpu_time_s?: number;
   recommendation?: { draft: LoadDraft; changes: Change[] } | null;
 };
 
@@ -144,7 +168,7 @@ export type Plan = {
   battery: Battery | null;
 };
 
-/** A load passes when every situation does and no CONTRAN 945 rule is broken. */
-export function batteryPasses(battery: Pick<Battery, "passed" | "total" | "contran_945">): boolean {
-  return battery.passed === battery.total && battery.contran_945.every((check) => check.status !== "fail");
+/** A load passes when it is approved: every situation holds and every rule passes. */
+export function batteryPasses(battery: BatteryLike): boolean {
+  return verdictOf(battery).state === "approved";
 }

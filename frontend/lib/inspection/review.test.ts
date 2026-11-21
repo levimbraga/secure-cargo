@@ -82,10 +82,12 @@ describe("photos", () => {
 });
 
 describe("verdict", () => {
-  it("passes only with every situation and every CONTRAN rule", () => {
+  it("passes only when every situation holds and every CONTRAN rule passes", () => {
     const rule = (status: "pass" | "fail"): ContranCheck[] => [{ code: "devices_allowed", article: "", status, unit_ids: [], message: "" }];
-    expect(batteryPasses({ passed: 7, total: 7, contran_945: rule("pass") })).toBe(true);
-    expect(batteryPasses({ passed: 7, total: 7, contran_945: rule("fail") })).toBe(false);
-    expect(batteryPasses({ passed: 6, total: 7, contran_945: [] })).toBe(false);
+    const holding = [{ id: "pothole", findings: [] }] as never;
+    const sliding = [{ id: "pothole", severity: 1, findings: [{ code: "unit_slid", severity: "fail" }] }] as never;
+    expect(batteryPasses({ situations: holding, contran_945: rule("pass") })).toBe(true);
+    expect(batteryPasses({ situations: holding, contran_945: rule("fail") })).toBe(false);
+    expect(batteryPasses({ situations: sliding, contran_945: [] })).toBe(false);
   });
 });

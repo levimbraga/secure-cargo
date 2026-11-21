@@ -1,10 +1,11 @@
 import { cn } from "cn";
 
-type Verdict = "pass" | "fail" | "neutral";
+type Verdict = "pass" | "fail" | "warn" | "neutral";
 
 const styles: Record<Verdict, string> = {
   pass: "bg-pass-tint text-pass",
   fail: "bg-fail-tint text-fail",
+  warn: "bg-warn-tint text-warn",
   neutral: "bg-surface text-gray",
 };
 
@@ -31,6 +32,13 @@ function Icon({ verdict }: { verdict: Verdict }) {
     return (
       <svg {...common}>
         <path d="M3 3l8 8M11 3l-8 8" />
+      </svg>
+    );
+  }
+  if (verdict === "warn") {
+    return (
+      <svg {...common}>
+        <path d="M7 3v5M7 10.8v.2" />
       </svg>
     );
   }

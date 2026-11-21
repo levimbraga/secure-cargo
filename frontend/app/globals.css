@@ -19,6 +19,9 @@
   --fail-tint: #fbe9e7;
   --pass: #136f33;
   --pass-tint: #e2f0e4;
+  /* "Holds, but out of compliance": dark amber text (5.2:1 on its tint), amber tint. */
+  --warn: #8a5a00;
+  --warn-tint: #fbf0d9;
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -53,6 +56,8 @@
   --color-fail-tint: var(--fail-tint);
   --color-pass: var(--pass);
   --color-pass-tint: var(--pass-tint);
+  --color-warn: var(--warn);
+  --color-warn-tint: var(--warn-tint);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

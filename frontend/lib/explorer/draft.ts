@@ -33,7 +33,16 @@ export type DraftUnit = {
 export type LoadDraft = {
   version: 1;
   source: "explorer" | "photo" | "manual";
-  truck: { body: Body; size: Size };
+  truck: {
+    body: Body;
+    size: Size;
+    /** The body style on the truck cards (`lib/inspection/trucks.ts`). */
+    style?: "open_low_sides" | "open_tall_rack" | "platform" | "box" | "curtain_sider";
+    /** From "My trucks"; `headboard_height_m` unset: the art. 8 check asks for it. */
+    bed_length_m?: number;
+    headboard_height_m?: number;
+    anchors_per_side?: number;
+  };
   trip: { speed_kmh: number; road: Road; weather: Weather; event: ExplorerEvent };
   restraint: Restraint;
   units: DraftUnit[];
