@@ -24,7 +24,7 @@ import { ErrorLine } from "./steps";
 type Flow = ReturnType<typeof useInspectionFlow>;
 
 /** "3 × Steel pipe", or "Mixed load (5 units)". */
-function loadTitle(draft: LoadDraft, cargoName: (cargo: string) => string, mixed: string): string {
+export function loadTitle(draft: LoadDraft, cargoName: (cargo: string) => string, mixed: string): string {
   const kinds = new Set(draft.units.map((unit) => unit.cargo));
   const first = draft.units[0];
   if (kinds.size === 1 && first) return `${draft.units.length} × ${cargoName(first.cargo)}`;
@@ -48,9 +48,9 @@ export function ReviewStep({ flow }: { flow: Flow }) {
   }, [links]);
   if (!draft || !load) return null;
 
-  const total = state.totalKg ?? 0;
+  const total = flow.simulatedKg ?? 0;
   const sum = weightOf(draft);
-  const complete = weightsComplete(draft, state.totalKg);
+  const complete = weightsComplete(draft, flow.simulatedKg);
   const warnings = state.perception?.warnings ?? [];
 
   const select = (id: string) => {
@@ -156,7 +156,7 @@ export function ReviewStep({ flow }: { flow: Flow }) {
               {t("review.split")}
             </button>
           )}
-          <button type="button" onClick={() => flow.goTo("details")} className={pill({ variant: "secondary", className: "h-12 px-5" })}>
+          <button type="button" onClick={() => flow.goTo("result")} className={pill({ variant: "secondary", className: "h-12 px-5" })}>
             {t("back")}
           </button>
         </div>

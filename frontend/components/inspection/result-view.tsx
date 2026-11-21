@@ -1,42 +1,65 @@
 "use client";
 
 /**
- * The result of an inspection: the scorecard of the seven situations, the worst one first with
- * its 3D replay, force arrows and reason sentence, the EN 12195-1 and CONTRAN 945 checks, the
- * axle loads, and the fix ("Apply fix and re-simulate"). Used by the new-inspection flow and by
- * a saved inspection's page (read only).
+ * The result of an inspection, the driver's way:
+ *
+ * 1. the verdict in three states (approved / holds but out of compliance / does not arrive
+ *    intact) with one sentence naming the main problem, and "Open the simulation";
+ * 2. a one-line summary of what was read (truck, axles, units, restraints, position), the
+ *    low-confidence items flagged, and "Wrong reading? Correct it";
+ * 3. the checklist by theme;
+ * 4. "How to make it safe": the minimal set of changes, "Simulate with the fix" and "I fixed it:
+ *    take a new photo";
+ * 5. sharing.
+ *
+ * Used by the new-inspection flow and, read only, by a saved inspection's page.
  */
 
 import { useFormatter, useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
-import { AxleBars } from "@/components/explorer/load-editor";
-import { ExplorerScene } from "@/components/explorer/explorer-scene";
-import { useReasonSentence } from "@/components/lab/lab-result";
-import { Findings, useReplayText } from "@/components/scenario/replay-shared";
+import { useReplayText } from "@/components/scenario/replay-shared";
 import { pill } from "@/components/ui/pill";
 import { VerdictBadge } from "@/components/ui/verdict-badge";
-import { Link } from "@/i18n/navigation";
-import type { Finding } from "@/lib/demo";
-import { AXLE_LIMIT_KG, encodeDraft, type LoadDraft } from "@/lib/explorer/draft";
-import type { ExplorerRun } from "@/lib/explorer/use-explorer";
-import { parseKeyframes } from "@/lib/keyframes";
-import type { LiveRun } from "@/lib/live/engine";
-import { explain } from "@/lib/live/reason";
-import { simulateSituation } from "@/lib/inspection/client";
-import { fetchSampleRun } from "@/lib/inspection/samples";
-import {
-  type Battery,
-  batteryPasses,
-  type Change,
-  type Plan,
-  SITUATION_IDS,
-  type ServerRunResult,
-  type SituationId,
-  type SituationResult,
-} from "@/lib/inspection/types";
+import { footprints } from "@/lib/explorer/draft";
+import { cutOffUnits } from "@/lib/inspection/photo-quality";
+import { SIZE_INFO, type TruckChoice } from "@/lib/inspection/trucks";
+import { type Battery, type Change, type PhotoAnalysis, type Plan, SITUATION_IDS, type SituationId, type UnitLink } from "@/lib/inspection/types";
+import { physicsPassed, verdictOf, type MainProblem, type VerdictState } from "@/lib/inspection/verdict";
+import type { WeightRange, WeightSource } from "@/lib/inspection/weight";
+
+import { Checklist } from "./checklist";
+import { SimulationPanel } from "./simulation-panel";
+import { TruckArt } from "./truck-art";
 
 type Variant = "as_loaded" | "fixed";
+
+export const STATE_BADGE: Record<VerdictState, "pass" | "warn" | "fail"> = {
+  approved: "pass",
+  holds_noncompliant: "warn",
+  fails: "fail",
+};
+
+export function useMainProblem() {
+  const t = useTranslations("Driver.problem");
+  const { nameOf } = useReplayText();
+  const unitName = (id: string | null) => (id ? lower(nameOf(id)) : t("theLoad"));
+  return (problem: MainProblem | null): string | null => {
+    if (!problem) return null;
+    if (problem.kind === "physics") {
+      const when = t(`when.${problem.situation}` as never);
+      return t(`physics.${problem.code}` as never, { when, unit: unitName(problem.unitId) } as never);
+    }
+    const axle = problem.code === "axle" ? t(`axleName.${problem.unitId ?? "rear"}` as never) : "";
+    return t(`rule.${problem.code}` as never, { unit: unitName(problem.unitId), axle } as never);
+  };
+}
+
+/** The verdict badge as lists and dashboards show it. */
+export function StateBadge({ state, children }: { state: VerdictState; children?: ReactNode }) {
+  const t = useTranslations("Driver.verdict");
+  return <VerdictBadge verdict={STATE_BADGE[state]}>{children ?? t(`${state}.badge`)}</VerdictBadge>;
+}
 
 export function ResultView({
   battery,
@@ -47,6 +70,17 @@ export function ResultView({
   sampleRuns,
   readOnly = false,
   error = null,
+  truck = null,
+  weightSource = null,
+  range = null,
+  analysis = null,
+  links = [],
+  onCorrect,
+  onReinspect,
+  onHeadboard,
+  share,
+  before = null,
+  provenBy = null,
 }: {
   battery: Battery;
   plan: Plan | null;
@@ -57,13 +91,30 @@ export function ResultView({
   sampleRuns?: Partial<Record<Variant, Partial<Record<SituationId, string>>>>;
   readOnly?: boolean;
   error?: string | null;
+  truck?: TruckChoice | null;
+  weightSource?: WeightSource | null;
+  range?: WeightRange | null;
+  analysis?: PhotoAnalysis | null;
+  links?: UnitLink[];
+  onCorrect?: () => void;
+  onReinspect?: () => void;
+  onHeadboard?: (heightM: number) => void;
+  share?: ReactNode;
+  /** A re-inspection: the first inspection's battery, for the before / after. */
+  before?: Battery | null;
+  /** The re-inspection that proved this inspection's fix. */
+  provenBy?: ReactNode;
 }) {
-  const t = useTranslations("Flow");
+  const t = useTranslations("Driver");
   const fixed = plan?.battery ?? null;
   const [variant, setVariant] = useState<Variant>("as_loaded");
   const shown = variant === "fixed" && fixed ? fixed : battery;
-  const [chosen, setChosen] = useState<SituationId | null>(null);
-  const situation = shown.situations.find((s) => s.id === (chosen ?? shown.worst)) ?? shown.situations[0];
+  const verdict = verdictOf(shown);
+  const problem = useMainProblem();
+  const [simulation, setSimulation] = useState<SituationId | null>(null);
+  const simRef = useRef<HTMLDivElement>(null);
+  const format = useFormatter();
+  const kg = (value: number) => format.number(Math.round(value));
 
   // A fix that just arrived is shown at once.
   const seenPlan = useRef(plan);
@@ -71,14 +122,18 @@ export function ResultView({
     if (plan && plan !== seenPlan.current && plan.battery) {
       seenPlan.current = plan;
       setVariant("fixed");
-      setChosen(null);
     }
   }, [plan]);
 
+  const open = (id: SituationId) => {
+    setSimulation(id);
+    requestAnimationFrame(() => simRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
+
   return (
-    <div data-testid="inspection-result" data-passed={shown.passed} data-variant={variant}>
+    <div data-testid="inspection-result" data-state={verdict.state} data-variant={variant} data-passed={physicsPassed(shown)}>
       {fixed && (
-        <div className="mb-8 inline-flex rounded-full bg-surface p-1" role="group" aria-label={t("result.variant")}>
+        <div className="mb-6 inline-flex rounded-full bg-surface p-1" role="group" aria-label={t("fix.variant")}>
           {(["as_loaded", "fixed"] as const).map((value) => (
             <button
               key={value}
@@ -86,271 +141,185 @@ export function ResultView({
               aria-pressed={variant === value}
               onClick={() => {
                 setVariant(value);
-                setChosen(null);
+                setSimulation(null);
               }}
               className={pill({ variant: variant === value ? "primary" : "secondary", className: "h-10 px-4" })}
+              data-testid={`variant-${value}`}
             >
-              {t(`result.${value === "fixed" ? "fixedVersion" : "asLoaded"}`)}
+              {t(`fix.${value}`)}
             </button>
           ))}
         </div>
       )}
 
-      <Scorecard battery={shown} selected={situation?.id ?? null} onSelect={setChosen} fixed={variant === "fixed"} />
+      <section aria-labelledby="verdict-title" data-testid="verdict" data-state={verdict.state}>
+        <StateBadge state={verdict.state} />
+        <h1 id="verdict-title" className="type-hero mt-4 text-balance" data-testid="scorecard">
+          {t(`verdict.${verdict.state}.title`)}
+        </h1>
+        {verdict.problem ? (
+          <p className="type-card-title mt-3 text-pretty" data-testid="main-problem">
+            {problem(verdict.problem)}
+          </p>
+        ) : (
+          <p className="type-body mt-3 text-pretty">{t(variant === "fixed" ? "verdict.approved.fixed" : "verdict.approved.sentence")}</p>
+        )}
+        <p className="type-small mt-2 text-gray">
+          {t("verdict.count", { passed: physicsPassed(shown), total: shown.situations.length })}
+        </p>
+        {weightSource === "estimated" && range && (
+          <p className="mt-3 inline-flex rounded-full bg-warn-tint px-3 py-1 text-[0.8125rem] font-medium text-warn" data-testid="weight-estimated">
+            {t("verdict.estimated", { low: kg(range.low_kg), high: kg(range.high_kg) })}
+          </p>
+        )}
+        {provenBy && <div className="mt-3">{provenBy}</div>}
+        <div className="mt-6 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => open(simulation ?? shown.worst)}
+            className={pill({ className: "h-12 px-5" })}
+            data-testid="open-simulation"
+          >
+            {t("sim.open")}
+          </button>
+          {share}
+        </div>
+      </section>
 
-      {situation && (
-        <SituationDetail
-          key={`${variant}-${situation.id}`}
-          battery={shown}
-          situation={situation}
-          staticRun={sampleRuns?.[variant]?.[situation.id]}
-        />
-      )}
+      {before && <BeforeAfter before={before} after={battery} />}
 
-      <Checks battery={shown} />
+      <ReadingSummary battery={battery} truck={truck} analysis={analysis} links={links} onCorrect={readOnly ? undefined : onCorrect} />
+
+      <div ref={simRef} className="scroll-mt-4">
+        {simulation && (
+          <SimulationPanel
+            key={`${variant}-${simulation}`}
+            battery={shown}
+            situation={simulation}
+            staticRuns={sampleRuns?.[variant]}
+            onClose={() => setSimulation(null)}
+          />
+        )}
+      </div>
+
+      <Checklist battery={shown} onOpenSituation={open} onHeadboard={variant === "as_loaded" ? onHeadboard : undefined} readOnly={readOnly} />
 
       {variant === "as_loaded" && !readOnly && (
-        <FixPanel battery={battery} plan={plan} fixing={fixing} startedAt={fixStartedAt} onApplyFix={onApplyFix} error={error} />
+        <FixPanel battery={battery} plan={plan} fixing={fixing} startedAt={fixStartedAt} onApplyFix={onApplyFix} onReinspect={onReinspect} error={error} />
       )}
-      {variant === "as_loaded" && readOnly && plan && <ChangeList changes={plan.changes} title={t("fix.applied")} />}
-      {variant === "fixed" && plan && <ChangeList changes={plan.changes} title={t("fix.applied")} />}
+      {(readOnly || variant === "fixed") && plan && plan.changes.length > 0 && <ChangeList changes={plan.changes} title={t("fix.applied")} />}
     </div>
   );
 }
 
-// ---- scorecard ----------------------------------------------------------------------------
+// ---- what was read -----------------------------------------------------------------------------
 
-function StatusMark({ status }: { status: SituationResult["status"] }) {
-  const style =
-    status === "pass" ? "bg-pass text-white" : status === "warning" ? "bg-amber text-ink" : "bg-fail text-white";
-  return (
-    <span aria-hidden className={`inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[0.8125rem] font-medium ${style}`}>
-      {status === "pass" ? "✓" : status === "warning" ? "!" : "✕"}
-    </span>
-  );
-}
-
-function topFinding(situation: SituationResult): Finding | undefined {
-  const order = ["unit_left_bed", "lashing_broke", "unit_tilted", "unit_rolled", "unit_hit_headboard", "headboard_overloaded", "unit_slid", "axle_overloaded", "lashing_overloaded"];
-  const sorted = [...situation.findings].sort(
-    (a, b) => (a.severity === "fail" ? 0 : 1) - (b.severity === "fail" ? 0 : 1) || order.indexOf(a.code) - order.indexOf(b.code),
-  );
-  return sorted[0];
-}
-
-function Scorecard({
+function ReadingSummary({
   battery,
-  selected,
-  onSelect,
-  fixed,
+  truck,
+  analysis,
+  links,
+  onCorrect,
 }: {
   battery: Battery;
-  selected: SituationId | null;
-  onSelect: (id: SituationId) => void;
-  fixed: boolean;
+  truck: TruckChoice | null;
+  analysis: PhotoAnalysis | null;
+  links: UnitLink[];
+  onCorrect?: () => void;
 }) {
-  const t = useTranslations("Flow");
-  const { findingSentence } = useReplayText();
-  const passes = batteryPasses(battery);
-  const failing = battery.situations.filter((s) => !s.passed);
-  const ordered = SITUATION_IDS.map((id) => battery.situations.find((s) => s.id === id)).filter(
-    (s): s is SituationResult => Boolean(s),
-  );
-  return (
-    <section aria-labelledby="scorecard-title">
-      <VerdictBadge verdict={passes ? "pass" : "fail"}>{passes ? t("result.arrives") : t("result.doesNotArrive")}</VerdictBadge>
-      <h2 id="scorecard-title" className="type-hero mt-4 text-balance" data-testid="scorecard">
-        {t("result.passes", { passed: battery.passed, total: battery.total })}
-      </h2>
-      <p className="type-body mt-3 text-pretty">
-        {failing.length === 0
-          ? passes
-            ? t(fixed ? "result.allFixed" : "result.all")
-            : t("result.allButRules")
-          : t("result.worst", { count: failing.length, situation: t(`situations.${battery.worst}.name`) })}
-      </p>
-      <ul className="mt-6 border-b border-hairline">
-        {ordered.map((situation) => {
-          const finding = topFinding(situation);
-          return (
-            <li key={situation.id} className="border-t border-hairline">
-              <button
-                type="button"
-                aria-pressed={selected === situation.id}
-                onClick={() => onSelect(situation.id)}
-                data-situation={situation.id}
-                data-status={situation.status}
-                className={`flex min-h-14 w-full items-center gap-3 py-2.5 text-left hover:bg-surface/40 ${selected === situation.id ? "bg-surface/60" : ""}`}
-              >
-                <StatusMark status={situation.status} />
-                <span className="min-w-0 flex-1">
-                  <span className="block font-[450] text-ink">{t(`situations.${situation.id}.name`)}</span>
-                  <span className="type-small block truncate text-gray">
-                    {finding ? findingSentence(finding) : t("result.holds")}
-                  </span>
-                </span>
-                <span aria-hidden className="text-gray">
-                  ›
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
-// ---- one situation ------------------------------------------------------------------------
-
-function toRun(result: ServerRunResult): ExplorerRun {
-  const doc = parseKeyframes(result.keyframes);
-  return { source: "server", summary: result, doc, reason: explain(result, doc), runMs: 0 };
-}
-
-function SituationDetail({
-  battery,
-  situation,
-  staticRun,
-}: {
-  battery: Battery;
-  situation: SituationResult;
-  staticRun?: string;
-}) {
-  const t = useTranslations("Flow");
-  const lab = useTranslations("Lab");
+  const t = useTranslations("Driver.summary");
+  const names = useTranslations("Driver");
+  const options = useTranslations("Explorer.options");
   const format = useFormatter();
-  const sentence = useReasonSentence();
-  const engine = useRef<LiveRun | null>(null);
-  const isWorst = situation.id === battery.worst;
-  const [run, setRun] = useState<ExplorerRun | null>(() => (isWorst ? toRun(battery.worst_result) : null));
-  const [failed, setFailed] = useState(false);
+  const draft = battery.draft;
+  const choice = truck ?? { size: draft.truck.size, style: draft.truck.style ?? (draft.truck.body === "flatbed" ? "open_low_sides" : draft.truck.body) };
+  const units = footprints(draft, battery.scenario);
+  const cargo = [...new Set(draft.units.map((u) => u.cargo))];
+  const straps = draft.units.reduce((sum, u) => sum + u.straps, 0);
+  const halfBed = battery.scenario.bed.length_m / 2;
+  const gap = Math.max(0, halfBed - Math.max(...units.map((u) => u.x + u.length / 2)));
+  const position = gap <= 0.15 ? t("position.headboard") : t("position.gap", { gap: format.number(gap, { maximumFractionDigits: 1 }) });
+  const restraint =
+    draft.restraint === "top_over" || draft.restraint === "rope"
+      ? t(draft.restraint === "rope" ? "restraint.ropes" : "restraint.straps", { count: straps })
+      : options(`restraint.${draft.restraint}` as never);
 
-  useEffect(() => {
-    if (isWorst) return;
-    const controller = new AbortController();
-    (async () => {
-      const stored = await fetchSampleRun(staticRun).catch(() => null);
-      return stored ?? (await simulateSituation(battery.scenario, situation.event, controller.signal));
-    })()
-      .then((result) => setRun(toRun(result)))
-      .catch(() => !controller.signal.aborted && setFailed(true));
-    return () => controller.abort();
-  }, [battery.scenario, isWorst, situation.event, staticRun]);
+  // Low confidence: what the AI was unsure of, and units cut off at the side of the photo.
+  const flags: string[] = [];
+  if (analysis) {
+    if (analysis.truck.confidence < 0.6) flags.push(t("flags.truck"));
+    for (const unit of analysis.units) if (unit.confidence < 0.6) flags.push(t("flags.unit", { number: unit.number, why: unit.uncertain || t("flags.unsure") }));
+    for (const restraintItem of analysis.restraints) if (restraintItem.confidence < 0.6) flags.push(t("flags.restraint", { why: restraintItem.uncertain || t("flags.unsure") }));
+    const cut = cutOffUnits(analysis.units);
+    if (cut.length) flags.push(t("flags.cutOff", { units: cut.join(", ") }));
+  }
+  const linkedNumbers = new Set(links.map((l) => l.number));
+  const dropped = analysis ? analysis.units.filter((u) => !linkedNumbers.has(u.number)).length : 0;
+  if (links.length && dropped > 0) flags.push(t("flags.dropped", { count: dropped }));
 
-  const explorerDraft: LoadDraft = { ...battery.draft, trip: situation.trip };
   return (
-    <section className="mt-14" aria-labelledby="situation-title" data-testid="situation-detail" data-situation={situation.id}>
-      <p className="type-label">{isWorst ? t("detail.worst") : t("detail.label")}</p>
-      <h2 id="situation-title" className="type-card-title mt-2">
-        {t(`situations.${situation.id}.name`)}
+    <section className="mt-12 rounded-md bg-surface p-4" aria-labelledby="summary-title" data-testid="reading-summary">
+      <h2 id="summary-title" className="type-label">
+        {t("title")}
       </h2>
-      <p className="type-small mt-1 text-gray">
-        {lab("eventLine", {
-          event: lab(`events.${situation.event.kind}` as never),
-          speed: format.number(situation.event.speed_kmh),
-          surface: lab(`surfaces.${situation.event.road_surface}` as never),
-        })}
-      </p>
-      <div className="mt-4">
-        <VerdictBadge verdict={situation.status === "fail" ? "fail" : "pass"}>
-          {t(`status.${situation.status}`)}
-        </VerdictBadge>
-        <p className="type-card-title mt-3 text-pretty" data-testid="situation-reason">
-          {run ? sentence(run.reason) : failed ? t("detail.unavailable") : t("detail.loading")}
+      <div className="mt-3 flex items-center gap-4">
+        <TruckArt size={choice.size} style={choice.style} className="h-10 w-auto shrink-0" />
+        <p className="min-w-0 text-[0.9375rem] text-ink" data-testid="summary-line">
+          {t("line", {
+            truck: names("truck.name", { size: names(`sizes.${choice.size}.name`), body: names(`styles.${choice.style}.short`) }),
+            axles: SIZE_INFO[choice.size].axles,
+            units: draft.units.length,
+            cargo: cargo.map((c) => options(`cargo.${c}` as never).toLocaleLowerCase()).join(", "),
+            restraint,
+            position,
+          })}
         </p>
       </div>
-      <div className="mt-6">
-        <ExplorerScene run={run} engine={engine} busy={!run} event={situation.event.kind} />
-      </div>
-      {run && <Findings run={run.summary} />}
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link href={`/app/explorer#draft=${encodeDraft(explorerDraft)}`} className={pill({ variant: "secondary", className: "h-11 px-4" })}>
-          {t("detail.openExplorer")}
-        </Link>
-      </div>
-      <p className="type-small mt-2 text-gray">{t("detail.explorerHint")}</p>
+      {flags.length > 0 && (
+        <ul className="mt-3 space-y-1" data-testid="low-confidence">
+          {flags.map((flag) => (
+            <li key={flag} className="type-small flex gap-2 text-warn">
+              <span aria-hidden>!</span>
+              <span>{flag}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {onCorrect && (
+        <button type="button" onClick={onCorrect} className="type-small mt-3 min-h-11 text-ink underline decoration-1 underline-offset-4" data-testid="correct-reading">
+          {t("correct")}
+        </button>
+      )}
     </section>
   );
 }
 
-// ---- checks -------------------------------------------------------------------------------
-
-function Checks({ battery }: { battery: Battery }) {
-  const t = useTranslations("Flow");
-  const format = useFormatter();
-  const { nameOf } = useReplayText();
-  const axles = battery.axle_loads.map((axle) => {
-    const group = battery.scenario.vehicle?.axle_groups.find((g) => g.id === axle.axle_group_id);
-    return {
-      id: axle.axle_group_id,
-      kind: group?.kind ?? "single_2_tyres",
-      loadKg: axle.load_kg,
-      limitKg: group ? AXLE_LIMIT_KG[group.kind] : axle.limit_kg,
-      ratio: axle.ratio,
-    };
-  });
-  const tonnes = (kg: number) => format.number(kg / 1000, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+function BeforeAfter({ before, after }: { before: Battery; after: Battery }) {
+  const t = useTranslations("Driver.reinspection");
+  const a = verdictOf(before);
+  const b = verdictOf(after);
   return (
-    <section className="mt-16" aria-labelledby="checks-title">
-      <h2 id="checks-title" className="type-card-title">
-        {t("checks.title")}
-      </h2>
-      <h3 className="type-label mt-6">{t("checks.contran")}</h3>
-      <ul className="mt-2 border-b border-hairline" data-testid="contran-checks">
-        {battery.contran_945.map((check) => (
-          <li key={check.code} className="flex items-start gap-3 border-t border-hairline py-2.5" data-check={check.code} data-status={check.status}>
-            {check.status === "not_applicable" ? (
-              <span aria-hidden className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-surface text-[0.8125rem] text-gray">
-                –
-              </span>
-            ) : (
-              <StatusMark status={check.status === "pass" ? "pass" : "fail"} />
-            )}
-            <span className="min-w-0 flex-1">
-              <span className="block text-ink">{t(`contran.${check.code}.${check.status === "fail" ? "fail" : "pass"}`)}</span>
-              <span className="type-small block text-gray">
-                {check.article}
-                {check.unit_ids.length > 0 && ` · ${check.unit_ids.map((id) => nameOf(id)).join(", ")}`}
-                {check.status === "not_applicable" && ` · ${t("checks.notApplicable")}`}
-              </span>
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      <h3 className="type-label mt-8">{t("checks.en")}</h3>
-      <ul className="mt-2 border-b border-hairline">
-        {battery.en_12195_1.map((check) => (
-          <li key={check.unit_id} className="flex items-start gap-3 border-t border-hairline py-2.5">
-            {check.meets_standard === null ? (
-              <span aria-hidden className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-surface text-[0.8125rem] text-gray">
-                –
-              </span>
-            ) : (
-              <StatusMark status={check.meets_standard ? "pass" : "fail"} />
-            )}
-            <span className="min-w-0 flex-1">
-              <span className="block text-ink">{nameOf(check.unit_id)}</span>
-              <span className="type-small block text-gray">
-                {check.meets_standard === null
-                  ? t("checks.enNotAssessed")
-                  : check.required_lashings !== null
-                    ? t("checks.enStraps", { installed: check.installed_lashings, required: check.required_lashings })
-                    : t(check.meets_standard ? "checks.enMeets" : "checks.enFails")}
-              </span>
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      <AxleBars axles={axles} tonnes={tonnes} />
-      <p className="type-small mt-2 text-gray">{t("checks.axleSource")}</p>
+    <section className="mt-10 grid grid-cols-2 gap-3" aria-label={t("title")} data-testid="before-after">
+      {[
+        { label: t("before"), verdict: a, battery: before },
+        { label: t("after"), verdict: b, battery: after },
+      ].map((side) => (
+        <div key={side.label} className="rounded-md border border-hairline p-3">
+          <p className="type-label">{side.label}</p>
+          <div className="mt-2">
+            <StateBadge state={side.verdict.state} />
+          </div>
+          <p className="type-small mt-2 text-gray">{t("count", { passed: physicsPassed(side.battery), total: side.battery.situations.length })}</p>
+        </div>
+      ))}
+      <p className="type-small col-span-2 text-ink" data-testid="proof-line">
+        {b.state === "approved" ? t("proven") : t("notYet")}
+      </p>
     </section>
   );
 }
 
-// ---- fix ----------------------------------------------------------------------------------
+// ---- fix ----------------------------------------------------------------------------------------
 
 /** An option's label in the middle of a sentence. */
 function lower(label: string): string {
@@ -393,17 +362,19 @@ export function useChangeSentence() {
 
 function ChangeList({ changes, title }: { changes: Change[]; title: string }) {
   const sentence = useChangeSentence();
+  const t = useTranslations("Driver.fix");
   if (!changes.length) return null;
   return (
-    <section className="mt-12">
+    <section className="mt-8">
       <h3 className="type-label">{title}</h3>
-      <ol className="mt-3 space-y-2" data-testid="fix-changes">
+      <ol className="mt-3 space-y-3" data-testid="fix-changes">
         {changes.map((change, n) => (
-          <li key={n} className="flex gap-3">
-            <span className="font-mono text-[0.8125rem] text-gray">{n + 1}.</span>
+          <li key={n} className="flex gap-3" data-change={change.code}>
+            <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-ink font-mono text-[0.75rem] text-paper">{n + 1}</span>
             <span className="min-w-0 flex-1">
               <span className="block text-ink">{sentence(change)}</span>
-              {change.article && <span className="type-small block text-gray">{change.article}</span>}
+              {change.code === "edge_protectors" && <span className="type-small block text-gray">{t("advice")}</span>}
+              {change.article && <span className="type-label mt-0.5 block">{change.article}</span>}
             </span>
           </li>
         ))}
@@ -418,6 +389,7 @@ function FixPanel({
   fixing,
   startedAt,
   onApplyFix,
+  onReinspect,
   error,
 }: {
   battery: Battery;
@@ -425,41 +397,53 @@ function FixPanel({
   fixing: boolean;
   startedAt: number | null;
   onApplyFix?: () => void;
+  onReinspect?: () => void;
   error: string | null;
 }) {
-  const t = useTranslations("Flow");
-  if (batteryPasses(battery)) {
+  const t = useTranslations("Driver.fix");
+  const flow = useTranslations("Flow");
+  if (verdictOf(battery).state === "approved") {
     return (
-      <section className="mt-16">
-        <h2 className="type-card-title">{t("fix.title")}</h2>
-        <p className="type-body mt-3">{t("fix.none")}</p>
+      <section className="mt-14" data-testid="fix-panel" data-needed="false">
+        <h2 className="type-card-title">{t("title")}</h2>
+        <p className="type-body mt-3">{t("none")}</p>
       </section>
     );
   }
   const changes = plan?.changes ?? battery.recommendation?.changes ?? [];
+  const proven = plan?.verified && plan.battery;
   return (
-    <section className="mt-16" aria-labelledby="fix-title" data-testid="fix-panel">
+    <section className="mt-14" aria-labelledby="fix-title" data-testid="fix-panel" data-needed="true">
       <h2 id="fix-title" className="type-card-title">
-        {t("fix.title")}
+        {t("title")}
       </h2>
-      <p className="type-body mt-3 text-pretty">{t("fix.sentence")}</p>
-      <ChangeList changes={changes} title={plan ? t("fix.applied") : t("fix.recommended")} />
-      {plan ? (
-        <p className="type-body mt-6" data-testid="fix-result">
-          {plan.verified && plan.battery
-            ? t("fix.proven", { passed: plan.battery.passed, total: plan.battery.total })
-            : t("fix.notProven", { passed: plan.battery?.passed ?? 0, total: plan.battery?.total ?? 7 })}
+      <p className="type-body mt-3 text-pretty">{t("sentence")}</p>
+      <ChangeList changes={changes} title={plan ? t("applied") : t("recommended")} />
+      {plan && (
+        <p className={`type-body mt-6 ${proven ? "text-pass" : "text-ink"}`} data-testid="fix-result">
+          {proven ? t("proven") : t("notProven", { passed: plan.battery ? physicsPassed(plan.battery) : 0, total: plan.battery?.situations.length ?? 7 })}
         </p>
-      ) : fixing ? (
-        <Running startedAt={startedAt} label={t("fix.running")} />
-      ) : (
-        <button type="button" onClick={onApplyFix} className={pill({ className: "mt-6 h-12 px-5" })} data-testid="apply-fix">
-          {t("fix.apply")}
-        </button>
       )}
+      {fixing ? (
+        <Running startedAt={startedAt} label={flow("fix.running")} />
+      ) : (
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          {!plan && (
+            <button type="button" onClick={onApplyFix} className={pill({ className: "h-14 px-6 text-base" })} data-testid="apply-fix">
+              {t("simulate")}
+            </button>
+          )}
+          {onReinspect && (
+            <button type="button" onClick={onReinspect} className={pill({ variant: plan ? "primary" : "secondary", className: "h-14 px-6 text-base" })} data-testid="reinspect">
+              {t("reinspect")}
+            </button>
+          )}
+        </div>
+      )}
+      {onReinspect && <p className="type-small mt-2 text-gray">{t("reinspectHint")}</p>}
       {error && !fixing && (
         <p role="alert" className="type-small mt-3 text-fail">
-          {t.has(`errors.${error}` as never) ? t(`errors.${error}` as never) : t("errors.failed")}
+          {flow.has(`errors.${error}` as never) ? flow(`errors.${error}` as never) : flow("errors.failed")}
         </p>
       )}
     </section>

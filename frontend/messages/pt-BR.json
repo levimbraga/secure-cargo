@@ -550,7 +550,8 @@
         "vuc": "VUC (urbano, 2 eixos)",
         "toco": "Toco (2 eixos)",
         "truck": "Truck (3 eixos)",
-        "semi": "Carreta"
+        "semi": "Carreta",
+        "three_quarter": "3/4 (leve, 2 eixos)"
       },
       "cargo": {
         "wood_pallet": "Paletes de madeira",
@@ -724,7 +725,8 @@
     "menu": "Seções do app",
     "demoBadge": "Conta de demonstração",
     "switchDemo": "Trocar de conta demo",
-    "demoResets": "Os dados de demonstração são reiniciados todos os dias."
+    "demoResets": "Os dados de demonstração são reiniciados todos os dias.",
+    "trucks": "Meus caminhões"
   },
   "Auth": {
     "label": "Entrar",
@@ -813,7 +815,14 @@
     },
     "weightKg": "{weight} kg",
     "notSimulated": "Esta inspeção ainda não foi simulada.",
-    "photo": "Foto ({position})"
+    "photo": "Foto ({position})",
+    "weightSource": {
+      "measured": "digitado",
+      "invoice": "da nota fiscal",
+      "estimated": "estimado"
+    },
+    "reinspectionOf": "← A primeira inspeção (antes da correção)",
+    "reinspection": "Nova foto depois da correção: {verdict}"
   },
   "Org": {
     "label": "Organização",
@@ -1094,7 +1103,7 @@
       "notApplicable": "não se aplica",
       "en": "EN 12195-1 (norma europeia de amarração), por unidade",
       "enNotAssessed": "Não avaliada pela fórmula (empilhada, amarração mista ou travada por bloqueio): a simulação decide.",
-      "enStraps": "{installed} das {required} cintas que a norma pede",
+      "enStraps": "{installed, plural, =0 {nenhuma cinta} one {# cinta} other {# cintas}}; a norma pede {required}",
       "enMeets": "Atende à norma",
       "enFails": "Não atende à norma",
       "axleSource": "Limites legais por eixo: Resolução CONTRAN 882/2021, art. 6."
@@ -1134,7 +1143,8 @@
       "balanceBack": "Mova a carga {distance} cm para trás: um eixo levava {load} t, acima do limite de {limit} t.",
       "replace_rope": "Troque as cordas por cintas com catraca.",
       "reanchor": "Prenda as amarrações nos pontos de amarração da estrutura metálica, não no assoalho de madeira.",
-      "overweight": "A carga pesa {mass} t; este caminhão pode levar {payload} t. Use um caminhão maior ou divida a carga."
+      "overweight": "A carga pesa {mass} t; este caminhão pode levar {payload} t. Use um caminhão maior ou divida a carga.",
+      "edge_protectors": "Coloque cantoneiras sob as cintas onde elas cruzam a carga frágil."
     },
     "fix": {
       "title": "Como corrigir",
@@ -1186,5 +1196,473 @@
       "cannot_stack": "Essa unidade não pode levar outra em cima."
     },
     "loading": "Carregando…"
+  },
+  "Driver": {
+    "steps": {
+      "garage": "Seu caminhão",
+      "photos": "Foto",
+      "reinspect": "Nova foto",
+      "truck": "Caminhão",
+      "weight": "Peso",
+      "result": "Resultado",
+      "edit": "Corrigir a leitura",
+      "label": "Etapas"
+    },
+    "truck": {
+      "name": "{size}, {body}",
+      "reading": "Lendo a foto…",
+      "looksLike": "Parece um {truck}. Toque para confirmar ou escolha outro.",
+      "aiPick": "Sugestão da IA",
+      "sizeTitle": "Qual é o caminhão?",
+      "sizeSentence": "Escolha o tamanho. Os eixos e a carga típica estão em cada um.",
+      "bodyTitle": "Qual é a carroceria?",
+      "bodySentence": "A carroceria decide o que segura a carga além das cintas.",
+      "backToSize": "Trocar o tamanho",
+      "saveLabel": "Salvar em Meus caminhões"
+    },
+    "sizes": {
+      "axles": "{count, plural, one {# eixo} other {# eixos}}",
+      "line": "{axles, plural, one {# eixo} other {# eixos}} · cerca de {payload} t de carga",
+      "vuc": {
+        "name": "VUC",
+        "hint": "Caminhão urbano pequeno"
+      },
+      "three_quarter": {
+        "name": "3/4",
+        "hint": "Caminhão leve, maior que o VUC"
+      },
+      "toco": {
+        "name": "Toco",
+        "hint": "Caminhão com um eixo traseiro"
+      },
+      "truck": {
+        "name": "Truck",
+        "hint": "Caminhão com dois eixos traseiros"
+      },
+      "semi": {
+        "name": "Carreta",
+        "hint": "Cavalo e semirreboque"
+      }
+    },
+    "styles": {
+      "open_low_sides": {
+        "name": "Aberta, grade baixa",
+        "short": "carroceria aberta",
+        "hint": "Assoalho com laterais baixas que abaixam"
+      },
+      "open_tall_rack": {
+        "name": "Aberta, grade alta",
+        "short": "grade alta",
+        "hint": "Carroceria aberta com grade ou fueiros altos"
+      },
+      "platform": {
+        "name": "Plataforma",
+        "short": "plataforma",
+        "hint": "Assoalho plano, sem laterais"
+      },
+      "box": {
+        "name": "Baú",
+        "short": "baú",
+        "hint": "Carroceria fechada, paredes inteiriças"
+      },
+      "curtain_sider": {
+        "name": "Sider",
+        "short": "sider",
+        "hint": "Teto sobre colunas e cortinas de lona"
+      }
+    },
+    "garage": {
+      "title": "Qual caminhão você está carregando?",
+      "sentence": "Seus caminhões salvos vêm primeiro: usamos as medidas deles em vez de adivinhar.",
+      "another": "Outro caminhão",
+      "anotherHint": "Escolha o tamanho e a carroceria depois da foto.",
+      "manage": "Gerenciar Meus caminhões"
+    },
+    "capture": {
+      "title": "Tire uma foto da carga.",
+      "sentence": "Uma foto da lateral inteira já basta. Uma segunda, do canto traseiro, ajuda.",
+      "reinspectTitle": "Tire uma nova foto da carga corrigida.",
+      "reinspectSentence": "Mesmo caminhão e peso de “{title}”. A primeira inspeção só conta como corrigida quando esta passar.",
+      "forTruck": "Caminhão: {truck}",
+      "enough": "Já basta",
+      "recommended": "Recomendada",
+      "alt": "Sua foto: {shot}",
+      "shots": {
+        "side": {
+          "title": "Lateral inteira",
+          "card": "O caminhão todo de lado, da frente até a traseira.",
+          "hint": "Enquadre o caminhão todo dentro do contorno, da cabine à traseira."
+        },
+        "rear_three_quarter": {
+          "title": "Traseira em 3/4",
+          "card": "De trás de um canto traseiro, mostrando a traseira e uma lateral.",
+          "hint": "Fique atrás de um canto traseiro para ver a traseira e uma lateral."
+        }
+      },
+      "retakeHint": "Toque para tirar de novo.",
+      "remove": "Remover",
+      "checking": "Conferindo a foto…",
+      "next": "Continuar",
+      "retakeTitle": "Tirar a foto de novo?",
+      "issues": {
+        "too_dark": "Está escura demais: procure mais luz ou vire o caminhão para ela.",
+        "blurry": "Está tremida: segure o celular firme e toque para focar.",
+        "too_far": "O caminhão está longe demais: chegue mais perto até ele encher a foto.",
+        "cut_off": "Parte da carga pode ter ficado de fora: dê um passo para trás."
+      },
+      "retake": "Tirar de novo",
+      "keep": "Usar assim mesmo",
+      "close": "Fechar",
+      "noCamera": "A câmera não abriu aqui. Use a câmera do celular.",
+      "openCamera": "Abrir a câmera",
+      "upload": "Escolher foto",
+      "shutter": "Tirar a foto"
+    },
+    "weight": {
+      "title": "Quanto pesa a carga?",
+      "sentence": "A foto não mostra peso, e ele muda tudo: atrito, cintas e eixos.",
+      "type": "Digitar o peso",
+      "typeHint": "O total em kg, da nota fiscal ou da balança.",
+      "invoice": "Ler da nota fiscal",
+      "invoiceHint": "Uma foto do DANFE: lemos o peso bruto.",
+      "unknown": "Não sei",
+      "unknownHint": "Estimamos uma faixa pelo que a foto mostra.",
+      "kgLabel": "Peso total da carga",
+      "sampleInvoice": "A nota do exemplo diz {weight} kg.",
+      "invoiceReading": "Lendo a nota…",
+      "invoiceSays": "A nota diz {weight} kg. Está certo?",
+      "invoiceText": "Impresso como “{text}” no campo PESO BRUTO.",
+      "invoiceConfirm": "Sim, usar",
+      "invoiceUsed": "Em uso",
+      "typeInstead": "Digitar",
+      "invoiceDemo": "A leitura de notas está pausada agora. Digite o peso.",
+      "invoiceNotFound": "Não conseguimos ler o peso bruto nessa foto. Tente mais perto, ou digite.",
+      "invoicePhoto": "Fotografar a nota",
+      "invoiceWhy": "Só copiamos o número impresso no campo PESO BRUTO; você confirma.",
+      "estimate": "Estimado: de {low} a {high} kg, pelo tipo de carga e pelo tamanho.",
+      "estimateWhy": "Testamos o lado mais pesado, {high} kg, e o resultado diz “peso estimado”.",
+      "estimateWaiting": "Esperando a leitura da foto para estimar o peso…",
+      "splitEqual": "≈{each} kg cada, em {count, plural, one {# volume} other {# volumes}}",
+      "splitVaried": "De {min} a {max} kg cada, em {count, plural, one {# volume} other {# volumes}} (pelo tamanho)",
+      "different": "Os volumes têm pesos diferentes?",
+      "unit": "Volume {number} (kg)",
+      "perUnitSum": "{sum} de {total} kg. Os volumes precisam somar o total.",
+      "waitingForPhoto": "Lendo a foto…",
+      "next": "Ver o resultado"
+    },
+    "verdict": {
+      "approved": {
+        "badge": "Aprovada",
+        "title": "Aprovada: chega inteira e está dentro das regras.",
+        "sentence": "Aguenta todas as situações e cumpre as regras.",
+        "fixed": "Com a correção, aguenta todas as situações e cumpre as regras."
+      },
+      "holds_noncompliant": {
+        "badge": "Fora das regras",
+        "title": "Aguenta, mas está fora das regras."
+      },
+      "fails": {
+        "badge": "Não chega inteira",
+        "title": "Não chega inteira."
+      },
+      "count": "Aguenta {passed} de {total} situações.",
+      "estimated": "Peso estimado: {low}–{high} kg, testado no limite de cima",
+      "proven": "Corrigida e comprovada por uma nova foto"
+    },
+    "problem": {
+      "theLoad": "a carga",
+      "when": {
+        "emergency_braking": "Numa freada forte a 80 km/h",
+        "lane_change": "Numa troca brusca de faixa a 80 km/h",
+        "sharp_curve": "Numa curva fechada a 60 km/h",
+        "pothole": "Num buraco a 60 km/h",
+        "speed_bump": "Numa lombada a 30 km/h",
+        "mountain_descent": "Numa descida de serra com chuva forte",
+        "long_vibration": "Numa estrada de terra longa"
+      },
+      "physics": {
+        "unit_slid": "{when}, {unit} escorrega no assoalho.",
+        "unit_hit_headboard": "{when}, {unit} escorrega até a cabine.",
+        "headboard_overloaded": "{when}, a carga empurra a parede da frente além do que ela aguenta.",
+        "unit_left_bed": "{when}, {unit} cai do caminhão.",
+        "unit_tilted": "{when}, {unit} tomba.",
+        "unit_rolled": "{when}, {unit} rola.",
+        "lashing_broke": "{when}, uma cinta de {unit} arrebenta.",
+        "lashing_overloaded": "{when}, uma cinta de {unit} passa da capacidade."
+      },
+      "axleName": {
+        "front": "eixo dianteiro",
+        "rear": "eixo traseiro",
+        "tractor": "eixos do cavalo",
+        "trailer": "eixos da carreta"
+      },
+      "rule": {
+        "devices_allowed": "Cordas seguram {unit}: corda é proibida para amarrar carga.",
+        "safety_factor": "As cintas de {unit} são fracas demais para o peso.",
+        "four_terminals": "{unit} precisa de pelo menos 4 pontos de amarração.",
+        "anchoring": "As cintas estão presas no assoalho de madeira, não na estrutura metálica.",
+        "diagonals_for_gaps": "Há espaço para {unit} correr ao longo do caminhão.",
+        "above_headboard": "{unit} está acima da cabeceira e pode passar por cima dela.",
+        "axle": "Os {axle} levam mais que o limite legal.",
+        "payload": "A carga pesa mais do que este caminhão pode levar.",
+        "gross": "Caminhão e carga pesam mais que o limite legal.",
+        "height": "A carga está alta demais: acima de 4,40 m do chão.",
+        "width": "A carga é mais larga que 2,60 m.",
+        "overhang": "A carga passa da traseira do caminhão."
+      }
+    },
+    "summary": {
+      "title": "O que lemos na foto",
+      "line": "{truck} · {axles, plural, one {# eixo} other {# eixos}} · {units, plural, one {# volume} other {# volumes}} ({cargo}) · {restraint} · {position}",
+      "position": {
+        "headboard": "encostada na cabeceira",
+        "gap": "a {gap} m da cabeceira"
+      },
+      "restraint": {
+        "straps": "{count, plural, =0 {sem cintas} one {# cinta} other {# cintas}}",
+        "ropes": "{count, plural, =0 {sem cordas} one {# corda} other {# cordas}}"
+      },
+      "flags": {
+        "truck": "Não temos certeza do caminhão: confira o tamanho e a carroceria.",
+        "unit": "Não temos certeza do volume {number}: {why}",
+        "restraint": "Não temos certeza das cintas: {why}",
+        "unsure": "pouca confiança",
+        "cutOff": "O volume {units} encosta na borda da foto: parte da carga pode estar fora dela.",
+        "dropped": "{count, plural, one {# volume} other {# volumes}} da foto não couberam no plano."
+      },
+      "correct": "Leitura errada? Corrigir"
+    },
+    "checks": {
+      "title": "Todas as regras e situações",
+      "sentence": "Toque num tema para ver cada item, por que importa, a regra e como corrigir.",
+      "fixLabel": "Como corrigir:",
+      "advice": "Conselho, não é regra",
+      "units": "({units})",
+      "themeFails": "{count, plural, one {# item reprovado} other {# itens reprovados}}",
+      "themeAdvice": "{count, plural, one {# ponto de atenção} other {# pontos de atenção}}",
+      "themeOk": "Tudo certo",
+      "themes": {
+        "securing": "Como está amarrada · CONTRAN 945",
+        "weight": "Peso e eixos · CONTRAN 882",
+        "physics": "Física da viagem · 7 situações",
+        "protection": "Proteção",
+        "dimensions": "Dimensões · CONTRAN 882"
+      },
+      "contran": {
+        "devices_allowed": {
+          "pass": "Dispositivos permitidos: cintas, correntes, calços ou mantas.",
+          "fail": "A carga está amarrada com corda.",
+          "na": "Sem dispositivos de amarração para conferir.",
+          "explain": "Corda estica e arrebenta: a regra só permite corda para prender a lona.",
+          "fix": "Troque cada corda por uma cinta com catraca ou uma corrente."
+        },
+        "safety_factor": {
+          "pass": "As cintas aguentam o peso.",
+          "fail": "As cintas são fracas demais para o peso.",
+          "na": "Segura por calços ou pelas paredes da carroceria: não avaliado.",
+          "explain": "Somadas, as capacidades das cintas precisam ser pelo menos o dobro do peso da carga.",
+          "fix": "Acrescente cintas, ou use cintas mais fortes (veja a CT na etiqueta)."
+        },
+        "four_terminals": {
+          "pass": "Cada volume tem 4 pontos de amarração ou mais.",
+          "fail": "Algum volume tem menos de 4 pontos de amarração.",
+          "na": "Não exigido nesta carroceria.",
+          "explain": "Em carroceria aberta, cada volume separado precisa de pelo menos 4 pontas de cinta presas no caminhão.",
+          "fix": "Passe duas cintas sobre cada volume (cada uma tem duas pontas)."
+        },
+        "anchoring": {
+          "pass": "As cintas estão presas na estrutura metálica.",
+          "fail": "As cintas estão presas no assoalho de madeira.",
+          "na": "Sem cintas para conferir.",
+          "explain": "Assoalho ou guarda de madeira pode arrancar; a estrutura metálica segura.",
+          "fix": "Prenda cada cinta nos ganchos da estrutura metálica."
+        },
+        "diagonals_for_gaps": {
+          "pass": "Sem espaço para a carga correr no caminhão.",
+          "fail": "A carga tem espaço para correr para frente ou para trás.",
+          "na": "Não exigido aqui.",
+          "explain": "Carga que não ocupa o comprimento da carroceria precisa de amarração diagonal contra o movimento para frente e para trás.",
+          "fix": "Encoste a carga na cabeceira, ou acrescente cintas diagonais."
+        },
+        "above_headboard": {
+          "pass": "Nada acima da cabeceira pode passar por cima dela.",
+          "fail": "Há carga acima da cabeceira que pode passar por cima dela.",
+          "na": "A parede da frente vai até o teto.",
+          "confirm": "A carga pode estar acima da cabeceira: confirme a altura dela.",
+          "explain": "Se a carga é mais alta que a cabeceira, nada impede que ela passe por cima da cabine.",
+          "fix": "Segure com cintas diagonais ou calços, ou deixe a carga abaixo da cabeceira."
+        }
+      },
+      "en": {
+        "straps": "{unit}: {installed, plural, =0 {sem cintas} one {# cinta} other {# cintas}}; a norma pede {required}.",
+        "meets": "{unit}: atende à EN 12195-1.",
+        "fails": "{unit}: não atende à EN 12195-1.",
+        "notAssessed": "{unit}: não avaliado pela EN 12195-1 aqui.",
+        "explain": "A norma europeia em que a regra brasileira se baseia: quantas cintas seguram um volume pelo atrito.",
+        "fix": "Acrescente cintas até cada volume ter as que a norma pede."
+      },
+      "weight": {
+        "axle": "{axle, select, front {Eixo dianteiro} tractor {Eixos do cavalo} trailer {Eixos da carreta} other {Eixo traseiro}}: {load} t de {limit} t permitidas",
+        "axleExplain": "A balança multa acima de {tolerance} t (tolerância de 12,5 %), mas o carregamento deve respeitar o próprio limite.",
+        "axleFix": "Mova a carga para frente ou para trás para dividir entre os eixos, ou tire uma parte.",
+        "payload": "Carga de {cargo} t; este caminhão leva cerca de {payload} t",
+        "payloadExplain": "Nenhum caminhão pode levar mais que o fabricante permite (a lotação na plaqueta).",
+        "payloadFix": "Use um caminhão maior ou divida a carga.",
+        "gross": "Caminhão e carga com {gross} t; o limite é {limit} t",
+        "grossExplain": "O peso bruto de um caminhão sem reboque é limitado a 29 t.",
+        "grossFix": "Tire parte da carga.",
+        "lateralOk": "O peso está centralizado de um lado ao outro.",
+        "lateral": "O peso está {offset} cm fora do centro, para um lado.",
+        "lateral_balanceExplain": "Peso de um lado inclina o caminhão nas curvas e sobrecarrega uma fileira de pneus.",
+        "lateral_balanceFix": "Leve os volumes pesados para o meio do assoalho.",
+        "frontOk": "Fica peso suficiente no eixo dianteiro para esterçar.",
+        "front": "Só {share} do peso está no eixo dianteiro.",
+        "front_axle_shareExplain": "Com pouco peso na frente, o caminhão esterça e freia pior.",
+        "front_axle_shareFix": "Leve os volumes pesados para a frente, perto da cabine.",
+        "none": "Nada para conferir aqui."
+      },
+      "outcome": {
+        "holds": "{situation}: aguenta",
+        "slides": "{situation}: a carga escorrega",
+        "tips": "{situation}: um volume tomba",
+        "rolls": "{situation}: um volume rola",
+        "falls": "{situation}: um volume cai",
+        "hits": "{situation}: a carga bate na cabine",
+        "strap": "{situation}: uma cinta cede"
+      },
+      "physicsExplain": "Simulado no motor de física: o caminhão, esta carga e as cintas, a {speed} km/h.",
+      "physicsArticle": "Simulação MuJoCo · cargas da EN 12195-1",
+      "physicsFix": "Veja “Como deixar segura” abaixo.",
+      "seeIt": "Ver acontecer",
+      "protection": {
+        "anti_slip_mat": {
+          "pass": "Manta antiderrapante sob a carga.",
+          "advice": "Não vimos manta antiderrapante.",
+          "na": "Manta antiderrapante não é necessária aqui.",
+          "explain": "Uma manta de borracha triplica a aderência entre a carga e o assoalho, e as cintas precisam segurar menos.",
+          "fix": "Coloque manta antiderrapante sob os volumes."
+        },
+        "edge_protectors": {
+          "pass": "Cantoneiras no lugar.",
+          "advice": "Use cantoneiras sob as cintas.",
+          "na": "Sem carga frágil sob cintas.",
+          "explain": "Onde a cinta cruza caixas ou sacos, ela corta e perde tensão; a cantoneira espalha a força.",
+          "fix": "Coloque uma cantoneira sob cada cinta nas quinas da carga."
+        },
+        "headboardKnown": "Cabeceira de {height} m; a carga chega a {top} m.",
+        "headboardConfirm": "Altura da cabeceira a confirmar: usamos {height} m; a carga chega a {top} m.",
+        "headboardExplain": "A cabeceira (a parede atrás da cabine) só segura a carga numa freada até a altura dela.",
+        "headboardLabel": "Altura da cabeceira (m)",
+        "headboardSave": "Conferir de novo"
+      },
+      "dimensions": {
+        "height": "Altura do chão: {value} m (limite {limit} m)",
+        "heightExplain": "Caminhão e carga juntos não podem passar de 4,40 m de altura.",
+        "heightFix": "Abaixe a carga ou carregue menos altura.",
+        "width": "Largura da carga: {value} m (limite {limit} m)",
+        "widthExplain": "Caminhão e carga juntos não podem passar de 2,60 m de largura.",
+        "widthFix": "Mantenha a carga dentro do assoalho.",
+        "overhang": "Carga além da traseira: {value} m",
+        "overhangExplain": "Carga para fora da traseira aumenta o comprimento e exige sinalização.",
+        "overhangFix": "Mantenha a carga no assoalho, ou sinalize e confira o limite de comprimento."
+      }
+    },
+    "fix": {
+      "title": "Como deixar segura",
+      "sentence": "O menor conjunto de mudanças, testado em ordem de esforço: mover os volumes, mais cintas, manta antiderrapante, diagonais, cantoneiras. O que não for necessário fica de fora.",
+      "recommended": "O que mudar",
+      "applied": "O que foi mudado",
+      "simulate": "Simular com a correção",
+      "reinspect": "Corrigi: tirar nova foto",
+      "reinspectHint": "A inspeção só conta como corrigida e comprovada quando a nova foto passar.",
+      "proven": "Comprovado: com essas mudanças a carga aguenta todas as situações e cumpre as regras.",
+      "notProven": "Com essas mudanças ela aguenta {passed} de {total} situações. Precisa de mais do que o planejador consegue testar: fale com quem carrega.",
+      "none": "Nada a mudar: a carga aguenta todas as situações e cumpre as regras.",
+      "variant": "Qual versão",
+      "as_loaded": "Como carregada",
+      "fixed": "Com a correção",
+      "advice": "Conselho: não muda a física, protege as cintas e a carga."
+    },
+    "sim": {
+      "open": "Abrir a simulação",
+      "label": "Simulação",
+      "custom": "Sua viagem",
+      "close": "Fechar",
+      "situations": "Situações",
+      "road": "Estrada",
+      "weather": "Tempo",
+      "speed": "Velocidade",
+      "event": "O que acontece",
+      "running": "Simulando…",
+      "status": {
+        "pass": "Aguenta",
+        "warning": "Aguenta, mas mexe um pouco",
+        "fail": "Não aguenta"
+      },
+      "unavailable": "Esta simulação não está disponível agora.",
+      "server": "Resultado do servidor: o que vale para o certificado.",
+      "live": "Ao vivo no seu navegador, sem valor de certificado.",
+      "explorer": "Abrir no explorador"
+    },
+    "share": {
+      "button": "Compartilhar",
+      "creating": "Criando o link…",
+      "copy": "Copiar link",
+      "copied": "Copiado",
+      "whatsapp": "Enviar no WhatsApp",
+      "message": "Inspeção de carga: {verdict}. {url}",
+      "hint": "Quem tiver o link vê o resultado, a foto e os principais itens; não o seu nome.",
+      "signIn": "Entre para compartilhar uma inspeção."
+    },
+    "reinspection": {
+      "title": "Antes e depois",
+      "before": "Antes",
+      "after": "Depois da correção",
+      "count": "Aguenta {passed} de {total}",
+      "proven": "A nova foto passa: a primeira inspeção agora está corrigida e comprovada.",
+      "notYet": "Ainda não comprovada: a nova foto não passa. Confira as mudanças de novo."
+    },
+    "result": {
+      "running": "Testando a carga em 7 situações…",
+      "runningSentence": "Freada forte, troca de faixa, curva fechada, buraco, lombada, descida de serra com chuva e estrada de terra longa.",
+      "new": "Nova inspeção",
+      "saved": "Salva nas suas inspeções.",
+      "open": "Abrir",
+      "notSaved": "Não salva: entre para guardar as inspeções.",
+      "failed": "O teste não rodou."
+    },
+    "trucks": {
+      "label": "Meus caminhões",
+      "title": "Meus caminhões",
+      "sentence": "Salve um caminhão uma vez e escolha antes da foto: a inspeção usa as medidas reais dele. Não precisa de placa.",
+      "add": "Adicionar caminhão",
+      "empty": "Nenhum caminhão salvo ainda.",
+      "nickname": "Apelido (opcional)",
+      "size": "Tamanho",
+      "body": "Carroceria",
+      "bedLength": "Comprimento da carroceria (m)",
+      "headboard": "Altura da cabeceira (m)",
+      "anchors": "Pontos de amarração por lado",
+      "save": "Salvar caminhão",
+      "saving": "Salvando…",
+      "delete": "Remover",
+      "optional": "Deixe em branco se não souber.",
+      "signIn": "Entre para salvar seus caminhões."
+    },
+    "shared": {
+      "label": "Inspeção compartilhada",
+      "notFound": "Este link não está mais compartilhado, ou nunca esteve.",
+      "loading": "Carregando…",
+      "by": "Inspecionado por {name}",
+      "checks": "Principais itens",
+      "situations": "Aguenta {passed} de {total} situações",
+      "contranOk": "Regras de amarração da CONTRAN 945: todas cumpridas",
+      "contranFails": "Regras de amarração da CONTRAN 945: {count, plural, one {# reprovada} other {# reprovadas}}",
+      "weightOk": "Peso e eixos dentro dos limites",
+      "weightFails": "Peso ou eixos acima do limite",
+      "estimated": "Peso estimado, testado no limite de cima",
+      "disclaimer": "O SecureCargo é uma ferramenta de apoio à decisão, não uma certificação de engenharia.",
+      "try": "Confira a sua carga"
+    }
   }
 }

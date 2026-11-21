@@ -53,9 +53,20 @@ export interface InspectionSummary {
   fixed_verdict: Verdict | null;
   cover_photo: string | null;
   cover_photo_id: string | null;
+  /** The truck as confirmed (size, body style, measurements), JSON. */
+  truck_json?: string | null;
+  weight_source?: "measured" | "invoice" | "estimated" | null;
+  weight_range_json?: string | null;
+  invoice_json?: string | null;
+  /** The inspection this one re-checks ("I fixed it: take a new photo"). */
+  reinspection_of?: string | null;
+  /** The re-inspection that proved the fix, if any: the inspection is "fixed and proven". */
+  proven_by?: string | null;
+  share_token?: string | null;
 }
 
 export interface InspectionDetail extends InspectionSummary {
+  reinspections?: { id: string; created_at: string; verdict: Verdict | null; situations_passed: number | null; situations_total: number | null }[];
   photos: { id: string; position: string; r2_key: string; created_at: string }[];
   scenarios: { id: string; kind: "as_loaded" | "fixed"; draft: unknown; battery_ref: string | null; created_at: string }[];
   results: {

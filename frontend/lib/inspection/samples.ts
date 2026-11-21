@@ -21,7 +21,7 @@ export type Sample = {
   credit: { photographer: string; url: string; source: string; license: string };
   /** The weight on the sample's (made-up) invoice. */
   weight_kg: number;
-  truck: { body: Body; size: Size };
+  truck: { body: Body; size: Size; style?: import("./trucks").BodyStyle };
   passed: number;
   fixed_passed: number;
 };

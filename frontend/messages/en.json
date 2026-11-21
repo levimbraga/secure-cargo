@@ -550,7 +550,8 @@
         "vuc": "VUC (urban, 2 axles)",
         "toco": "Toco (2 axles)",
         "truck": "Truck (3 axles)",
-        "semi": "Semi-trailer"
+        "semi": "Semi-trailer",
+        "three_quarter": "3/4 (light, 2 axles)"
       },
       "cargo": {
         "wood_pallet": "Wood pallets",
@@ -724,7 +725,8 @@
     "menu": "App sections",
     "demoBadge": "Demo account",
     "switchDemo": "Switch demo account",
-    "demoResets": "Demo data resets daily."
+    "demoResets": "Demo data resets daily.",
+    "trucks": "My trucks"
   },
   "Auth": {
     "label": "Sign in",
@@ -813,7 +815,14 @@
     },
     "weightKg": "{weight} kg",
     "notSimulated": "This inspection has not been simulated yet.",
-    "photo": "Photo ({position})"
+    "photo": "Photo ({position})",
+    "weightSource": {
+      "measured": "typed",
+      "invoice": "from the invoice",
+      "estimated": "estimated"
+    },
+    "reinspectionOf": "← The first inspection (before the fix)",
+    "reinspection": "New photo after the fix: {verdict}"
   },
   "Org": {
     "label": "Organization",
@@ -1094,7 +1103,7 @@
       "notApplicable": "does not apply",
       "en": "EN 12195-1 (European securing standard), per unit",
       "enNotAssessed": "Not assessed by the formula (stacked, mixed or held by blocking): the simulation decides.",
-      "enStraps": "{installed} of the {required} straps the standard asks for",
+      "enStraps": "{installed, plural, =0 {no straps} one {# strap} other {# straps}}; the standard asks for {required}",
       "enMeets": "Meets the standard",
       "enFails": "Does not meet the standard",
       "axleSource": "Legal axle limits: CONTRAN Resolution 882/2021, art. 6."
@@ -1134,7 +1143,8 @@
       "balanceBack": "Move the load {distance} cm back: an axle carried {load} t, over its {limit} t limit.",
       "replace_rope": "Replace the ropes with ratchet straps.",
       "reanchor": "Hook the lashings to the lashing points on the metal frame, not the wooden floor.",
-      "overweight": "The cargo weighs {mass} t; this truck may carry {payload} t. Use a larger truck or split the load."
+      "overweight": "The cargo weighs {mass} t; this truck may carry {payload} t. Use a larger truck or split the load.",
+      "edge_protectors": "Put edge protectors under the straps where they cross fragile cargo."
     },
     "fix": {
       "title": "How to fix it",
@@ -1186,5 +1196,473 @@
       "cannot_stack": "That unit cannot carry another one."
     },
     "loading": "Loading…"
+  },
+  "Driver": {
+    "steps": {
+      "garage": "Your truck",
+      "photos": "Photo",
+      "reinspect": "New photo",
+      "truck": "Truck",
+      "weight": "Weight",
+      "result": "Result",
+      "edit": "Correct the reading",
+      "label": "Steps"
+    },
+    "truck": {
+      "name": "{size}, {body}",
+      "reading": "Reading the photo…",
+      "looksLike": "Looks like a {truck}. Tap to confirm, or pick another.",
+      "aiPick": "AI pick",
+      "sizeTitle": "Which truck is it?",
+      "sizeSentence": "Pick the size. The axles and a typical payload are under each one.",
+      "bodyTitle": "What body does it have?",
+      "bodySentence": "The body decides what holds the cargo besides the straps.",
+      "backToSize": "Change the size",
+      "saveLabel": "Save to My trucks"
+    },
+    "sizes": {
+      "axles": "{count, plural, one {# axle} other {# axles}}",
+      "line": "{axles, plural, one {# axle} other {# axles}} · about {payload} t of cargo",
+      "vuc": {
+        "name": "VUC",
+        "hint": "Small urban truck"
+      },
+      "three_quarter": {
+        "name": "3/4",
+        "hint": "Light truck, bigger than a VUC"
+      },
+      "toco": {
+        "name": "Toco",
+        "hint": "Rigid truck, one rear axle"
+      },
+      "truck": {
+        "name": "Truck",
+        "hint": "Rigid truck, two rear axles"
+      },
+      "semi": {
+        "name": "Semi-trailer",
+        "hint": "Tractor and trailer"
+      }
+    },
+    "styles": {
+      "open_low_sides": {
+        "name": "Open, low sides",
+        "short": "open body",
+        "hint": "Flat deck with low side boards that fold down"
+      },
+      "open_tall_rack": {
+        "name": "Open, tall rack",
+        "short": "tall rack",
+        "hint": "Open body with a tall rack or stakes around it"
+      },
+      "platform": {
+        "name": "Platform",
+        "short": "platform",
+        "hint": "Flat deck with no sides"
+      },
+      "box": {
+        "name": "Box truck",
+        "short": "box body",
+        "hint": "Closed body with solid walls"
+      },
+      "curtain_sider": {
+        "name": "Curtain-sider",
+        "short": "curtain-sider",
+        "hint": "Roof on posts with tarpaulin curtains"
+      }
+    },
+    "garage": {
+      "title": "Which truck are you loading?",
+      "sentence": "Your saved trucks come first: we use their measurements instead of guessing.",
+      "another": "Another truck",
+      "anotherHint": "Pick the size and body after the photo.",
+      "manage": "Manage My trucks"
+    },
+    "capture": {
+      "title": "Take a photo of the load.",
+      "sentence": "One photo of the full side is enough. A second from the rear corner helps.",
+      "reinspectTitle": "Take a new photo of the fixed load.",
+      "reinspectSentence": "Same truck and weight as “{title}”. The first inspection counts as fixed only when this one passes.",
+      "forTruck": "Truck: {truck}",
+      "enough": "Enough",
+      "recommended": "Recommended",
+      "alt": "Your photo: {shot}",
+      "shots": {
+        "side": {
+          "title": "Full side",
+          "card": "The whole truck from the side, front to back.",
+          "hint": "Fit the whole truck inside the outline, from the cab to the rear."
+        },
+        "rear_three_quarter": {
+          "title": "Rear three-quarter",
+          "card": "From behind one rear corner, showing the back and one side.",
+          "hint": "Stand behind a rear corner so the back and one side are both in view."
+        }
+      },
+      "retakeHint": "Tap to take it again.",
+      "remove": "Remove",
+      "checking": "Checking the photo…",
+      "next": "Continue",
+      "retakeTitle": "Retake this photo?",
+      "issues": {
+        "too_dark": "It is too dark: find more light or turn the truck towards it.",
+        "blurry": "It is blurred: hold the phone still and tap to focus.",
+        "too_far": "The truck is too far away: come closer until it fills the frame.",
+        "cut_off": "Part of the load may be cut off: step back so the whole load fits."
+      },
+      "retake": "Retake",
+      "keep": "Use it anyway",
+      "close": "Close",
+      "noCamera": "The camera could not open here. Use the phone's camera instead.",
+      "openCamera": "Open the camera",
+      "upload": "Choose a photo",
+      "shutter": "Take the photo"
+    },
+    "weight": {
+      "title": "How much does the cargo weigh?",
+      "sentence": "A photo cannot show weight, and it changes everything: friction, straps and axles.",
+      "type": "Type the weight",
+      "typeHint": "The total in kg, from the invoice or the scale.",
+      "invoice": "Read from invoice",
+      "invoiceHint": "A photo of the DANFE: we read the gross weight.",
+      "unknown": "I don't know",
+      "unknownHint": "We estimate a range from what the photo shows.",
+      "kgLabel": "Total cargo weight",
+      "sampleInvoice": "The sample's invoice says {weight} kg.",
+      "invoiceReading": "Reading the invoice…",
+      "invoiceSays": "The invoice says {weight} kg. Is that right?",
+      "invoiceText": "Printed as “{text}” in the PESO BRUTO box.",
+      "invoiceConfirm": "Yes, use it",
+      "invoiceUsed": "Using it",
+      "typeInstead": "Type it instead",
+      "invoiceDemo": "Reading invoices is paused right now. Type the weight instead.",
+      "invoiceNotFound": "We could not read the gross weight on that photo. Try again closer, or type it.",
+      "invoicePhoto": "Photograph the invoice",
+      "invoiceWhy": "We only copy the number printed in the gross weight (PESO BRUTO) box; you confirm it.",
+      "estimate": "Estimated: {low} to {high} kg, from the cargo type and its size.",
+      "estimateWhy": "We test the heavier end, {high} kg, and the result says “weight estimated”.",
+      "estimateWaiting": "Waiting for the photo reading to estimate the weight…",
+      "splitEqual": "≈{each} kg each across {count, plural, one {# unit} other {# units}}",
+      "splitVaried": "{min} to {max} kg each across {count, plural, one {# unit} other {# units}} (by size)",
+      "different": "Units have different weights?",
+      "unit": "Unit {number} (kg)",
+      "perUnitSum": "{sum} of {total} kg. The units must add up to the total.",
+      "waitingForPhoto": "Reading the photo…",
+      "next": "See the result"
+    },
+    "verdict": {
+      "approved": {
+        "badge": "Approved",
+        "title": "Approved: arrives intact and complies.",
+        "sentence": "It holds in every situation and meets the rules.",
+        "fixed": "With the fix, it holds in every situation and meets the rules."
+      },
+      "holds_noncompliant": {
+        "badge": "Out of compliance",
+        "title": "Holds, but out of compliance."
+      },
+      "fails": {
+        "badge": "Does not arrive intact",
+        "title": "Does not arrive intact."
+      },
+      "count": "Holds in {passed} of {total} situations.",
+      "estimated": "Weight estimated: {low}–{high} kg, tested at the upper end",
+      "proven": "Fixed and proven by a new photo"
+    },
+    "problem": {
+      "theLoad": "the load",
+      "when": {
+        "emergency_braking": "In hard braking at 80 km/h",
+        "lane_change": "In a sudden lane change at 80 km/h",
+        "sharp_curve": "In a sharp curve at 60 km/h",
+        "pothole": "Over a pothole at 60 km/h",
+        "speed_bump": "Over a speed bump at 30 km/h",
+        "mountain_descent": "On a mountain descent in heavy rain",
+        "long_vibration": "On a long dirt road"
+      },
+      "physics": {
+        "unit_slid": "{when}, {unit} slides on the deck.",
+        "unit_hit_headboard": "{when}, {unit} slides into the cab.",
+        "headboard_overloaded": "{when}, the load pushes the front wall past what it can take.",
+        "unit_left_bed": "{when}, {unit} falls off the truck.",
+        "unit_tilted": "{when}, {unit} tips over.",
+        "unit_rolled": "{when}, {unit} rolls.",
+        "lashing_broke": "{when}, a strap on {unit} breaks.",
+        "lashing_overloaded": "{when}, a strap on {unit} is pulled past its rated capacity."
+      },
+      "axleName": {
+        "front": "front axle",
+        "rear": "rear axle",
+        "tractor": "tractor's axles",
+        "trailer": "trailer's axles"
+      },
+      "rule": {
+        "devices_allowed": "Ropes hold {unit}: ropes are banned as cargo lashing.",
+        "safety_factor": "The straps on {unit} are too weak for its weight.",
+        "four_terminals": "{unit} needs at least 4 lashing points.",
+        "anchoring": "The straps are hooked to the wooden floor, not the metal frame.",
+        "diagonals_for_gaps": "There is room for {unit} to slide along the truck.",
+        "above_headboard": "{unit} stands above the headboard and could slide over it.",
+        "axle": "The {axle} carry more than the legal limit.",
+        "payload": "The cargo is heavier than this truck may carry.",
+        "gross": "The truck and cargo weigh more than the legal limit.",
+        "height": "The load is too tall: above 4.40 m from the road.",
+        "width": "The load is wider than 2.60 m.",
+        "overhang": "The load sticks out past the back of the truck."
+      }
+    },
+    "summary": {
+      "title": "What we read from the photo",
+      "line": "{truck} · {axles, plural, one {# axle} other {# axles}} · {units, plural, one {# unit} other {# units}} ({cargo}) · {restraint} · {position}",
+      "position": {
+        "headboard": "against the headboard",
+        "gap": "{gap} m from the headboard"
+      },
+      "restraint": {
+        "straps": "{count, plural, =0 {no straps} one {# strap} other {# straps}}",
+        "ropes": "{count, plural, =0 {no ropes} one {# rope} other {# ropes}}"
+      },
+      "flags": {
+        "truck": "Not sure about the truck: check its size and body.",
+        "unit": "Not sure about unit {number}: {why}",
+        "restraint": "Not sure about the straps: {why}",
+        "unsure": "low confidence",
+        "cutOff": "Unit {units} touches the edge of the photo: part of the load may be outside it.",
+        "dropped": "{count, plural, one {# unit} other {# units}} from the photo did not fit on the plan."
+      },
+      "correct": "Wrong reading? Correct it"
+    },
+    "checks": {
+      "title": "Every rule and situation",
+      "sentence": "Tap a theme to see each check, why it matters, the rule behind it and the fix.",
+      "fixLabel": "Fix:",
+      "advice": "Advice, not a rule",
+      "units": "({units})",
+      "themeFails": "{count, plural, one {# check fails} other {# checks fail}}",
+      "themeAdvice": "{count, plural, one {# thing to check} other {# things to check}}",
+      "themeOk": "All good",
+      "themes": {
+        "securing": "How it is secured · CONTRAN 945",
+        "weight": "Weight and axles · CONTRAN 882",
+        "physics": "Trip physics · 7 situations",
+        "protection": "Protection",
+        "dimensions": "Dimensions · CONTRAN 882"
+      },
+      "contran": {
+        "devices_allowed": {
+          "pass": "Allowed devices: straps, chains, blocking or mats.",
+          "fail": "Ropes are used to lash the cargo.",
+          "na": "No lashing devices to check.",
+          "explain": "Ropes stretch and break: the rule allows them only to hold a tarp.",
+          "fix": "Replace each rope with a ratchet strap or a chain."
+        },
+        "safety_factor": {
+          "pass": "The straps are strong enough for the weight.",
+          "fail": "The straps are too weak for the weight.",
+          "na": "Held by blocking or the body's walls: not assessed.",
+          "explain": "Together, the straps' rated capacity must be at least twice the cargo's weight.",
+          "fix": "Add straps, or use stronger ones (check the LC on the label)."
+        },
+        "four_terminals": {
+          "pass": "Each unit is lashed at 4 points or more.",
+          "fail": "A unit has fewer than 4 lashing points.",
+          "na": "Not needed for this body.",
+          "explain": "On an open body, every separate unit needs at least 4 strap ends hooked to the truck.",
+          "fix": "Put two straps over each unit (each one has two ends)."
+        },
+        "anchoring": {
+          "pass": "Straps are hooked to the metal frame.",
+          "fail": "Straps are hooked to the wooden floor.",
+          "na": "No straps to check.",
+          "explain": "A wooden floor or side board can tear out; the metal frame holds.",
+          "fix": "Hook every strap to the lashing points on the metal frame."
+        },
+        "diagonals_for_gaps": {
+          "pass": "No room to slide along the truck.",
+          "fail": "The load has room to slide forward or back.",
+          "na": "Not needed here.",
+          "explain": "Cargo that does not fill the body's length needs diagonal straps against moving forward and back.",
+          "fix": "Push the load against the headboard, or add diagonal straps."
+        },
+        "above_headboard": {
+          "pass": "Nothing above the headboard can slide over it.",
+          "fail": "Cargo above the headboard could slide over it.",
+          "na": "The front wall is full height.",
+          "confirm": "The load may stand above the headboard: confirm its height.",
+          "explain": "If cargo stands taller than the headboard, nothing stops it going over the cab.",
+          "fix": "Hold it with diagonal straps or blocking, or lower it below the headboard."
+        }
+      },
+      "en": {
+        "straps": "{unit}: {installed, plural, =0 {no straps} one {# strap} other {# straps}}; the standard asks for {required}.",
+        "meets": "{unit}: meets EN 12195-1.",
+        "fails": "{unit}: does not meet EN 12195-1.",
+        "notAssessed": "{unit}: not assessed by EN 12195-1 here.",
+        "explain": "The European standard Brazil's rule is based on: how many straps hold a unit by friction.",
+        "fix": "Add straps until each unit has as many as the standard asks for."
+      },
+      "weight": {
+        "axle": "{axle, select, front {Front axle} tractor {Tractor axles} trailer {Trailer axles} other {Rear axle}}: {load} t of {limit} t allowed",
+        "axleExplain": "Scales fine above {tolerance} t (the 12.5 % tolerance), but loading must respect the limit itself.",
+        "axleFix": "Move the load forward or back to share it between the axles, or take some off.",
+        "payload": "Cargo {cargo} t; this truck carries about {payload} t",
+        "payloadExplain": "No truck may carry more than its maker allows (the payload on the door sticker).",
+        "payloadFix": "Use a bigger truck or split the load.",
+        "gross": "Truck and cargo {gross} t; the limit is {limit} t",
+        "grossExplain": "The gross weight of a rigid truck is limited to 29 t.",
+        "grossFix": "Take some of the load off.",
+        "lateralOk": "The weight is centred side to side.",
+        "lateral": "The weight sits {offset} cm off centre, to one side.",
+        "lateral_balanceExplain": "Weight on one side leans the truck in curves and loads one row of tyres.",
+        "lateral_balanceFix": "Move heavy units towards the middle of the deck.",
+        "frontOk": "Enough weight stays on the front axle to steer.",
+        "front": "Only {share} of the weight is on the front axle.",
+        "front_axle_shareExplain": "With too little weight up front, the truck steers and brakes worse.",
+        "front_axle_shareFix": "Move heavy units forward, towards the cab.",
+        "none": "Nothing to check here."
+      },
+      "outcome": {
+        "holds": "{situation}: holds",
+        "slides": "{situation}: the load slides",
+        "tips": "{situation}: a unit tips over",
+        "rolls": "{situation}: a unit rolls",
+        "falls": "{situation}: a unit falls off",
+        "hits": "{situation}: the load hits the cab",
+        "strap": "{situation}: a strap gives way"
+      },
+      "physicsExplain": "Simulated with the physics engine: the truck, this load and its straps, at {speed} km/h.",
+      "physicsArticle": "MuJoCo simulation · EN 12195-1 loads",
+      "physicsFix": "See “How to make it safe” below.",
+      "seeIt": "See it happen",
+      "protection": {
+        "anti_slip_mat": {
+          "pass": "Anti-slip mats under the load.",
+          "advice": "No anti-slip mat seen.",
+          "na": "Anti-slip mat not needed here.",
+          "explain": "A rubber mat triples the grip between the cargo and the deck, so the straps need to hold less.",
+          "fix": "Put anti-slip mats under the units."
+        },
+        "edge_protectors": {
+          "pass": "Edge protectors in place.",
+          "advice": "Use edge protectors under the straps.",
+          "na": "No fragile cargo under straps.",
+          "explain": "Where a strap crosses cartons or sacks it cuts in and loses tension; a corner protector spreads the force.",
+          "fix": "Put a corner protector under each strap on the cargo's edges."
+        },
+        "headboardKnown": "Headboard {height} m; the load reaches {top} m.",
+        "headboardConfirm": "Headboard height to confirm: we used {height} m; the load reaches {top} m.",
+        "headboardExplain": "The headboard (the wall behind the cab) stops the load in hard braking only up to its height.",
+        "headboardLabel": "Headboard height (m)",
+        "headboardSave": "Re-check"
+      },
+      "dimensions": {
+        "height": "Height from the road: {value} m (limit {limit} m)",
+        "heightExplain": "Truck and load together may not be taller than 4.40 m.",
+        "heightFix": "Lower the load or load less height.",
+        "width": "Load width: {value} m (limit {limit} m)",
+        "widthExplain": "Truck and load together may not be wider than 2.60 m.",
+        "widthFix": "Keep the load within the deck.",
+        "overhang": "Load past the back of the truck: {value} m",
+        "overhangExplain": "Cargo sticking out the back adds to the truck's length and needs a warning sign.",
+        "overhangFix": "Keep the load on the deck, or signal it and check the length limit."
+      }
+    },
+    "fix": {
+      "title": "How to make it safe",
+      "sentence": "The smallest set of changes, tried in order of effort: move the units, add straps, an anti-slip mat, diagonals, edge protectors. Any step that is not needed is left out.",
+      "recommended": "What to change",
+      "applied": "What was changed",
+      "simulate": "Simulate with the fix",
+      "reinspect": "I fixed it: take a new photo",
+      "reinspectHint": "The inspection counts as fixed and proven only when the new photo passes.",
+      "proven": "Proven: with these changes the load holds in every situation and meets the rules.",
+      "notProven": "With these changes it holds in {passed} of {total} situations. It needs more than the planner can try: talk to whoever loads it.",
+      "none": "Nothing to change: the load holds in every situation and meets the rules.",
+      "variant": "Which version",
+      "as_loaded": "As loaded",
+      "fixed": "With the fix",
+      "advice": "Advice: changes no physics, protects the straps and the cargo."
+    },
+    "sim": {
+      "open": "Open the simulation",
+      "label": "Simulation",
+      "custom": "Your trip",
+      "close": "Close",
+      "situations": "Situations",
+      "road": "Road",
+      "weather": "Weather",
+      "speed": "Speed",
+      "event": "What happens",
+      "running": "Simulating…",
+      "status": {
+        "pass": "Holds",
+        "warning": "Holds, it moves a little",
+        "fail": "Fails"
+      },
+      "unavailable": "This run is not available right now.",
+      "server": "Server result: the one the certificate uses.",
+      "live": "Live in your browser, not certified.",
+      "explorer": "Open in the explorer"
+    },
+    "share": {
+      "button": "Share",
+      "creating": "Creating the link…",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "whatsapp": "Send on WhatsApp",
+      "message": "Load inspection: {verdict}. {url}",
+      "hint": "Anyone with the link sees the verdict, the photo and the main checks; not your name.",
+      "signIn": "Sign in to share an inspection."
+    },
+    "reinspection": {
+      "title": "Before and after",
+      "before": "Before",
+      "after": "After the fix",
+      "count": "Holds in {passed} of {total}",
+      "proven": "The new photo passes: the first inspection is now fixed and proven.",
+      "notYet": "Not proven yet: the new photo does not pass. Check the changes again."
+    },
+    "result": {
+      "running": "Testing the load in 7 situations…",
+      "runningSentence": "Hard braking, a lane change, a sharp curve, a pothole, a speed bump, a mountain descent in rain and a long dirt road.",
+      "new": "New inspection",
+      "saved": "Saved to your inspections.",
+      "open": "Open it",
+      "notSaved": "Not saved: sign in to keep inspections.",
+      "failed": "The test did not run."
+    },
+    "trucks": {
+      "label": "My trucks",
+      "title": "My trucks",
+      "sentence": "Save a truck once and pick it before the photo: the inspection then uses its real measurements. No plate needed.",
+      "add": "Add a truck",
+      "empty": "No trucks saved yet.",
+      "nickname": "Nickname (optional)",
+      "size": "Size",
+      "body": "Body",
+      "bedLength": "Bed length (m)",
+      "headboard": "Headboard height (m)",
+      "anchors": "Lashing points per side",
+      "save": "Save truck",
+      "saving": "Saving…",
+      "delete": "Remove",
+      "optional": "Leave empty if you don't know.",
+      "signIn": "Sign in to save your trucks."
+    },
+    "shared": {
+      "label": "Shared inspection",
+      "notFound": "This link is not shared any more, or never was.",
+      "loading": "Loading…",
+      "by": "Inspected by {name}",
+      "checks": "Main checks",
+      "situations": "Holds in {passed} of {total} situations",
+      "contranOk": "CONTRAN 945 lashing rules: all met",
+      "contranFails": "CONTRAN 945 lashing rules: {count, plural, one {# fails} other {# fail}}",
+      "weightOk": "Weight and axles within the limits",
+      "weightFails": "Weight or axles over the limit",
+      "estimated": "Weight estimated, tested at the upper end",
+      "disclaimer": "SecureCargo is a decision-support tool, not an engineering certification.",
+      "try": "Check your own load"
+    }
   }
 }

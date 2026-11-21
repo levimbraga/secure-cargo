@@ -1,21 +1,24 @@
 "use client";
 
-/** The first two steps of a new inspection: the photos, then the truck and the weight. */
+/**
+ * The questions of a new inspection, one per screen: which saved truck, the photos (guided
+ * camera, checked on the phone), the truck (size, then body), and the weight.
+ */
 
-import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useId, useState } from "react";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
+import { type ReactNode, useEffect, useId, useState } from "react";
 
 import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
-import { BODIES, SIZES } from "@/lib/explorer/config";
 import { fetchSamples, type Sample } from "@/lib/inspection/samples";
-import type { Body, Size } from "@/lib/inspection/types";
-import { MAX_PHOTOS, type Position, type useInspectionFlow } from "@/lib/inspection/use-flow";
+import { BODY_STYLES, SIZE_INFO, TRUCK_SIZES, type TruckChoice } from "@/lib/inspection/trucks";
+import { MAX_PHOTOS, type Shot, type useInspectionFlow } from "@/lib/inspection/use-flow";
+import { describeSplit, perUnitMatches, withWeights } from "@/lib/inspection/weight";
+
+import { GuidedCamera, Silhouette } from "./camera";
+import { TruckArt } from "./truck-art";
 
 type Flow = ReturnType<typeof useInspectionFlow>;
-
-const ACCEPT = "image/jpeg,image/png,image/heic,image/heif,.heic,.heif";
-const POSITIONS: Position[] = ["rear", "left", "right", "front"];
 
 export function ErrorLine({ code }: { code: string | null }) {
   const t = useTranslations("Flow");
@@ -27,131 +30,235 @@ export function ErrorLine({ code }: { code: string | null }) {
   );
 }
 
-// ---- photos -------------------------------------------------------------------------------
+/** A large tappable card: one answer to the question on the screen. */
+export function ChoiceCard({
+  selected = false,
+  onClick,
+  children,
+  testId,
+  badge,
+}: {
+  selected?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+  testId?: string;
+  badge?: string | null;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      data-testid={testId}
+      className={`relative flex min-h-[88px] w-full flex-col items-stretch rounded-md border bg-paper p-4 text-left transition-colors hover:border-ink ${
+        selected ? "border-ink ring-1 ring-ink" : "border-hairline"
+      }`}
+    >
+      {badge && (
+        <span className="absolute top-3 right-3 rounded-full bg-ink px-2 py-0.5 text-[0.75rem] font-medium text-paper">{badge}</span>
+      )}
+      {children}
+    </button>
+  );
+}
+
+function StepHeader({ label, title, sentence }: { label: string; title: string; sentence?: ReactNode }) {
+  return (
+    <header>
+      <p className="type-label">{label}</p>
+      <h1 className="type-hero mt-4 text-balance">{title}</h1>
+      {sentence && <p className="type-body mt-3 text-pretty">{sentence}</p>}
+    </header>
+  );
+}
+
+function truckName(t: ReturnType<typeof useTranslations<"Driver">>, truck: Pick<TruckChoice, "size" | "style">): string {
+  return t("truck.name", { size: t(`sizes.${truck.size}.name`), body: t(`styles.${truck.style}.short`) });
+}
+
+// ---- my trucks ------------------------------------------------------------------------------
+
+export function GarageStep({ flow }: { flow: Flow }) {
+  const t = useTranslations("Driver");
+  const trucks = flow.state.savedTrucks ?? [];
+  return (
+    <section aria-labelledby="garage-title" data-testid="garage-step">
+      <StepHeader label={t("steps.garage")} title={t("garage.title")} sentence={t("garage.sentence")} />
+      <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {trucks.map((truck) => (
+          <li key={truck.id}>
+            <ChoiceCard onClick={() => flow.pickSaved(truck)} testId="saved-truck">
+              <TruckArt size={truck.size} style={truck.style} className="max-h-16 w-auto self-start" />
+              <span className="mt-3 block font-[450] text-ink">{truck.nickname || truckName(t, truck)}</span>
+              <span className="type-small block text-gray">
+                {truckName(t, truck)} · {t("sizes.axles", { count: SIZE_INFO[truck.size].axles })}
+              </span>
+            </ChoiceCard>
+          </li>
+        ))}
+        <li>
+          <ChoiceCard onClick={() => flow.pickSaved(null)} testId="another-truck">
+            <span className="block font-[450] text-ink">{t("garage.another")}</span>
+            <span className="type-small block text-gray">{t("garage.anotherHint")}</span>
+          </ChoiceCard>
+        </li>
+      </ul>
+      <p className="type-small mt-6 text-gray">
+        <Link href="/app/trucks" className="underline decoration-1 underline-offset-4">
+          {t("garage.manage")}
+        </Link>
+      </p>
+    </section>
+  );
+}
+
+// ---- photos ---------------------------------------------------------------------------------
+
+const SHOTS: Shot[] = ["side", "rear_three_quarter"];
 
 export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean }) {
-  const t = useTranslations("Flow");
+  const t = useTranslations("Driver");
+  const flowT = useTranslations("Flow");
   const { state } = flow;
-  const busy = state.busy === "upload";
-  const full = state.photos.length >= MAX_PHOTOS;
-  const cameraId = useId();
-  const uploadId = useId();
+  const [camera, setCamera] = useState<Shot | null>(null);
   const allowance = flow.allowance;
   const demoMode = allowance?.mode === "demo";
-
-  const onFiles = (list: FileList | null) => {
-    if (list?.length) void flow.addPhotos(Array.from(list));
-  };
+  const busy = state.busy === "upload" || state.busy === "check";
+  const reinspecting = Boolean(state.parent);
 
   return (
-    <section aria-labelledby="photos-title">
-      <p className="type-label">{t("steps.photos")}</p>
-      <h1 id="photos-title" className="type-hero mt-4 text-balance">
-        {t("photos.title")}
-      </h1>
-      <p className="type-body mt-3 text-pretty">{t("photos.sentence")}</p>
+    <section aria-labelledby="photos-title" data-testid="photo-step">
+      <StepHeader
+        label={reinspecting ? t("steps.reinspect") : t("steps.photos")}
+        title={reinspecting ? t("capture.reinspectTitle") : t("capture.title")}
+        sentence={reinspecting ? t("capture.reinspectSentence", { title: state.parent?.title ?? "" }) : t("capture.sentence")}
+      />
+      {state.truckFixed && state.truck && (
+        <p className="type-small mt-3 text-gray" data-testid="photo-truck">
+          {t("capture.forTruck", { truck: state.truck.nickname || truckName(t, state.truck) })}
+        </p>
+      )}
 
       {signedIn ? (
         <>
-          {demoMode && <p className="type-small mt-4 text-fail">{t(`photos.demoMode.${allowance?.reason ?? "kill_switch"}`)}</p>}
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            {/* A label opens the camera on phones (capture), a plain file picker elsewhere. */}
-            <label
-              htmlFor={cameraId}
-              aria-disabled={full || busy || demoMode}
-              className={pill({ className: `h-14 cursor-pointer px-6 text-base ${full || busy || demoMode ? "pointer-events-none opacity-50" : ""}` })}
-            >
-              {busy ? t("photos.preparing") : t("photos.camera")}
-            </label>
-            <input
-              id={cameraId}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="sr-only"
-              disabled={full || busy || demoMode}
-              onChange={(event) => {
-                onFiles(event.target.files);
-                event.target.value = "";
-              }}
-            />
-            <label
-              htmlFor={uploadId}
-              aria-disabled={full || busy || demoMode}
-              className={pill({ variant: "secondary", className: `h-14 cursor-pointer px-6 text-base ${full || busy || demoMode ? "pointer-events-none opacity-50" : ""}` })}
-            >
-              {t("photos.upload")}
-            </label>
-            <input
-              id={uploadId}
-              type="file"
-              accept={ACCEPT}
-              multiple
-              className="sr-only"
-              disabled={full || busy || demoMode}
-              onChange={(event) => {
-                onFiles(event.target.files);
-                event.target.value = "";
-              }}
-            />
-          </div>
-          <p className="type-small mt-3 text-gray">{t("photos.hint", { max: MAX_PHOTOS })}</p>
-          <p className="type-small mt-1 text-gray">{t("photos.privacy")}</p>
+          {demoMode && <p className="type-small mt-4 text-fail">{flowT(`photos.demoMode.${allowance?.reason ?? "kill_switch"}`)}</p>}
+          <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {SHOTS.map((shot) => {
+              const index = state.photos.findIndex((photo) => photo.shot === shot);
+              const photo = index >= 0 ? state.photos[index] : undefined;
+              return (
+                <li key={shot}>
+                  <ChoiceCard
+                    onClick={() => !busy && !demoMode && setCamera(shot)}
+                    selected={Boolean(photo)}
+                    testId={`shot-${shot}`}
+                    badge={shot === "side" ? t("capture.enough") : t("capture.recommended")}
+                  >
+                    {photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- a local preview of the driver's own photo
+                      <img src={photo.url} alt={t("capture.alt", { shot: t(`capture.shots.${shot}.title`) })} className="aspect-[16/9] w-full rounded object-cover" />
+                    ) : (
+                      <span className="flex aspect-[16/9] w-full items-center justify-center rounded bg-surface p-4 text-gray">
+                        <Silhouette shot={shot} className="h-full max-h-24 w-auto" />
+                      </span>
+                    )}
+                    <span className="mt-3 block font-[450] text-ink">{t(`capture.shots.${shot}.title`)}</span>
+                    <span className="type-small block text-gray">{photo ? t("capture.retakeHint") : t(`capture.shots.${shot}.card`)}</span>
+                  </ChoiceCard>
+                  {photo && (
+                    <button type="button" onClick={() => flow.removePhoto(index)} className="type-small mt-1 min-h-11 text-gray underline decoration-1 underline-offset-4">
+                      {t("capture.remove")}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          <p className="type-small mt-3 text-gray">{flowT("photos.privacy")}</p>
+          {busy && (
+            <p className="type-small mt-3 text-gray" role="status">
+              {state.busy === "check" ? t("capture.checking") : flowT("photos.preparing")}
+            </p>
+          )}
         </>
       ) : (
         <div className="mt-6 rounded bg-surface p-4">
-          <p className="text-ink">{t("photos.signIn")}</p>
+          <p className="text-ink">{flowT("photos.signIn")}</p>
           <Link href="/app/sign-in" className={pill({ className: "mt-3 h-11 px-4" })}>
-            {t("photos.signInButton")}
+            {flowT("photos.signInButton")}
           </Link>
         </div>
       )}
 
+      {state.pending && <QualityPrompt flow={flow} onRetake={(shot) => setCamera(shot)} />}
       <ErrorLine code={state.error} />
 
       {state.photos.length > 0 && !state.sample && (
-        <>
-          <ul className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4" data-testid="photo-list">
-            {state.photos.map((photo, index) => (
-              <li key={photo.url} className="min-w-0">
-                {/* eslint-disable-next-line @next/next/no-img-element -- a local preview of the user's own photo */}
-                <img src={photo.url} alt={t("photos.alt", { number: index + 1 })} className="aspect-[4/3] w-full rounded object-cover" />
-                <div className="mt-2 flex items-center gap-2">
-                  <label className="sr-only" htmlFor={`position-${index}`}>
-                    {t("photos.position")}
-                  </label>
-                  <select
-                    id={`position-${index}`}
-                    value={photo.position}
-                    onChange={(event) => flow.setPosition(index, event.target.value as Position)}
-                    className="h-11 min-w-0 flex-1 rounded-full border border-control bg-paper px-3 text-sm sm:h-8"
-                  >
-                    {POSITIONS.map((position) => (
-                      <option key={position} value={position}>
-                        {t(`positions.${position}`)}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() => flow.removePhoto(index)}
-                    aria-label={t("photos.remove", { number: index + 1 })}
-                    className="size-11 rounded-full bg-surface text-ink sm:size-8"
-                  >
-                    ×
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <button type="button" onClick={() => void flow.toDetails()} className={pill({ className: "mt-8 h-12 px-6" })} data-testid="photos-next">
-            {t("photos.next")}
-          </button>
-        </>
+        <button
+          type="button"
+          onClick={() => void flow.toTruck()}
+          disabled={busy}
+          className={pill({ className: "mt-8 h-14 w-full px-6 text-base sm:w-auto" })}
+          data-testid="photos-next"
+        >
+          {t("capture.next")}
+        </button>
       )}
 
-      <Samples flow={flow} />
+      {camera && (
+        <GuidedCamera
+          shot={camera}
+          onClose={() => setCamera(null)}
+          onPhoto={(file) => {
+            setCamera(null);
+            void flow.addPhoto(file, camera);
+          }}
+        />
+      )}
+
+      {!reinspecting && <Samples flow={flow} />}
+      {state.photos.length < MAX_PHOTOS && null}
     </section>
+  );
+}
+
+/** A photo that failed an instant check: why, and "Retake" or "Use it anyway". */
+function QualityPrompt({ flow, onRetake }: { flow: Flow; onRetake: (shot: Shot) => void }) {
+  const t = useTranslations("Driver.capture");
+  const pending = flow.state.pending;
+  if (!pending) return null;
+  return (
+    <div role="alert" className="mt-6 rounded-md border border-warn bg-warn-tint p-4" data-testid="quality-prompt" data-issues={pending.issues.join(",")}>
+      <div className="flex gap-4">
+        {/* eslint-disable-next-line @next/next/no-img-element -- a local preview of the driver's own photo */}
+        <img src={pending.photo.url} alt="" className="size-20 shrink-0 rounded object-cover" />
+        <div className="min-w-0">
+          <p className="font-[450] text-ink">{t("retakeTitle")}</p>
+          <ul className="type-small mt-1 text-ink">
+            {pending.issues.map((issue) => (
+              <li key={issue}>{t(`issues.${issue}`)}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={() => {
+            const shot = pending.photo.shot ?? "side";
+            flow.discardPending();
+            onRetake(shot);
+          }}
+          className={pill({ className: "h-12 px-5" })}
+          data-testid="retake"
+        >
+          {t("retake")}
+        </button>
+        <button type="button" onClick={flow.keepPending} className={pill({ variant: "secondary", className: "h-12 px-5" })} data-testid="keep-anyway">
+          {t("keep")}
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -207,161 +314,315 @@ function Samples({ flow }: { flow: Flow }) {
   );
 }
 
-// ---- details ------------------------------------------------------------------------------
+// ---- truck ----------------------------------------------------------------------------------
 
-export function DetailsStep({ flow }: { flow: Flow }) {
-  const t = useTranslations("Flow");
-  const options = useTranslations("Explorer.options");
-  const { state } = flow;
+function AnalysisLine({ flow }: { flow: Flow }) {
+  const t = useTranslations("Driver");
+  const flowT = useTranslations("Flow");
+  const { state, guess } = flow;
+  if (state.analyzing) {
+    return (
+      <div className="mt-4" role="status" data-testid="analysis-status" data-mode="running">
+        <p className="type-small text-gray">{t("truck.reading")}</p>
+        <div className="mt-2 h-0.5 w-full max-w-xs overflow-hidden bg-surface" aria-hidden>
+          <div className="h-full w-1/3 animate-[indeterminate_1.1s_ease-in-out_infinite] bg-ink" />
+        </div>
+      </div>
+    );
+  }
   const answer = state.analysis;
-  const suggestion = answer?.analysis?.truck;
-  const weightId = useId();
-  const notesId = useId();
-  const ready = Boolean(state.truck && state.totalKg && state.totalKg > 0);
+  if (answer && !answer.analysis && !state.sample) {
+    return (
+      <p className="type-small mt-4 text-gray" data-testid="analysis-status" data-mode={answer.mode}>
+        {flowT(`analysis.demo.${answer.reason ?? "failed"}` as never)}
+      </p>
+    );
+  }
+  if (guess?.size && guess.style) {
+    return (
+      <p className="mt-4 rounded bg-surface px-3 py-2 text-[0.9375rem] text-ink" data-testid="analysis-status" data-mode={answer?.mode ?? "sample"}>
+        {t("truck.looksLike", { truck: truckName(t, { size: guess.size, style: guess.style }) })}
+      </p>
+    );
+  }
+  return null;
+}
+
+export function TruckStep({ flow }: { flow: Flow }) {
+  const t = useTranslations("Driver");
+  const format = useFormatter();
+  const { state, guess } = flow;
+  const stage = state.truckStage;
+  const size = state.truck?.size ?? null;
+  const style = state.truck?.style ?? guess?.style ?? "open_low_sides";
 
   return (
-    <section aria-labelledby="details-title">
-      <p className="type-label">{t("steps.details")}</p>
-      <h1 id="details-title" className="type-hero mt-4 text-balance">
-        {t("details.title")}
-      </h1>
-
-      <div className="mt-6 rounded bg-surface p-4" aria-live="polite" data-testid="analysis-status" data-mode={answer?.mode ?? (state.analyzing ? "running" : "none")}>
-        {state.analyzing ? (
-          <>
-            <p className="font-[450] text-ink">{t("analysis.running")}</p>
-            <div className="mt-3 h-0.5 w-full overflow-hidden bg-paper" aria-hidden>
-              <div className="h-full w-1/3 animate-[indeterminate_1.1s_ease-in-out_infinite] bg-ink" />
-            </div>
-          </>
-        ) : answer?.analysis ? (
-          <>
-            <p className="font-[450] text-ink">
-              {t(answer.mode === "sample" ? "analysis.sample" : answer.mode === "cached" ? "analysis.cached" : "analysis.done", {
-                units: answer.analysis.units.length,
-              })}
-            </p>
-            {answer.analysis.summary && <p className="type-small mt-1 text-gray">“{answer.analysis.summary}”</p>}
-            {!answer.analysis.is_truck_load && <p className="type-small mt-2 text-fail">{t("analysis.notALoad")}</p>}
-          </>
-        ) : (
-          <p className="text-ink">{t(`analysis.demo.${answer?.reason ?? "failed"}` as never)}</p>
-        )}
-      </div>
-
-      <fieldset className="mt-10">
-        <legend className="type-label">{t("details.body")}</legend>
-        <ChipRow
-          options={BODIES}
-          value={state.truck?.body ?? null}
-          suggested={suggestion && suggestion.body !== "unknown" ? suggestion.body : null}
-          label={(value) => options(`body.${value}` as never)}
-          onChoose={(body) => flow.setTruck({ body: body as Body, size: state.truck?.size ?? "toco" })}
-        />
-      </fieldset>
-      <fieldset className="mt-6">
-        <legend className="type-label">{t("details.size")}</legend>
-        <ChipRow
-          options={SIZES}
-          value={state.truck?.size ?? null}
-          suggested={suggestion && suggestion.size !== "unknown" ? suggestion.size : null}
-          label={(value) => options(`size.${value}` as never)}
-          onChoose={(size) => flow.setTruck({ body: state.truck?.body ?? "flatbed", size: size as Size })}
-        />
-      </fieldset>
-      {suggestion && (suggestion.body !== "unknown" || suggestion.size !== "unknown") && (
-        <p className="type-small mt-2 text-gray">
-          {t("details.suggested", { percent: Math.round(suggestion.confidence * 100) })}
-          {suggestion.uncertain && ` ${suggestion.uncertain}`}
-        </p>
+    <section aria-labelledby="truck-title" data-testid="truck-step" data-stage={stage}>
+      {stage === "size" ? (
+        <>
+          <StepHeader label={t("steps.truck")} title={t("truck.sizeTitle")} sentence={t("truck.sizeSentence")} />
+          <AnalysisLine flow={flow} />
+          <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {TRUCK_SIZES.map((option) => (
+              <li key={option}>
+                <ChoiceCard
+                  onClick={() => flow.chooseSize(option)}
+                  selected={size === option}
+                  testId={`size-${option}`}
+                  badge={guess?.size === option ? t("truck.aiPick") : null}
+                >
+                  <TruckArt size={option} style={style} className="max-h-16 w-auto self-start" />
+                  <span className="mt-3 block font-[450] text-ink">{t(`sizes.${option}.name`)}</span>
+                  <span className="type-small block text-gray">
+                    {t("sizes.line", {
+                      axles: SIZE_INFO[option].axles,
+                      payload: format.number(SIZE_INFO[option].payloadT),
+                    })}
+                  </span>
+                  <span className="type-small block text-gray">{t(`sizes.${option}.hint`)}</span>
+                </ChoiceCard>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <>
+          <StepHeader label={t("steps.truck")} title={t("truck.bodyTitle")} sentence={t("truck.bodySentence")} />
+          <AnalysisLine flow={flow} />
+          <ul className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {BODY_STYLES.map((option) => (
+              <li key={option}>
+                <ChoiceCard
+                  onClick={() => flow.chooseStyle(option)}
+                  selected={state.truck?.style === option}
+                  testId={`style-${option}`}
+                  badge={guess?.style === option ? t("truck.aiPick") : null}
+                >
+                  <TruckArt size={size ?? "toco"} style={option} className="max-h-16 w-auto self-start" />
+                  <span className="mt-3 block font-[450] text-ink">{t(`styles.${option}.name`)}</span>
+                  <span className="type-small block text-gray">{t(`styles.${option}.hint`)}</span>
+                </ChoiceCard>
+              </li>
+            ))}
+          </ul>
+          <button type="button" onClick={() => flow.setTruckStage("size")} className="type-small mt-6 min-h-11 text-gray underline decoration-1 underline-offset-4">
+            ← {t("truck.backToSize")}
+          </button>
+        </>
       )}
-
-      <div className="mt-10">
-        <label htmlFor={weightId} className="type-label">
-          {t("details.weight")}
-        </label>
-        <div className="mt-2 flex items-center gap-2">
-          <input
-            id={weightId}
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={80000}
-            step={1}
-            required
-            value={state.totalKg ?? ""}
-            onChange={(event) => flow.setTotal(event.target.value ? Number(event.target.value) : null)}
-            className="h-12 w-40 rounded border border-control bg-paper px-3 font-mono text-base"
-            data-testid="weight-input"
-          />
-          <span className="text-gray">kg</span>
-        </div>
-        <p className="type-small mt-2 text-gray">{t("details.weightWhy")}</p>
-        {state.sample && <p className="type-small mt-1 text-gray">{t("details.sampleWeight")}</p>}
-      </div>
-
-      <div className="mt-8">
-        <label htmlFor={notesId} className="type-label">
-          {t("details.notes")}
-        </label>
-        <textarea
-          id={notesId}
-          value={state.notes}
-          maxLength={2000}
-          rows={2}
-          onChange={(event) => flow.setNotes(event.target.value)}
-          className="mt-2 block w-full max-w-xl rounded border border-control bg-paper px-3 py-2 text-base"
-        />
-      </div>
-
-      <ErrorLine code={state.error} />
-      <div className="mt-8 flex flex-wrap gap-3">
-        <button
-          type="button"
-          disabled={!ready || state.analyzing || state.busy === "draft"}
-          onClick={() => void flow.toReview()}
-          className={pill({ className: "h-12 px-6" })}
-          data-testid="details-next"
-        >
-          {state.busy === "draft" ? t("details.building") : t("details.next")}
-        </button>
-        <button type="button" onClick={flow.restart} className={pill({ variant: "secondary", className: "h-12 px-5" })}>
-          {t("restart")}
-        </button>
-      </div>
     </section>
   );
 }
 
-function ChipRow({
-  options,
-  value,
-  suggested,
-  label,
-  onChoose,
-}: {
-  options: readonly string[];
-  value: string | null;
-  suggested: string | null;
-  label: (value: string) => string;
-  onChoose: (value: string) => void;
-}) {
-  const t = useTranslations("Flow");
+// ---- weight ---------------------------------------------------------------------------------
+
+export function WeightStep({ flow, title }: { flow: Flow; title: string }) {
+  const t = useTranslations("Driver");
+  const format = useFormatter();
+  const { state } = flow;
+  const inputId = useId();
+  const invoiceId = useId();
+  const [mode, setMode] = useState<"type" | "invoice" | "unknown" | null>(
+    state.weightSource === "estimated" ? "unknown" : state.weightSource === "invoice" && !state.sample ? "invoice" : state.weightSource ? "type" : null,
+  );
+  const [perUnitOpen, setPerUnitOpen] = useState(false);
+  const kg = (value: number) => format.number(Math.round(value));
+  const perception = state.perception;
+  const units = perception?.draft.units ?? [];
+  const simulated = flow.simulatedKg;
+  const split = perception && simulated ? describeSplit(withWeights(perception.draft, simulated, null)) : null;
+  const range = state.range;
+  const perUnit = state.perUnit ?? {};
+  const perUnitValues = units.map((unit) => perUnit[unit.id] ?? null);
+  const perUnitSum = perUnitValues.reduce<number>((a, b) => a + (b ?? 0), 0);
+  const perUnitOk = !state.perUnit || (simulated ? perUnitMatches(perUnitValues, simulated) : false);
+  const invoice = state.invoice;
+
   return (
-    <div className="mt-2 flex flex-wrap gap-2">
-      {options.map((option) => (
-        <button
-          key={option}
-          type="button"
-          aria-pressed={value === option}
-          onClick={() => onChoose(option)}
-          data-option={option}
-          className={pill({ variant: value === option ? "primary" : "secondary", className: "h-11 px-4 sm:h-9" })}
-        >
-          {label(option)}
-          {suggested === option && <span className="ml-1.5 text-[0.75rem] opacity-70">· {t("details.ai")}</span>}
-        </button>
-      ))}
-    </div>
+    <section aria-labelledby="weight-title" data-testid="weight-step">
+      <StepHeader label={t("steps.weight")} title={t("weight.title")} sentence={t("weight.sentence")} />
+      {state.truck && (
+        <div className="mt-4 flex items-center gap-3">
+          <TruckArt size={state.truck.size} style={state.truck.style} className="h-8 w-auto" />
+          <span className="type-small text-gray">{state.truck.nickname || truckName(t, state.truck)}</span>
+        </div>
+      )}
+
+      <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <li>
+          <ChoiceCard selected={mode === "type"} onClick={() => setMode("type")} testId="weight-type">
+            <span className="block font-[450] text-ink">{t("weight.type")}</span>
+            <span className="type-small block text-gray">{t("weight.typeHint")}</span>
+          </ChoiceCard>
+        </li>
+        <li>
+          <ChoiceCard selected={mode === "invoice"} onClick={() => setMode("invoice")} testId="weight-invoice">
+            <span className="block font-[450] text-ink">{t("weight.invoice")}</span>
+            <span className="type-small block text-gray">{t("weight.invoiceHint")}</span>
+          </ChoiceCard>
+        </li>
+        <li>
+          <ChoiceCard
+            selected={mode === "unknown"}
+            onClick={() => {
+              setMode("unknown");
+              if (range) flow.setWeight("estimated", range.high_kg);
+            }}
+            testId="weight-unknown"
+          >
+            <span className="block font-[450] text-ink">{t("weight.unknown")}</span>
+            <span className="type-small block text-gray">{t("weight.unknownHint")}</span>
+          </ChoiceCard>
+        </li>
+      </ul>
+
+      {mode === "type" && (
+        <div className="mt-6">
+          <label htmlFor={inputId} className="type-label">
+            {t("weight.kgLabel")}
+          </label>
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              id={inputId}
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={80000}
+              autoFocus
+              value={state.weightSource === "measured" || (state.weightSource === "invoice" && state.sample) ? (state.totalKg ?? "") : ""}
+              onChange={(event) => flow.setWeight("measured", event.target.value ? Number(event.target.value) : null)}
+              className="h-14 w-48 rounded border border-control bg-paper px-3 font-mono text-lg"
+              data-testid="weight-input"
+            />
+            <span className="text-gray">kg</span>
+          </div>
+          {state.sample && state.weightSource === "invoice" && <p className="type-small mt-2 text-gray">{t("weight.sampleInvoice", { weight: kg(state.sample.weight_kg) })}</p>}
+        </div>
+      )}
+
+      {mode === "invoice" && (
+        <div className="mt-6 rounded-md bg-surface p-4" data-testid="invoice-panel">
+          {state.sample ? (
+            <p className="text-ink">{t("weight.sampleInvoice", { weight: kg(state.sample.weight_kg) })}</p>
+          ) : invoice.busy ? (
+            <p className="text-ink" role="status">
+              {t("weight.invoiceReading")}
+            </p>
+          ) : invoice.grossKg !== null ? (
+            <>
+              <p className="font-[450] text-ink" data-testid="invoice-reading">
+                {t("weight.invoiceSays", { weight: kg(invoice.grossKg) })}
+              </p>
+              <p className="type-small mt-1 text-gray">{t("weight.invoiceText", { text: invoice.text ?? "" })}</p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button type="button" onClick={() => flow.setWeight("invoice", invoice.grossKg)} className={pill({ className: "h-12 px-5" })} data-testid="invoice-confirm">
+                  {state.weightSource === "invoice" && state.totalKg === invoice.grossKg ? t("weight.invoiceUsed") : t("weight.invoiceConfirm")}
+                </button>
+                <button type="button" onClick={() => setMode("type")} className={pill({ variant: "secondary", className: "h-12 px-5" })}>
+                  {t("weight.typeInstead")}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {invoice.tried && <p className="mb-3 text-ink">{invoice.error === "demo_mode" ? t("weight.invoiceDemo") : t("weight.invoiceNotFound")}</p>}
+              <label htmlFor={invoiceId} className={pill({ className: "h-12 cursor-pointer px-5" })}>
+                {t("weight.invoicePhoto")}
+              </label>
+              <input
+                id={invoiceId}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="sr-only"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void flow.readInvoice(file);
+                  event.target.value = "";
+                }}
+              />
+              <p className="type-small mt-3 text-gray">{t("weight.invoiceWhy")}</p>
+            </>
+          )}
+        </div>
+      )}
+
+      {mode === "unknown" && (
+        <div className="mt-6 rounded-md border border-warn bg-warn-tint p-4" data-testid="estimate-panel">
+          {range ? (
+            <>
+              <p className="font-[450] text-ink">{t("weight.estimate", { low: kg(range.low_kg), high: kg(range.high_kg) })}</p>
+              <p className="type-small mt-1 text-ink">{t("weight.estimateWhy", { high: kg(range.high_kg) })}</p>
+            </>
+          ) : (
+            <p className="text-ink">{t("weight.estimateWaiting")}</p>
+          )}
+        </div>
+      )}
+
+      {split && simulated && (
+        <div className="mt-8" data-testid="weight-split">
+          <p className="text-ink">
+            {split.kind === "equal"
+              ? t("weight.splitEqual", { each: kg(split.each), count: split.count })
+              : t("weight.splitVaried", { min: kg(split.min), max: kg(split.max), count: split.count })}
+          </p>
+          {units.length > 1 && (
+            <button
+              type="button"
+              onClick={() => {
+                setPerUnitOpen(!perUnitOpen);
+                if (perUnitOpen) flow.setPerUnit(null);
+              }}
+              aria-expanded={perUnitOpen}
+              className="type-small mt-1 min-h-11 text-ink underline decoration-1 underline-offset-4"
+            >
+              {t("weight.different")}
+            </button>
+          )}
+          {perUnitOpen && (
+            <div className="mt-2 rounded-md border border-hairline p-4">
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {units.map((unit, index) => (
+                  <li key={unit.id}>
+                    <label className="type-small block text-gray" htmlFor={`${inputId}-${unit.id}`}>
+                      {t("weight.unit", { number: index + 1 })}
+                    </label>
+                    <input
+                      id={`${inputId}-${unit.id}`}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      value={perUnit[unit.id] ?? ""}
+                      onChange={(event) => {
+                        const next = { ...perUnit };
+                        if (event.target.value) next[unit.id] = Number(event.target.value);
+                        else delete next[unit.id];
+                        flow.setPerUnit(next);
+                      }}
+                      className="mt-1 h-11 w-full rounded border border-control bg-paper px-2 font-mono"
+                    />
+                  </li>
+                ))}
+              </ul>
+              <p className={`type-small mt-3 ${perUnitOk ? "text-gray" : "text-fail"}`} role="status">
+                {t("weight.perUnitSum", { sum: kg(perUnitSum), total: kg(simulated) })}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      <ErrorLine code={state.error} />
+      <button
+        type="button"
+        disabled={!flow.canSimulate || !perUnitOk || state.busy === "battery"}
+        onClick={() => void flow.toResult(title)}
+        className={pill({ className: "mt-10 h-14 w-full px-6 text-base sm:w-auto" })}
+        data-testid="weight-next"
+      >
+        {!perception ? t("weight.waitingForPhoto") : t("weight.next")}
+      </button>
+    </section>
   );
 }
