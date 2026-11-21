@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { AuditTrail } from "@/components/app/audit-trail";
+import { CertificatePanel } from "@/components/app/certificate-panel";
 import { InspectionVerdict, truckOf, useDates, useTruckLabel } from "@/components/app/inspection-bits";
 import { useMe } from "@/components/app/me-provider";
 import { ResultView } from "@/components/inspection/result-view";
@@ -51,8 +53,12 @@ export function InspectionView({ id }: { id: string }) {
           const scenario = value.scenarios.find((s) => s.kind === kind);
           if (!scenario?.battery_ref) return null;
           if (scenario.battery_ref.startsWith("static:")) {
-            const response = await fetch(scenario.battery_ref.slice("static:".length));
-            return response.ok ? ((await response.json()) as Battery) : null;
+            // `static:/path[#key]`: a file of the site, or one key of it (a sample's battery).
+            const [path, key] = scenario.battery_ref.slice("static:".length).split("#");
+            const response = await fetch(path as string);
+            if (!response.ok) return null;
+            const data = (await response.json()) as Record<string, unknown>;
+            return (key ? (data[key] as Battery | undefined) ?? null : (data as unknown as Battery));
           }
           return request<Battery>(`/inspections/${encodeURIComponent(id)}/battery/${kind}`).catch(() => null);
         };
@@ -88,9 +94,10 @@ export function InspectionView({ id }: { id: string }) {
   if (!inspection) return <p className="type-small text-gray">…</p>;
 
   const loaded = inspection.scenarios.find((s) => s.kind === "as_loaded");
+  const manager = Boolean(me && me.user.id !== inspection.author_id && (me.org?.role === "org_admin" || me.is_platform_admin));
   return (
     <>
-      <Link href="/app" className="type-small text-gray hover:text-ink">
+      <Link href={manager ? "/app/org/inspections" : "/app"} className="type-small text-gray hover:text-ink">
         ← {t("back")}
       </Link>
       <p className="type-label mt-8">{t("label")}</p>
@@ -126,6 +133,8 @@ export function InspectionView({ id }: { id: string }) {
         )}
         {inspection.notes && <DataRow label={t("rows.notes")}>{inspection.notes}</DataRow>}
       </dl>
+
+      {inspection.verdict && <CertificatePanel inspectionId={inspection.id} />}
 
       {loaded && (
         <div className="mt-6 flex flex-wrap gap-3">
@@ -197,6 +206,7 @@ export function InspectionView({ id }: { id: string }) {
           {driver("fix.reinspect")}
         </Link>
       )}
+      <AuditTrail inspectionId={inspection.id} />
     </>
   );
 }

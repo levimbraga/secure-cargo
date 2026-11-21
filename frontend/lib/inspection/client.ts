@@ -89,6 +89,8 @@ export function flowCalls(request: <T>(path: string, init?: RequestInit) => Prom
         weight_source?: "measured" | "invoice" | "estimated";
         weight_range?: { low_kg: number; high_kg: number } | null;
         truck_id?: string;
+        /** The load as the AI read it, before the driver's edits (kept for the audit trail). */
+        prefill?: LoadDraft;
       },
     ) =>
       request<{ scenario_id: string }>(`/inspections/${encodeURIComponent(id)}/draft`, { method: "PUT", body: JSON.stringify(body) }),

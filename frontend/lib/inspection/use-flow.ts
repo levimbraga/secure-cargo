@@ -446,6 +446,8 @@ export function useInspectionFlow() {
           weight_source: weightSource ?? "measured",
           weight_range: weightSource === "estimated" ? range : undefined,
           truck_id: truck?.truck_id ?? undefined,
+          // What the AI read (on the confirmed truck): the audit trail shows what the driver changed.
+          prefill: latest.current.perception?.draft ?? undefined,
         });
         battery = await calls.simulate(inspectionId);
       } else if (sample && same(draft.units, sample.perception.draft.units) && sampleApplies(sample, truck, kg)) {

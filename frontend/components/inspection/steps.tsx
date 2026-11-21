@@ -12,6 +12,7 @@ import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
 import { fetchSamples, type Sample } from "@/lib/inspection/samples";
 import { BODY_STYLES, SIZE_INFO, TRUCK_SIZES, type TruckChoice } from "@/lib/inspection/trucks";
+import { useMe } from "@/components/app/me-provider";
 import { MAX_PHOTOS, type Shot, type useInspectionFlow } from "@/lib/inspection/use-flow";
 import { describeSplit, perUnitMatches, withWeights } from "@/lib/inspection/weight";
 
@@ -125,6 +126,8 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
   const demoMode = allowance?.mode === "demo";
   const busy = state.busy === "upload" || state.busy === "check";
   const reinspecting = Boolean(state.parent);
+  // Organization policy: 2 photos (the server refuses a load confirmed with fewer).
+  const twoPhotos = Boolean(useMe().me?.org?.policies?.require_two_photos) && !state.sample;
 
   return (
     <section aria-labelledby="photos-title" data-testid="photo-step">
@@ -152,7 +155,7 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
                     onClick={() => !busy && !demoMode && setCamera(shot)}
                     selected={Boolean(photo)}
                     testId={`shot-${shot}`}
-                    badge={shot === "side" ? t("capture.enough") : t("capture.recommended")}
+                    badge={twoPhotos ? t("capture.required") : shot === "side" ? t("capture.enough") : t("capture.recommended")}
                   >
                     {photo ? (
                       // eslint-disable-next-line @next/next/no-img-element -- a local preview of the driver's own photo
@@ -174,6 +177,11 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
               );
             })}
           </ul>
+          {twoPhotos && (
+            <p className="type-small mt-3 text-ink" data-testid="policy-two-photos">
+              {t("capture.policyTwo")}
+            </p>
+          )}
           <p className="type-small mt-3 text-gray">{flowT("photos.privacy")}</p>
           {busy && (
             <p className="type-small mt-3 text-gray" role="status">
@@ -197,7 +205,7 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
         <button
           type="button"
           onClick={() => void flow.toTruck()}
-          disabled={busy}
+          disabled={busy || (twoPhotos && state.photos.length < 2)}
           className={pill({ className: "mt-8 h-14 w-full px-6 text-base sm:w-auto" })}
           data-testid="photos-next"
         >
