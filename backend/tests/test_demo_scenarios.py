@@ -93,6 +93,7 @@ def test_the_fixed_version_meets_en_12195_1_with_its_safety_factor(demo: DemoSce
         "box-truck",
         "potholed-road",
         "overloaded-strap",
+        "us-steel-coils",
     )
     for check in checks:
         if check.method == "top_over":
@@ -123,6 +124,8 @@ def test_the_as_loaded_versions_fall_short_of_the_standard_where_the_lashing_is_
         "curtain-sider": False,
         "potholed-road": False,
         "overloaded-strap": False,
+        # Coils lying across the deck are outside EN 12195-1's closed-form check (None).
+        "us-steel-coils": False,
     }
 
 
