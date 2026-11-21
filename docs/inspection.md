@@ -229,3 +229,42 @@ load on the confirmed truck with a made-up invoice weight, the battery, the prov
 situation's run. Signed out, a sample runs end to end from these files, with no API call; once the
 user edits the load, the public `/perception/draft`, `/battery` and `/plan` endpoints take over
 (rate-limited per IP). Signed in, a sample inspection is saved like any other.
+
+## 10. US mode (`backend/rules/country.py`, 2026-11-21)
+
+The same load can be checked against Brazil's rules or the United States' federal rules. The physics
+does not change: the same seven situations, the same MuJoCo runs. Only the rules layer, the truck
+presets and the units do. Sources, worked examples and what is not covered: the workspace's
+`notes/us-rules.md`.
+
+- **Country** on the load draft (`country`: `BR` by default, `US`) and on the inspection
+  (`inspections.country`, migration 0008). Every battery carries both countries' rule checks
+  (`rules.BR`, `rules.US`, and `verdicts` per country); `country` says which one the verdict uses.
+  The Worker, the site and `verdict.py` all read the active country's checks (`activeView`,
+  `activeBattery`, `active_rules`).
+- **Switching** country on a result page re-runs only the rules: a stored battery already has both
+  rule sets; an older one gets them from `POST /battery/checks`, which simulates nothing. A saved
+  inspection's author stores the switch with `PUT /inspections/:id/country` (verdict, failure codes
+  and certificates follow; the stored battery is rewritten, never re-simulated).
+- **US checklist themes:** how it is secured (`rules/fmcsa393.py`: aggregate WLL 393.106(d),
+  minimum tiedowns 393.110, front end structure 393.114, van containment 393.102(c)(2), rolling
+  articles 393.106(c)(1), metal coils 393.120, machinery 393.130, anchor points 393.104(c), ropes
+  393.104(f)/393.112), weight and axles (`rules/us_weights.py`, `rules/us_checklist.py`: 20,000 lb
+  per axle, 34,000 lb per tandem, 80,000 lb gross, the bridge formula over every group of axles),
+  trip physics (unchanged), protection (unchanged, US sections cited), dimensions (102 in wide, no
+  federal height limit, flags past 4 ft at the rear).
+- **Planner:** with `country = US` the on-paper checks and the legal target are the US rule set; the
+  axle placement uses the federal limits (a US semi's kingpin group keeps the steer axle and the
+  drive tandem legal); a coil gets a cradle with chains through the eye (`cradle_chain`). Ropes are
+  not replaced (allowed in the US, "to confirm").
+- **US truck presets** (`Size.US_*`, `app/explorer/build.py`): Class 6 box truck, straight truck,
+  48 ft flatbed, 53 ft dry van, step deck (its lower deck is what is modelled). Typical values in
+  pounds and feet, not a specific model.
+- **Units** (`frontend/lib/units.ts`): US mode shows lb, ft/in, mph and lbf, with the metric value
+  next to weights where it helps; everything inside stays SI. The situations' speeds are shown in
+  mph (80 km/h is about 50 mph).
+- The country is independent of the language (a pt-BR page may show US rules). A new visitor reading
+  the English site from the US starts in US mode (`sc_geo`, from Vercel's IP country header in
+  `proxy.ts`); everyone else starts in Brazil; the choice is remembered in the browser.
+- Gallery: `us-steel-coils` (two 9 t coils on a 48 ft flatbed: rolls under straps, holds and complies
+  in cradles with chains through the eye).
