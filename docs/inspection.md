@@ -180,7 +180,8 @@ simulated (one `results` row per situation, the whole battery in R2 at
 `results/<inspection>/<kind>.json`). "Apply fix" saves the fixed load as a second scenario, its
 results and a `fixes` row with the changes. Members see their own inspections; an org_admin sees
 the organization's (`/app/org`); every rule is enforced in the Worker and tested
-(`backend/worker/test/flow.test.ts`).
+(`backend/worker/test/flow.test.ts`). The manager's dashboard, the audit trail, the policies and the
+certificate: [`dashboard.md`](dashboard.md).
 
 **Demo reset** (`backend/worker/src/purge.ts`): a Worker cron runs every hour and deletes the
 inspections that demo accounts created more than 24 hours earlier, with their rows, their stored

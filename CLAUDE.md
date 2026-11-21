@@ -305,7 +305,7 @@ vehicle tare and each unit's center of mass.
    shells of `/app`, `/app/org`, `/app/admin`.
 5. (Phase 6) Driver inspection flow: photos + weight + truck → Claude vision prefill → confirm → 7-situation
    battery → scorecard → "Apply fix and re-simulate" (planner) → saved.
-6. (Phase 7) Manager dashboard and the certificate of a saved inspection.
+6. (Phase 7) Manager dashboard and the certificate of a saved inspection (`docs/dashboard.md`).
 7. (Phase 8) Polish: gallery examples 10–16 (the 8 uncovered options), full trip, EN 12642 code L check from a
    primary source, landing page featuring the inspection flow.
 8. (Phase 9) Perception evaluation on a large photo set, README, video, submission.
