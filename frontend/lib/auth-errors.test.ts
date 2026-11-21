@@ -29,9 +29,9 @@ describe("auth errors", () => {
   });
 
   it("checks the email and the password length before any request", () => {
-    expect(localAuthError("not-an-email", "longenough")).toBe("invalid_email");
+    expect(localAuthError("not-an-email", "long enough passphrase")).toBe("invalid_email");
     expect(localAuthError("driver@example.com", "short")).toBe("short_password");
-    expect(localAuthError("driver@example.com", "longenough")).toBeNull();
+    expect(localAuthError("driver@example.com", "long enough passphrase")).toBeNull();
     expect(localAuthError("driver@example.com")).toBeNull();
   });
 

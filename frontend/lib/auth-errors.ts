@@ -57,8 +57,11 @@ export function authErrorKey(error: unknown): AuthErrorKey {
   return (code && BY_CODE[code]) || "failed";
 }
 
-/** The minimum password length we ask for (Clerk's own minimum is 8). */
-export const MIN_PASSWORD_LENGTH = 8;
+/**
+ * The minimum password length. It must match the Clerk instance setting (User & authentication,
+ * Password: 15 on our production instance, Clerk's default without complexity rules).
+ */
+export const MIN_PASSWORD_LENGTH = 15;
 
 /** A quick local check before any request, so the obvious mistakes answer at once. */
 export function localAuthError(email: string, password?: string): AuthErrorKey | null {
