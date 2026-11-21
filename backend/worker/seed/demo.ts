@@ -9,6 +9,7 @@
  *    touched: it is what the monthly cap is computed from.
  *
  *   pnpm seed:demo                          # reads CLERK_SECRET_KEY from .dev.vars or the env
+ *   SEED_ENV_FILE=.env.clerk-production pnpm seed:demo   # the production Clerk instance
  *   npx wrangler d1 execute securecargo --remote --file seed/out/demo.sql
  *
  * Names are fictional and the emails are on our own demo subdomain (no mailbox; nothing is ever sent to
@@ -27,10 +28,13 @@ import { type BatteryLike, STORED, verdictState } from "../src/verdict";
 const here = dirname(fileURLToPath(import.meta.url));
 const demoDir = join(here, "..", "..", "..", "frontend", "public", "demo");
 
+/** Key file (gitignored): `.dev.vars` for the development instance, or `SEED_ENV_FILE`. */
+const ENV_FILE = process.env.SEED_ENV_FILE ?? ".dev.vars";
+
 function secret(name: string): string {
 	if (process.env[name]) return process.env[name] as string;
 	try {
-		const line = readFileSync(join(here, "..", ".dev.vars"), "utf8")
+		const line = readFileSync(join(here, "..", ENV_FILE), "utf8")
 			.split("\n")
 			.find((l) => l.startsWith(`${name}=`));
 		const value = line?.slice(name.length + 1).trim();
@@ -38,7 +42,7 @@ function secret(name: string): string {
 	} catch {
 		// no .dev.vars
 	}
-	throw new Error(`${name} is not set (env or backend/worker/.dev.vars)`);
+	throw new Error(`${name} is not set (env or backend/worker/${ENV_FILE})`);
 }
 
 const clerk = createClerkClient({ secretKey: secret("CLERK_SECRET_KEY") });
@@ -214,6 +218,12 @@ async function main() {
 		`DELETE FROM inspections WHERE org_id IN (SELECT id FROM organizations WHERE is_demo = 1);`,
 		`INSERT INTO organizations (id, name, type, is_demo, created_at) VALUES (${q(orgId)}, ${q(ORG.name)}, 'insurer', 1, ${q(new Date(now).toISOString())})
 		 ON CONFLICT (id) DO UPDATE SET name = excluded.name, type = excluded.type, is_demo = 1;`,
+		// A demo org from another Clerk instance (development, before production): its inspections
+		// are gone above; drop its memberships and the org itself when nothing else points at it.
+		`DELETE FROM memberships WHERE org_id IN (SELECT id FROM organizations WHERE is_demo = 1 AND id <> ${q(orgId)});`,
+		`DELETE FROM organizations WHERE is_demo = 1 AND id <> ${q(orgId)}
+		 AND id NOT IN (SELECT org_id FROM trucks WHERE org_id IS NOT NULL)
+		 AND id NOT IN (SELECT org_id FROM certificates WHERE org_id IS NOT NULL);`,
 	];
 	for (const person of PEOPLE) {
 		const id = ids.get(person.key) as string;
