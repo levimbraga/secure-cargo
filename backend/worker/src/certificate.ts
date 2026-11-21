@@ -171,7 +171,7 @@ export function publicSummary(content: Record<string, unknown>): Record<string, 
 		inspected_at: content.inspected_at,
 		proven_at: content.proven_at ?? null,
 		organization: org ? { name: org.name ?? null, type: org.type ?? null } : null,
-		truck: { size: truck.size ?? null, style: truck.style ?? null },
+		truck: { size: truck.size ?? null, style: truck.style ?? null, body: truck.body ?? null },
 		situations: { passed: results.passed ?? null, total: results.total ?? null },
 		checks_failed: ((content.checks ?? []) as { status: string }[]).filter((c) => c.status === "fail").length,
 	};

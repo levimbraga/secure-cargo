@@ -420,7 +420,7 @@ describe("audit trail", () => {
 		expect(byField.truck_size).toMatchObject({ ai: "semi", driver: "toco", changed: true });
 		expect(byField.units).toMatchObject({ ai: 2, driver: 2, changed: false });
 		expect(byField.cargo?.changed).toBe(false);
-		expect(byField.straps).toMatchObject({ ai: 1, driver: 4, changed: true });
+		expect(byField.straps).toMatchObject({ ai: 4, driver: 4, changed: false });
 		expect(byField.weight).toMatchObject({ ai: null, driver: { kg: 1000, source: "invoice" } });
 	});
 
@@ -503,6 +503,7 @@ describe("certificate", () => {
 		const body = (await verify.json()) as Record<string, unknown> & { summary: Record<string, unknown> };
 		expect(body).toMatchObject({ id: cert.id, authentic: true, valid: true, content_hash: cert.content_hash });
 		expect(Object.keys(body.summary).sort()).toEqual(["checks_failed", "inspected_at", "organization", "proven_at", "situations", "state", "truck"]);
+		expect(Object.keys(body.summary.truck as object).sort()).toEqual(["body", "size", "style"]);
 		// Nothing personal on the public page.
 		expect(JSON.stringify(body)).not.toMatch(/Alice|alice|sha-ok1|ok1_p|media/);
 		// Lower case works (typed by hand); garbage is a 404.

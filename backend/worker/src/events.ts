@@ -126,7 +126,8 @@ export function readingVsLoad(
 		{ field: "truck_body", ai: ai.truck?.body ?? null, driver: load.truck?.body ?? null, changed: false },
 		{ field: "units", ai: (ai.units ?? []).length, driver: units.length, changed: false },
 		{ field: "cargo", ai: aiCargo, driver: loadCargo, changed: false },
-		{ field: "straps", ai: count("strap"), driver: straps, changed: false },
+		// Lashings of any kind (the draft counts each strap, chain or rope over a unit).
+		{ field: "straps", ai: count("strap") + count("chain") + count("rope"), driver: straps, changed: false },
 		{ field: "restraint", ai: (ai.restraints ?? []).map((r) => r.kind).filter(Boolean), driver: load.restraint ?? null, changed: false },
 		{ field: "weight", ai: null, driver: { kg: inspection.cargo_weight_kg, source: inspection.weight_source }, changed: false },
 	];

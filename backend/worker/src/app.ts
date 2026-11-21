@@ -91,7 +91,7 @@ const DEMO_TICKET_MARGIN_MS = 10 * 60 * 1000;
 const INSPECTION_COLUMNS = `i.id, i.org_id, i.author_id, i.created_at, i.updated_at, i.status, i.title,
 	i.truck_body, i.truck_size, i.cargo_weight_kg, i.notes, i.plate, i.situations_passed,
 	i.situations_total, i.verdict, i.fixed_verdict, i.sample, i.truck_json, i.weight_source, i.weight_range_json,
-	i.invoice_json, i.reinspection_of, i.share_token, u.name AS author_name, o.name AS org_name,
+	i.invoice_json, i.reinspection_of, i.share_token, i.failure_codes, i.cargo_types, u.name AS author_name, o.name AS org_name,
 	(SELECT r.id FROM inspections r WHERE r.reinspection_of = i.id AND r.verdict = 'pass' ORDER BY r.created_at DESC LIMIT 1) AS proven_by,
 	(SELECT p.r2_key FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at LIMIT 1) AS cover_photo,
 	(SELECT p.id FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at LIMIT 1) AS cover_photo_id`;

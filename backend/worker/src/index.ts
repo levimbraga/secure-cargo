@@ -21,6 +21,7 @@ import { readInvoice } from "./perception/invoice";
 import samples from "./perception/samples.json";
 import { parseEmailList } from "./principal";
 import { type PurgeBucket, purgeDemoInspections } from "./purge";
+import { backfillSummaries } from "./summary";
 
 export { ApiContainer } from "./container";
 
@@ -93,8 +94,25 @@ export default {
 			);
 		}
 	},
-	/** Demo reset (cron every hour): demo inspections older than 24 h, see purge.ts. */
+	/**
+	 * Every hour: the demo reset (demo inspections older than 24 h, see purge.ts) and the failure
+	 * types of inspections simulated before the dashboard summaries (summary.ts).
+	 */
 	async scheduled(_controller, env, ctx): Promise<void> {
+		ctx.waitUntil(
+			backfillSummaries(env.DB, async (ref) => {
+				if (ref.startsWith("static:")) {
+					const [path, key] = ref.slice("static:".length).split("#");
+					const response = await fetch(new URL(path as string, env.SITE_URL));
+					if (response.status === 404) return null;
+					if (!response.ok) throw new Error(`HTTP ${response.status}`);
+					const data = (await response.json()) as Record<string, unknown>;
+					return key ? (data[key] ?? null) : data;
+				}
+				const object = await env.PHOTOS.get(ref);
+				return object ? ((await object.json()) as unknown) : null;
+			}, 100).catch((error) => console.error("Summary backfill failed:", error)),
+		);
 		ctx.waitUntil(
 			purgeDemoInspections(env.DB, r2PurgeBucket(env.PHOTOS)).then(
 				(report) => report.inspections.length && console.log(`Demo reset: ${report.inspections.length} inspections, ${report.objects} R2 objects deleted.`),
