@@ -11,6 +11,9 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   return {
     locale,
+    // Dates on pages, certificates and the dashboard are in Brasília time (the static pages are
+    // built on a server in UTC; without this every time would show in UTC).
+    timeZone: "America/Sao_Paulo",
     messages: (await import(`../messages/${locale}.json`)).default,
   };
 });

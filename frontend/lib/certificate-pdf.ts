@@ -109,7 +109,10 @@ export async function certificatePdf(input: CertificatePdfInput): Promise<Uint8A
     }
   }
   text(page, input.scanLabel, qrX, qrY - 12, 8, regular, GRAY);
-  for (const [n, line] of wrap(input.verifyUrl, regular, 8, qrSize).entries()) text(page, line, qrX, qrY - 23 - n * 10, 8);
+  // The link under the QR, on one line: as large as fits between the QR's left edge and the margin.
+  const link = pdfSafe(input.verifyUrl.replace(/^https:\/\//, ""));
+  const linkSize = Math.min(8, (8 * qrSize) / regular.widthOfTextAtSize(link, 8));
+  text(page, link, qrX, qrY - 23, linkSize);
 
   let photoBottom = top;
   if (input.photo) {
