@@ -48,6 +48,10 @@ const TARGET: Vec3 = [0.7, 1.35, 0];
 const VIEW_DISTANCE: Record<CameraView, number> = { hero: 11.4, side: 12.4, rear: 12, top: 13.5 };
 /** Bumper to tail of the truck the distances above were chosen for (the generic rigid) [m]. */
 const FRAMED_RIG_M = 9.4;
+/** Bed length those distances were chosen for, and the margin kept around a longer bed [m]. */
+const FRAMED_BED_M = 6.2;
+const BED_MARGIN_M = 3;
+const WHOLE_MARGIN = 1.2;
 /** Each replay opens on the whole truck for this long, then moves in on the bed [s]. */
 const WIDE_SHOT_S = 1;
 const WIDE_SHOT_BLEND_S = 0.8;
@@ -145,7 +149,7 @@ export default function KeyframePlayer({
   }, [overlay]);
   const rig = useMemo(() => {
     const tail = -doc.bed.length_m / 2;
-    return { centre: (layout.cab.front + tail) / 2, length: layout.cab.front - tail };
+    return { centre: (layout.cab.front + tail) / 2, length: layout.cab.front - tail, bed: doc.bed.length_m };
   }, [doc.bed.length_m, layout]);
 
   return (
@@ -400,8 +404,8 @@ function CameraRig({
   controlsRef: RefObject<OrbitControls | null>;
   /** Replay time [s]: each replay opens on the whole truck, then moves in on the bed. */
   time: RefObject<number>;
-  /** Middle (along the bed) and length of the whole truck, bumper to tail [m]. */
-  rig: { centre: number; length: number };
+  /** Middle (along the bed) and length of the whole truck, bumper to tail, and the bed's length [m]. */
+  rig: { centre: number; length: number; bed: number };
   /** Hold the whole truck in view. */
   whole: boolean;
 }) {
@@ -426,8 +430,10 @@ function CameraRig({
     if (w === weight.current) return;
     weight.current = w;
     const fit = Math.max(1, 1.6 / aspect);
-    const bedDistance = VIEW_DISTANCE[view] * fit;
-    const wholeDistance = Math.max(bedDistance, VIEW_DISTANCE[view] * (rig.length / FRAMED_RIG_M) * fit);
+    // A longer bed than the one the distances were chosen for (a semi's) still fits the frame.
+    const bedDistance = VIEW_DISTANCE[view] * fit * Math.max(1, (rig.bed + BED_MARGIN_M) / (FRAMED_BED_M + BED_MARGIN_M));
+    // A little wider than the bed: the near end of a long truck looms larger in an oblique view.
+    const wholeDistance = Math.max(bedDistance, VIEW_DISTANCE[view] * (rig.length / FRAMED_RIG_M) * fit * WHOLE_MARGIN);
     const distance = bedDistance + (wholeDistance - bedDistance) * w;
     const target = new Vector3(TARGET[0] + (rig.centre - TARGET[0]) * w, TARGET[1], TARGET[2]);
     const direction = new Vector3(...VIEW_DIRECTION[view]).normalize();
