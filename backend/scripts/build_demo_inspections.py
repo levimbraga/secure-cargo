@@ -1,6 +1,6 @@
 """The seeded demo inspections' results: every gallery example through the battery and the planner.
 
-The demo organisation ("Demo Insurer", ``backend/worker/seed/demo.ts``) holds inspections made
+The demo organisation ("Demo Fleet", ``backend/worker/seed/demo.ts``) holds inspections made
 from the gallery examples. Their results are computed here, once, and served as static files,
 so the manager's dashboard opens them with the API down:
 

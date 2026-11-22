@@ -3,7 +3,7 @@
  *
  * "Enter as demo driver / insurer" gets a signed token in an httpOnly cookie: HMAC-SHA256 with a
  * Worker secret over `{session, sandbox, role, issued, expires}`, valid for 24 hours. Each session
- * has its own sandbox: a demo visitor sees the seeded Demo Insurer inspections plus only the ones
+ * has its own sandbox: a demo visitor sees the seeded Demo Fleet inspections plus only the ones
  * made in their own sandbox. Switching between driver and insurer in the same browser keeps the
  * sandbox, so the visitor's new inspection shows up in "their" insurer dashboard.
  *

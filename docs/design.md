@@ -106,7 +106,7 @@ are ink. Section labels ("Problem", "Our solution") are mono, not uppercase, one
     language, "Sign in" as a text link and "Try the demo" as the primary pill on the right. No border, no
     GitHub (footer only), no app pages.
   - *App header*, once signed in or in a demo: a hairline under it; the mark (to the user's home,
-    `/app` or `/app/org`) with a mono chip naming the organization and role ("Demo Insurer · Manager");
+    `/app` or `/app/org`) with a mono chip naming the organization and role ("Demo Fleet · Manager");
     the role's sections in the center (driver: Inspections · My trucks · Explorer; manager: Overview ·
     Inspections · Alerts with its badge · Members · Explorer; platform admin: + Admin); the other
     language and the account menu or the "Demo · Exit" pill on the right.

@@ -883,7 +883,7 @@
     "demoLabel": "Just looking?",
     "demoDriver": "Enter as demo driver",
     "demoInsurer": "Enter as demo insurer",
-    "demoNote": "Both open the organization Demo Insurer, with drivers and inspections already in it. Nothing to sign up for.",
+    "demoNote": "Both open the demo organization Demo Fleet, with drivers and inspections already in it. Nothing to sign up for.",
     "entering": "Signing in…",
     "errors": {
       "rate_limited": "Too many attempts. Wait a minute and try again.",
@@ -895,7 +895,7 @@
       "driver": "Signing you in as the demo driver…",
       "insurer": "Signing you in as the demo insurer…"
     },
-    "signingInNote": "Opening the organization Demo Insurer. This takes a few seconds.",
+    "signingInNote": "Opening the demo organization Demo Fleet. This takes a few seconds.",
     "form": {
       "tabs": "Sign in or create an account",
       "signInTab": "Sign in",

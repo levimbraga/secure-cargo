@@ -1,5 +1,5 @@
 /**
- * Seed the demo organization for the judges: "Demo Insurer", a manager and three drivers, and
+ * Seed the demo organization for the judges: "Demo Fleet", a manager and three drivers, and
  * inspections built from the gallery examples (fails, fixes, passes) with sample photos. Their
  * seven-situation batteries and proven fixes are static files on the site
  * (`backend/scripts/build_demo_inspections.py`), so the dashboard opens them with the API down.
@@ -40,7 +40,9 @@ const PEOPLE: DemoPerson[] = [
 	{ key: "driver2", id: "demo_driver_2", name: "Joana (demo)", role: "org:member" },
 	{ key: "driver3", id: "demo_driver_3", name: "Tiago (demo)", role: "org:member" },
 ];
-const ORG = { id: "org_demo", name: "Demo Insurer", type: "insurer" as const };
+// One organization holds both demo personas (an org_admin reads only its own organization), so its
+// name fits a driver and a manager alike: "Demo Fleet · Driver", "Demo Fleet · Manager".
+const ORG = { id: "org_demo", name: "Demo Fleet", type: "insurer" as const };
 
 // ---- inspections from the gallery -------------------------------------------------------------
 

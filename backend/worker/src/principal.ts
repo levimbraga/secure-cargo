@@ -101,7 +101,7 @@ export async function resolvePrincipal(
 }
 
 /**
- * A demo visitor: the seeded demo driver or insurer of the Demo Insurer organization (rows in D1
+ * A demo visitor: the seeded demo driver or insurer of the Demo Fleet organization (rows in D1
  * only, no Clerk account), limited to the seeded inspections and the session's own sandbox.
  */
 export async function demoPrincipal(db: Db, session: DemoSession): Promise<Principal | null> {

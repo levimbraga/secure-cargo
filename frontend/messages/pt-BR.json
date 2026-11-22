@@ -883,7 +883,7 @@
     "demoLabel": "Só quer conhecer?",
     "demoDriver": "Entrar como motorista demo",
     "demoInsurer": "Entrar como seguradora demo",
-    "demoNote": "As duas abrem a organização Demo Insurer, já com motoristas e inspeções. Sem cadastro.",
+    "demoNote": "As duas abrem a organização de demonstração Demo Fleet, já com motoristas e inspeções. Sem cadastro.",
     "entering": "Entrando…",
     "errors": {
       "rate_limited": "Muitas tentativas. Espere um minuto e tente de novo.",
@@ -895,7 +895,7 @@
       "driver": "Entrando como motorista demo…",
       "insurer": "Entrando como seguradora demo…"
     },
-    "signingInNote": "Abrindo a organização Demo Insurer. Leva alguns segundos.",
+    "signingInNote": "Abrindo a organização de demonstração Demo Fleet. Leva alguns segundos.",
     "form": {
       "tabs": "Entrar ou criar uma conta",
       "signInTab": "Entrar",

@@ -22,7 +22,7 @@ import { readSessionHint, writeSessionHint } from "@/lib/session-hint";
 
 const noSubscribe = () => () => {};
 
-/** "Demo Insurer · Manager": the organization and the role, so people know where they are. */
+/** "Demo Fleet · Manager": the organization and the role, so people know where they are. */
 function useContextChip(me: Me): string | null {
   const t = useTranslations("AppNav");
   const role = me.org

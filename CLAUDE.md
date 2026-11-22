@@ -75,8 +75,8 @@ SecureCargo is a cargo-inspection system used by companies. Roles:
 An organization has a type: `insurer` or `carrier`. Gallery, explorer and lab stay public and in the menu.
 
 Demo access: "Enter as demo driver" / "Enter as demo insurer" on the sign-in page, no signup, into the seeded
-organization "Demo Insurer" (a few drivers, inspections from the sample photos and gallery examples: passes,
-fails, fixes). Demo accounts spend nothing except analyzing a new photo of their own, from a small shared quota.
+organization "Demo Fleet" (one org holds both personas, so its name fits a driver and a manager; a few drivers,
+inspections from the sample photos and gallery examples: passes, fails, fixes). Demo accounts spend nothing except analyzing a new photo of their own, from a small shared quota.
 
 ### Auth and backend split (decided 2026-11-20)
 - **Clerk** holds identities, organizations, org roles (`org:admin` → `org_admin`, `org:member` → `member`) and
@@ -86,7 +86,7 @@ fails, fixes). Demo accounts spend nothing except analyzing a new photo of their
   company" (`org-choice.tsx`; Clerk marks that session "pending", which the app treats as signed in).
   **Demo access has no Clerk account (2026-11-21):** "Enter as demo driver/insurer" gets a Worker-issued
   session (`backend/worker/src/demo.ts`): an HMAC-signed token in an httpOnly, Secure, SameSite=Lax cookie
-  for 24 hours, with its own `sandbox_id`. A demo visitor sees the seeded Demo Insurer inspections plus only
+  for 24 hours, with its own `sandbox_id`. A demo visitor sees the seeded Demo Fleet inspections plus only
   their sandbox's (same authorization layer, `authz.ts`); driver and insurer in one browser share the
   sandbox; sandbox data is purged after 24 h. The demo people and org are D1 rows only (`seed/demo.ts`).
   The UI shows "Demo · Exit" instead of Clerk's user menu.
