@@ -50,7 +50,7 @@ export function OrgShell({ children }: { children: (org: ManagedOrg) => React.Re
       <p className="type-label">
         {t("label")} · {me.org.type === "insurer" ? org("typeInsurer") : org("typeCarrier")}
       </p>
-      <nav aria-label={t("tabs.nav")} className="mt-5 -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+      <nav aria-label={t("tabs.nav")} className="mt-5 -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0 lg:hidden">
         <ul className="flex min-w-max gap-1 border-b border-hairline">
           {TABS.map((tab) => {
             const active = tab.href === "/app/org" ? pathname === "/app/org" : pathname.startsWith(tab.href);

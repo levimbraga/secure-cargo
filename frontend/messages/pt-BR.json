@@ -13,7 +13,10 @@
     "github": "GitHub",
     "cta": "Testar a demo",
     "openMenu": "Abrir menu",
-    "closeMenu": "Fechar menu"
+    "closeMenu": "Fechar menu",
+    "examples": "Exemplos",
+    "contact": "Contato",
+    "signIn": "Entrar"
   },
   "LanguageSwitcher": {
     "label": "Idioma",
@@ -613,6 +616,7 @@
     "description": "Escolha um caminhão, uma carga, como ela está presa e uma viagem: o MuJoCo simula ao vivo no seu navegador.",
     "title": "Qualquer carga, qualquer viagem, simulada ao vivo.",
     "intro": "Escolha o caminhão, a carga e a viagem. Arraste os volumes na carroceria e toque num deles para pôr uma cinta: cada mudança é simulada de novo.",
+    "examplesLink": "Ou comece por um dos exemplos",
     "state": {
       "loading": "Carregando o explorador…"
     },
@@ -832,7 +836,16 @@
     "demoResets": "Os dados de demonstração são reiniciados todos os dias.",
     "trucks": "Meus caminhões",
     "alertsBadge": "{count, plural, one {# alerta} other {# alertas}}",
-    "demoExit": "Sair"
+    "demoExit": "Sair",
+    "overview": "Visão geral",
+    "alerts": "Alertas",
+    "members": "Membros",
+    "homeLabel": "Sua página inicial do SecureCargo",
+    "roleDriver": "Motorista",
+    "roleManager": "Gestor",
+    "roleAdmin": "Admin",
+    "platform": "Plataforma",
+    "context": "Conectado: {context}"
   },
   "Auth": {
     "label": "Conta",

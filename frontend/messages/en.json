@@ -13,7 +13,10 @@
     "github": "GitHub",
     "cta": "Try the demo",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "examples": "Examples",
+    "contact": "Contact",
+    "signIn": "Sign in"
   },
   "LanguageSwitcher": {
     "label": "Language",
@@ -613,6 +616,7 @@
     "description": "Choose a truck, a load, how it is secured and a trip: MuJoCo simulates it live in your browser.",
     "title": "Any load, any trip, simulated live.",
     "intro": "Choose the truck, the cargo and the trip. Drag the units on the bed and tap one to add a strap: every change is simulated again.",
+    "examplesLink": "Or start from one of the examples",
     "state": {
       "loading": "Loading the explorer…"
     },
@@ -832,7 +836,16 @@
     "demoResets": "Demo data resets daily.",
     "trucks": "My trucks",
     "alertsBadge": "{count, plural, one {# alert} other {# alerts}}",
-    "demoExit": "Exit"
+    "demoExit": "Exit",
+    "overview": "Overview",
+    "alerts": "Alerts",
+    "members": "Members",
+    "homeLabel": "Your SecureCargo home",
+    "roleDriver": "Driver",
+    "roleManager": "Manager",
+    "roleAdmin": "Admin",
+    "platform": "Platform",
+    "context": "Signed in: {context}"
   },
   "Auth": {
     "label": "Account",

@@ -15,6 +15,7 @@ import { useReasonSentence } from "@/components/lab/lab-result";
 import { Findings, ResultRows, useReplayText } from "@/components/scenario/replay-shared";
 import { SectionLabel } from "@/components/ui/section-label";
 import { VerdictBadge } from "@/components/ui/verdict-badge";
+import { Link } from "@/i18n/navigation";
 import { sourceFromLocation, useExplorer } from "@/lib/explorer/use-explorer";
 
 import { ExplorerScene } from "./explorer-scene";
@@ -52,6 +53,12 @@ function ExplorerHeader() {
       <SectionLabel>{t("label")}</SectionLabel>
       <h1 className="type-hero mt-4 text-balance">{t("title")}</h1>
       <p className="type-body mt-3 max-w-[43rem] text-pretty">{t("intro")}</p>
+      {/* The examples left the app header: they are one tap away from here (and in the footer). */}
+      <p className="type-small mt-3">
+        <Link href="/app/examples" className="underline decoration-hairline underline-offset-4 hover:decoration-ink">
+          {t("examplesLink")}
+        </Link>
+      </p>
     </header>
   );
 }

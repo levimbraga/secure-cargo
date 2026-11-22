@@ -18,7 +18,7 @@ export default function VerifyPage({ params }: PageProps<"/[locale]/verify">) {
   setRequestLocale(locale);
   return (
     <>
-      <SiteNav variant="minimal" />
+      <SiteNav variant="full" />
       <main className="col flex-1 pt-10 pb-24 md:pt-16">
         <Suspense>
           <VerifyFromUrl />
