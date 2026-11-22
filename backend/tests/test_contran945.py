@@ -56,18 +56,21 @@ def test_anchoring_on_the_wooden_floor_fails() -> None:
 
 
 def test_a_load_with_room_to_travel_needs_diagonals() -> None:
-    # The gallery's braking example leaves 0.5 m to the headboard and 0.4 m between pallets.
-    assert _status(_draft("emergency-braking.fixed"), "diagonals_for_gaps") == "fail"
+    # The gallery's braking example leaves 0.5 m to the headboard and 0.4 m between pallets:
+    # top-over straps alone fail, its fixed version (diagonal straps added) passes.
+    assert _status(_draft("emergency-braking.as_loaded"), "diagonals_for_gaps") == "fail"
+    assert _status(_draft("emergency-braking.fixed"), "diagonals_for_gaps") == "pass"
     assert _status(_draft("dirt-road.fixed"), "diagonals_for_gaps") == "pass"  # diagonals
     assert _status(_pallets_against_headboard(straps=2), "diagonals_for_gaps") == "pass"
 
 
 def test_cargo_above_the_headboard_must_not_be_able_to_slide_forward() -> None:
     # 2.2 m cabinets over a 1.2 m flatbed headboard, held only by top-over straps.
-    assert _status(_draft("sharp-curve.fixed"), "above_headboard") == "fail"
+    cabinets = _draft("sharp-curve.fixed").model_copy(update={"restraint": "top_over"})
+    assert _status(cabinets, "above_headboard") == "fail"
     assert _status(_pallets_against_headboard(straps=2), "above_headboard") == "pass"
-    cabinets = _draft("sharp-curve.fixed").model_copy(update={"restraint": "direct"})
-    assert _status(cabinets, "above_headboard") == "pass"
+    # The gallery's fixed version adds diagonal straps.
+    assert _status(_draft("sharp-curve.fixed"), "above_headboard") == "pass"
 
 
 @pytest.mark.parametrize("name", ["box-truck.fixed", "steel-coil.fixed"])

@@ -58,7 +58,10 @@ function hasDirect(scenario: Scenario, unitId: string): boolean {
 
 /** Anchor pairs (left, right) a top-over lashing over `unit` can use, from rear to front. */
 export function anchorPairs(scenario: Scenario, unit: ScenarioUnit): { x: number; left: string; right: string }[] {
-  const reach = unit.size_m[0] / 2 - 0.05;
+  // Mirrors _strap_reach in backend/app/explorer/build.py: 5 cm inside the unit's ends, and on
+  // a coil lying across the truck within a quarter of its diameter of the crest.
+  const coil = unit.shape === "cylinder" && unit.axis === "y";
+  const reach = coil ? unit.size_m[0] / 4 : unit.size_m[0] / 2 - 0.05;
   const left = scenario.bed.anchor_points.filter((anchor) => anchor.position_m[1] > unit.position_m[1]);
   const right = scenario.bed.anchor_points.filter((anchor) => anchor.position_m[1] < unit.position_m[1]);
   const pairs: { x: number; left: string; right: string }[] = [];

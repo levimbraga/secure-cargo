@@ -26,11 +26,12 @@ def test_simulate_returns_verdict_metrics_and_keyframes(client: TestClient) -> N
     result = body["result"]
     assert result["verdict"]["status"] == "pass"
     assert [unit["id"] for unit in result["units"]] == ["pallet-1", "pallet-2", "pallet-3"]
-    assert len(result["lashings"]) == 6
+    # One strap over each pallet and four diagonal straps from its corners.
+    assert len(result["lashings"]) == 15
     assert result["keyframes"]["fps"] == 30
     frame = result["keyframes"]["frames"][0]
     assert len(frame["units"]) == 3 and len(frame["units"][0]["q"]) == 4
-    assert len(frame["straps"]) == 6 and "tension_n" in frame["straps"][0]
+    assert len(frame["straps"]) == 15 and "tension_n" in frame["straps"][0]
 
 
 def test_simulate_stays_within_its_cpu_budget(client: TestClient) -> None:
@@ -41,7 +42,8 @@ def test_simulate_stays_within_its_cpu_budget(client: TestClient) -> None:
     second.
 
     The stacked box truck took 1.8 s on a desktop and 2.5 s on a GitHub Actions runner; eight
-    drums on a curtain-sider took 1.2 s on a desktop."""
+    drums on a curtain-sider took 1.2 s on a desktop, six drums in one row with thirty lashings
+    0.9 s (eight touching drums in one row took 7.9 s: keep round units a little apart)."""
     for demo in load_demo_scenarios():
         for scenario in (demo.as_loaded, demo.fixed):
             payload = {

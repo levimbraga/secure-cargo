@@ -23,14 +23,15 @@ describe("unit details", () => {
     expect(details?.inertia).toBeCloseTo(0, 0);
     expect(details?.slide).toBe(0);
     expect(details?.slipping).toBe(false);
-    // 900 kg plus the pretension of two straps pulling down.
+    // 900 kg plus the pretension of its strap over the top and its diagonal straps pulling down.
     expect(details?.floor).toBeGreaterThan(900 * 9.81);
     expect(details?.friction).toBeCloseTo(0.45 * (details?.floor ?? 0), 6);
   });
 
   it("list the lashings of the unit only, each against its capacity", () => {
     const details = unitDetails(fixed, sampleFrame(fixed, 1.6), 1);
-    expect(details?.lashings).toHaveLength(2);
+    // One strap over the pallet and four diagonal straps from its corners.
+    expect(details?.lashings).toHaveLength(5);
     for (const lashing of details?.lashings ?? []) {
       expect(fixed.straps[lashing.index]?.unit_id).toBe(fixed.units[1]?.id);
       expect(lashing.capacity).toBe(25000);

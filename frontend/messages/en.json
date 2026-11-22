@@ -194,7 +194,7 @@
     "sentences": {
       "emergency-braking": {
         "as_loaded": "As loaded, the pallets slide forward and one hits the headboard.",
-        "fixed": "With two straps per pallet, the load does not move."
+        "fixed": "With diagonal straps at the corners too, the load does not move."
       },
       "weigh-station": {
         "as_loaded": "The load holds, but the rear axle is over the legal limit.",
@@ -202,15 +202,15 @@
       },
       "rope-lashing": {
         "as_loaded": "Tied with rope, the stacks slide sideways in the lane change.",
-        "fixed": "On anti-slip mats and under straps, the stacks do not move."
+        "fixed": "With ratchet straps over them and diagonal straps, the stacks do not move."
       },
       "sharp-curve": {
         "as_loaded": "Standing free, the cabinets tip over and fall off the truck.",
-        "fixed": "With two straps each, the cabinets stay upright."
+        "fixed": "Under a strap each and with diagonal straps, the cabinets stay upright."
       },
       "steel-coil": {
         "as_loaded": "As loaded, the coil rolls forward into the headboard.",
-        "fixed": "In a cradle of two chocks, the coil does not move."
+        "fixed": "In a cradle, chained through the eye, the coil does not move."
       },
       "box-truck": {
         "as_loaded": "The loose cartons slide the length of the box and slam into the front wall.",
@@ -226,11 +226,11 @@
       },
       "full-trip": {
         "as_loaded": "Unlashed, the crates creep forward on the descent and slide on at the final stop.",
-        "fixed": "With three straps per crate, nothing moves for the whole trip."
+        "fixed": "With four diagonal straps per crate, nothing moves for the whole trip."
       },
       "curtain-sider": {
         "as_loaded": "With nothing over them, the drums slide across the deck in the curve: the curtain does not hold them.",
-        "fixed": "Under two straps each, the drums stay where they stand."
+        "fixed": "In one row, under a strap and diagonal straps, the drums stay where they stand."
       },
       "potholed-road": {
         "as_loaded": "The pothole throws the loose pipes up; they roll and slide into the headboard.",
@@ -252,7 +252,7 @@
     "explanations": {
       "emergency-braking": {
         "as_loaded": "Three pallets with one strap each. One strap does not press a pallet down hard enough for friction to hold it in an emergency stop.",
-        "fixed": "The same pallets with two straps each, the number the EN 12195-1 standard asks for with its safety factor. Friction holds with room to spare."
+        "fixed": "The same pallets, one strap over each and four diagonal straps from its corners to the rails, forward and back. CONTRAN Resolution 945/2022 asks for diagonal devices on a flatbed, whose panels are not a containment."
       },
       "weigh-station": {
         "as_loaded": "An 8 t machine chained down near the back of the bed. Nothing moves over the speed bump, but most of its weight lands on the rear axle and the steering axle is left light.",
@@ -260,15 +260,15 @@
       },
       "rope-lashing": {
         "as_loaded": "Stacks on plastic pallets, each tied with two ropes. Rope stretches and cannot be tightened like a ratchet strap, and Brazilian rules do not allow it as cargo lashing.",
-        "fixed": "Rubber anti-slip mats under the pallets and two ratchet straps per stack."
+        "fixed": "Two ratchet straps over each stack in place of the ropes, and four diagonal straps from its corners to the rails."
       },
       "sharp-curve": {
         "as_loaded": "Two tall cabinets with no lashing. The curve pushes them sideways harder than their narrow base can resist.",
-        "fixed": "Two straps over each cabinet press it down and keep it from tipping."
+        "fixed": "A strap over each cabinet presses it down, and four diagonal straps at its corners keep it from tipping and hold it forward and back, since it stands above the headboard (CONTRAN 945/2022, Art. 8)."
       },
       "steel-coil": {
         "as_loaded": "A 10 t coil lying across the bed, \"eye to the side\", with nothing in front of it. A cylinder needs no friction to move: braking makes it roll.",
-        "fixed": "The same coil in a cradle: a 20 cm chock on each side. It would take 0.88 g of braking to roll it over a chock; the truck can brake at 0.64 g on a wet road."
+        "fixed": "The same coil in a cradle: a 20 cm chock on each side. It would take 0.88 g of braking to roll it over a chock; the truck can brake at 0.64 g on a wet road. Four chains through the eye, forward and back, are its lashing."
       },
       "box-truck": {
         "as_loaded": "Six cartons left at the back of the box with nothing around them. Cardboard on plywood has a friction factor of only 0.3, and in fog the driver brakes late and hard.",
@@ -284,11 +284,11 @@
       },
       "full-trip": {
         "as_loaded": "Six 1.5 t crates on a semi-trailer, left without lashings because they are heavy. Weight does not help: friction grows with it, and so does inertia.",
-        "fixed": "Three straps over each crate, the number EN 12195-1 asks for. They hold through the descent, the speed bump and the emergency stop."
+        "fixed": "Four diagonal straps on each crate, forward and back on both sides. They hold through the descent, the speed bump and the emergency stop."
       },
       "curtain-sider": {
         "as_loaded": "Eight 200-litre drums against one side of a light curtain-sider, unlashed. A curtain-sider's curtain is weather protection: in a code L body it counts for 0 % of the payload as a restraint.",
-        "fixed": "The same drums with two top-over straps each, pressing them onto the deck."
+        "fixed": "The same drums in one row down the middle of the deck, 10 cm behind the headboard, each under one strap and with four diagonal straps to the rails. Side by side, a drum's strap would have to cross its neighbour."
       },
       "potholed-road": {
         "as_loaded": "Three 6 m steel pipes lying loose on a muddy deck (friction capped at 0.2). The pothole lifts them, and round pipes roll once they move.",

@@ -87,11 +87,16 @@ def test_the_fixed_version_meets_en_12195_1_with_its_safety_factor(demo: DemoSce
     # Units held by blocking, stacked units and lying cylinders are outside the closed-form
     # check (None); every unit the standard covers meets it.
     assert False not in [check.meets_standard for check in checks]
-    # EN 12195-1 does not assess a coil in a cradle, cargo held by a box body's walls, or round
-    # pipes held by direct chains; the simulation decides those.
+    # EN 12195-1 does not assess a coil in a cradle, cargo held by a box body's walls, round
+    # pipes held by direct chains, or a unit under top-over straps and diagonal lashings at once
+    # (the closed-form check takes one method); the simulation decides those.
     assert True in [check.meets_standard for check in checks] or demo.id in (
+        "emergency-braking",
+        "sharp-curve",
+        "rope-lashing",
         "steel-coil",
         "box-truck",
+        "curtain-sider",
         "potholed-road",
         "overloaded-strap",
         "us-steel-coils",

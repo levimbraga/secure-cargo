@@ -170,13 +170,15 @@ export function moveUnit(
 
 /** Anchor pairs facing each other along a unit: how many top-over straps it can take. */
 export function strapRoom(scenario: Scenario, unit: Footprint): number {
-  const low = unit.x - unit.length / 2;
-  const high = unit.x + unit.length / 2;
+  // Mirrors _strap_reach in backend/app/explorer/build.py: 5 cm inside the unit's ends, and on
+  // a coil lying across the truck within a quarter of its diameter of the crest.
+  const reach = unit.cargo === "steel_coil" ? unit.length / 4 : unit.length / 2 - 0.05;
   const left = new Set(
     scenario.bed.anchor_points.filter((anchor) => anchor.position_m[1] > unit.y).map((anchor) => anchor.position_m[0]),
   );
   return scenario.bed.anchor_points.filter(
-    (anchor) => anchor.position_m[1] < unit.y && left.has(anchor.position_m[0]) && low < anchor.position_m[0] && anchor.position_m[0] < high,
+    (anchor) =>
+      anchor.position_m[1] < unit.y && left.has(anchor.position_m[0]) && Math.abs(anchor.position_m[0] - unit.x) <= reach + 1e-6,
   ).length;
 }
 

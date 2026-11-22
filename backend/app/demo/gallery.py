@@ -48,18 +48,19 @@ GALLERY: tuple[GalleryExample, ...] = (
         title="Emergency braking",
         summary=(
             "Three 900 kg pallets with one strap each: under emergency braking from 80 km/h "
-            "they slide forward and the first one hits the headboard. With two straps each "
-            "they stay put."
+            "they slide forward and the first one hits the headboard. With diagonal straps at "
+            "each pallet's corners as well, which CONTRAN Resolution 945/2022 asks for on a "
+            "flatbed, they stay put."
         ),
         as_loaded_name="Three pallets, one strap each",
-        fixed_name="Three pallets, two straps each",
+        fixed_name="Three pallets, one strap over and four diagonal straps each",
         as_loaded=_config(
             "cargo=wood_pallet&position=gap&restraint=top_over&speed=80&event=emergency_braking"
             "&straps=1.1.1"
         ),
         fixed=_config(
-            "cargo=wood_pallet&position=gap&restraint=top_over&speed=80&event=emergency_braking"
-            "&straps=2.2.2"
+            "cargo=wood_pallet&position=gap&restraint=direct&speed=80&event=emergency_braking"
+            "&straps=1.1.1"
         ),
     ),
     GalleryExample(
@@ -67,17 +68,18 @@ GALLERY: tuple[GalleryExample, ...] = (
         title="Sharp curve",
         summary=(
             "Two tall cabinets standing free behind the headboard: in a sharp curve at 60 km/h "
-            "they tip over. Two straps over each one keep them upright."
+            "they tip over. A strap over each one keeps it upright, and diagonal straps at its "
+            "corners keep it from sliding over the headboard, which it stands above."
         ),
         as_loaded_name="Cabinets standing free",
-        fixed_name="Cabinets under two straps each",
+        fixed_name="Cabinets under a strap each, with diagonal straps",
         as_loaded=_config(
             "cargo=tall_cabinet&position=headboard&restraint=none&speed=60&road=curvy"
             "&event=sharp_curve"
         ),
         fixed=_config(
-            "cargo=tall_cabinet&position=headboard&restraint=top_over&speed=60&road=curvy"
-            "&event=sharp_curve&straps=2.2"
+            "cargo=tall_cabinet&position=headboard&restraint=direct&speed=60&road=curvy"
+            "&event=sharp_curve&straps=1.1"
         ),
     ),
     GalleryExample(
@@ -86,17 +88,17 @@ GALLERY: tuple[GalleryExample, ...] = (
         summary=(
             "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be "
             "tightened enough, so the stacks slide in a sudden lane change. Rope is also "
-            "prohibited as cargo lashing (CONTRAN Resolution 945/2022). Anti-slip mats under "
-            "the pallets and two ratchet straps per stack hold them."
+            "prohibited as cargo lashing (CONTRAN Resolution 945/2022). Two ratchet straps over "
+            "each stack and diagonal straps at its corners hold them."
         ),
         as_loaded_name="Stacks tied with rope",
-        fixed_name="Stacks on anti-slip mats under ratchet straps",
+        fixed_name="Stacks under ratchet straps, with diagonal straps",
         as_loaded=_config(
             "cargo=plastic_pallet&position=gap&restraint=rope&speed=80&event=lane_change"
             "&straps=2.2.2"
         ),
         fixed=_config(
-            "cargo=plastic_pallet&position=gap&restraint=mat&speed=80&event=lane_change"
+            "cargo=plastic_pallet&position=gap&restraint=direct&speed=80&event=lane_change"
             "&straps=2.2.2"
         ),
     ),
@@ -106,17 +108,18 @@ GALLERY: tuple[GalleryExample, ...] = (
         summary=(
             "A 10 t steel coil lying across the bed with nothing in front of it: when the truck "
             "brakes on a wet road it rolls forward into the headboard. A cradle of two 20 cm "
-            "chocks holds it."
+            "chocks stops the roll, and four chains through the eye, forward and back, give it "
+            "the lashing every unit needs."
         ),
         as_loaded_name="Coil standing free",
-        fixed_name="Coil in a cradle",
+        fixed_name="Coil in a cradle, chained through the eye",
         as_loaded=_config(
             "size=truck&cargo=steel_coil&position=gap&restraint=none&speed=60&weather=wet"
             "&event=emergency_braking&moves=0_0.00_0.00"
         ),
         fixed=_config(
-            "size=truck&cargo=steel_coil&position=gap&restraint=cradle&speed=60&weather=wet"
-            "&event=emergency_braking&moves=0_0.00_0.00"
+            "size=truck&cargo=steel_coil&position=gap&restraint=cradle_chain&speed=60"
+            "&weather=wet&event=emergency_braking&straps=0&moves=0_0.00_0.00"
         ),
     ),
     GalleryExample(
@@ -202,18 +205,18 @@ GALLERY: tuple[GalleryExample, ...] = (
         summary=(
             "Six crates of parts left unlashed because they are heavy, on a semi-trailer going "
             "down the mountain to the port in heavy rain: braking on the descent they creep "
-            "forward, and the emergency stop at the end throws them on. Three straps per crate, "
-            "as EN 12195-1 asks, hold them for the whole trip."
+            "forward, and the emergency stop at the end throws them on. Four diagonal straps "
+            "per crate, forward and back on both sides, hold them for the whole trip."
         ),
         as_loaded_name="Crates without lashings",
-        fixed_name="Crates under three straps each",
+        fixed_name="Crates with four diagonal straps each",
         as_loaded=_config(
             "size=semi&cargo=crate&position=gap&restraint=none&speed=60&road=mountain"
             "&weather=heavy_rain&event=full_trip&n=6"
         ),
         fixed=_config(
-            "size=semi&cargo=crate&position=gap&restraint=top_over&speed=60&road=mountain"
-            "&weather=heavy_rain&event=full_trip&n=6&straps=3.3.3.3.3.3"
+            "size=semi&cargo=crate&position=gap&restraint=direct&speed=60&road=mountain"
+            "&weather=heavy_rain&event=full_trip&n=6&straps=0.0.0.0.0.0"
         ),
     ),
     GalleryExample(
@@ -222,18 +225,20 @@ GALLERY: tuple[GalleryExample, ...] = (
         summary=(
             "Drums of oil standing against one side of a light (3/4) curtain-sider with nothing "
             "over them: in a sharp curve at 60 km/h they slide across the deck, because the "
-            "curtain is weather protection, not a restraint. Two straps over each drum hold them "
-            "where they stand."
+            "curtain is weather protection, not a restraint. In one row down the middle, just "
+            "behind the headboard, each drum gets a strap over it and four diagonal straps to the "
+            "rails on both sides, and no strap has to cross another drum."
         ),
         as_loaded_name="Drums against the curtain, no lashing",
-        fixed_name="Drums under two straps each",
+        fixed_name="Drums in one row, a strap over and four diagonal straps each",
         as_loaded=_config(
             "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=none"
-            "&speed=60&road=curvy&event=sharp_curve"
+            "&speed=60&road=curvy&event=sharp_curve&n=6"
         ),
         fixed=_config(
-            "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=top_over"
-            "&speed=60&road=curvy&event=sharp_curve"
+            "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=direct"
+            "&speed=60&road=curvy&event=sharp_curve&n=6&straps=1.1.1.1.1.1"
+            "&moves=0_2.20_0.00*1_1.45_0.00*2_0.70_0.00*3_-0.05_0.00*4_-0.80_0.00*5_-1.55_0.00"
         ),
     ),
     GalleryExample(

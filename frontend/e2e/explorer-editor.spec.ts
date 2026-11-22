@@ -23,7 +23,7 @@ test("adds, edits, duplicates and removes units, and keeps the load in the addre
   if (!live) await page.route(`${API_URL}/**`, (route) => route.abort());
   // Two tall cabinets against the headboard of a toco (in the site's static cache): room for more.
   await page.goto(
-    "/app/explorer?body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=top_over&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=2.2",
+    "/app/explorer?body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=direct&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=1.1",
   );
   await ready(page);
   const rows = page.locator("[data-unit-row]");

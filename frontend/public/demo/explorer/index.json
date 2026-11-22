@@ -5,7 +5,7 @@
       "live": "live/emergency-braking.as_loaded.json",
       "run": "emergency-braking.as_loaded.json"
     },
-    "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=2.2.2": {
+    "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=direct&speed=80&road=straight&weather=dry&event=emergency_braking&straps=1.1.1": {
       "file": "explorer/emergency-braking.fixed.json",
       "live": "live/emergency-braking.fixed.json",
       "run": "emergency-braking.fixed.json"
@@ -15,7 +15,7 @@
       "live": "live/sharp-curve.as_loaded.json",
       "run": "sharp-curve.as_loaded.json"
     },
-    "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=top_over&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=2.2": {
+    "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=direct&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=1.1": {
       "file": "explorer/sharp-curve.fixed.json",
       "live": "live/sharp-curve.fixed.json",
       "run": "sharp-curve.fixed.json"
@@ -25,7 +25,7 @@
       "live": "live/rope-lashing.as_loaded.json",
       "run": "rope-lashing.as_loaded.json"
     },
-    "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=mat&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2": {
+    "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=direct&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2": {
       "file": "explorer/rope-lashing.fixed.json",
       "live": "live/rope-lashing.fixed.json",
       "run": "rope-lashing.fixed.json"
@@ -35,7 +35,7 @@
       "live": "live/steel-coil.as_loaded.json",
       "run": "steel-coil.as_loaded.json"
     },
-    "body=flatbed&size=truck&cargo=steel_coil&position=gap&restraint=cradle&speed=60&road=straight&weather=wet&event=emergency_braking&moves=0_0.00_0.00": {
+    "body=flatbed&size=truck&cargo=steel_coil&position=gap&restraint=cradle_chain&speed=60&road=straight&weather=wet&event=emergency_braking&straps=0&moves=0_0.00_0.00": {
       "file": "explorer/steel-coil.fixed.json",
       "live": "live/steel-coil.fixed.json",
       "run": "steel-coil.fixed.json"
@@ -85,17 +85,17 @@
       "live": "live/full-trip.as_loaded.json",
       "run": "full-trip.as_loaded.json"
     },
-    "body=flatbed&size=semi&cargo=crate&position=gap&restraint=top_over&speed=60&road=mountain&weather=heavy_rain&event=full_trip&n=6&straps=3.3.3.3.3.3": {
+    "body=flatbed&size=semi&cargo=crate&position=gap&restraint=direct&speed=60&road=mountain&weather=heavy_rain&event=full_trip&n=6&straps=0.0.0.0.0.0": {
       "file": "explorer/full-trip.fixed.json",
       "live": "live/full-trip.fixed.json",
       "run": "full-trip.fixed.json"
     },
-    "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=none&speed=60&road=curvy&weather=dry&event=sharp_curve": {
+    "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=none&speed=60&road=curvy&weather=dry&event=sharp_curve&n=6": {
       "file": "explorer/curtain-sider.as_loaded.json",
       "live": "live/curtain-sider.as_loaded.json",
       "run": "curtain-sider.as_loaded.json"
     },
-    "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=top_over&speed=60&road=curvy&weather=dry&event=sharp_curve": {
+    "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=direct&speed=60&road=curvy&weather=dry&event=sharp_curve&n=6&straps=1.1.1.1.1.1&moves=0_2.20_0.00*1_1.45_0.00*2_0.70_0.00*3_-0.05_0.00*4_-0.80_0.00*5_-1.55_0.00": {
       "file": "explorer/curtain-sider.fixed.json",
       "live": "live/curtain-sider.fixed.json",
       "run": "curtain-sider.fixed.json"

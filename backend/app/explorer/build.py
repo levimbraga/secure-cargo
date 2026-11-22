@@ -606,7 +606,8 @@ def draft_from_config(config: ExplorerConfig) -> LoadDraft:
             else:
                 # The default never asks for more straps than there are anchors along the unit.
                 wanted = DEFAULT_TOP_OVER.get(config.restraint, 0)
-                straps = min(wanted, len(_anchor_pairs(anchors, x, cargo.size_m[0], y)))
+                reach = _strap_reach(cargo.shape, cargo.axis, cargo.size_m)
+                straps = min(wanted, len(_anchor_pairs(anchors, x, reach, y)))
             units.append(
                 DraftUnit(
                     id=f"{cargo.unit_id}-{number + 1}",
@@ -747,7 +748,10 @@ def build_draft(
         if item.straps == 0:
             continue
         pairs = _anchor_pairs(
-            bed.anchor_points, unit.position_m[0], unit.size_m[0], unit.position_m[1]
+            bed.anchor_points,
+            unit.position_m[0],
+            _strap_reach(unit.shape, unit.axis, unit.size_m),
+            unit.position_m[1],
         )
         if item.straps > len(pairs):
             raise BuildError(
@@ -803,7 +807,10 @@ def strap_room(scenario: Scenario, unit_id: str) -> int:
     unit = next(u for u in scenario.units if u.id == unit_id)
     return len(
         _anchor_pairs(
-            scenario.bed.anchor_points, unit.position_m[0], unit.size_m[0], unit.position_m[1]
+            scenario.bed.anchor_points,
+            unit.position_m[0],
+            _strap_reach(unit.shape, unit.axis, unit.size_m),
+            unit.position_m[1],
         )
     )
 
@@ -859,14 +866,36 @@ def _bed(
     )
 
 
+# A strap goes over a unit at least this far inside its ends: on the very edge it would
+# slip off (lashing audit, notes/lashing-audit.md).
+STRAP_EDGE_MARGIN_M = 0.05
+
+
+def _strap_reach(
+    shape: UnitShape, axis: CylinderAxis | None, size: tuple[float, float, float]
+) -> float:
+    """How far from a unit's centre, along the bed, a top-over strap can cross it.
+
+    A coil lying across the truck is round along the bed: a strap along its axis presses on it
+    only near the crest, so it goes within a quarter of the diameter of the centre.
+    """
+    if shape is UnitShape.CYLINDER and axis is CylinderAxis.Y:
+        return size[0] / 4
+    return size[0] / 2 - STRAP_EDGE_MARGIN_M
+
+
 def _anchor_pairs(
-    anchors: list[AnchorPoint], x: float, length: float, y: float
+    anchors: list[AnchorPoint], x: float, reach: float, y: float
 ) -> list[tuple[str, str]]:
-    """Left and right anchors facing each other along a unit: where a strap can go over it."""
-    low, high = x - length / 2, x + length / 2
+    """Left and right anchors facing each other along a unit: where a strap can go over it.
+
+    ``reach``: how far from the unit's centre along the bed (``_strap_reach``).
+    """
     left = {a.position_m[0]: a.id for a in anchors if a.position_m[1] > y}
     right = {a.position_m[0]: a.id for a in anchors if a.position_m[1] < y}
-    return [(left[ax], right[ax]) for ax in sorted(left) if ax in right and low < ax < high]
+    return [
+        (left[ax], right[ax]) for ax in sorted(left) if ax in right and abs(ax - x) <= reach + 1e-6
+    ]
 
 
 def _over(

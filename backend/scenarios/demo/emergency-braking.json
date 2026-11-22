@@ -1,7 +1,7 @@
 {
   "id": "emergency-braking",
   "title": "Emergency braking",
-  "summary": "Three 900 kg pallets with one strap each: under emergency braking from 80 km/h they slide forward and the first one hits the headboard. With two straps each they stay put.",
+  "summary": "Three 900 kg pallets with one strap each: under emergency braking from 80 km/h they slide forward and the first one hits the headboard. With diagonal straps at each pallet's corners as well, which CONTRAN Resolution 945/2022 asks for on a flatbed, they stay put.",
   "event": {
     "kind": "emergency_braking",
     "segments": null,
@@ -435,7 +435,7 @@
   "fixed": {
     "schema_version": 1,
     "id": "emergency-braking-fixed",
-    "name": "Three pallets, two straps each",
+    "name": "Three pallets, one strap over and four diagonal straps each",
     "bed": {
       "length_m": 6.2,
       "width_m": 2.4,
@@ -812,23 +812,8 @@
         "routing": "top_over",
         "unit_id": "pallet-1",
         "anchor_ids": [
-          "L11",
-          "R11"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-1-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-1",
-        "anchor_ids": [
-          "L13",
-          "R13"
+          "L12",
+          "R12"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -842,23 +827,8 @@
         "routing": "top_over",
         "unit_id": "pallet-2",
         "anchor_ids": [
-          "L7",
-          "R7"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
-        "id": "pallet-2-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "pallet-2",
-        "anchor_ids": [
-          "L9",
-          "R9"
+          "L8",
+          "R8"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -872,8 +842,8 @@
         "routing": "top_over",
         "unit_id": "pallet-3",
         "anchor_ids": [
-          "L3",
-          "R3"
+          "L4",
+          "R4"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -882,15 +852,216 @@
         "breaking_strength_n": null
       },
       {
-        "id": "pallet-3-s2",
+        "id": "pallet-1-strap-front-left",
         "kind": "strap",
-        "routing": "top_over",
+        "routing": "direct",
+        "unit_id": "pallet-1",
+        "anchor_ids": [
+          "L14"
+        ],
+        "attachment_point_m": [
+          0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-1-strap-front-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "pallet-1",
+        "anchor_ids": [
+          "R14"
+        ],
+        "attachment_point_m": [
+          0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-1-strap-rear-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "pallet-1",
+        "anchor_ids": [
+          "L8"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-1-strap-rear-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "pallet-1",
+        "anchor_ids": [
+          "R8"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-2-strap-front-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "pallet-2",
+        "anchor_ids": [
+          "L12"
+        ],
+        "attachment_point_m": [
+          0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-2-strap-front-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "pallet-2",
+        "anchor_ids": [
+          "R12"
+        ],
+        "attachment_point_m": [
+          0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-2-strap-rear-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "pallet-2",
+        "anchor_ids": [
+          "L4"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-2-strap-rear-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "pallet-2",
+        "anchor_ids": [
+          "R4"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-3-strap-front-left",
+        "kind": "strap",
+        "routing": "direct",
         "unit_id": "pallet-3",
         "anchor_ids": [
-          "L5",
-          "R5"
+          "L8"
         ],
-        "attachment_point_m": null,
+        "attachment_point_m": [
+          0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-3-strap-front-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "pallet-3",
+        "anchor_ids": [
+          "R8"
+        ],
+        "attachment_point_m": [
+          0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-3-strap-rear-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "pallet-3",
+        "anchor_ids": [
+          "L0"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "pallet-3-strap-rear-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "pallet-3",
+        "anchor_ids": [
+          "R0"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          -0.5,
+          0.4
+        ],
         "pretension_n": 3000.0,
         "lashing_capacity_n": 25000.0,
         "elongation_at_lc": null,
@@ -900,6 +1071,6 @@
   },
   "explorer": {
     "as_loaded": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=1.1.1",
-    "fixed": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=2.2.2"
+    "fixed": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=direct&speed=80&road=straight&weather=dry&event=emergency_braking&straps=1.1.1"
   }
 }

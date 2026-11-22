@@ -3,7 +3,7 @@
     {
       "id": "emergency-braking",
       "title": "Emergency braking",
-      "summary": "Three 900 kg pallets with one strap each: under emergency braking from 80 km/h they slide forward and the first one hits the headboard. With two straps each they stay put.",
+      "summary": "Three 900 kg pallets with one strap each: under emergency braking from 80 km/h they slide forward and the first one hits the headboard. With diagonal straps at each pallet's corners as well, which CONTRAN Resolution 945/2022 asks for on a flatbed, they stay put.",
       "event": {
         "kind": "emergency_braking",
         "segments": null,
@@ -22,16 +22,16 @@
         },
         "fixed": {
           "file": "emergency-braking.fixed.json",
-          "scenario_hash": "4dd070ee6d703b2d5c958f692be96f9849972228bb2f3416881a8c9b29f9b343",
+          "scenario_hash": "3cf60b68e0667ec3672305e400b2451afc891e598495a26e75a41844d130a1fd",
           "status": "pass",
-          "explorer": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=2.2.2"
+          "explorer": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=direct&speed=80&road=straight&weather=dry&event=emergency_braking&straps=1.1.1"
         }
       }
     },
     {
       "id": "sharp-curve",
       "title": "Sharp curve",
-      "summary": "Two tall cabinets standing free behind the headboard: in a sharp curve at 60 km/h they tip over. Two straps over each one keep them upright.",
+      "summary": "Two tall cabinets standing free behind the headboard: in a sharp curve at 60 km/h they tip over. A strap over each one keeps it upright, and diagonal straps at its corners keep it from sliding over the headboard, which it stands above.",
       "event": {
         "kind": "sharp_curve",
         "segments": null,
@@ -50,16 +50,16 @@
         },
         "fixed": {
           "file": "sharp-curve.fixed.json",
-          "scenario_hash": "bd1a6848190efe82bc4394df7c48e3ee2d6356a9b30a9106386d74adf7803386",
+          "scenario_hash": "ee7d8e7ff4585fd0f56c15727ef39cd88f4b665cd9eeee66b4fc44054e1c193a",
           "status": "pass",
-          "explorer": "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=top_over&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=2.2"
+          "explorer": "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=direct&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=1.1"
         }
       }
     },
     {
       "id": "rope-lashing",
       "title": "Rope lashing",
-      "summary": "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be tightened enough, so the stacks slide in a sudden lane change. Rope is also prohibited as cargo lashing (CONTRAN Resolution 945/2022). Anti-slip mats under the pallets and two ratchet straps per stack hold them.",
+      "summary": "Three stacks on plastic pallets tied down with rope: rope stretches and cannot be tightened enough, so the stacks slide in a sudden lane change. Rope is also prohibited as cargo lashing (CONTRAN Resolution 945/2022). Two ratchet straps over each stack and diagonal straps at its corners hold them.",
       "event": {
         "kind": "lane_change",
         "segments": null,
@@ -78,16 +78,16 @@
         },
         "fixed": {
           "file": "rope-lashing.fixed.json",
-          "scenario_hash": "30c052ac5cd18551ed8b707041b9e2c399096d9c4e00fd855d0993dac29e6e82",
+          "scenario_hash": "fc8f570958367e41fdcc0e1088eba9aa7d0b5d33d1c16e54907d621f8d259892",
           "status": "pass",
-          "explorer": "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=mat&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2"
+          "explorer": "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=direct&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2"
         }
       }
     },
     {
       "id": "steel-coil",
       "title": "Steel coil",
-      "summary": "A 10 t steel coil lying across the bed with nothing in front of it: when the truck brakes on a wet road it rolls forward into the headboard. A cradle of two 20 cm chocks holds it.",
+      "summary": "A 10 t steel coil lying across the bed with nothing in front of it: when the truck brakes on a wet road it rolls forward into the headboard. A cradle of two 20 cm chocks stops the roll, and four chains through the eye, forward and back, give it the lashing every unit needs.",
       "event": {
         "kind": "emergency_braking",
         "segments": null,
@@ -106,9 +106,9 @@
         },
         "fixed": {
           "file": "steel-coil.fixed.json",
-          "scenario_hash": "7ec6b6d36ca7d12eccb7e6c1ce100061a0b74c495abc61bcb39efe417e84ba22",
+          "scenario_hash": "248fc3d1dddf839825e87d0c86084c41565e6aef30595c0caf173de0b2f1cf69",
           "status": "pass",
-          "explorer": "body=flatbed&size=truck&cargo=steel_coil&position=gap&restraint=cradle&speed=60&road=straight&weather=wet&event=emergency_braking&moves=0_0.00_0.00"
+          "explorer": "body=flatbed&size=truck&cargo=steel_coil&position=gap&restraint=cradle_chain&speed=60&road=straight&weather=wet&event=emergency_braking&straps=0&moves=0_0.00_0.00"
         }
       }
     },
@@ -227,7 +227,7 @@
     {
       "id": "full-trip",
       "title": "Full trip",
-      "summary": "Six crates of parts left unlashed because they are heavy, on a semi-trailer going down the mountain to the port in heavy rain: braking on the descent they creep forward, and the emergency stop at the end throws them on. Three straps per crate, as EN 12195-1 asks, hold them for the whole trip.",
+      "summary": "Six crates of parts left unlashed because they are heavy, on a semi-trailer going down the mountain to the port in heavy rain: braking on the descent they creep forward, and the emergency stop at the end throws them on. Four diagonal straps per crate, forward and back on both sides, hold them for the whole trip.",
       "event": {
         "kind": "full_trip",
         "segments": [
@@ -250,16 +250,16 @@
         },
         "fixed": {
           "file": "full-trip.fixed.json",
-          "scenario_hash": "6d6bf1bbb90a070ceae88dc90470a1ec47ad5fa85ca2417afd7c92732de99db3",
+          "scenario_hash": "9aca6b200556f9fcc8bd00c3e351899f6fad0243cb92c547aeb370ddb1052b6d",
           "status": "pass",
-          "explorer": "body=flatbed&size=semi&cargo=crate&position=gap&restraint=top_over&speed=60&road=mountain&weather=heavy_rain&event=full_trip&n=6&straps=3.3.3.3.3.3"
+          "explorer": "body=flatbed&size=semi&cargo=crate&position=gap&restraint=direct&speed=60&road=mountain&weather=heavy_rain&event=full_trip&n=6&straps=0.0.0.0.0.0"
         }
       }
     },
     {
       "id": "curtain-sider",
       "title": "Curtain-sider",
-      "summary": "Drums of oil standing against one side of a light (3/4) curtain-sider with nothing over them: in a sharp curve at 60 km/h they slide across the deck, because the curtain is weather protection, not a restraint. Two straps over each drum hold them where they stand.",
+      "summary": "Drums of oil standing against one side of a light (3/4) curtain-sider with nothing over them: in a sharp curve at 60 km/h they slide across the deck, because the curtain is weather protection, not a restraint. In one row down the middle, just behind the headboard, each drum gets a strap over it and four diagonal straps to the rails on both sides, and no strap has to cross another drum.",
       "event": {
         "kind": "sharp_curve",
         "segments": null,
@@ -272,15 +272,15 @@
       "variants": {
         "as_loaded": {
           "file": "curtain-sider.as_loaded.json",
-          "scenario_hash": "4eafe4febbeed9e5e5ec7ab1f9617dd8c4b4351b227259b816955e3dc81a4eed",
+          "scenario_hash": "220b16cdf911783f0316a07a2f5040eaaf5bf06b22ace432b32634a99f150b09",
           "status": "fail",
-          "explorer": "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=none&speed=60&road=curvy&weather=dry&event=sharp_curve"
+          "explorer": "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=none&speed=60&road=curvy&weather=dry&event=sharp_curve&n=6"
         },
         "fixed": {
           "file": "curtain-sider.fixed.json",
-          "scenario_hash": "03432e659759180d1c21c84d1a2091b9d51559e9888cbf6c66f5dca0779c9d58",
+          "scenario_hash": "03758811916a3234c437ac311516e0078a085b3450fcbe13e3b2503c86561f09",
           "status": "pass",
-          "explorer": "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=top_over&speed=60&road=curvy&weather=dry&event=sharp_curve"
+          "explorer": "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=direct&speed=60&road=curvy&weather=dry&event=sharp_curve&n=6&straps=1.1.1.1.1.1&moves=0_2.20_0.00*1_1.45_0.00*2_0.70_0.00*3_-0.05_0.00*4_-0.80_0.00*5_-1.55_0.00"
         }
       }
     },
@@ -328,13 +328,13 @@
       "variants": {
         "as_loaded": {
           "file": "overloaded-strap.as_loaded.json",
-          "scenario_hash": "d05386864f49dfb935f887b83d70f1fdce8a0b50125af72f6645c408bd4d946f",
+          "scenario_hash": "3e6c4c76866307f971d63cb4bfbffb15e42c5c6e1332e86052105782afb2caad",
           "status": "fail",
           "explorer": "body=flatbed&size=semi&cargo=steel_coil&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking"
         },
         "fixed": {
           "file": "overloaded-strap.fixed.json",
-          "scenario_hash": "50541d7c70d8cfeb2b552c241ecce692318cf3133648c7074bfcc81ef6fbf295",
+          "scenario_hash": "3d9a082fca1aa6ba09d2165fa06dc29b617069b65db6e63fe34d5a4da4da8222",
           "status": "pass",
           "explorer": "body=flatbed&size=semi&cargo=steel_coil&position=gap&restraint=cradle&speed=80&road=straight&weather=dry&event=emergency_braking&straps=2"
         }
@@ -356,7 +356,7 @@
       "variants": {
         "as_loaded": {
           "file": "us-steel-coils.as_loaded.json",
-          "scenario_hash": "5a2d86a61baea16ceb6e7b6e6a30f8454e5636d4977452d0f6b9c961e8e28a45",
+          "scenario_hash": "2bc32040b6f6db81e20594b94a670b31e4cfbcffd365313c7a82d89b9468f4d2",
           "status": "fail",
           "explorer": "body=flatbed&size=us_flatbed_48&cargo=steel_coil&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&n=2&kg=9000&moves=0_1.00_0.00*1_-1.00_0.00&country=US"
         },

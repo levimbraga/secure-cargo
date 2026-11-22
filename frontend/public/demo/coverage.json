@@ -759,28 +759,12 @@
               "variant": "as_loaded"
             },
             {
-              "example": "emergency-braking",
-              "variant": "fixed"
-            },
-            {
-              "example": "sharp-curve",
-              "variant": "fixed"
-            },
-            {
               "example": "dirt-road",
               "variant": "as_loaded"
             },
             {
               "example": "anti-slip-mat",
               "variant": "as_loaded"
-            },
-            {
-              "example": "full-trip",
-              "variant": "fixed"
-            },
-            {
-              "example": "curtain-sider",
-              "variant": "fixed"
             },
             {
               "example": "overloaded-strap",
@@ -796,7 +780,27 @@
           "id": "direct",
           "covered_by": [
             {
+              "example": "emergency-braking",
+              "variant": "fixed"
+            },
+            {
+              "example": "sharp-curve",
+              "variant": "fixed"
+            },
+            {
+              "example": "rope-lashing",
+              "variant": "fixed"
+            },
+            {
               "example": "dirt-road",
+              "variant": "fixed"
+            },
+            {
+              "example": "full-trip",
+              "variant": "fixed"
+            },
+            {
+              "example": "curtain-sider",
               "variant": "fixed"
             }
           ]
@@ -840,10 +844,6 @@
           "id": "mat",
           "covered_by": [
             {
-              "example": "rope-lashing",
-              "variant": "fixed"
-            },
-            {
               "example": "anti-slip-mat",
               "variant": "fixed"
             },
@@ -857,10 +857,6 @@
           "id": "cradle",
           "covered_by": [
             {
-              "example": "steel-coil",
-              "variant": "fixed"
-            },
-            {
               "example": "overloaded-strap",
               "variant": "fixed"
             }
@@ -869,6 +865,10 @@
         {
           "id": "cradle_chain",
           "covered_by": [
+            {
+              "example": "steel-coil",
+              "variant": "fixed"
+            },
             {
               "example": "us-steel-coils",
               "variant": "fixed"
@@ -1592,6 +1592,10 @@
             },
             {
               "example": "potholed-road",
+              "variant": "as_loaded"
+            },
+            {
+              "example": "overloaded-strap",
               "variant": "as_loaded"
             }
           ]

@@ -194,7 +194,7 @@
     "sentences": {
       "emergency-braking": {
         "as_loaded": "Como foi carregado, os paletes deslizam para a frente e um bate no painel frontal.",
-        "fixed": "Com duas cintas por palete, a carga não sai do lugar."
+        "fixed": "Com cintas diagonais nos cantos também, a carga não sai do lugar."
       },
       "weigh-station": {
         "as_loaded": "A carga fica firme, mas o eixo traseiro passa do limite legal.",
@@ -202,15 +202,15 @@
       },
       "rope-lashing": {
         "as_loaded": "Amarradas com corda, as pilhas deslizam de lado na troca de faixa.",
-        "fixed": "Sobre mantas antiderrapantes e com cintas, as pilhas não saem do lugar."
+        "fixed": "Com cintas com catraca por cima e cintas diagonais, as pilhas não saem do lugar."
       },
       "sharp-curve": {
         "as_loaded": "Soltos, os armários tombam e caem do caminhão.",
-        "fixed": "Com duas cintas cada, os armários ficam em pé."
+        "fixed": "Com uma cinta por cima e cintas diagonais, os armários ficam em pé."
       },
       "steel-coil": {
         "as_loaded": "Do jeito que foi carregada, a bobina rola para a frente até o painel frontal.",
-        "fixed": "Num berço de dois calços, a bobina não se mexe."
+        "fixed": "Num berço, acorrentada pelo furo, a bobina não se mexe."
       },
       "box-truck": {
         "as_loaded": "As caixas soltas deslizam o baú inteiro e batem com força na parede frontal.",
@@ -226,11 +226,11 @@
       },
       "full-trip": {
         "as_loaded": "Sem amarração, os caixotes avançam na descida e deslizam de vez na freada final.",
-        "fixed": "Com três cintas por caixote, nada se mexe durante a viagem inteira."
+        "fixed": "Com quatro cintas diagonais por caixote, nada se mexe durante a viagem inteira."
       },
       "curtain-sider": {
         "as_loaded": "Sem nada por cima, os tambores deslizam pela carroceria na curva: a lona não os segura.",
-        "fixed": "Com duas cintas cada, os tambores ficam onde estão."
+        "fixed": "Numa fila só, com uma cinta por cima e cintas diagonais, os tambores ficam onde estão."
       },
       "potholed-road": {
         "as_loaded": "O buraco joga os tubos soltos para cima; eles rolam e deslizam até o painel frontal.",
@@ -252,7 +252,7 @@
     "explanations": {
       "emergency-braking": {
         "as_loaded": "Três paletes com uma cinta cada. Uma cinta não aperta o palete contra o assoalho o bastante para o atrito segurar numa freada de emergência.",
-        "fixed": "Os mesmos paletes com duas cintas cada, o número que a norma EN 12195-1 pede com o fator de segurança. O atrito segura com folga."
+        "fixed": "Os mesmos paletes, uma cinta por cima de cada um e quatro cintas diagonais dos cantos até a carroceria, para a frente e para trás. A Resolução CONTRAN 945/2022 pede dispositivos diagonais numa carroceria aberta, cujos painéis não são de contenção."
       },
       "weigh-station": {
         "as_loaded": "Uma máquina de 8 t presa com correntes perto da traseira. Nada se mexe na lombada, mas quase todo o peso vai para o eixo traseiro e o eixo dianteiro fica leve.",
@@ -260,15 +260,15 @@
       },
       "rope-lashing": {
         "as_loaded": "Pilhas sobre paletes plásticos, cada uma presa com duas cordas. A corda estica e não dá para apertar como uma cinta com catraca, e as regras brasileiras não permitem corda como amarração de carga.",
-        "fixed": "Mantas antiderrapantes de borracha sob os paletes e duas cintas com catraca por pilha."
+        "fixed": "Duas cintas com catraca sobre cada pilha no lugar das cordas, e quatro cintas diagonais dos cantos até a carroceria."
       },
       "sharp-curve": {
         "as_loaded": "Dois armários altos sem amarração. A curva empurra os dois de lado com mais força do que a base estreita aguenta.",
-        "fixed": "Duas cintas sobre cada armário apertam o volume contra o assoalho e não deixam tombar."
+        "fixed": "Uma cinta sobre cada armário aperta o volume contra o assoalho, e quatro cintas diagonais nos cantos não deixam tombar e o seguram para a frente e para trás, porque ele fica acima do painel frontal (CONTRAN 945/2022, art. 8)."
       },
       "steel-coil": {
         "as_loaded": "Uma bobina de 10 t deitada de través na carroceria, com o furo para o lado e nada na frente. Um cilindro não precisa vencer o atrito para se mover: a freada faz ele rolar.",
-        "fixed": "A mesma bobina num berço: um calço de 20 cm de cada lado. Seria preciso frear a 0,88 g para ela passar por cima de um calço; na pista molhada o caminhão freia a 0,64 g."
+        "fixed": "A mesma bobina num berço: um calço de 20 cm de cada lado. Seria preciso frear a 0,88 g para ela passar por cima de um calço; na pista molhada o caminhão freia a 0,64 g. Quatro correntes pelo furo, para a frente e para trás, fazem a amarração."
       },
       "box-truck": {
         "as_loaded": "Seis caixas deixadas no fundo do baú, sem nada em volta. Papelão sobre compensado tem fator de atrito de só 0,3, e com neblina o motorista freia tarde e forte.",
@@ -284,11 +284,11 @@
       },
       "full-trip": {
         "as_loaded": "Seis caixotes de 1,5 t numa carreta, sem amarração porque são pesados. O peso não ajuda: o atrito cresce com ele, e a inércia também.",
-        "fixed": "Três cintas sobre cada caixote, o número que a EN 12195-1 pede. Elas seguram na descida, na lombada e na freada de emergência."
+        "fixed": "Quatro cintas diagonais em cada caixote, para a frente e para trás dos dois lados. Elas seguram na descida, na lombada e na freada de emergência."
       },
       "curtain-sider": {
         "as_loaded": "Oito tambores de 200 litros encostados num lado de um sider leve, sem amarração. A lona do sider protege do tempo: numa carroceria código L ela conta 0 % da carga útil como contenção.",
-        "fixed": "Os mesmos tambores com duas cintas por cima de cada um, pressionando-os contra o piso."
+        "fixed": "Os mesmos tambores numa fila só, no meio do piso, 10 cm atrás do painel frontal, cada um com uma cinta por cima e quatro cintas diagonais até a carroceria. Lado a lado, a cinta de um tambor teria de passar por cima do vizinho."
       },
       "potholed-road": {
         "as_loaded": "Três tubos de aço de 6 m soltos numa carroceria com lama (atrito limitado a 0,2). O buraco os levanta, e tubos redondos rolam depois que se mexem.",

@@ -39,6 +39,10 @@ export type ScenarioUnit = {
   material: string;
   friction_coefficient: number | null;
   stackable: boolean;
+  /** Missing in older documents: a box. */
+  shape?: "box" | "cylinder";
+  /** A cylinder's axis in the bed frame. */
+  axis?: "x" | "y" | "z" | null;
 };
 
 export type ScenarioLashing = {

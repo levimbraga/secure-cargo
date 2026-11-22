@@ -70,7 +70,8 @@ describe("LiveRun (MuJoCo WebAssembly)", () => {
           const other = theirs?.straps[index]?.tension_n ?? NaN;
           expect(Math.abs(strap.tension_n - other)).toBeLessThanOrEqual(Math.max(10, 0.01 * other));
         });
-      });
+        // Eight drums with forty lashings take a few seconds to step on a loaded machine.
+      }, 30_000);
     }
   }
 

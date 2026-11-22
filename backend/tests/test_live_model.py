@@ -45,7 +45,9 @@ def test_the_live_model_names_exist_in_the_mjcf() -> None:
         assert model.body(unit.body).id > 0 and model.geom(unit.geom).id >= 0
     for lashing in live.lashings:
         assert model.tendon(lashing.tendon).id >= 0
-        assert lashing.saddle_joint is not None and model.joint(lashing.saddle_joint).id >= 0
+        if lashing.routing == "top_over":
+            assert lashing.saddle_joint is not None
+            assert model.joint(lashing.saddle_joint).id >= 0
 
 
 def test_the_live_model_carries_the_checks_of_a_server_run() -> None:
@@ -81,7 +83,7 @@ def test_get_scenario_mjcf_serves_json_and_xml(client: TestClient) -> None:
         "/scenarios/emergency-braking/mjcf", params={"variant": "fixed", "format": "xml"}
     )
 
-    assert live.status_code == 200 and len(live.json()["lashings"]) == 6
+    assert live.status_code == 200 and len(live.json()["lashings"]) == 15
     assert xml.status_code == 200
     assert xml.headers["content-type"].startswith("application/xml")
     assert xml.text == live.json()["mjcf"]

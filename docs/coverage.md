@@ -65,14 +65,14 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 | Option | Examples |
 |---|---|
 | none | box-truck, curtain-sider, eu-curtain-pallets, full-trip, potholed-road, sharp-curve, steel-coil |
-| top_over | anti-slip-mat, curtain-sider, dirt-road, emergency-braking, full-trip, overloaded-strap, sharp-curve, us-steel-coils |
-| direct | dirt-road |
+| top_over | anti-slip-mat, dirt-road, emergency-braking, overloaded-strap, us-steel-coils |
+| direct | curtain-sider, dirt-road, emergency-braking, full-trip, rope-lashing, sharp-curve |
 | chain | potholed-road, weigh-station |
 | rope | rope-lashing |
 | blocking | box-truck |
-| mat | anti-slip-mat, eu-curtain-pallets, rope-lashing |
-| cradle | overloaded-strap, steel-coil |
-| cradle_chain | us-steel-coils |
+| mat | anti-slip-mat, eu-curtain-pallets |
+| cradle | overloaded-strap |
+| cradle_chain | steel-coil, us-steel-coils |
 
 ## Speed
 
@@ -123,7 +123,7 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 | slide | anti-slip-mat, box-truck, curtain-sider, dirt-road, emergency-braking, eu-curtain-pallets, full-trip, potholed-road, rope-lashing, sharp-curve |
 | tip_over | eu-curtain-pallets, sharp-curve |
 | roll | overloaded-strap, potholed-road, steel-coil, us-steel-coils |
-| hit_headboard | anti-slip-mat, box-truck, emergency-braking, full-trip, potholed-road, steel-coil |
+| hit_headboard | anti-slip-mat, box-truck, emergency-braking, full-trip, overloaded-strap, potholed-road, steel-coil |
 | fall_off_side | eu-curtain-pallets, sharp-curve |
 | strap_overload | overloaded-strap, us-steel-coils |
 | axle_overload | weigh-station |

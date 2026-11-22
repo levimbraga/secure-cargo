@@ -748,8 +748,8 @@
         "routing": "top_over",
         "unit_id": "coil-1",
         "anchor_ids": [
-          "L18",
-          "R18"
+          "L19",
+          "R19"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -763,8 +763,8 @@
         "routing": "top_over",
         "unit_id": "coil-1",
         "anchor_ids": [
-          "L20",
-          "R20"
+          "L21",
+          "R21"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,

@@ -1,7 +1,7 @@
 {
   "id": "sharp-curve",
   "title": "Sharp curve",
-  "summary": "Two tall cabinets standing free behind the headboard: in a sharp curve at 60 km/h they tip over. Two straps over each one keep them upright.",
+  "summary": "Two tall cabinets standing free behind the headboard: in a sharp curve at 60 km/h they tip over. A strap over each one keeps it upright, and diagonal straps at its corners keep it from sliding over the headboard, which it stands above.",
   "event": {
     "kind": "sharp_curve",
     "segments": null,
@@ -368,7 +368,7 @@
   "fixed": {
     "schema_version": 1,
     "id": "sharp-curve-fixed",
-    "name": "Cabinets under two straps each",
+    "name": "Cabinets under a strap each, with diagonal straps",
     "bed": {
       "length_m": 6.2,
       "width_m": 2.4,
@@ -734,28 +734,13 @@
         "breaking_strength_n": null
       },
       {
-        "id": "cabinet-1-s2",
-        "kind": "strap",
-        "routing": "top_over",
-        "unit_id": "cabinet-1",
-        "anchor_ids": [
-          "L14",
-          "R14"
-        ],
-        "attachment_point_m": null,
-        "pretension_n": 3000.0,
-        "lashing_capacity_n": 25000.0,
-        "elongation_at_lc": null,
-        "breaking_strength_n": null
-      },
-      {
         "id": "cabinet-2-s1",
         "kind": "strap",
         "routing": "top_over",
         "unit_id": "cabinet-2",
         "anchor_ids": [
-          "L10",
-          "R10"
+          "L11",
+          "R11"
         ],
         "attachment_point_m": null,
         "pretension_n": 3000.0,
@@ -764,15 +749,144 @@
         "breaking_strength_n": null
       },
       {
-        "id": "cabinet-2-s2",
+        "id": "cabinet-1-strap-front-left",
         "kind": "strap",
-        "routing": "top_over",
+        "routing": "direct",
+        "unit_id": "cabinet-1",
+        "anchor_ids": [
+          "L14"
+        ],
+        "attachment_point_m": [
+          0.5,
+          0.4,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "cabinet-1-strap-front-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "cabinet-1",
+        "anchor_ids": [
+          "R14"
+        ],
+        "attachment_point_m": [
+          0.5,
+          -0.4,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "cabinet-1-strap-rear-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "cabinet-1",
+        "anchor_ids": [
+          "L10"
+        ],
+        "attachment_point_m": [
+          -0.5,
+          0.4,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "cabinet-1-strap-rear-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "cabinet-1",
+        "anchor_ids": [
+          "R10"
+        ],
+        "attachment_point_m": [
+          -0.5,
+          -0.4,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "cabinet-2-strap-front-left",
+        "kind": "strap",
+        "routing": "direct",
         "unit_id": "cabinet-2",
         "anchor_ids": [
-          "L12",
-          "R12"
+          "L14"
         ],
-        "attachment_point_m": null,
+        "attachment_point_m": [
+          0.5,
+          0.4,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "cabinet-2-strap-front-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "cabinet-2",
+        "anchor_ids": [
+          "R14"
+        ],
+        "attachment_point_m": [
+          0.5,
+          -0.4,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "cabinet-2-strap-rear-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "cabinet-2",
+        "anchor_ids": [
+          "L8"
+        ],
+        "attachment_point_m": [
+          -0.5,
+          0.4,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "cabinet-2-strap-rear-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "cabinet-2",
+        "anchor_ids": [
+          "R8"
+        ],
+        "attachment_point_m": [
+          -0.5,
+          -0.4,
+          0.4
+        ],
         "pretension_n": 3000.0,
         "lashing_capacity_n": 25000.0,
         "elongation_at_lc": null,
@@ -782,6 +896,6 @@
   },
   "explorer": {
     "as_loaded": "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=none&speed=60&road=curvy&weather=dry&event=sharp_curve",
-    "fixed": "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=top_over&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=2.2"
+    "fixed": "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=direct&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=1.1"
   }
 }

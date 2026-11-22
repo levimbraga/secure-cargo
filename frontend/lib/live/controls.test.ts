@@ -33,13 +33,15 @@ describe("lab controls", () => {
 
   it("read the authored straps, pretension and mat", () => {
     expect(authoredStrapsPerUnit(braking.scenario)).toBe(1);
-    expect(authoredStrapsPerUnit(demo("emergency-braking", "fixed").scenario)).toBe(2);
+    expect(authoredStrapsPerUnit(demo("anti-slip-mat", "fixed").scenario)).toBe(2);
     expect(authoredPretension(braking.scenario)).toBe(3000);
     expect(authoredMat(braking.scenario)).toBe(false);
-    expect(authoredMat(demo("rope-lashing", "fixed").scenario)).toBe(true);
+    expect(authoredMat(demo("anti-slip-mat", "fixed").scenario)).toBe(true);
     // The machine is only chained: no strap goes over it.
     expect(authoredStrapsPerUnit(demo("weigh-station", "fixed").scenario)).toBe(null);
-    expect(authoredStrapsPerUnit(demo("full-trip", "fixed").scenario)).toBe(3);
+    // Units with diagonal lashings are left to them, whatever goes over them.
+    expect(authoredStrapsPerUnit(demo("emergency-braking", "fixed").scenario)).toBe(null);
+    expect(authoredStrapsPerUnit(demo("dirt-road", "as_loaded").scenario)).toBe(3);
   });
 
   it("find the anchor pairs over a unit", () => {
@@ -59,8 +61,6 @@ describe("lab controls", () => {
       "L3,R3",
       "L5,R5",
     ]);
-    // The same lashings as the "fixed" version of the demo.
-    expect(scenario.lashings).toEqual(demo("emergency-braking", "fixed").scenario.lashings);
 
     const none = applyControls(braking.scenario, braking.event, { ...controls, strapsPerUnit: 0 });
     expect(none.scenario.lashings).toEqual([]);
