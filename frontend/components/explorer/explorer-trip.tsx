@@ -22,6 +22,7 @@ import { useReplayText } from "@/components/scenario/replay-shared";
 import { pill } from "@/components/ui/pill";
 import type { Country } from "@/lib/country";
 import type { LoadDraft } from "@/lib/explorer/draft";
+import { type Alternative, biggerTrucks, fewerUnits, type RankedOption, rankOptions } from "@/lib/explorer/alternatives";
 import { type Trouble, troubleOf } from "@/lib/explorer/trouble";
 import { runBattery, runPlan } from "@/lib/inspection/client";
 import { activeBattery, type Battery, type Plan, type SituationId } from "@/lib/inspection/types";
@@ -58,6 +59,11 @@ export function ExplorerTrip({
   const [battery, setBattery] = useState<Battery | null>(null);
   const [tested, setTested] = useState("");
   const [plan, setPlan] = useState<Plan | null>(null);
+  // The ways to make the load pass the planner found, ranked; the one in the editor is `plan`.
+  const [options, setOptions] = useState<RankedOption<Plan>[] | null>(null);
+  // While the planner tries other trucks and fewer units (after this truck was not enough).
+  const [widening, setWidening] = useState(false);
+  const optionText = useTranslations("Explorer.options");
   const [before, setBefore] = useState<LoadDraft | null>(null);
   const [busy, setBusy] = useState<Busy>(null);
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -108,25 +114,55 @@ export function ExplorerTrip({
     setSimulation(null);
   }
 
+  /**
+   * The planner on this truck first. When it cannot prove a fix there, the same load on bigger
+   * trucks and with fewer units goes through the planner too (in parallel), and every way found
+   * is offered, ranked. A fix on this truck goes straight into the editor; a change of truck or
+   * of the units carried waits for the visitor's choice.
+   */
   async function makeSafe() {
     if (!draft) return;
     const original = draft;
-    const result = await start("plan", (signal) => runPlan({ ...draft, country }, signal));
-    if (!result) return;
-    setPlan(result);
+    const ranked = await start("plan", async (signal) => {
+      const own = await runPlan({ ...draft, country }, signal);
+      const mine: RankedOption<Plan> = { kind: "this_truck", plan: own, alternative: null };
+      if (own.verified) return [mine];
+      setWidening(true);
+      const failing = own.battery ? [...troubleOf(own.battery.situations).units.keys()] : [];
+      const alternatives = [...biggerTrucks(draft), fewerUnits(draft, failing)].filter((item): item is Alternative => item !== null);
+      const plans = await Promise.allSettled(alternatives.map((item) => runPlan({ ...item.draft, country }, signal)));
+      const found = alternatives.flatMap((alternative, n): RankedOption<Plan>[] => {
+        const answer = plans[n];
+        return answer?.status === "fulfilled" ? [{ kind: alternative.kind, plan: answer.value, alternative }] : [];
+      });
+      return rankOptions([mine, ...found], (candidate) =>
+        Boolean(candidate.battery && physicsPassed(candidate.battery) === candidate.battery.situations.length),
+      );
+    });
+    setWidening(false);
+    if (!ranked) return;
     setBefore(original);
-    if (result.battery) {
-      setBattery(result.battery);
-      setTested(key(result.draft));
+    setOptions(ranked);
+    setSimulation(null);
+    const best = ranked[0];
+    if (best && best.kind === "this_truck") apply(best.plan);
+  }
+
+  function apply(chosen: Plan) {
+    setPlan(chosen);
+    if (chosen.battery) {
+      setBattery(chosen.battery);
+      setTested(key(chosen.draft));
     }
     setSimulation(null);
-    onApply(result.draft);
+    onApply(chosen.draft);
   }
 
   function undo() {
     if (!before) return;
     onApply(before);
     setPlan(null);
+    setOptions(null);
     setBefore(null);
     setBattery(null);
   }
@@ -137,7 +173,6 @@ export function ExplorerTrip({
   };
 
   const failing = shown?.situations.filter((situation) => !situation.passed) ?? [];
-  const proven = Boolean(plan?.verified);
 
   return (
     <section id="explorer-trip" className="mt-14 scroll-mt-20 border-t border-hairline pt-8" aria-labelledby="trip-title" data-testid="explorer-trip" data-fresh={fresh} data-state={verdict?.state}>
@@ -156,7 +191,7 @@ export function ExplorerTrip({
         >
           {battery && !fresh ? t("retest") : t("test")}
         </button>
-        {fresh && verdict && verdict.state !== "approved" && !plan && (
+        {fresh && verdict && verdict.state !== "approved" && !plan && !options && (
           <button
             type="button"
             onClick={() => void makeSafe()}
@@ -167,14 +202,14 @@ export function ExplorerTrip({
             {t("makeSafe")}
           </button>
         )}
-        {before && (
+        {before && plan && (
           <button type="button" onClick={undo} disabled={busy !== null} className={pill({ variant: "secondary", className: "h-12 px-5" })} data-testid="trip-undo">
             {t("undo")}
           </button>
         )}
       </div>
 
-      {busy && <Running startedAt={startedAt} label={busy === "battery" ? flow("running.battery") : fixText("finding")} situations={busy === "battery"} />}
+      {busy && <Running startedAt={startedAt} label={busy === "battery" ? flow("running.battery") : widening ? t("options.trying") : fixText("finding")} situations={busy === "battery"} />}
       {error && !busy && (
         <p role="alert" className="type-small mt-3 text-fail">
           {flow.has(`errors.${error}` as never) ? flow(`errors.${error}` as never) : flow("errors.failed")}
@@ -187,18 +222,74 @@ export function ExplorerTrip({
         </p>
       )}
 
-      {plan && !busy && (
-        <div className="mt-6" data-testid="trip-plan" data-verified={proven}>
-          <p className={`type-body ${proven ? "text-pass" : "text-ink"}`}>
-            {plan.changes.length === 0
-              ? fixText("none")
-              : proven
-                ? t("applied")
-                : plan.battery && verdictOf(plan.battery).state === "holds_noncompliant"
-                  ? t("bestHolds")
-                  : t("best", { passed: plan.battery ? physicsPassed(plan.battery) : 0, total: plan.battery?.situations.length ?? 7 })}
-          </p>
-          <ChangeList changes={plan.changes} before={before} after={plan.draft} title={fixText("applied")} />
+      {options && !busy && (
+        <div className="mt-6" data-testid="trip-options">
+          {options.length > 1 && (
+            <>
+              <h3 className="type-card-title">{t("options.title")}</h3>
+              <p className="type-small mt-1 text-pretty text-gray">{t("options.sentence")}</p>
+            </>
+          )}
+          <ol className="mt-4 space-y-4">
+            {options.map((option, n) => {
+              const applied = plan === option.plan;
+              const result = option.plan.battery;
+              const holdsAll = Boolean(result && physicsPassed(result) === result.situations.length);
+              const state = option.plan.verified ? "approved" : result ? verdictOf(activeBattery(result, country)).state : "fails";
+              const alternative = option.alternative;
+              const kept = alternative?.draft.units.length ?? 0;
+              return (
+                <li
+                  key={n}
+                  className={`rounded-md border p-4 ${applied ? "border-ink" : "border-hairline"}`}
+                  data-option={option.kind}
+                  data-verified={option.plan.verified}
+                  data-testid={applied ? "trip-plan" : undefined}
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    {n === 0 && options.length > 1 && option.plan.verified && (
+                      <span className="inline-flex rounded-full bg-ink px-2.5 py-0.5 text-[0.75rem] font-medium text-paper">{t("options.recommended")}</span>
+                    )}
+                    <StateBadge state={state} />
+                  </div>
+                  <h4 className="type-card-title mt-3 text-pretty">
+                    {option.kind === "this_truck"
+                      ? t("options.thisTruck")
+                      : option.kind === "bigger_truck"
+                        ? t("options.biggerTruck", { truck: optionText(`size.${alternative?.size ?? "truck"}` as never) })
+                        : t("options.fewerUnits", {
+                            kept,
+                            total: kept + (alternative?.removed?.length ?? 0),
+                            units: (alternative?.removed ?? []).map((id) => nameOf(id)).join(", "),
+                          })}
+                  </h4>
+                  <p className={`type-body mt-2 text-pretty ${option.plan.verified ? "text-pass" : "text-ink"}`}>
+                    {option.plan.verified
+                      ? t(applied ? "applied" : "options.proven")
+                      : holdsAll
+                        ? t("options.holdsOnly")
+                        : t("options.notEnough", { passed: result ? physicsPassed(result) : 0, total: result?.situations.length ?? 7 })}
+                  </p>
+                  <ChangeList
+                    changes={option.plan.changes}
+                    before={alternative?.draft ?? before}
+                    after={option.plan.draft}
+                    title={fixText(applied ? "applied" : "recommended")}
+                  />
+                  {!applied && option.plan.changes.some((change) => change.code !== "overweight") && (
+                    <button
+                      type="button"
+                      onClick={() => apply(option.plan)}
+                      className={pill({ variant: n === 0 ? "primary" : "secondary", className: "mt-4 h-11 px-5" })}
+                      data-testid="trip-apply-option"
+                    >
+                      {t("options.apply")}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
         </div>
       )}
 

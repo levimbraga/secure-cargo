@@ -442,7 +442,7 @@
     "units": {
       "pallet": "Pallet {number}",
       "crate": "Crate {number}",
-      "machine": "The machine",
+      "machine": "Machine {number}",
       "stack": "Stack {number}",
       "cabinet": "Cabinet {number}",
       "other": "Unit {id}",
@@ -863,6 +863,19 @@
         "lashing_overloaded": "a lashing on {unit} is overloaded",
         "lashing_broke": "a lashing on {unit} breaks",
         "load": "the load moves"
+      },
+      "options": {
+        "title": "Ways to make it pass",
+        "sentence": "This truck could not carry the load safely as it is, so the planner also tried a bigger truck and fewer units on this trip. Each way is tested on the server in the 7 situations and against the rules; the best comes first.",
+        "recommended": "Recommended",
+        "thisTruck": "On this truck",
+        "biggerTruck": "On a bigger truck: {truck}",
+        "fewerUnits": "Carry {kept} of {total} units; {units} on a second trip",
+        "proven": "Proven: holds in every situation and meets the rules.",
+        "holdsOnly": "Arrives intact, but still breaks a rule (see the checklist once applied).",
+        "notEnough": "Not enough: holds in {passed} of {total} situations.",
+        "apply": "Use this",
+        "trying": "This truck is not enough: trying a bigger truck and fewer units, each through the 7 situations…"
       }
     },
     "lashings": {

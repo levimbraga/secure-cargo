@@ -442,7 +442,7 @@
     "units": {
       "pallet": "Palete {number}",
       "crate": "Caixote {number}",
-      "machine": "A máquina",
+      "machine": "Máquina {number}",
       "stack": "Pilha {number}",
       "cabinet": "Armário {number}",
       "other": "Volume {id}",
@@ -863,6 +863,19 @@
         "lashing_overloaded": "uma amarração de {unit} fica sobrecarregada",
         "lashing_broke": "uma amarração de {unit} arrebenta",
         "load": "a carga se mexe"
+      },
+      "options": {
+        "title": "Como fazer passar",
+        "sentence": "Neste caminhão a carga não fica segura como está, então o planejador também testou um caminhão maior e menos volumes nesta viagem. Cada caminho é testado no servidor nas 7 situações e contra as regras; o melhor vem primeiro.",
+        "recommended": "Recomendado",
+        "thisTruck": "Neste caminhão",
+        "biggerTruck": "Num caminhão maior: {truck}",
+        "fewerUnits": "Levar {kept} de {total} volumes; {units} numa segunda viagem",
+        "proven": "Provado: segura em todas as situações e cumpre as regras.",
+        "holdsOnly": "Chega inteira, mas ainda descumpre uma regra (veja o checklist depois de aplicar).",
+        "notEnough": "Não basta: segura em {passed} de {total} situações.",
+        "apply": "Usar este",
+        "trying": "Este caminhão não basta: testando um caminhão maior e menos volumes, cada um nas 7 situações…"
       }
     },
     "lashings": {
