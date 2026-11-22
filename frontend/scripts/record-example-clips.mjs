@@ -3,7 +3,7 @@
 // captured, so the clip is smooth however slowly the machine draws WebGL. ffmpeg then writes
 // `public/demo/clips/<id>.<variant>.{mp4,webm,webp}` (H.264 + VP9, 960x600, no audio).
 //
-//   node scripts/record-example-clips.mjs [base-url] [id ...]
+//   node scripts/record-example-clips.mjs [base-url] [id or id.variant ...]
 //
 // Environment: CHROMIUM (a Chromium binary; default: Playwright's cached build), FPS (30),
 // KEEP_FRAMES=1 keeps the PNG frames under `.clip-frames/`.
@@ -113,9 +113,11 @@ async function record(page, id, variant) {
   // 1280 px wide: the replay frame is about 690 px; at device scale 1.5 that is ~1030 px of pixels.
   const context = await browser.newContext({ viewport: { width: 1280, height: 1000 }, deviceScaleFactor: 1.5 });
   const page = await context.newPage();
-  const ids = INDEX.scenarios.map((entry) => entry.id).filter((id) => !ONLY.length || ONLY.includes(id));
+  // Arguments after the base URL: example ids ("steel-coil") or one version ("steel-coil.fixed").
+  const wanted = (id, variant) => !ONLY.length || ONLY.includes(id) || ONLY.includes(`${id}.${variant}`);
+  const ids = INDEX.scenarios.map((entry) => entry.id);
   for (const id of ids) {
-    for (const variant of ["as_loaded", "fixed"]) await record(page, id, variant);
+    for (const variant of ["as_loaded", "fixed"]) if (wanted(id, variant)) await record(page, id, variant);
   }
   await browser.close();
 })().catch((error) => {
