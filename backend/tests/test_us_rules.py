@@ -389,6 +389,7 @@ def test_a_van_front_wall_is_judged_by_393_114_in_us_mode() -> None:
     assert _check(draft, "front_end_structure").status in ("to_confirm", "not_applicable")
     scenario, event = scenario_for(draft, SITUATIONS[0])
     rating = front_end_rating_n(scenario)
+    assert rating is not None
     assert rating == pytest.approx(0.5 * sum(u.mass_kg for u in scenario.units) * 9.81) or (
         rating == pytest.approx(0.4 * sum(u.mass_kg for u in scenario.units) * 9.81)
     )

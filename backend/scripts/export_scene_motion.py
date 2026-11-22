@@ -145,7 +145,7 @@ def cases() -> list[tuple[str, TripEvent]]:
 
 
 def profiles() -> list[dict[str, object]]:
-    documents = []
+    documents: list[dict[str, object]] = []
     for name, event in cases():
         profile, _ = build_profile(event)
         documents.append(

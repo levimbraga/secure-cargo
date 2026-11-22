@@ -928,10 +928,7 @@ def proof_candidates(options: list[_Candidate]) -> list[_Candidate]:
     and the minimality check then drops what they do not need.
     """
     on_paper = [c for c in options if _on_paper(c)]
-    if on_paper:
-        rest = [c for c in options if c not in on_paper]
-    else:
-        rest = list(reversed(options))
+    rest = [c for c in options if c not in on_paper] if on_paper else list(reversed(options))
     # A candidate that breaks a rule cannot win: the ones that comply are simulated first (on an
     # open body, CONTRAN 945 art. 7 sole paragraph rules out every candidate without diagonals).
     return on_paper + [c for c in rest if _rules_ok(c)] + [c for c in rest if not _rules_ok(c)]

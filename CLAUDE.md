@@ -10,6 +10,7 @@ Domain: securecargo.app (Cloudflare Registrar/DNS). `securecargo.app` = landing,
 - Commit messages: short imperative English subject (max ~72 chars), optional body explaining why.
 - Work directly on `main`: no feature branches, no pull requests. Commit small, run tests, push to `main`.
 - Never rewrite published history, never force-push to `main`.
+- Before every push, run the backend and frontend CI commands locally; never leave `main` red.
 
 ## Language policy (applies to everything)
 - **English is the primary language of the entire project:** code, comments, identifiers, commit messages,

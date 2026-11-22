@@ -76,12 +76,14 @@ test("switching country re-checks only the rules: same simulation, another check
 
   await page.getByTestId("country-US").click();
   await expect(result).toHaveAttribute("data-country", "US");
-  // Round pipes need chocks under 49 CFR 393.106(c)(1); the physics is the same 7 of 7.
+  // Round pipes need chocks under 49 CFR 393.106(c)(1); the physics is the same 7 of 7. The main
+  // problem is the 393.102(a)(2) WLL check (checked first): friction does not hold a pipe sideways.
   await expect(result).toHaveAttribute("data-state", "holds_noncompliant");
   await expect(result).toHaveAttribute("data-passed", passed ?? "7");
   await expect(page.locator('[data-theme="securing"] summary')).toContainText("FMCSA 393");
   await expect(page.locator('[data-check="rolling_articles"]')).toHaveAttribute("data-mark", "fail");
-  await expect(page.getByTestId("main-problem")).toContainText("roll");
+  await expect(page.locator('[data-check="wll_criterion"]')).toHaveAttribute("data-mark", "fail");
+  await expect(page.getByTestId("main-problem")).toContainText("working load limit");
 
   // EU rules: round pipes under straps have nothing against rolling sideways (Annex III I.1):
   // a dangerous deficiency at a roadside check; still the same simulation.
