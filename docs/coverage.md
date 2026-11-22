@@ -7,7 +7,7 @@ show it (`/app/examples`). Load and trip options come from each example's explor
 configuration; outcomes come from what the simulation of the "as loaded" version
 reported. Events marked "in a full trip" appear as a segment of the full-trip example.
 
-**65 of 65 options covered** by 14 examples.
+**66 of 66 options covered** by 14 examples.
 
 ## Body
 
@@ -70,7 +70,8 @@ reported. Events marked "in a full trip" appear as a segment of the full-trip ex
 | chain | potholed-road, weigh-station |
 | rope | rope-lashing |
 | blocking | box-truck |
-| mat | anti-slip-mat, eu-curtain-pallets |
+| mat | eu-curtain-pallets |
+| mat_direct | anti-slip-mat |
 | cradle | overloaded-strap |
 | cradle_chain | steel-coil, us-steel-coils |
 

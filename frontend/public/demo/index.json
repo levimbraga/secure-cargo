@@ -199,7 +199,7 @@
     {
       "id": "anti-slip-mat",
       "title": "Anti-slip mat",
-      "summary": "Plastic pallets on a plywood floor under two straps each: braking on a wet road, they slide, because plastic on plywood has a friction factor of only 0.2. On rubber anti-slip mats (0.6) the same two straps hold them.",
+      "summary": "Plastic pallets on a plywood floor under two straps each: braking on a wet road, they slide, because plastic on plywood has a friction factor of only 0.2. On rubber anti-slip mats (0.6) the same two straps hold them, and diagonal straps at the corners, which Brazil asks for on a flatbed, keep the load within the rules.",
       "event": {
         "kind": "emergency_braking",
         "segments": null,
@@ -218,9 +218,9 @@
         },
         "fixed": {
           "file": "anti-slip-mat.fixed.json",
-          "scenario_hash": "b46f746313733b1c327362b130a5ed37f1a5ef0a838b2acb5ef483c73873a1f1",
+          "scenario_hash": "450e114d1e6ffad427d4db318ed78fd2c901e6a30ae74c29d2d1aa0d6889fd7b",
           "status": "pass",
-          "explorer": "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=mat&speed=60&road=straight&weather=wet&event=emergency_braking"
+          "explorer": "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=mat_direct&speed=60&road=straight&weather=wet&event=emergency_braking&straps=2.2.2"
         }
       }
     },

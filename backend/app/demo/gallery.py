@@ -186,17 +186,18 @@ GALLERY: tuple[GalleryExample, ...] = (
         summary=(
             "Plastic pallets on a plywood floor under two straps each: braking on a wet road, "
             "they slide, because plastic on plywood has a friction factor of only 0.2. On "
-            "rubber anti-slip mats (0.6) the same two straps hold them."
+            "rubber anti-slip mats (0.6) the same two straps hold them, and diagonal straps at "
+            "the corners, which Brazil asks for on a flatbed, keep the load within the rules."
         ),
         as_loaded_name="Plastic pallets on the bare floor",
-        fixed_name="Plastic pallets on anti-slip mats",
+        fixed_name="Plastic pallets on anti-slip mats, with diagonal straps",
         as_loaded=_config(
             "size=truck&cargo=plastic_pallet&position=gap&restraint=top_over&speed=60"
             "&weather=wet&event=emergency_braking"
         ),
         fixed=_config(
-            "size=truck&cargo=plastic_pallet&position=gap&restraint=mat&speed=60&weather=wet"
-            "&event=emergency_braking"
+            "size=truck&cargo=plastic_pallet&position=gap&restraint=mat_direct&speed=60"
+            "&weather=wet&event=emergency_braking&straps=2.2.2"
         ),
     ),
     GalleryExample(

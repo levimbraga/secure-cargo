@@ -33,10 +33,10 @@ describe("lab controls", () => {
 
   it("read the authored straps, pretension and mat", () => {
     expect(authoredStrapsPerUnit(braking.scenario)).toBe(1);
-    expect(authoredStrapsPerUnit(demo("anti-slip-mat", "fixed").scenario)).toBe(2);
+    expect(authoredStrapsPerUnit(demo("eu-curtain-pallets", "fixed").scenario)).toBe(2);
     expect(authoredPretension(braking.scenario)).toBe(3000);
     expect(authoredMat(braking.scenario)).toBe(false);
-    expect(authoredMat(demo("anti-slip-mat", "fixed").scenario)).toBe(true);
+    expect(authoredMat(demo("eu-curtain-pallets", "fixed").scenario)).toBe(true);
     // The machine is only chained: no strap goes over it.
     expect(authoredStrapsPerUnit(demo("weigh-station", "fixed").scenario)).toBe(null);
     // Units with diagonal lashings are left to them, whatever goes over them.

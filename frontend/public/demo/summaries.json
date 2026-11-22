@@ -1945,39 +1945,39 @@
    {
     "id": "stack-1",
     "friction_coefficient": 0.6,
-    "max_slide_m": 2e-05,
+    "max_slide_m": 0.0007,
     "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.455,
+    "peak_friction_use": 0.201,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "stack-2",
     "friction_coefficient": 0.6,
-    "max_slide_m": 2e-05,
-    "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.455,
+    "max_slide_m": 0.00127,
+    "max_tilt_deg": 0.003,
+    "peak_friction_use": 0.329,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "stack-3",
     "friction_coefficient": 0.6,
-    "max_slide_m": 2e-05,
-    "max_tilt_deg": 0.002,
-    "peak_friction_use": 0.455,
+    "max_slide_m": 0.00127,
+    "max_tilt_deg": 0.003,
+    "peak_friction_use": 0.329,
     "hit_headboard": false,
     "left_bed": false
    }
   ],
   "margins": {
-   "max_slide_m": 2e-05,
+   "max_slide_m": 0.00127,
    "slide_limit_m": 0.05,
-   "max_tilt_deg": 0.002,
-   "peak_friction_use": 0.455,
-   "peak_lashing_force_n": 3002.3,
-   "peak_lashing_force_ratio": 0.1201,
-   "lashing_capacity_reserve": 0.8799
+   "max_tilt_deg": 0.003,
+   "peak_friction_use": 0.329,
+   "peak_lashing_force_n": 3395.0,
+   "peak_lashing_force_ratio": 0.1358,
+   "lashing_capacity_reserve": 0.8642
   },
   "axle_loads": [
    {
@@ -1996,24 +1996,24 @@
   "en_12195_1": [
    {
     "unit_id": "stack-1",
-    "method": "top_over",
-    "installed_lashings": 2,
-    "required_lashings": 1,
-    "meets_standard": true
+    "method": "not_assessed",
+    "installed_lashings": 6,
+    "required_lashings": null,
+    "meets_standard": null
    },
    {
     "unit_id": "stack-2",
-    "method": "top_over",
-    "installed_lashings": 2,
-    "required_lashings": 1,
-    "meets_standard": true
+    "method": "not_assessed",
+    "installed_lashings": 6,
+    "required_lashings": null,
+    "meets_standard": null
    },
    {
     "unit_id": "stack-3",
-    "method": "top_over",
-    "installed_lashings": 2,
-    "required_lashings": 1,
-    "meets_standard": true
+    "method": "not_assessed",
+    "installed_lashings": 6,
+    "required_lashings": null,
+    "meets_standard": null
    }
   ]
  },
@@ -2659,66 +2659,66 @@
    {
     "id": "drum-1",
     "friction_coefficient": 0.45,
-    "max_slide_m": 0.00258,
-    "max_tilt_deg": 0.058,
-    "peak_friction_use": 0.906,
+    "max_slide_m": 0.00204,
+    "max_tilt_deg": 0.061,
+    "peak_friction_use": 0.868,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "drum-2",
     "friction_coefficient": 0.45,
-    "max_slide_m": 0.00141,
-    "max_tilt_deg": 0.022,
-    "peak_friction_use": 0.291,
+    "max_slide_m": 0.00198,
+    "max_tilt_deg": 0.02,
+    "peak_friction_use": 0.387,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "drum-3",
     "friction_coefficient": 0.45,
-    "max_slide_m": 0.00111,
+    "max_slide_m": 0.00159,
     "max_tilt_deg": 0.011,
-    "peak_friction_use": 0.251,
+    "peak_friction_use": 0.257,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "drum-4",
     "friction_coefficient": 0.45,
-    "max_slide_m": 0.0011,
-    "max_tilt_deg": 0.01,
-    "peak_friction_use": 0.235,
+    "max_slide_m": 0.00158,
+    "max_tilt_deg": 0.009,
+    "peak_friction_use": 0.233,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "drum-5",
     "friction_coefficient": 0.45,
-    "max_slide_m": 0.0011,
-    "max_tilt_deg": 0.01,
-    "peak_friction_use": 0.23,
+    "max_slide_m": 0.00158,
+    "max_tilt_deg": 0.009,
+    "peak_friction_use": 0.232,
     "hit_headboard": false,
     "left_bed": false
    },
    {
     "id": "drum-6",
     "friction_coefficient": 0.45,
-    "max_slide_m": 0.00141,
+    "max_slide_m": 0.002,
     "max_tilt_deg": 0.01,
-    "peak_friction_use": 0.383,
+    "peak_friction_use": 0.431,
     "hit_headboard": false,
     "left_bed": false
    }
   ],
   "margins": {
-   "max_slide_m": 0.00258,
+   "max_slide_m": 0.00204,
    "slide_limit_m": 0.05,
-   "max_tilt_deg": 0.058,
-   "peak_friction_use": 0.906,
-   "peak_lashing_force_n": 3652.1,
-   "peak_lashing_force_ratio": 0.1461,
-   "lashing_capacity_reserve": 0.8539
+   "max_tilt_deg": 0.061,
+   "peak_friction_use": 0.868,
+   "peak_lashing_force_n": 3881.1,
+   "peak_lashing_force_ratio": 0.1552,
+   "lashing_capacity_reserve": 0.8448
   },
   "axle_loads": [
    {
@@ -3088,7 +3088,7 @@
      "unit_id": "coil-1",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 0.41977,
+     "value": 0.41993,
      "limit": 0.05,
      "message": "Unit coil-1 rolled 42.0 cm."
     },
@@ -3098,9 +3098,9 @@
      "unit_id": "coil-1",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 3505802.0,
+     "value": 3325624.8,
      "limit": 0.0,
-     "message": "Unit coil-1 slid into the headboard with 3505.8 kN."
+     "message": "Unit coil-1 slid into the headboard with 3325.6 kN."
     },
     {
      "code": "lashing_overloaded",
@@ -3108,7 +3108,7 @@
      "unit_id": "coil-1",
      "lashing_id": "coil-1-s1",
      "axle_group_id": null,
-     "value": 52551.1,
+     "value": 52578.4,
      "limit": 25000.0,
      "message": "Lashing coil-1-s1 reached 210 % of its rated capacity."
     }
@@ -3118,7 +3118,7 @@
    {
     "id": "coil-1",
     "friction_coefficient": 0.45,
-    "max_slide_m": 0.41977,
+    "max_slide_m": 0.41993,
     "max_tilt_deg": 0.0,
     "peak_friction_use": 1.0,
     "hit_headboard": true,
@@ -3126,13 +3126,13 @@
    }
   ],
   "margins": {
-   "max_slide_m": 0.41977,
+   "max_slide_m": 0.41993,
    "slide_limit_m": 0.05,
    "max_tilt_deg": 0.0,
    "peak_friction_use": 1.0,
-   "peak_lashing_force_n": 52551.1,
-   "peak_lashing_force_ratio": 2.102,
-   "lashing_capacity_reserve": -1.102
+   "peak_lashing_force_n": 52578.4,
+   "peak_lashing_force_ratio": 2.1031,
+   "lashing_capacity_reserve": -1.1031
   },
   "axle_loads": [
    {
@@ -3191,21 +3191,21 @@
    {
     "id": "coil-1",
     "friction_coefficient": 0.45,
-    "max_slide_m": 0.00366,
-    "max_tilt_deg": 0.012,
+    "max_slide_m": 0.00258,
+    "max_tilt_deg": 0.01,
     "peak_friction_use": 1.0,
     "hit_headboard": false,
     "left_bed": false
    }
   ],
   "margins": {
-   "max_slide_m": 0.00366,
+   "max_slide_m": 0.00258,
    "slide_limit_m": 0.05,
-   "max_tilt_deg": 0.012,
+   "max_tilt_deg": 0.01,
    "peak_friction_use": 1.0,
-   "peak_lashing_force_n": 4358.1,
-   "peak_lashing_force_ratio": 0.1743,
-   "lashing_capacity_reserve": 0.8257
+   "peak_lashing_force_n": 4359.2,
+   "peak_lashing_force_ratio": 0.1744,
+   "lashing_capacity_reserve": 0.8256
   },
   "axle_loads": [
    {
@@ -3265,9 +3265,9 @@
      "unit_id": "coil-1",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 0.47496,
+     "value": 0.46757,
      "limit": 0.05,
-     "message": "Unit coil-1 rolled 47.5 cm."
+     "message": "Unit coil-1 rolled 46.8 cm."
     },
     {
      "code": "unit_rolled",
@@ -3275,9 +3275,9 @@
      "unit_id": "coil-2",
      "lashing_id": null,
      "axle_group_id": null,
-     "value": 0.47496,
+     "value": 0.46757,
      "limit": 0.05,
-     "message": "Unit coil-2 rolled 47.5 cm."
+     "message": "Unit coil-2 rolled 46.8 cm."
     },
     {
      "code": "lashing_overloaded",
@@ -3285,9 +3285,9 @@
      "unit_id": "coil-1",
      "lashing_id": "coil-1-s1",
      "axle_group_id": null,
-     "value": 74636.1,
+     "value": 75648.8,
      "limit": 25000.0,
-     "message": "Lashing coil-1-s1 reached 299 % of its rated capacity."
+     "message": "Lashing coil-1-s1 reached 303 % of its rated capacity."
     },
     {
      "code": "lashing_overloaded",
@@ -3295,9 +3295,9 @@
      "unit_id": "coil-2",
      "lashing_id": "coil-2-s1",
      "axle_group_id": null,
-     "value": 74636.1,
+     "value": 75648.8,
      "limit": 25000.0,
-     "message": "Lashing coil-2-s1 reached 299 % of its rated capacity."
+     "message": "Lashing coil-2-s1 reached 303 % of its rated capacity."
     }
    ]
   },
@@ -3305,7 +3305,7 @@
    {
     "id": "coil-1",
     "friction_coefficient": 0.45,
-    "max_slide_m": 0.47496,
+    "max_slide_m": 0.46757,
     "max_tilt_deg": 0.0,
     "peak_friction_use": 0.597,
     "hit_headboard": false,
@@ -3314,7 +3314,7 @@
    {
     "id": "coil-2",
     "friction_coefficient": 0.45,
-    "max_slide_m": 0.47496,
+    "max_slide_m": 0.46757,
     "max_tilt_deg": 0.0,
     "peak_friction_use": 0.597,
     "hit_headboard": false,
@@ -3322,13 +3322,13 @@
    }
   ],
   "margins": {
-   "max_slide_m": 0.47496,
+   "max_slide_m": 0.46757,
    "slide_limit_m": 0.05,
    "max_tilt_deg": 0.0,
    "peak_friction_use": 0.597,
-   "peak_lashing_force_n": 74636.1,
-   "peak_lashing_force_ratio": 2.9854,
-   "lashing_capacity_reserve": -1.9854
+   "peak_lashing_force_n": 75648.8,
+   "peak_lashing_force_ratio": 3.026,
+   "lashing_capacity_reserve": -2.026
   },
   "axle_loads": [
    {

@@ -116,7 +116,7 @@ def weight(scenario: Scenario, size: Size | None) -> list[Item]:
 def protection(scenario: Scenario, *, cargo: list[str], restraint: str) -> list[Item]:
     box = scenario.bed.body is BodyType.BOX
     straps = [x for x in scenario.lashings if x.routing is LashingRouting.TOP_OVER]
-    if restraint == "mat":
+    if restraint in ("mat", "mat_direct"):
         mat: Status = "pass"
     elif box or restraint not in FRICTION_RESTRAINTS:
         mat = "not_applicable"

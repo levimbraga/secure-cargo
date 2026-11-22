@@ -75,7 +75,7 @@
       "live": "live/anti-slip-mat.as_loaded.json",
       "run": "anti-slip-mat.as_loaded.json"
     },
-    "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=mat&speed=60&road=straight&weather=wet&event=emergency_braking": {
+    "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=mat_direct&speed=60&road=straight&weather=wet&event=emergency_braking&straps=2.2.2": {
       "file": "explorer/anti-slip-mat.fixed.json",
       "live": "live/anti-slip-mat.fixed.json",
       "run": "anti-slip-mat.fixed.json"

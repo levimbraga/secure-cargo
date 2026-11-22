@@ -222,7 +222,7 @@
       },
       "anti-slip-mat": {
         "as_loaded": "On the bare floor, the plastic pallets slide forward under braking.",
-        "fixed": "On anti-slip mats, the same two straps hold them."
+        "fixed": "On anti-slip mats, the same two straps hold them; diagonal straps keep the load within the rules."
       },
       "full-trip": {
         "as_loaded": "Unlashed, the crates creep forward on the descent and slide on at the final stop.",
@@ -280,7 +280,7 @@
       },
       "anti-slip-mat": {
         "as_loaded": "Three stacks on plastic pallets, two straps each, on the plywood floor. Plastic on plywood has a friction factor of 0.2, so the straps would have to press very hard.",
-        "fixed": "The same pallets and straps, on rubber anti-slip mats with a friction factor of 0.6."
+        "fixed": "The same pallets and straps, on rubber anti-slip mats with a friction factor of 0.6, plus four diagonal straps per pallet, which CONTRAN Resolution 945/2022 asks for on a flatbed."
       },
       "full-trip": {
         "as_loaded": "Six 1.5 t crates on a semi-trailer, left without lashings because they are heavy. Weight does not help: friction grows with it, and so does inertia.",
@@ -704,6 +704,7 @@
         "rope": "Rope",
         "blocking": "Blocking",
         "mat": "Anti-slip mat and straps",
+        "mat_direct": "Anti-slip mat and diagonal straps",
         "cradle": "Coil cradle",
         "cradle_chain": "Coil cradle and chains"
       },
@@ -1224,6 +1225,7 @@
         "chain": "Add chains to every unit, forward and back on both sides",
         "top_over": "Put straps over the top of every unit",
         "mat": "Put an anti-slip mat under the load, with straps over the top",
+        "mat_direct": "Keep the anti-slip mat and add diagonal straps to every unit, forward and back on both sides",
         "blocking": "Block the load front and back",
         "cradle": "Set the coils in cradles",
         "cradle_chain": "Set the coils in cradles and chain them through the eye",

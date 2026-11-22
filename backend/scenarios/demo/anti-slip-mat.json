@@ -1,7 +1,7 @@
 {
   "id": "anti-slip-mat",
   "title": "Anti-slip mat",
-  "summary": "Plastic pallets on a plywood floor under two straps each: braking on a wet road, they slide, because plastic on plywood has a friction factor of only 0.2. On rubber anti-slip mats (0.6) the same two straps hold them.",
+  "summary": "Plastic pallets on a plywood floor under two straps each: braking on a wet road, they slide, because plastic on plywood has a friction factor of only 0.2. On rubber anti-slip mats (0.6) the same two straps hold them, and diagonal straps at the corners, which Brazil asks for on a flatbed, keep the load within the rules.",
   "event": {
     "kind": "emergency_braking",
     "segments": null,
@@ -570,7 +570,7 @@
   "fixed": {
     "schema_version": 1,
     "id": "anti-slip-mat-fixed",
-    "name": "Plastic pallets on anti-slip mats",
+    "name": "Plastic pallets on anti-slip mats, with diagonal straps",
     "bed": {
       "length_m": 8.0,
       "width_m": 2.4,
@@ -1120,11 +1120,227 @@
         "lashing_capacity_n": 25000.0,
         "elongation_at_lc": null,
         "breaking_strength_n": null
+      },
+      {
+        "id": "stack-1-strap-front-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-1",
+        "anchor_ids": [
+          "L19"
+        ],
+        "attachment_point_m": [
+          0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-1-strap-front-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-1",
+        "anchor_ids": [
+          "R19"
+        ],
+        "attachment_point_m": [
+          0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-1-strap-rear-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-1",
+        "anchor_ids": [
+          "L13"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-1-strap-rear-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-1",
+        "anchor_ids": [
+          "R13"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-2-strap-front-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-2",
+        "anchor_ids": [
+          "L16"
+        ],
+        "attachment_point_m": [
+          0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-2-strap-front-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-2",
+        "anchor_ids": [
+          "R16"
+        ],
+        "attachment_point_m": [
+          0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-2-strap-rear-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-2",
+        "anchor_ids": [
+          "L9"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-2-strap-rear-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-2",
+        "anchor_ids": [
+          "R9"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-3-strap-front-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-3",
+        "anchor_ids": [
+          "L12"
+        ],
+        "attachment_point_m": [
+          0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-3-strap-front-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-3",
+        "anchor_ids": [
+          "R12"
+        ],
+        "attachment_point_m": [
+          0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-3-strap-rear-left",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-3",
+        "anchor_ids": [
+          "L5"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
+      },
+      {
+        "id": "stack-3-strap-rear-right",
+        "kind": "strap",
+        "routing": "direct",
+        "unit_id": "stack-3",
+        "anchor_ids": [
+          "R5"
+        ],
+        "attachment_point_m": [
+          -0.6,
+          -0.5,
+          0.4
+        ],
+        "pretension_n": 3000.0,
+        "lashing_capacity_n": 25000.0,
+        "elongation_at_lc": null,
+        "breaking_strength_n": null
       }
     ]
   },
   "explorer": {
     "as_loaded": "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=top_over&speed=60&road=straight&weather=wet&event=emergency_braking",
-    "fixed": "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=mat&speed=60&road=straight&weather=wet&event=emergency_braking"
+    "fixed": "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=mat_direct&speed=60&road=straight&weather=wet&event=emergency_braking&straps=2.2.2"
   }
 }

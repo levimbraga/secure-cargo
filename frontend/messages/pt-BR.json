@@ -222,7 +222,7 @@
       },
       "anti-slip-mat": {
         "as_loaded": "No assoalho nu, os paletes plásticos deslizam para a frente na freada.",
-        "fixed": "Sobre tapetes antiderrapantes, as mesmas duas cintas seguram os paletes."
+        "fixed": "Sobre tapetes antiderrapantes, as mesmas duas cintas seguram os paletes; as cintas diagonais deixam a carga dentro das regras."
       },
       "full-trip": {
         "as_loaded": "Sem amarração, os caixotes avançam na descida e deslizam de vez na freada final.",
@@ -280,7 +280,7 @@
       },
       "anti-slip-mat": {
         "as_loaded": "Três pilhas em paletes plásticos, duas cintas cada, sobre o assoalho de compensado. Plástico sobre compensado tem fator de atrito de 0,2, então as cintas teriam de apertar muito.",
-        "fixed": "Os mesmos paletes e cintas, sobre tapetes de borracha antiderrapantes, com fator de atrito de 0,6."
+        "fixed": "Os mesmos paletes e cintas, sobre tapetes de borracha antiderrapantes, com fator de atrito de 0,6, e mais quatro cintas diagonais por palete, que a Resolução CONTRAN 945/2022 pede numa carroceria aberta."
       },
       "full-trip": {
         "as_loaded": "Seis caixotes de 1,5 t numa carreta, sem amarração porque são pesados. O peso não ajuda: o atrito cresce com ele, e a inércia também.",
@@ -704,6 +704,7 @@
         "rope": "Corda",
         "blocking": "Travamento",
         "mat": "Tapete antiderrapante e cintas",
+        "mat_direct": "Tapete antiderrapante e cintas diagonais",
         "cradle": "Berço para bobina",
         "cradle_chain": "Berço e correntes"
       },
@@ -1224,6 +1225,7 @@
         "chain": "Coloque correntes em todos os volumes, para a frente e para trás dos dois lados",
         "top_over": "Passe cintas por cima de todos os volumes",
         "mat": "Coloque uma manta antiderrapante sob a carga, com cintas por cima",
+        "mat_direct": "Mantenha a manta antiderrapante e coloque cintas diagonais em todos os volumes, para a frente e para trás dos dois lados",
         "blocking": "Trave a carga na frente e atrás",
         "cradle": "Apoie as bobinas em berços",
         "cradle_chain": "Apoie as bobinas em berços e passe correntes pelo furo",

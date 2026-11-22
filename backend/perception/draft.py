@@ -147,7 +147,7 @@ def _restraint(analysis: PhotoAnalysis) -> Restraint:
     if seen("chain"):
         return Restraint.CHAIN
     if seen("strap", "diagonal"):
-        return Restraint.DIRECT
+        return Restraint.MAT_DIRECT if seen("anti_slip_mat") else Restraint.DIRECT
     if seen("coil_cradle"):
         return Restraint.CRADLE
     if seen("anti_slip_mat"):

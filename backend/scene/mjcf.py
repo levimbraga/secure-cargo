@@ -24,6 +24,7 @@ The frame is the scenario's bed frame (X front, Y left, Z up, origin at the cent
 floor surface).
 """
 
+import math
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
@@ -283,16 +284,16 @@ def build_scene(
                 diaginertia="0.01 0.01 0.01",
             )
             left, right = f"edge_left:{lashing.id}", f"edge_right:{lashing.id}"
-            ET.SubElement(saddle, "site", name=left, pos=_vec((0, sy / 2, 0)))
-            ET.SubElement(saddle, "site", name=right, pos=_vec((0, -sy / 2, 0)))
+            edge_left, edge_right = top_over_edges(unit, strap_x, anchors[first], anchors[second])
+            for name, edge in ((left, edge_left), (right, edge_right)):
+                ET.SubElement(saddle, "site", name=name, pos=_vec((0, edge[1], edge[2] - sz / 2)))
             for site in (f"anchor:{first}", left, right, f"anchor:{second}"):
                 ET.SubElement(tendon, "site", site=site)
             anchor_points = (anchors[first], anchors[second])
-            unit_points = ((strap_x, sy / 2, sz / 2), (strap_x, -sy / 2, sz / 2))
+            unit_points = (edge_left, edge_right)
         else:
             assert lashing.attachment_point_m is not None
-            ax, ay, az = lashing.attachment_point_m
-            local = (ax, ay, az - sz / 2)
+            local = attachment_on_unit(unit, lashing.attachment_point_m)
             site_name = f"attachment:{lashing.id}"
             ET.SubElement(body, "site", name=site_name, pos=_vec(local))
             for site in (f"anchor:{lashing.anchor_ids[0]}", site_name):
@@ -407,6 +408,69 @@ def _add_visuals(root: ET.Element) -> None:
         diffuse="0.6 0.6 0.6",
         castshadow="true",
     )
+
+
+def top_over_edges(
+    unit: CargoUnit, strap_x: float, left_anchor: Vec3, right_anchor: Vec3
+) -> tuple[Vec3, Vec3]:
+    """Where a top-over strap leaves a unit on its left and right, relative to the unit's centre.
+
+    ``strap_x``: the strap's place along the bed, from the unit's centre. On a box, the top
+    edges. On a round unit, where the strap really touches it (lashing audit, 2026-11-22):
+    across a pipe or coil lying along the truck, the tangent points from each anchor (the strap
+    wraps the round side between them); along a coil lying across the truck, its surface under
+    the strap; across a standing drum, the ends of the chord of its top circle.
+    """
+    sx, sy, sz = unit.size_m
+    box = ((strap_x, sy / 2, sz / 2), (strap_x, -sy / 2, sz / 2))
+    if unit.shape is not UnitShape.CYLINDER or unit.axis is None:
+        return box
+    if unit.axis is CylinderAxis.X:
+        radius = sy / 2
+        centre_y, centre_z = unit.position_m[1], unit.position_m[2] + sz / 2
+        points = []
+        for anchor in (left_anchor, right_anchor):
+            u, v = anchor[1] - centre_y, anchor[2] - centre_z
+            distance = math.hypot(u, v)
+            if distance <= radius * 1.001:
+                return box
+            towards, spread = math.atan2(v, u), math.acos(radius / distance)
+            angle = max(towards + spread, towards - spread, key=math.sin)
+            points.append((strap_x, radius * math.cos(angle), radius * math.sin(angle)))
+        return points[0], points[1]
+    radius = sx / 2
+    offset = min(abs(strap_x), radius)
+    chord = math.sqrt(radius * radius - offset * offset)
+    if unit.axis is CylinderAxis.Y:
+        return (strap_x, sy / 2, chord), (strap_x, -sy / 2, chord)
+    return (strap_x, chord, sz / 2), (strap_x, -chord, sz / 2)
+
+
+def attachment_on_unit(unit: CargoUnit, point: Vec3) -> Vec3:
+    """A direct lashing's point on the unit, relative to its centre.
+
+    ``point`` is relative to the centre of the unit's bottom face. A point given on the box
+    around a round unit but outside the cylinder (a corner) moves onto the cylinder's surface,
+    straight towards its axis; a point inside (a coil's eye) stays.
+    """
+    sz = unit.size_m[2]
+    x, y, z = point[0], point[1], point[2] - sz / 2
+    if unit.shape is not UnitShape.CYLINDER or unit.axis is None:
+        return (x, y, z)
+    radius = unit.diameter_m / 2
+    if unit.axis is CylinderAxis.Z:
+        distance = math.hypot(x, y)
+        if distance > radius:
+            return (x * radius / distance, y * radius / distance, z)
+    elif unit.axis is CylinderAxis.X:
+        distance = math.hypot(y, z)
+        if distance > radius:
+            return (x, y * radius / distance, z * radius / distance)
+    else:
+        distance = math.hypot(x, z)
+        if distance > radius:
+            return (x * radius / distance, y, z * radius / distance)
+    return (x, y, z)
 
 
 def cylinder_inertia(unit: CargoUnit) -> Vec3:

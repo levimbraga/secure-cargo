@@ -30,7 +30,7 @@ export const CARGOES = [
   "stacked_boxes",
 ] as const;
 export const POSITIONS = ["headboard", "gap", "rear", "side", "stacked"] as const;
-export const RESTRAINTS = ["none", "top_over", "direct", "chain", "rope", "blocking", "mat", "cradle", "cradle_chain"] as const;
+export const RESTRAINTS = ["none", "top_over", "direct", "chain", "rope", "blocking", "mat", "mat_direct", "cradle", "cradle_chain"] as const;
 export const ROADS = ["straight", "curvy", "mountain", "dirt", "potholed", "urban"] as const;
 export const WEATHERS = ["dry", "wet", "heavy_rain", "mud", "fog"] as const;
 export const EVENTS = [

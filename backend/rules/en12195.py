@@ -38,6 +38,7 @@ from physics.constants import (
 )
 from physics.friction import resolve_friction
 from physics.results import DirectionCheck, StandardCheck
+from scene.mjcf import top_over_edges
 
 Direction = Literal["forward", "rearward", "sideways"]
 
@@ -228,14 +229,17 @@ def _lashing_check(
 def _top_over_sine(scenario: Scenario, unit: CargoUnit, lashing: Lashing) -> float:
     """Sine of the angle between a top-over lashing and the floor (the flatter of its sides)."""
     anchors = {anchor.id: anchor.position_m for anchor in scenario.bed.anchor_points}
-    top = unit.position_m[2] + unit.size_m[2]
+    left, right = (anchors[anchor_id] for anchor_id in lashing.anchor_ids)
+    if left[1] < right[1]:
+        left, right = right, left
+    strap_x = (left[0] + right[0]) / 2 - unit.position_m[0]
+    # Where the strap leaves the unit, as the simulation fixes it (scene/mjcf.py).
+    edges = top_over_edges(unit, strap_x, left, right)
+    centre = (unit.position_m[1], unit.position_m[2] + unit.size_m[2] / 2)
     sines = []
-    for anchor_id in lashing.anchor_ids:
-        anchor = anchors[anchor_id]
-        side = 1.0 if anchor[1] > unit.position_m[1] else -1.0
-        edge_y = unit.position_m[1] + side * unit.size_m[1] / 2
-        rise = top - anchor[2]
-        sines.append(rise / math.hypot(rise, anchor[1] - edge_y))
+    for anchor, edge in zip((left, right), edges, strict=True):
+        rise = centre[1] + edge[2] - anchor[2]
+        sines.append(rise / math.hypot(rise, anchor[1] - (centre[0] + edge[1])))
     return min(sines)
 
 

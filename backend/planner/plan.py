@@ -233,6 +233,8 @@ def _coarse(draft: LoadDraft) -> tuple[LoadDraft, list[Change]]:
             if restraint in (Restraint.CRADLE, Restraint.CRADLE_CHAIN)
             else Restraint.CHAIN
         )
+    elif diagonal and restraint in (Restraint.MAT, Restraint.MAT_DIRECT):
+        restraint = Restraint.MAT_DIRECT  # the mat stays under the diagonals
     elif diagonal and restraint not in (Restraint.CHAIN, Restraint.CRADLE_CHAIN):
         restraint = Restraint.DIRECT
     units = []
@@ -558,7 +560,12 @@ def _enough_diagonals(draft: LoadDraft) -> LoadDraft:
 
     Only for a load secured with diagonals or chains; a heavy unit gets as many sets as it takes.
     """
-    if draft.restraint not in (Restraint.DIRECT, Restraint.CHAIN, Restraint.CRADLE_CHAIN):
+    if draft.restraint not in (
+        Restraint.DIRECT,
+        Restraint.MAT_DIRECT,
+        Restraint.CHAIN,
+        Restraint.CRADLE_CHAIN,
+    ):
         return draft
     floor = set(_floor_ids(draft))
     base_of: dict[str, str] = {}
@@ -736,6 +743,15 @@ def _securing(draft: LoadDraft) -> list[_Candidate]:
         if (_tall(draft) or any(u.on for u in draft.units))
         else {uid: n for uid, n in existing.items() if uid in room}
     )
+    if draft.restraint in (Restraint.MAT, Restraint.MAT_DIRECT):
+        # The driver laid anti-slip mats: keep them and add the diagonals.
+        out.append(
+            _Candidate(
+                "mat_direct",
+                _enough_diagonals(_with_straps(draft, keep, Restraint.MAT_DIRECT)),
+                steps=("direct",),
+            )
+        )
     out.append(
         _Candidate(
             "direct",
@@ -848,10 +864,10 @@ def _securing_changes(before: LoadDraft, after: LoadDraft) -> list[Change]:
             )
         )
     chained = (Restraint.CHAIN, Restraint.CRADLE_CHAIN)
-    if after.restraint in (Restraint.DIRECT, *chained):
+    diagonals = (Restraint.DIRECT, Restraint.MAT_DIRECT, *chained)
+    if after.restraint in diagonals:
         sets_before = {
-            u.id: u.diagonal_sets if before.restraint in (Restraint.DIRECT, *chained) else 0
-            for u in before.units
+            u.id: u.diagonal_sets if before.restraint in diagonals else 0 for u in before.units
         }
         device = "chains" if after.restraint in chained else "diagonal straps"
         for unit in after.units:

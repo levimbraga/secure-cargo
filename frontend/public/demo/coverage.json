@@ -844,11 +844,16 @@
           "id": "mat",
           "covered_by": [
             {
-              "example": "anti-slip-mat",
-              "variant": "fixed"
-            },
-            {
               "example": "eu-curtain-pallets",
+              "variant": "fixed"
+            }
+          ]
+        },
+        {
+          "id": "mat_direct",
+          "covered_by": [
+            {
+              "example": "anti-slip-mat",
               "variant": "fixed"
             }
           ]

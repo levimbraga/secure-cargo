@@ -90,6 +90,9 @@ class Restraint(StrEnum):
     ROPE = "rope"  # ropes over the load (prohibited for lashing in Brazil)
     BLOCKING = "blocking"  # beams or chocks against the load
     MAT = "mat"  # anti-slip mats under the load, with straps over it
+    # Anti-slip mats under the load and diagonal straps from its corners (straps over it as set):
+    # Brazil asks for diagonals on a flatbed (CONTRAN 945/2022 art. 7 sole paragraph).
+    MAT_DIRECT = "mat_direct"
     CRADLE = "cradle"  # coil cradle: chocks on both sides of a coil
     # A coil cradle plus chains through the eye, forward and backward (49 CFR 393.120(c)).
     CRADLE_CHAIN = "cradle_chain"

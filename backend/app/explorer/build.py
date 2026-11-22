@@ -723,7 +723,7 @@ def build_draft(
                 raise BuildError("cannot_stack", f"Nothing can stand on {below.id}.")
             z = round(below.position_m[2] + below.size_m[2], 4)
         material = cargo.material
-        if restraint is Restraint.MAT and z == 0:
+        if restraint in (Restraint.MAT, Restraint.MAT_DIRECT) and z == 0:
             material = CargoMaterial.RUBBER_MAT
         try:
             unit = CargoUnit(
@@ -763,8 +763,13 @@ def build_draft(
             )
         lashings += _over(unit, pairs, item.straps, properties)
     floor_units = [unit for unit in units if unit.position_m[2] == 0]
-    if restraint in (Restraint.DIRECT, Restraint.CHAIN, Restraint.CRADLE_CHAIN):
-        chained = restraint is not Restraint.DIRECT
+    if restraint in (
+        Restraint.DIRECT,
+        Restraint.MAT_DIRECT,
+        Restraint.CHAIN,
+        Restraint.CRADLE_CHAIN,
+    ):
+        chained = restraint in (Restraint.CHAIN, Restraint.CRADLE_CHAIN)
         device = CHAIN if chained else STRAP
         kind = LashingKind.CHAIN if chained else LashingKind.STRAP
         sets = {item.id: item.diagonal_sets for item in draft.units}
