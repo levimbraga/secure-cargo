@@ -32,9 +32,10 @@ for (const prefix of ["", "/pt-BR"]) {
     await expect(flow).toHaveAttribute("data-flow-step", "truck", { timeout: 20_000 });
     await expect(page.getByTestId("truck-caption").first()).toBeVisible();
     await expectNoPlaceholder(page, "size cards");
-    await page.locator('[data-testid^="size-"]').first().click();
+    // The AI's picks: the sample's result is precomputed for that truck (CI has no API).
+    await page.locator('[data-testid^="size-"]', { hasText: /AI pick|IA/ }).click();
     await expectNoPlaceholder(page, "body cards");
-    await page.locator('[data-testid^="style-"]').first().click();
+    await page.locator('[data-testid^="style-"]', { hasText: /AI pick|IA/ }).click();
     await expect(flow).toHaveAttribute("data-flow-step", "weight");
     await expectNoPlaceholder(page, "weight");
     await page.getByTestId("weight-next").click();
