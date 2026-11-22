@@ -130,7 +130,9 @@ function Screen({ shot, variant, eyeLabel, overlay }: { shot: Shot; variant: Gui
           {eyeLabel && (
             <g data-part="eye-level">
               <path d={`M6 ${eye}H${W - 6}`} strokeWidth={0.9} strokeDasharray="5 4" />
-              <text x={8} y={eye - 4} fontSize={11} fill="currentColor" stroke="none" fontFamily="inherit">
+              {/* Legend in the top corner, clear of the drawing. */}
+              <path d="M10 14h18" strokeWidth={0.9} strokeDasharray="5 4" />
+              <text x={32} y={18} fontSize={11} fill="currentColor" stroke="none" fontFamily="inherit">
                 {eyeLabel}
               </text>
             </g>
