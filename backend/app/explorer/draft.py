@@ -26,7 +26,7 @@ from app.explorer.config import (
     Size,
     Weather,
 )
-from app.scenario import BodyType, EventKind
+from app.scenario import BodyType, EventKind, LashingKind, LashingRouting
 
 Identifier = Annotated[str, Field(min_length=1, max_length=40, pattern=r"^[A-Za-z0-9_-]+$")]
 Coordinate = Annotated[float, Field(ge=-10, le=10)]
@@ -105,6 +105,37 @@ class DraftTrip(_Model):
     event: EventKind = EventKind.EMERGENCY_BRAKING
 
 
+Corner = Literal["front_left", "front_right", "rear_left", "rear_right"]
+
+# At most this many lashings set by hand on one unit.
+MAX_LASHINGS_PER_UNIT = 16
+
+
+class DraftLashing(_Model):
+    """One lashing set by hand: its device, its route and the lashing points it uses.
+
+    Over the top (``top_over``): ``anchors`` are a left and a right lashing point facing each
+    other along the unit. Diagonal (``direct``): ``anchors`` is one lashing point and ``corner``
+    the corner of the unit it is fixed to (through the eye, on a coil lying across the truck).
+    The angles follow from the geometry; the device's ratings are the explorer's usual ones
+    (``build.py``: a 50 mm ratchet strap, an 8 mm grade 80 chain, a 10 mm rope).
+    """
+
+    kind: LashingKind = LashingKind.STRAP
+    routing: LashingRouting = LashingRouting.TOP_OVER
+    anchors: list[Identifier] = Field(min_length=1, max_length=2)
+    corner: Corner | None = None
+
+    @model_validator(mode="after")
+    def _route(self) -> Self:
+        if self.routing is LashingRouting.TOP_OVER:
+            if len(self.anchors) != 2 or self.corner is not None:
+                raise ValueError("a lashing over the top takes two lashing points and no corner")
+        elif len(self.anchors) != 1 or self.corner is None:
+            raise ValueError("a diagonal lashing takes one lashing point and a corner")
+        return self
+
+
 class DraftUnit(_Model):
     id: Identifier
     cargo: Cargo
@@ -128,6 +159,14 @@ class DraftUnit(_Model):
         description=(
             "With diagonal lashings or chains (restraint direct or chain), sets of four on this "
             "unit: forward and backward on both sides. Heavy units take more than one."
+        ),
+    )
+    lashings: list[DraftLashing] | None = Field(
+        default=None,
+        max_length=MAX_LASHINGS_PER_UNIT,
+        description=(
+            "Lashings set by hand: every lashing on this unit, in place of ``straps`` and of the "
+            "diagonals the load's restraint gives. None: the usual ones."
         ),
     )
 

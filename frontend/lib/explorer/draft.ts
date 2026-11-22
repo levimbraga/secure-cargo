@@ -15,6 +15,16 @@ import type { Scenario, TripEventInput } from "@/lib/live/scenario";
 
 import type { Body, Cargo, ExplorerConfig, ExplorerEvent, Restraint, Road, Size, UnitMove, Weather } from "./config";
 
+/** A lashing set by hand (`DraftLashing` in `backend/app/explorer/draft.py`). */
+export type DraftLashing = {
+  kind: "strap" | "chain" | "rope";
+  routing: "top_over" | "direct";
+  /** Over the top: a left and a right lashing point; diagonal: one. */
+  anchors: string[];
+  /** Diagonal: the corner of the unit it is fixed to. */
+  corner?: "front_left" | "front_right" | "rear_left" | "rear_right" | null;
+};
+
 export type DraftUnit = {
   id: string;
   cargo: Cargo;
@@ -32,6 +42,8 @@ export type DraftUnit = {
   straps: number;
   /** With diagonals or chains: sets of four on this unit (1 to 3; the planner adds them on heavy units). */
   diagonal_sets?: number;
+  /** Every lashing on this unit, set by hand, in place of `straps` and the restraint's diagonals. */
+  lashings?: DraftLashing[] | null;
 };
 
 export type LoadDraft = {
@@ -121,7 +133,7 @@ export function footprints(draft: LoadDraft, scenario: Scenario): Footprint[] {
       round: (built as { shape?: string } | undefined)?.shape === "cylinder",
       on: unit.on ?? null,
       carries: carriedBy.get(unit.id) ?? null,
-      straps: unit.straps,
+      straps: unit.lashings ? unit.lashings.filter((lashing) => lashing.routing === "top_over").length : unit.straps,
     };
   });
 }
@@ -170,16 +182,26 @@ export function moveUnit(
 
 /** Anchor pairs facing each other along a unit: how many top-over straps it can take. */
 export function strapRoom(scenario: Scenario, unit: Footprint): number {
+  return strapPairs(scenario, unit).length;
+}
+
+/** The left and right lashing points facing each other along a unit, rear first: where a strap can go over it. */
+export function strapPairs(
+  scenario: Pick<Scenario, "bed">,
+  unit: Pick<Footprint, "x" | "y" | "length" | "cargo">,
+): { x: number; left: string; right: string }[] {
   // Mirrors _strap_reach in backend/app/explorer/build.py: 5 cm inside the unit's ends, and on
   // a coil lying across the truck within a quarter of its diameter of the crest.
   const reach = unit.cargo === "steel_coil" ? unit.length / 4 : unit.length / 2 - 0.05;
-  const left = new Set(
-    scenario.bed.anchor_points.filter((anchor) => anchor.position_m[1] > unit.y).map((anchor) => anchor.position_m[0]),
-  );
-  return scenario.bed.anchor_points.filter(
-    (anchor) =>
-      anchor.position_m[1] < unit.y && left.has(anchor.position_m[0]) && Math.abs(anchor.position_m[0] - unit.x) <= reach + 1e-6,
-  ).length;
+  const anchors = scenario.bed.anchor_points;
+  const left = new Map(anchors.filter((anchor) => anchor.position_m[1] > unit.y).map((anchor) => [anchor.position_m[0], anchor.id]));
+  return anchors
+    .filter(
+      (anchor) =>
+        anchor.position_m[1] < unit.y && left.has(anchor.position_m[0]) && Math.abs(anchor.position_m[0] - unit.x) <= reach + 1e-6,
+    )
+    .map((anchor) => ({ x: anchor.position_m[0], left: left.get(anchor.position_m[0]) as string, right: anchor.id }))
+    .sort((a, b) => a.x - b.x);
 }
 
 /** The unit whose straps a tap on `id` changes: the top of its stack (straps go over the stack). */

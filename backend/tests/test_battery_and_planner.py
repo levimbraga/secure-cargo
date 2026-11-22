@@ -275,3 +275,20 @@ def test_a_stacked_load_is_fixed_and_proven() -> None:
     assert result.verified
     assert result.battery is not None
     assert result.battery.verdict.state == "approved"
+
+
+def test_lashings_set_by_hand_become_the_usual_pattern_before_the_fix() -> None:
+    # The pallets of the braking example, each with one rope over the top set by hand.
+    draft = _draft("emergency-braking.as_loaded")
+    scenario, _ = build_draft(draft)
+    units = []
+    for unit in draft.units:
+        over = next(lashing for lashing in scenario.lashings if lashing.unit_id == unit.id)
+        rope = {"kind": "rope", "routing": "top_over", "anchors": over.anchor_ids}
+        units.append({**unit.model_dump(), "lashings": [rope]})
+    by_hand = LoadDraft.model_validate({**draft.model_dump(), "units": units})
+    fixed, changes = recommend(by_hand)
+    codes = [c.code for c in changes]
+    assert codes[:2] == ["standard_lashings", "replace_rope"]
+    assert all(unit.lashings is None for unit in fixed.units)
+    assert fixed.restraint in ("direct", "chain", "blocking")

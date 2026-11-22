@@ -88,3 +88,31 @@ test("tests the whole trip, marks where it fails and makes the load as safe as p
   await page.getByTestId("trip-undo").click();
   await expect(page.locator("[data-explorer-state]")).toHaveAttribute("data-explorer-status", "fail", { timeout: 60_000 });
 });
+
+test("sets a unit's lashings by hand: device, route, lashing point and angles", async ({ page, request }) => {
+  const api = await request.get(`${API_URL}/health`).catch(() => null);
+  if (!api?.ok()) await page.route(`${API_URL}/**`, (route) => route.abort());
+  await page.goto(
+    "/app/explorer?body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=direct&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=1.1",
+  );
+  await ready(page);
+  await page.locator('[data-unit-row="cabinet-1"]').getByRole("button", { expanded: false }).click();
+  const list = page.getByTestId("lashing-list");
+  await expect(list).toHaveAttribute("data-custom", "false");
+  // One strap over the top and four diagonals, as the securing gives them.
+  await expect(list.locator("[data-lashing-row]")).toHaveCount(5);
+  await expect(list.getByTestId("lashing-angles").first()).toContainText("α");
+
+  await list.getByTestId("lashing-kind").first().selectOption("chain");
+  await expect(list).toHaveAttribute("data-custom", "true");
+  await list.getByTestId("lashing-add-top_over").click();
+  await expect(list.locator("[data-lashing-row]")).toHaveCount(6);
+  await list.getByTestId("lashing-remove").nth(1).click();
+  await expect(list.locator("[data-lashing-row]")).toHaveCount(5);
+  await expect
+    .poll(() => draftOf(page.url()).units[0] as unknown as { lashings?: { kind: string; routing: string }[] })
+    .toMatchObject({ lashings: [{ kind: "chain", routing: "top_over" }, {}, {}, {}, {}] });
+
+  await list.getByTestId("lashings-reset").click();
+  await expect(list).toHaveAttribute("data-custom", "false");
+});

@@ -21,7 +21,7 @@ from app.explorer.config import (
     Size,
     Weather,
 )
-from app.explorer.draft import DraftTrip, DraftTruck, DraftUnit, LoadDraft
+from app.explorer.draft import DraftLashing, DraftTrip, DraftTruck, DraftUnit, LoadDraft
 from app.scenario import (
     AnchorPoint,
     AxleGroup,
@@ -745,6 +745,9 @@ def build_draft(
     lashings: list[Lashing] = []
     properties = ROPE if restraint is Restraint.ROPE else STRAP
     for item, unit in zip(draft.units, units, strict=True):
+        if item.lashings is not None:
+            lashings += _by_hand(unit, item.lashings, bed.anchor_points)
+            continue
         if item.straps == 0:
             continue
         pairs = _anchor_pairs(
@@ -765,7 +768,10 @@ def build_draft(
         device = CHAIN if chained else STRAP
         kind = LashingKind.CHAIN if chained else LashingKind.STRAP
         sets = {item.id: item.diagonal_sets for item in draft.units}
+        by_hand = {item.id for item in draft.units if item.lashings is not None}
         for unit in floor_units:
+            if unit.id in by_hand:
+                continue
             lashings += _diagonals(unit, bed.anchor_points, kind, device, sets.get(unit.id, 1))
     blocks: list[Block] = []
     if restraint in (Restraint.BLOCKING, Restraint.CRADLE, Restraint.CRADLE_CHAIN):
@@ -913,6 +919,71 @@ def _over(
         )
         for index, pair in enumerate(chosen)
     ]
+
+
+DEVICES: dict[LashingKind, dict[str, object]] = {
+    LashingKind.STRAP: STRAP,
+    LashingKind.CHAIN: CHAIN,
+    LashingKind.ROPE: ROPE,
+}
+
+
+def _by_hand(
+    unit: CargoUnit, items: list[DraftLashing], anchors: list[AnchorPoint]
+) -> list[Lashing]:
+    """The lashings a user set on a unit: each on the lashing points it names.
+
+    A lashing over the top must cross the unit (both points within its strap reach, on
+    opposite sides); a diagonal goes from a corner of the unit, 40 cm up (or half its height),
+    or through the eye of a coil lying across the truck, to its point.
+    """
+    known = {anchor.id: anchor for anchor in anchors}
+    reach = _strap_reach(unit.shape, unit.axis, unit.size_m)
+    half_x, half_y, height = unit.size_m[0] / 2, unit.size_m[1] / 2, unit.size_m[2]
+    through_eye = unit.shape is UnitShape.CYLINDER and unit.axis is CylinderAxis.Y
+    out: list[Lashing] = []
+    for index, item in enumerate(items):
+        missing = [a for a in item.anchors if a not in known]
+        if missing:
+            raise BuildError("unknown_anchor", f"{unit.id}: no lashing point {missing[0]}.")
+        device = {"kind": item.kind, **DEVICES[item.kind]}
+        if item.routing is LashingRouting.TOP_OVER:
+            first, second = (known[a].position_m for a in item.anchors)
+            crosses = all(abs(p[0] - unit.position_m[0]) <= reach + 1e-6 for p in (first, second))
+            sides = (first[1] - unit.position_m[1]) * (second[1] - unit.position_m[1]) < 0
+            if not (crosses and sides):
+                raise BuildError(
+                    "lashing_misplaced",
+                    f"{unit.id}: a lashing over the top needs a point on each side along it.",
+                )
+            out.append(
+                Lashing(
+                    id=f"{unit.id}-h{index + 1}",
+                    routing=LashingRouting.TOP_OVER,
+                    unit_id=unit.id,
+                    anchor_ids=list(item.anchors),
+                    **device,
+                )
+            )
+            continue
+        corner = item.corner or "front_left"
+        end = 1 if corner.startswith("front") else -1
+        side = 1 if corner.endswith("left") else -1
+        if through_eye:
+            point = (0.0, side * half_y, height / 2)
+        else:
+            point = (end * half_x, side * half_y, min(0.4, height / 2))
+        out.append(
+            Lashing(
+                id=f"{unit.id}-h{index + 1}",
+                routing=LashingRouting.DIRECT,
+                unit_id=unit.id,
+                anchor_ids=list(item.anchors),
+                attachment_point_m=point,
+                **device,
+            )
+        )
+    return out
 
 
 def _closest_anchor(anchors: list[AnchorPoint], side: int, x: float) -> AnchorPoint:

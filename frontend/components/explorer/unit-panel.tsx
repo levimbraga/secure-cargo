@@ -22,6 +22,9 @@ import { addUnits, duplicateUnit, MAX_ADD, MAX_UNITS, massOf } from "@/lib/explo
 import { removeUnit, resizeUnit, ROUND_CARGO, setCargo, setUnit, sizeOf } from "@/lib/inspection/review";
 import { FOOT_M, LB_KG } from "@/lib/units";
 
+import { addLashing, lashingsOf, setLashings } from "@/lib/explorer/lashings";
+
+import { LashingList } from "./lashing-list";
 import type { EditorLoad } from "./load-editor";
 
 type Refusal = "overlap" | "full" | { added: number; asked: number } | null;
@@ -84,6 +87,23 @@ export function UnitPanel({
           .map((unit) => {
             const lashed = lashedUnit(units, unit.id);
             const straps = lashed?.straps ?? 0;
+            const byHand = Boolean(lashed && draft.units.find((entry) => entry.id === lashed.id)?.lashings);
+            // A unit with lashings set by hand: − and + take off or add a strap over the top in its list.
+            const strapsTo = (count: number) => {
+              if (!lashed) return;
+              if (!byHand) {
+                onEdit(setStraps(draft, lashed.id, count));
+                return;
+              }
+              const list = lashingsOf(draft, load.scenario, lashed);
+              if (count > straps) {
+                const next = addLashing(list, load.scenario, lashed, "top_over", "strap");
+                if (next) onEdit(setLashings(draft, lashed.id, next));
+              } else {
+                const last = list.map((item) => item.routing).lastIndexOf("top_over");
+                if (last >= 0) onEdit(setLashings(draft, lashed.id, list.filter((_, n) => n !== last)));
+              }
+            };
             const room = Math.min(strapRoom(load.scenario, unit), MAX_STRAPS_PER_UNIT);
             const name = nameOf(unit.id);
             const stack = stackOf(unit);
@@ -118,7 +138,7 @@ export function UnitPanel({
                       type="button"
                       aria-label={t("fewer", { unit: name })}
                       disabled={straps <= 0 || !lashed}
-                      onClick={() => lashed && onEdit(setStraps(draft, lashed.id, straps - 1))}
+                      onClick={() => strapsTo(straps - 1)}
                       className="size-11 rounded-full bg-surface text-ink disabled:opacity-40 sm:size-8"
                     >
                       −
@@ -130,7 +150,7 @@ export function UnitPanel({
                       type="button"
                       aria-label={t("more", { unit: name })}
                       disabled={straps >= room || !lashed}
-                      onClick={() => lashed && onEdit(setStraps(draft, lashed.id, straps + 1))}
+                      onClick={() => strapsTo(straps + 1)}
                       className="size-11 rounded-full bg-surface text-ink disabled:opacity-40 sm:size-8"
                     >
                       +
@@ -211,6 +231,7 @@ export function UnitPanel({
                       </span>
                       {!item.mass_kg && <span className="type-small mt-1 block text-gray">{t("usualWeight")}</span>}
                     </label>
+                    {lashed && <LashingList scenario={load.scenario} draft={draft} unit={lashed} onEdit={onEdit} />}
                     <div className="flex flex-wrap gap-x-5 gap-y-2">
                       <button
                         type="button"

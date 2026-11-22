@@ -815,6 +815,44 @@
         "lashing_broke": "uma amarração de {unit} arrebenta",
         "load": "a carga se mexe"
       }
+    },
+    "lashings": {
+      "title": "Amarrações",
+      "usual": "Como o tipo de amarração escolhido as põe; mude uma para definir à mão.",
+      "reset": "Voltar às de sempre",
+      "none": "Nenhuma amarração neste volume.",
+      "kind": "Dispositivo",
+      "kinds": {
+        "strap": "Cinta",
+        "chain": "Corrente",
+        "rope": "Corda"
+      },
+      "routes": {
+        "top_over": "por cima",
+        "direct": "diagonal"
+      },
+      "remove": "Remover a amarração {number}",
+      "at": "A",
+      "offUnit": "fora do volume",
+      "fromFront": "{distance} da frente",
+      "corner": "Do",
+      "corners": {
+        "front_left": "canto dianteiro esquerdo",
+        "front_right": "canto dianteiro direito",
+        "rear_left": "canto traseiro esquerdo",
+        "rear_right": "canto traseiro direito"
+      },
+      "to": "até o",
+      "pointLeft": "ponto esquerdo, a {distance} da frente",
+      "pointRight": "ponto direito, a {distance} da frente",
+      "angleOver": "α {alpha}°",
+      "angleDiagonal": "α {alpha}° · β {beta}°",
+      "capacity": "LC {value} daN",
+      "add": {
+        "top_over": "+ Por cima",
+        "direct": "+ Diagonal"
+      },
+      "ropeNote": "Corda não é dispositivo de amarração: proibida no Brasil (CONTRAN 945/2022 art. 4 §3) e não conta na UE."
     }
   },
   "Gallery": {
@@ -1415,7 +1453,8 @@
       "reanchor": "Prenda as amarrações nos pontos de amarração da estrutura metálica, não no assoalho de madeira.",
       "overweight": "A carga pesa {mass}; este caminhão pode levar {payload}. Use um caminhão maior ou divida a carga.",
       "edge_protectors": "Coloque cantoneiras sob as cintas onde elas cruzam a carga frágil.",
-      "replaceRopeUs": "Troque as cordas por cintas com catraca."
+      "replaceRopeUs": "Troque as cordas por cintas com catraca.",
+      "standard_lashings": "As amarrações definidas à mão viram o padrão de sempre (cintas por cima, diagonais nos cantos) antes de buscar a correção."
     },
     "fix": {
       "title": "Como corrigir",

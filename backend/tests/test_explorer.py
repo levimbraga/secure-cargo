@@ -232,3 +232,86 @@ def test_the_query_the_frontend_writes_for_an_edited_load_is_canonical_here_too(
     assert edited.to_query() == query
     draft = build(edited).draft
     assert [(unit.x_m, unit.straps) for unit in draft.units] == [(2.0, 2), (0.4, 1), (-1.85, 1)]
+
+
+def _one_crate(lashings: list[dict[str, object]], **extra: object) -> LoadDraft:
+    """A crate on a toco, centred at x = 0 (lashing points every 0.4 m, ids L/R from the rear)."""
+    return LoadDraft.model_validate(
+        {
+            "restraint": "top_over",
+            **extra,
+            "units": [
+                {"id": "crate-1", "cargo": "crate", "x_m": 0.0, "y_m": 0.0, "straps": 2},
+                {"id": "crate-2", "cargo": "crate", "x_m": -2.0, "y_m": 0.0, "straps": 1},
+            ]
+            if not lashings
+            else [
+                {
+                    "id": "crate-1",
+                    "cargo": "crate",
+                    "x_m": 0.0,
+                    "y_m": 0.0,
+                    "straps": 2,
+                    "lashings": lashings,
+                },
+                {"id": "crate-2", "cargo": "crate", "x_m": -2.0, "y_m": 0.0, "straps": 1},
+            ],
+        }
+    )
+
+
+def _pair_along(scenario: Scenario, x: float) -> list[str]:
+    left = min(
+        (a for a in scenario.bed.anchor_points if a.position_m[1] > 0),
+        key=lambda a: abs(a.position_m[0] - x),
+    )
+    right = next(
+        a
+        for a in scenario.bed.anchor_points
+        if a.position_m[1] < 0 and a.position_m[0] == left.position_m[0]
+    )
+    return [left.id, right.id]
+
+
+def test_lashings_set_by_hand_replace_the_usual_ones_on_their_unit() -> None:
+    scenario, _ = build_draft(_one_crate([]))
+    pair = _pair_along(scenario, 0.0)
+    rear_left = _pair_along(scenario, -1.0)[0]
+    draft = _one_crate(
+        [
+            {"kind": "chain", "routing": "top_over", "anchors": pair},
+            {"kind": "rope", "routing": "direct", "anchors": [rear_left], "corner": "rear_left"},
+        ],
+        restraint="direct",
+    )
+    built, _ = build_draft(draft)
+    mine = [lashing for lashing in built.lashings if lashing.unit_id == "crate-1"]
+    assert [(item.kind, item.routing) for item in mine] == [
+        (LashingKind.CHAIN, LashingRouting.TOP_OVER),
+        (LashingKind.ROPE, LashingRouting.DIRECT),
+    ]
+    assert mine[0].anchor_ids == pair
+    assert mine[1].attachment_point_m == (-0.6, 0.5, 0.4)
+    # The other crate keeps its strap and the restraint's four diagonals.
+    assert len([lashing for lashing in built.lashings if lashing.unit_id == "crate-2"]) == 5
+
+
+@pytest.mark.parametrize(
+    ("lashing", "code"),
+    [
+        ({"routing": "top_over", "anchors": ["L0", "R0"]}, "lashing_misplaced"),
+        ({"routing": "top_over", "anchors": ["L5", "L6"]}, "lashing_misplaced"),
+        ({"routing": "direct", "anchors": ["X9"], "corner": "front_left"}, "unknown_anchor"),
+    ],
+)
+def test_a_lashing_set_by_hand_must_reach_its_unit(lashing: dict[str, object], code: str) -> None:
+    with pytest.raises(BuildError) as error:
+        build_draft(_one_crate([lashing]))
+    assert error.value.code == code
+
+
+def test_a_lashing_set_by_hand_names_its_route() -> None:
+    with pytest.raises(ValueError):
+        _one_crate([{"routing": "direct", "anchors": ["L0"]}])
+    with pytest.raises(ValueError):
+        _one_crate([{"routing": "top_over", "anchors": ["L0"]}])

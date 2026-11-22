@@ -156,7 +156,8 @@ export type ChangeCode =
   | "diagonal_sets"
   | "spread"
   | "overweight"
-  | "edge_protectors";
+  | "edge_protectors"
+  | "standard_lashings";
 
 export type Change = {
   code: ChangeCode;

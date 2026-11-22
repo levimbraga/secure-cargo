@@ -815,6 +815,44 @@
         "lashing_broke": "a lashing on {unit} breaks",
         "load": "the load moves"
       }
+    },
+    "lashings": {
+      "title": "Lashings",
+      "usual": "As the securing gives them; change one to set them by hand.",
+      "reset": "Back to the usual ones",
+      "none": "No lashing on this unit.",
+      "kind": "Device",
+      "kinds": {
+        "strap": "Web strap",
+        "chain": "Chain",
+        "rope": "Rope"
+      },
+      "routes": {
+        "top_over": "over the top",
+        "direct": "diagonal"
+      },
+      "remove": "Remove lashing {number}",
+      "at": "At",
+      "offUnit": "not along the unit",
+      "fromFront": "{distance} from the front",
+      "corner": "From",
+      "corners": {
+        "front_left": "front left corner",
+        "front_right": "front right corner",
+        "rear_left": "rear left corner",
+        "rear_right": "rear right corner"
+      },
+      "to": "to",
+      "pointLeft": "left point, {distance} from the front",
+      "pointRight": "right point, {distance} from the front",
+      "angleOver": "α {alpha}°",
+      "angleDiagonal": "α {alpha}° · β {beta}°",
+      "capacity": "LC {value} daN",
+      "add": {
+        "top_over": "+ Over the top",
+        "direct": "+ Diagonal"
+      },
+      "ropeNote": "A rope is not a rated lashing: prohibited in Brazil (CONTRAN 945/2022 art. 4 §3) and not counted in the EU."
     }
   },
   "Gallery": {
@@ -1415,7 +1453,8 @@
       "reanchor": "Hook the lashings to the lashing points on the metal frame, not the wooden floor.",
       "overweight": "The cargo weighs {mass}; this truck may carry {payload}. Use a larger truck or split the load.",
       "edge_protectors": "Put edge protectors under the straps where they cross fragile cargo.",
-      "replaceRopeUs": "Replace the ropes with ratchet straps."
+      "replaceRopeUs": "Replace the ropes with ratchet straps.",
+      "standard_lashings": "Lashings set by hand become the usual pattern (straps over the top, diagonals at the corners) before the fix is searched."
     },
     "fix": {
       "title": "How to fix it",

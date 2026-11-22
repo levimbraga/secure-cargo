@@ -49,7 +49,14 @@ from app.inspection.battery import (
     situation_holds,
     wall_load_n,
 )
-from app.scenario import BodyType, CylinderAxis, Scenario, UnitShape
+from app.scenario import (
+    BodyType,
+    CylinderAxis,
+    LashingKind,
+    LashingRouting,
+    Scenario,
+    UnitShape,
+)
 from app.storage import Storage
 from physics.results import AxleLoad
 from rules.axle_loads import axle_loads
@@ -84,6 +91,7 @@ ChangeCode = Literal[
     "spread",
     "overweight",
     "edge_protectors",
+    "standard_lashings",
 ]
 
 # Effort of each step (what it takes the driver), for ordering the candidates.
@@ -202,8 +210,62 @@ class _Candidate:
 # --- 1. Rules ----------------------------------------------------------------------------
 
 
+def _coarse(draft: LoadDraft) -> tuple[LoadDraft, list[Change]]:
+    """Lashings set by hand, as the planner's usual pattern, so it can add to them.
+
+    Each such unit keeps as many straps over the top as it had (as far as its lashing points
+    allow) and a set of four diagonals per four diagonal lashings; the load's restraint takes
+    the device used by hand: rope if any (replaced next, where ropes are not allowed), else a
+    chain or a web strap on the diagonals.
+    """
+    custom = [unit for unit in draft.units if unit.lashings is not None]
+    if not custom:
+        return draft, []
+    scenario, _ = build_draft(draft)
+    used = [lashing for unit in custom for lashing in unit.lashings or []]
+    diagonal = [lashing for lashing in used if lashing.routing is LashingRouting.DIRECT]
+    restraint = draft.restraint
+    if any(lashing.kind is LashingKind.ROPE for lashing in used):
+        restraint = Restraint.ROPE
+    elif any(lashing.kind is LashingKind.CHAIN for lashing in diagonal):
+        restraint = (
+            Restraint.CRADLE_CHAIN
+            if restraint in (Restraint.CRADLE, Restraint.CRADLE_CHAIN)
+            else Restraint.CHAIN
+        )
+    elif diagonal and restraint not in (Restraint.CHAIN, Restraint.CRADLE_CHAIN):
+        restraint = Restraint.DIRECT
+    units = []
+    for unit in draft.units:
+        if unit.lashings is None:
+            units.append(unit)
+            continue
+        over = sum(1 for lashing in unit.lashings if lashing.routing is LashingRouting.TOP_OVER)
+        direct = len(unit.lashings) - over
+        units.append(
+            unit.model_copy(
+                update={
+                    "lashings": None,
+                    "straps": min(over, strap_room(scenario, unit.id), MAX_STRAPS_PER_UNIT),
+                    "diagonal_sets": min(max(1, math.ceil(direct / 4)), MAX_DIAGONAL_SETS),
+                }
+            )
+        )
+    coarse = draft.model_copy(update={"units": units, "restraint": restraint})
+    return coarse, [
+        Change(
+            code="standard_lashings",
+            values={"units": float(len(custom))},
+            message=(
+                "The lashings set by hand become the usual pattern (straps over the top, "
+                "diagonals at the corners) before the fix is searched."
+            ),
+        )
+    ]
+
+
 def _rule_fixes(draft: LoadDraft) -> tuple[LoadDraft, list[Change]]:
-    changes: list[Change] = []
+    draft, changes = _coarse(draft)
     # Ropes are prohibited in Brazil and are not EN 12195 lashings in the EU; in the US they are
     # allowed without knots (to confirm).
     if draft.restraint is Restraint.ROPE and draft.country is not Country.US:

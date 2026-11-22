@@ -165,6 +165,7 @@ export function LoadEditor({
     setDrag(null);
     if (!current.moved) {
       if (onSelect) onSelect(unit.id);
+      else if (byHand(unit.id)) setOpen(unit.id);
       else onEdit(cycleStraps(draft, units, unit.id, strapRoom(load.scenario, unit)));
       return;
     }
@@ -189,11 +190,28 @@ export function LoadEditor({
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       if (onSelect) onSelect(unit.id);
+      else if (byHand(unit.id)) setOpen(unit.id);
       else onEdit(cycleStraps(draft, units, unit.id, strapRoom(load.scenario, unit)));
     }
   }
 
+  /** A stack whose top unit has lashings set by hand: a tap opens it instead of adding a strap. */
+  function byHand(id: string): boolean {
+    const lashed = lashedUnit(units, id);
+    return Boolean(lashed && draft.units.find((item) => item.id === lashed.id)?.lashings);
+  }
+
   const strapsOf = (unit: Footprint) => lashedUnit(shown, unit.id)?.straps ?? 0;
+  // Straps over the top set by hand are drawn at their own lashing points.
+  const anchorX = new Map(bed.anchor_points.map((anchor) => [anchor.id, anchor.position_m[0]]));
+  const overLines = (unit: Footprint, lashedId: string, straps: number): { x: number; id: string }[] => {
+    const list = draft.units.find((item) => item.id === lashedId)?.lashings;
+    if (!list) return strapLines(load, unit, straps).map((x, n) => ({ x, id: topOverId(lashedId, n + 1) }));
+    // The server names a lashing set by hand by its place in the unit's list (`_by_hand`).
+    return list.flatMap((item, n) =>
+      item.routing === "top_over" ? [{ x: anchorX.get(item.anchors[0] ?? "") ?? 0, id: `${lashedId}-h${n + 1}` }] : [],
+    );
+  };
   const stackSize = (unit: Footprint) => {
     let size = 1;
     for (let id = unit.carries; id; id = shown.find((item) => item.id === id)?.carries ?? null) size += 1;
@@ -314,15 +332,15 @@ export function LoadEditor({
                   vectorEffect="non-scaling-stroke"
                 />
               )}
-              {strapLines(load, { ...unit }, straps).map((x, n) => (
+              {overLines({ ...unit }, lashedId, straps).map((line) => (
                 <line
-                  key={x}
-                  data-lashing={topOverId(lashedId, n + 1)}
-                  x1={x}
-                  x2={x}
+                  key={line.id}
+                  data-lashing={line.id}
+                  x1={line.x}
+                  x2={line.x}
                   y1={-halfW}
                   y2={halfW}
-                  stroke={trouble?.lashings.has(topOverId(lashedId, n + 1)) ? "#b42318" : "#f2a100"}
+                  stroke={trouble?.lashings.has(line.id) ? "#b42318" : "#f2a100"}
                   strokeWidth={3}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
