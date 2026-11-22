@@ -47,8 +47,15 @@ export function Explorer() {
   useEffect(() => {
     let frame = 0;
     const check = () => {
-      if (EXPLORER_PATH.test(window.location.pathname)) setOnOwnPath(true);
-      else frame = requestAnimationFrame(check);
+      if (EXPLORER_PATH.test(window.location.pathname)) {
+        setOnOwnPath(true);
+        // Arrived by a link from further down another page (a clip on the examples): the router
+        // scrolls to its own idea of where the page starts. The explorer starts at the top, with
+        // the verdict, like a page opened afresh.
+        if (window.scrollY > 0 && !window.location.hash) window.scrollTo({ top: 0, behavior: "instant" });
+      } else {
+        frame = requestAnimationFrame(check);
+      }
     };
     frame = requestAnimationFrame(check);
     return () => cancelAnimationFrame(frame);

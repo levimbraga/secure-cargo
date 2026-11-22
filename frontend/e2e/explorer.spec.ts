@@ -43,6 +43,8 @@ test("a clip on the examples page opens its own load in the explorer, not the de
   await ready(page);
   expect(new URL(page.url()).search).toBe(`?${fixed.explorer}`);
   await expect(page.locator("[data-explorer-state]")).toHaveAttribute("data-explorer-status", fixed.status);
+  // It opens at the top, with the verdict, not where the clip was on the examples page.
+  expect(await page.evaluate(() => window.scrollY)).toBeLessThan(50);
 });
 
 test("tapping a unit adds a strap, writes it in the URL and simulates again", async ({ page, request }) => {
