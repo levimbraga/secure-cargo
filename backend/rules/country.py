@@ -55,6 +55,7 @@ def securing_checks(
             article=f"CONTRAN 945/2022, {c.article}",
             status=c.status,
             unit_ids=c.unit_ids,
+            values=c.values,
             message=c.message,
         )
         for c in check_contran_945(

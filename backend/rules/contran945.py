@@ -15,16 +15,28 @@ Interpretations (the text gives no number for these; documented in ``docs/physic
   truck, meaning a gap of more than ``GAP_TOLERANCE_M`` between the headboard and the first
   unit, or between units in a row. Such a load needs diagonal devices (direct lashings or
   chains) or blocking.
-* Art. 8: on a flatbed, a unit standing taller than the headboard that could slide forward
-  (not held by diagonal devices or blocking) is not allowed to travel.
+* Art. 7, sole paragraph: vehicles whose front and rear panels are not containment devices, and
+  vehicles without panels, need diagonal devices too, gap or no gap. Every open body of the model
+  is a flatbed with an unrated headboard and no rear panel (the rails of an open body and the rack
+  of a tall-rack body are not rated restraints), so on a flatbed every unit needs diagonal devices
+  or blocking (approved by the owner on 2026-11-21, rules audit item 1).
+* Art. 5: each unit on an open body (one machine or one coil too) needs 4 lashing terminals; the
+  text exempts neither a single unit nor a blocked one (rules audit item 2).
+* Art. 8 caput: a front panel used as a stop must be strong enough. The text gives no figure; when
+  cargo leans on a flatbed's headboard, its rating is asked ("to confirm") unless the body's
+  EN 12642 code gives one, which is then compared with the EN 12195-1 forward demand
+  ``(0.8 - mu) m g`` (our engineering choice, the same values as the simulation).
+* Art. 8 sole paragraph: on a flatbed, a unit standing taller than the headboard that could slide
+  forward (not held by diagonal devices or blocking) is not allowed to travel.
 """
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.scenario import BodyType, CargoUnit, Lashing, LashingKind, LashingRouting, Scenario
-from physics.constants import STANDARD_GRAVITY_MPS2
+from physics.constants import EN_CX_FORWARD, EN_CZ, STANDARD_GRAVITY_MPS2
+from physics.friction import resolve_friction
 
 # Room to travel above which a load "does not fill the body length" [m].
 GAP_TOLERANCE_M = 0.15
@@ -45,18 +57,21 @@ class ContranCheck(BaseModel):
         "four_terminals",
         "anchoring",
         "diagonals_for_gaps",
+        "diagonals_open_body",
+        "headboard_strength",
         "above_headboard",
     ]
     article: str
     status: CheckStatus
     unit_ids: list[str] = []
+    values: dict[str, float] = Field(default_factory=dict)
     message: str
 
 
 def check_contran_945(
     scenario: Scenario, *, anchored_on_wood: bool = False, headboard_known: bool = True
 ) -> list[ContranCheck]:
-    """The six checks, in the order of the articles.
+    """The eight checks, in the order of the articles.
 
     ``anchored_on_wood``: seen on a photo. ``headboard_known``: False when the headboard height
     is the body's usual one and nobody confirmed it; art. 8 then asks for it instead of failing.
@@ -67,6 +82,8 @@ def check_contran_945(
         _four_terminals(scenario),
         _anchoring(scenario, anchored_on_wood),
         _diagonals_for_gaps(scenario),
+        _diagonals_open_body(scenario),
+        _headboard_strength(scenario),
         _above_headboard(scenario, headboard_known),
     ]
 
@@ -176,19 +193,18 @@ def _terminals(lashings: list[Lashing]) -> int:
 
 
 def _four_terminals(scenario: Scenario) -> ContranCheck:
-    stacks = _stacks(scenario)
-    if scenario.bed.body is BodyType.BOX or len(stacks) < 2:
+    """Art. 5: every unit on an open body, a single one too, and blocking does not exempt it."""
+    if scenario.bed.body is BodyType.BOX:
         return ContranCheck(
             code="four_terminals",
             article="Art. 5",
             status="not_applicable",
-            message="Applies to split cargo on an open body.",
+            message="Applies to cargo on an open body or a platform.",
         )
     failing = [
         unit.id
-        for stack in stacks
-        if not _held_by_contact(scenario, stack)
-        and _terminals([x for x in _lashings_of(scenario, stack) if x.kind is not LashingKind.ROPE])
+        for stack in _stacks(scenario)
+        if _terminals([x for x in _lashings_of(scenario, stack) if x.kind is not LashingKind.ROPE])
         < MIN_TERMINALS
         for unit in stack
     ]
@@ -198,7 +214,7 @@ def _four_terminals(scenario: Scenario) -> ContranCheck:
             article="Art. 5",
             status="fail",
             unit_ids=failing,
-            message="Each unit of split cargo needs at least 4 lashing terminals.",
+            message="Each unit needs at least 4 lashing terminals hooked to the truck.",
         )
     return ContranCheck(
         code="four_terminals",
@@ -272,6 +288,145 @@ def _diagonals_for_gaps(scenario: Scenario) -> ContranCheck:
         article="Art. 7",
         status="pass",
         message="No room to travel along the truck, or diagonal devices hold the load.",
+    )
+
+
+def _diagonals_open_body(scenario: Scenario) -> ContranCheck:
+    """Art. 7 sole paragraph: no containment panels, so diagonals (or blocking) on every unit."""
+    if scenario.bed.body is not BodyType.FLATBED:
+        return ContranCheck(
+            code="diagonals_open_body",
+            article="Art. 7 sole paragraph",
+            status="not_applicable",
+            message="The body's front and rear walls contain the load.",
+        )
+    loose = [
+        unit.id
+        for stack in _stacks(scenario)
+        if not (_diagonal(scenario, stack) or _row_blocked(scenario, stack))
+        for unit in stack
+    ]
+    if loose:
+        return ContranCheck(
+            code="diagonals_open_body",
+            article="Art. 7 sole paragraph",
+            status="fail",
+            unit_ids=loose,
+            message=(
+                "This body has no containment panels: every unit needs diagonal lashings "
+                "against forward and backward movement, even with no gap."
+            ),
+        )
+    return ContranCheck(
+        code="diagonals_open_body",
+        article="Art. 7 sole paragraph",
+        status="pass",
+        message="Diagonal devices or blocking hold every unit forward and backward.",
+    )
+
+
+def _row_blocked(scenario: Scenario, stack: list[CargoUnit]) -> bool:
+    """Blocked itself, or part of a row of touching units with blocks at its ends."""
+    floor = [s for s in _stacks(scenario) if s[0].position_m[2] == 0]
+    if stack[0].position_m[2] > 0 or stack not in floor:
+        return _blocked(scenario, stack)
+    row, frontier = [stack], [stack]
+    while frontier:
+        current = frontier.pop()[0]
+        for other in floor:
+            if any(other is r for r in row):
+                continue
+            b = other[0]
+            lane = (
+                abs(b.position_m[1] - current.position_m[1])
+                < (b.size_m[1] + current.size_m[1]) / 2 - 0.01
+            )
+            gap = (
+                abs(b.position_m[0] - current.position_m[0]) - (b.size_m[0] + current.size_m[0]) / 2
+            )
+            if lane and gap <= GAP_TOLERANCE_M:
+                row.append(other)
+                frontier.append(other)
+    return any(_blocked(scenario, s) for s in row)
+
+
+def _leaning_on_headboard(scenario: Scenario) -> list[list[CargoUnit]]:
+    """Stacks that use the headboard as a stop: touching it, or touching a stack that does,
+    and not held forward by diagonal devices or blocking."""
+    half = scenario.bed.length_m / 2
+    stacks = [s for s in _stacks(scenario) if s[0].position_m[2] == 0]
+    fronts = {id(s[0]): s[0].position_m[0] + s[0].size_m[0] / 2 for s in stacks}
+    leaning: list[list[CargoUnit]] = []
+    for stack in sorted(stacks, key=lambda s: -fronts[id(s[0])]):
+        base = stack[0]
+        if _diagonal(scenario, stack) or _blocked(scenario, stack):
+            continue
+        front = fronts[id(base)]
+        if half - front <= GAP_TOLERANCE_M:
+            leaning.append(stack)
+            continue
+        for other in leaning:
+            lane = (
+                abs(other[0].position_m[1] - base.position_m[1])
+                < (other[0].size_m[1] + base.size_m[1]) / 2 - 0.01
+            )
+            back = other[0].position_m[0] - other[0].size_m[0] / 2
+            if lane and 0 <= back - front <= GAP_TOLERANCE_M:
+                leaning.append(stack)
+                break
+    return leaning
+
+
+def _headboard_strength(scenario: Scenario) -> ContranCheck:
+    """Art. 8 caput: a front panel used as a stop must be strong enough (no figure given)."""
+    headboard = scenario.bed.headboard
+    leaning = _leaning_on_headboard(scenario) if headboard is not None else []
+    if scenario.bed.body is not BodyType.FLATBED or headboard is None or not leaning:
+        return ContranCheck(
+            code="headboard_strength",
+            article="Art. 8",
+            status="not_applicable",
+            message="No cargo uses an open body's headboard as a stop.",
+        )
+    demand = 0.0
+    for stack in leaning:
+        base = stack[0]
+        mu = resolve_friction(
+            base.material, scenario.bed.floor_material, override=base.friction_coefficient
+        ).coefficient
+        mass = sum(u.mass_kg for u in stack)
+        demand += max(0.0, EN_CX_FORWARD - mu * EN_CZ) * mass * STANDARD_GRAVITY_MPS2
+    ids = [u.id for stack in leaning for u in stack]
+    values = {"demand_n": round(demand, 1)}
+    if headboard.rated_capacity_n is None:
+        return ContranCheck(
+            code="headboard_strength",
+            article="Art. 8",
+            status="to_confirm",
+            unit_ids=ids,
+            values=values,
+            message=(
+                f"The headboard is the stop of the cargo against it: confirm it holds "
+                f"{demand / 1000:.1f} kN forward."
+            ),
+        )
+    values["rated_n"] = headboard.rated_capacity_n
+    if demand > headboard.rated_capacity_n:
+        return ContranCheck(
+            code="headboard_strength",
+            article="Art. 8",
+            status="fail",
+            unit_ids=ids,
+            values=values,
+            message="The headboard is not strong enough for the cargo against it.",
+        )
+    return ContranCheck(
+        code="headboard_strength",
+        article="Art. 8",
+        status="pass",
+        unit_ids=ids,
+        values=values,
+        message="The headboard is strong enough for the cargo against it.",
     )
 
 
