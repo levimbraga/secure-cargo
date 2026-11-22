@@ -1018,7 +1018,8 @@
     "weightSource": {
       "measured": "typed",
       "invoice": "from the invoice",
-      "estimated": "estimated"
+      "estimated": "estimated",
+      "illustrative": "illustrative invoice weight (not read from the photo)"
     },
     "reinspectionOf": "← The first inspection (before the fix)",
     "reinspection": "New photo after the fix: {verdict}"
@@ -1601,7 +1602,7 @@
       "unknown": "I don't know",
       "unknownHint": "We estimate a range from what the photo shows.",
       "kgLabel": "Total cargo weight",
-      "sampleInvoice": "The sample's invoice says {weight}.",
+      "sampleInvoice": "Illustrative invoice weight (not read from the photo): {weight}",
       "invoiceReading": "Reading the invoice…",
       "invoiceSays": "The invoice says {weight}. Is that right?",
       "invoiceText": "Printed as “{text}” in the PESO BRUTO box.",

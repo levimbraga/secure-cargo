@@ -112,6 +112,7 @@ export function ResultView({
   truck = null,
   weightSource = null,
   range = null,
+  illustrativeKg = null,
   analysis = null,
   links = [],
   onCorrect,
@@ -138,6 +139,8 @@ export function ResultView({
   truck?: TruckChoice | null;
   weightSource?: WeightSource | null;
   range?: WeightRange | null;
+  /** A sample's made-up invoice weight [kg]: shown as illustrative, never as read from the photo. */
+  illustrativeKg?: number | null;
   analysis?: PhotoAnalysis | null;
   links?: UnitLink[];
   onCorrect?: () => void;
@@ -251,6 +254,11 @@ export function ResultView({
         {weightSource === "estimated" && range && (
           <p className="mt-3 inline-flex rounded-full bg-warn-tint px-3 py-1 text-[0.8125rem] font-medium text-warn" data-testid="weight-estimated">
             <EstimatedRange low={range.low_kg} high={range.high_kg} />
+          </p>
+        )}
+        {illustrativeKg !== null && (
+          <p className="mt-3 inline-flex rounded-full bg-surface px-3 py-1 text-[0.8125rem] font-medium text-gray" data-testid="weight-illustrative">
+            <IllustrativeWeight kg={illustrativeKg} />
           </p>
         )}
         {provenBy && <div className="mt-3">{provenBy}</div>}
@@ -617,6 +625,12 @@ export function Running({ startedAt, label, situations = false }: { startedAt: n
       )}
     </div>
   );
+}
+
+function IllustrativeWeight({ kg }: { kg: number }) {
+  const t = useTranslations("Driver");
+  const units = useShownUnits();
+  return <>{t("weight.sampleInvoice", { weight: units.mass(kg) })}</>;
 }
 
 function EstimatedRange({ low, high }: { low: number; high: number }) {

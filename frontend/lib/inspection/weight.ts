@@ -51,6 +51,19 @@ export function estimateRange(draft: Pick<LoadDraft, "units">): WeightRange | nu
   return { low_kg: lowKg, high_kg: highKg };
 }
 
+/**
+ * A sample photo comes with a made-up invoice weight (plausible for what it shows): when the
+ * load is still at that weight, the result shows it as illustrative, never as read from the
+ * photo. Any weight the visitor types or estimates is theirs and shown as usual.
+ */
+export function illustrativeWeight(
+  sample: { weight_kg: number } | null | undefined,
+  source: WeightSource | null,
+  totalKg: number | null,
+): number | null {
+  return sample && source === "invoice" && totalKg === sample.weight_kg ? totalKg : null;
+}
+
 /** The weight the battery runs at: the measured one, or the top of the estimated range. */
 export function simulatedWeight(source: WeightSource, totalKg: number | null, range: WeightRange | null): number | null {
   if (source === "estimated") return range?.high_kg ?? null;

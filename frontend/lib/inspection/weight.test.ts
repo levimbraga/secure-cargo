@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { LoadDraft } from "@/lib/explorer/draft";
 
 import { weightsComplete } from "./review";
-import { describeSplit, estimateRange, perUnitMatches, simulatedWeight, withWeights } from "./weight";
+import { describeSplit, estimateRange, illustrativeWeight, perUnitMatches, simulatedWeight, withWeights } from "./weight";
 
 const draft = (sizes: [number, number, number][], cargo: LoadDraft["units"][number]["cargo"] = "crate"): LoadDraft => ({
   version: 1,
@@ -54,5 +54,18 @@ describe("an estimated weight", () => {
     expect(simulatedWeight("invoice", 1840, null)).toBe(1840);
     expect(simulatedWeight("estimated", null, null)).toBeNull();
     expect(simulatedWeight("measured", null, null)).toBeNull();
+  });
+});
+
+describe("a sample's invoice weight", () => {
+  const sample = { weight_kg: 24000 };
+  it("is illustrative while the load is at the sample's made-up weight", () => {
+    expect(illustrativeWeight(sample, "invoice", 24000)).toBe(24000);
+  });
+  it("is the visitor's own once typed, estimated or changed, and never without a sample", () => {
+    expect(illustrativeWeight(sample, "measured", 24000)).toBeNull();
+    expect(illustrativeWeight(sample, "estimated", 24000)).toBeNull();
+    expect(illustrativeWeight(sample, "invoice", 18000)).toBeNull();
+    expect(illustrativeWeight(null, "invoice", 24000)).toBeNull();
   });
 });

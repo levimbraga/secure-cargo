@@ -19,6 +19,7 @@ import { checkRules } from "@/lib/inspection/client";
 import { fetchSamples } from "@/lib/inspection/samples";
 import { type Step, useInspectionFlow } from "@/lib/inspection/use-flow";
 import { verdictOf } from "@/lib/inspection/verdict";
+import { illustrativeWeight } from "@/lib/inspection/weight";
 
 import { ResultView, Running } from "./result-view";
 import { loadTitle, ReviewStep } from "./review-step";
@@ -144,6 +145,7 @@ export function NewInspection() {
                 truck={state.truck}
                 weightSource={state.weightSource}
                 range={state.range}
+                illustrativeKg={illustrativeWeight(state.sample, state.weightSource, state.totalKg)}
                 analysis={state.analysis?.analysis ?? null}
                 links={state.perception?.links ?? []}
                 onCorrect={() => void flow.openEditor()}

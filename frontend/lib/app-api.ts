@@ -66,6 +66,8 @@ export interface InspectionSummary {
   truck_json?: string | null;
   weight_source?: "measured" | "invoice" | "estimated" | null;
   weight_range_json?: string | null;
+  /** The sample photo an inspection was made from, if any: its invoice weight is made up. */
+  sample?: string | null;
   /** Whose rules the inspection is checked against (since US mode; absent: BR). */
   country?: "BR" | "US" | "EU" | null;
   invoice_json?: string | null;

@@ -1018,7 +1018,8 @@
     "weightSource": {
       "measured": "digitado",
       "invoice": "da nota fiscal",
-      "estimated": "estimado"
+      "estimated": "estimado",
+      "illustrative": "peso ilustrativo da nota (não lido da foto)"
     },
     "reinspectionOf": "← A primeira inspeção (antes da correção)",
     "reinspection": "Nova foto depois da correção: {verdict}"
@@ -1601,7 +1602,7 @@
       "unknown": "Não sei",
       "unknownHint": "Estimamos uma faixa pelo que a foto mostra.",
       "kgLabel": "Peso total da carga",
-      "sampleInvoice": "A nota do exemplo diz {weight}.",
+      "sampleInvoice": "Peso ilustrativo da nota (não lido da foto): {weight}",
       "invoiceReading": "Lendo a nota…",
       "invoiceSays": "A nota diz {weight}. Está certo?",
       "invoiceText": "Impresso como “{text}” no campo PESO BRUTO.",

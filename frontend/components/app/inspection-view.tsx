@@ -128,7 +128,9 @@ export function InspectionView({ id }: { id: string }) {
         <DataRow label={t("rows.truck")}>{truck(inspection.truck_body, inspection.truck_size, inspection.truck_json) || "—"}</DataRow>
         <DataRow label={t("rows.weight")}>
           {inspection.cargo_weight_kg ? t("weightKg", { weight: format.number(inspection.cargo_weight_kg) }) : "—"}
-          {inspection.weight_source ? ` · ${t(`weightSource.${inspection.weight_source}`)}` : ""}
+          {inspection.weight_source
+            ? ` · ${t(`weightSource.${inspection.sample && inspection.weight_source === "invoice" ? "illustrative" : inspection.weight_source}`)}`
+            : ""}
         </DataRow>
         <DataRow label={t("rows.status")}>{t(`status.${inspection.status}`)}</DataRow>
         {inspection.situations_total !== null && (
@@ -192,6 +194,7 @@ export function InspectionView({ id }: { id: string }) {
             }
             truck={truckOf(inspection)}
             weightSource={inspection.weight_source ?? null}
+            illustrativeKg={inspection.sample && inspection.weight_source === "invoice" ? (inspection.cargo_weight_kg ?? null) : null}
             range={inspection.weight_range_json ? JSON.parse(inspection.weight_range_json) : null}
             before={results.before}
             provenBy={
