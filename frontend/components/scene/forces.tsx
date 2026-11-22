@@ -13,7 +13,8 @@ import {
   Vector3,
 } from "three";
 
-import { strapPath, type Vec3 } from "@/lib/keyframes";
+import type { Vec3 } from "@/lib/keyframes";
+import { drawnPointCount, drawnStrapPath } from "@/lib/scene/strap-wrap";
 import { tensionColor, unitForces } from "@/lib/replay";
 import { type Point, spreadMarkers } from "@/lib/unit-details";
 
@@ -44,6 +45,8 @@ export function Lashings({ doc, live, mode }: SceneProps) {
   const segments = useRef<(Mesh | null)[][]>([]);
   const ratchets = useRef<(Mesh | null)[]>([]);
   const colors = useMemo(() => doc.straps.map(() => new Color(COLOR.gray)), [doc]);
+  // On a round unit the strap is drawn on its surface (lib/scene/strap-wrap.ts).
+  const pieces = useMemo(() => doc.straps.map((_, index) => Math.max(drawnPointCount(doc, index) - 1, 0)), [doc]);
   const scratch = useMemo(() => ({ from: new Vector3(), to: new Vector3(), along: new Vector3() }), []);
   const realistic = mode === "realistic";
 
@@ -51,7 +54,7 @@ export function Lashings({ doc, live, mode }: SceneProps) {
     const { sample } = live.current;
     for (let index = 0; index < doc.straps.length; index++) {
       const strap = doc.straps[index];
-      const path = strapPath(doc, sample, index);
+      const path = drawnStrapPath(doc, sample, index);
       const parts = segments.current[index] ?? [];
       const [r, g, b] = tensionColor(sample.straps[index]?.tension ?? 0, strap?.lashing_capacity_n ?? 0);
       colors[index]?.setRGB(r, g, b);
@@ -91,7 +94,7 @@ export function Lashings({ doc, live, mode }: SceneProps) {
     <>
       {doc.straps.map((strap, index) => (
         <group key={strap.id}>
-          {strap.path_m.slice(1).map((_, part) => (
+          {Array.from({ length: pieces[index] ?? 0 }, (_, part) => (
             <mesh
               key={part}
               castShadow={realistic}
@@ -500,10 +503,11 @@ export function Labels({
         span.style.display = "none";
         return;
       }
-      const path = strapPath(doc, sample, index);
+      const path = drawnStrapPath(doc, sample, index);
       // Middle of the stretch over the unit (top-over) or of the lashing itself (direct).
-      const a = path.length === 4 ? path[1] : path[0];
-      const b = path.length === 4 ? path[2] : path[1];
+      const over = path.length > 2;
+      const a = over ? path[Math.floor((path.length - 1) / 2)] : path[0];
+      const b = over ? path[Math.ceil((path.length - 1) / 2)] : path[1];
       if (!a || !b) return;
       const tension = sample.straps[index]?.tension ?? 0;
       const text =
