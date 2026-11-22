@@ -3,7 +3,7 @@
 import { UserButton } from "@clerk/nextjs";
 import { cn } from "cn";
 import { useTranslations } from "next-intl";
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 
 import { useMe } from "@/components/app/me-provider";
 import { LanguagePill } from "@/components/language-switcher";
@@ -14,6 +14,7 @@ import { SiteHeader } from "@/components/site/site-header";
 import { pill } from "@/components/ui/pill";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import type { Me } from "@/lib/app-api";
+import { type DemoRole, demoRoleOf } from "@/lib/demo-session";
 import { appItems, homeFor, isActive } from "@/lib/header";
 import { readSessionHint, writeSessionHint } from "@/lib/session-hint";
 
@@ -53,6 +54,7 @@ export function AppOrSiteHeader() {
   return <SiteHeader pending />;
 }
 
+const CHIP = "type-label min-w-0 truncate rounded-full bg-surface px-2.5 leading-6 text-ink";
 const ROW = "flex h-[68px] items-center justify-between gap-4 md:px-8";
 const SHELL = "border-b border-hairline bg-paper";
 
@@ -113,15 +115,14 @@ export function AppHeader({ me }: { me: Me }) {
               <Mark className="size-5" />
               <span className="font-serif text-[1.375rem] leading-none tracking-[-0.01em] max-xl:sr-only">{nav("wordmark")}</span>
             </Link>
-            {context && (
-              <span
-                className="type-label min-w-0 truncate rounded-full bg-surface px-2.5 leading-6 text-ink"
-                title={t("context", { context })}
-                data-testid="context-chip"
-              >
-                {context}
-              </span>
-            )}
+            {context &&
+              (demo ? (
+                <DemoChip me={me} context={context} />
+              ) : (
+                <span className={CHIP} title={t("context", { context })} data-testid="context-chip">
+                  {context}
+                </span>
+              ))}
           </div>
 
           <nav aria-label={t("menu")} className="hidden items-center gap-6 text-sm font-[450] lg:flex">
@@ -165,5 +166,88 @@ export function AppHeader({ me }: { me: Me }) {
         </div>
       </div>
     </HideOnScroll>
+  );
+}
+
+/**
+ * The demo's context chip, with one action: switch between the driver and the insurer view. The
+ * Worker keeps the sandbox, so what the visitor made as a driver shows up in the insurer's
+ * dashboard; no sign-out in between.
+ */
+function DemoChip({ me, context }: { me: Me; context: string }) {
+  const t = useTranslations("AppNav");
+  const { enterDemo } = useMe();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const menuId = useId();
+  const other: DemoRole = demoRoleOf(me) === "driver" ? "insurer" : "driver";
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
+    const onDown = (event: PointerEvent) => !ref.current?.contains(event.target as Node) && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("pointerdown", onDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", onDown);
+    };
+  }, [open]);
+
+  async function switchRole() {
+    setBusy(true);
+    setFailed(false);
+    try {
+      await enterDemo(other);
+      setOpen(false);
+      router.push(other === "insurer" ? "/app/org" : "/app");
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div ref={ref} className="relative min-w-0">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={menuId}
+        aria-label={`${context}. ${t("demoMenu")}`}
+        onClick={() => setOpen((value) => !value)}
+        className={cn(CHIP, "flex max-w-full items-center gap-1 hover:bg-hairline")}
+        data-testid="context-chip"
+      >
+        <span className="truncate">{context}</span>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden className={cn("shrink-0 transition-transform", open && "rotate-180")}>
+          <path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+      </button>
+      <div
+        id={menuId}
+        hidden={!open}
+        className="absolute left-0 top-full z-50 mt-2 w-max min-w-full rounded border border-hairline bg-paper p-1"
+      >
+        <button
+          type="button"
+          onClick={switchRole}
+          disabled={busy}
+          className="flex h-10 w-full items-center gap-2 rounded px-3 text-left text-sm font-[450] hover:bg-surface disabled:opacity-60"
+          data-testid="demo-switch"
+        >
+          {busy && <span aria-hidden className="inline-block size-3 animate-spin rounded-full border-[1.5px] border-current border-r-transparent" />}
+          {busy ? t("switching") : other === "insurer" ? t("switchToInsurer") : t("switchToDriver")}
+        </button>
+        {failed && (
+          <p role="alert" className="type-small max-w-56 px-3 pb-2 text-fail">
+            {t("switchFailed")}
+          </p>
+        )}
+      </div>
+    </div>
   );
 }

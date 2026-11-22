@@ -11,10 +11,10 @@ import { ResultPreview } from "@/components/landing/result-preview";
 import { Scenarios } from "@/components/landing/scenarios";
 import { TypedSubtitle } from "@/components/landing/typed-subtitle";
 import { SiteNav } from "@/components/site/site-nav";
+import { TryDemo } from "@/components/site/try-demo";
 import { pill } from "@/components/ui/pill";
 import { SectionLabel } from "@/components/ui/section-label";
 import { Link } from "@/i18n/navigation";
-import { DEMO_SAMPLE } from "@/lib/inspection/samples";
 import { routing } from "@/i18n/routing";
 import dashboardPhoneEn from "@/public/media/dashboard-phone-en.jpg";
 import dashboardPhonePt from "@/public/media/dashboard-phone-pt-BR.jpg";
@@ -57,14 +57,12 @@ export default function LandingPage({ params }: PageProps<"/[locale]">) {
       <RevealOnScroll />
 
       <main className="flex-1">
-        {/* 1. Hero: "Try the demo" runs a sample photo through the whole inspection, no account. */}
+        {/* 1. Hero: "Try the demo" starts the demo driver session on the photo step, no account. */}
         <section className="col pt-14 md:pt-20">
           <h1 className="type-hero text-balance">{t("hero.title")}</h1>
           <TypedSubtitle text={t("hero.subtitle")} className="type-hero-sub mt-4 max-w-[34rem] text-pretty" />
           <div className="mt-7 flex flex-wrap gap-2.5">
-            <Link href={`/app/new?sample=${DEMO_SAMPLE}`} className={pill()}>
-              {t("hero.primary")}
-            </Link>
+            <TryDemo label={t("hero.primary")} />
             <Link href="/#how-it-works" className={pill({ variant: "secondary" })}>
               {t("hero.secondary")}
             </Link>
@@ -176,9 +174,7 @@ export default function LandingPage({ params }: PageProps<"/[locale]">) {
             <figcaption className="type-small mt-3 text-gray">{t("companies.caption")}</figcaption>
           </figure>
           <div className="mt-8">
-            <Link href="/app/sign-in" className={pill({ variant: "secondary" })}>
-              {t("companies.cta")}
-            </Link>
+            <TryDemo role="insurer" variant="secondary" label={t("companies.cta")} />
           </div>
         </section>
 

@@ -16,7 +16,8 @@
     "closeMenu": "Close menu",
     "examples": "Examples",
     "contact": "Contact",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "ctaLoading": "Starting the demo…"
   },
   "LanguageSwitcher": {
     "label": "Language",
@@ -861,7 +862,12 @@
     "roleManager": "Manager",
     "roleAdmin": "Admin",
     "platform": "Platform",
-    "context": "Signed in: {context}"
+    "context": "Signed in: {context}",
+    "switchToInsurer": "Switch to insurer view",
+    "switchToDriver": "Switch to driver view",
+    "switching": "Switching…",
+    "demoMenu": "Demo options",
+    "switchFailed": "Could not switch. Try again."
   },
   "Auth": {
     "label": "Account",

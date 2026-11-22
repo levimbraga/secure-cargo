@@ -16,7 +16,8 @@
     "closeMenu": "Fechar menu",
     "examples": "Exemplos",
     "contact": "Contato",
-    "signIn": "Entrar"
+    "signIn": "Entrar",
+    "ctaLoading": "Abrindo a demo…"
   },
   "LanguageSwitcher": {
     "label": "Idioma",
@@ -861,7 +862,12 @@
     "roleManager": "Gestor",
     "roleAdmin": "Admin",
     "platform": "Plataforma",
-    "context": "Conectado: {context}"
+    "context": "Conectado: {context}",
+    "switchToInsurer": "Ver como seguradora",
+    "switchToDriver": "Ver como motorista",
+    "switching": "Trocando…",
+    "demoMenu": "Opções da demo",
+    "switchFailed": "Não foi possível trocar. Tente de novo."
   },
   "Auth": {
     "label": "Conta",

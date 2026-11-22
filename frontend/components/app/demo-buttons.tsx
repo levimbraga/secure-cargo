@@ -2,13 +2,20 @@
 
 import { useClerk } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { type DemoRole, useMe } from "@/components/app/me-provider";
 import { pill } from "@/components/ui/pill";
 import { useRouter } from "@/i18n/navigation";
 
 const HOME: Record<DemoRole, "/app" | "/app/org"> = { driver: "/app", insurer: "/app/org" };
+
+const noSubscribe = () => () => {};
+/** "Try the demo" sends visitors here with `?demo_error=<code>` when the demo could not start. */
+function readDemoError(): string | null {
+  const code = new URLSearchParams(window.location.search).get("demo_error");
+  return code === "rate_limited" || code === "demo_unavailable" || code === "failed" ? code : null;
+}
 
 /**
  * "Enter as demo driver / insurer": the Worker starts an anonymous demo session (a signed,
@@ -22,6 +29,9 @@ export function DemoButtons() {
   const router = useRouter();
   const [busy, setBusy] = useState<DemoRole | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState(false);
+  const startError = useSyncExternalStore(noSubscribe, readDemoError, () => null);
+  const shownError = error ?? (startError && !dismissed ? t(`errors.${startError}` as "errors.failed") : null);
 
   useEffect(() => {
     router.prefetch(HOME.driver);
@@ -31,6 +41,7 @@ export function DemoButtons() {
   async function enter(role: DemoRole) {
     setBusy(role);
     setError(null);
+    setDismissed(true);
     try {
       // One session at a time: leave a real account before entering the demo.
       if (clerk.isSignedIn) await clerk.signOut({ redirectUrl: undefined });
@@ -48,7 +59,7 @@ export function DemoButtons() {
   return (
     <div aria-busy={busy !== null}>
       <div className="flex flex-wrap gap-3">
-        <button type="button" disabled={busy !== null} {...intent("driver")} className={pill({ className: "h-11 px-4" })}>
+        <button type="button" disabled={busy !== null} {...intent("driver")} className={pill({ variant: "secondary", className: "h-11 px-4" })}>
           {busy === "driver" && <Spinner />}
           {busy === "driver" ? t("entering") : t("demoDriver")}
         </button>
@@ -73,9 +84,9 @@ export function DemoButtons() {
       ) : (
         <p className="type-small mt-3 text-gray">{t("demoNote")}</p>
       )}
-      {error && (
-        <p role="alert" className="type-small mt-3 text-fail">
-          {error}
+      {shownError && (
+        <p role="alert" className="type-small mt-3 text-fail" data-testid="demo-error">
+          {shownError}
         </p>
       )}
     </div>

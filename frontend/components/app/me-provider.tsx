@@ -1,43 +1,15 @@
 "use client";
 
 import { useAuth, useOrganizationList } from "@clerk/nextjs";
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { API_URL } from "@/lib/api";
-import { type Me, readError, requestWithToken } from "@/lib/app-api";
+import { type Me, requestWithToken } from "@/lib/app-api";
+import { type DemoRole, endDemoSession, startDemoSession } from "@/lib/demo-session";
 
-export type DemoRole = "driver" | "insurer";
+import { MeContext, noToken } from "@/components/app/me-context";
 
-type MeState = {
-  /** We know whether someone is signed in (a Clerk account or a demo session). */
-  ready: boolean;
-  signedIn: boolean;
-  me: Me | null;
-  error: string | null;
-  refresh: () => void;
-  /** The Clerk session token for API calls; null for a demo visitor (their cookie goes along). */
-  getToken: () => Promise<string | null>;
-  /** A demo visitor: a Worker-issued session, no account (no Clerk components). */
-  demo: boolean;
-  /** Start (or switch) a demo session; resolves once the session is in place. */
-  enterDemo: (role: DemoRole) => Promise<void>;
-  /** End the demo session. */
-  exitDemo: () => Promise<void>;
-};
-
-const noToken = async () => null;
-
-const MeContext = createContext<MeState>({
-  ready: false,
-  signedIn: false,
-  me: null,
-  error: null,
-  refresh: () => {},
-  getToken: noToken,
-  demo: false,
-  enterDemo: async () => {},
-  exitDemo: async () => {},
-});
+export type { DemoRole };
+export { useMe } from "@/components/app/me-context";
 
 /**
  * The demo session, if any: the Worker's httpOnly cookie, so the page asks `/me` to know.
@@ -59,20 +31,11 @@ function useDemoSession(enabled: boolean) {
   }, [enabled, version]);
 
   const enterDemo = useCallback(async (role: DemoRole) => {
-    const response = await fetch(`${API_URL}/demo/session`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ as: role }),
-      credentials: "include",
-    });
-    if (!response.ok) throw await readError(response);
-    // The session's answer carries the same body as /me: no second round trip.
-    const { me } = (await response.json()) as { me: Me };
-    setDemoMe(me);
+    setDemoMe(await startDemoSession(role));
   }, []);
 
   const exitDemo = useCallback(async () => {
-    await fetch(`${API_URL}/demo/logout`, { method: "POST", credentials: "include" }).catch(() => undefined);
+    await endDemoSession();
     setDemoMe(null);
   }, []);
 
@@ -94,6 +57,7 @@ export function SignedOutMeProvider({ children }: { children: React.ReactNode })
         demo: Boolean(demoMe),
         enterDemo,
         exitDemo,
+        inProvider: true,
       }}
     >
       {children}
@@ -150,6 +114,7 @@ export function MeProvider({ children }: { children: React.ReactNode }) {
         demo,
         enterDemo,
         exitDemo,
+        inProvider: true,
       }}
     >
       {clerkSignedIn && !orgId && <ActivateMembership />}
@@ -171,6 +136,3 @@ function ActivateMembership() {
   return null;
 }
 
-export function useMe(): MeState {
-  return useContext(MeContext);
-}

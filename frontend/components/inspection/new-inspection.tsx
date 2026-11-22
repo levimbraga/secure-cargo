@@ -4,7 +4,8 @@
  * `/app/new`: a new inspection, phone first, one question per screen. (My trucks) -> photo ->
  * truck -> weight -> the result, with the simulation, the checklist and the fix.
  * `?sample=<id>` opens a sample photo directly (the landing page's "Try the demo"), and
- * `?reinspect=<id>` starts the new photo of a fixed load.
+ * `?reinspect=<id>` starts the new photo of a fixed load, and `?start=photos` (the demo's first
+ * screen) goes straight to the photo step, past the saved-trucks question.
  */
 
 import { useLocale, useTranslations } from "next-intl";
@@ -56,6 +57,15 @@ export function NewInspection() {
       })
       .catch(() => undefined);
   }, [ready, signedIn, sampleId, reinspect, flow]);
+
+  // "Try the demo" lands on the photo step: past the saved-trucks question the demo driver has.
+  const startOnPhotos = params.get("start") === "photos";
+  const skippedGarage = useRef(false);
+  useEffect(() => {
+    if (!startOnPhotos || skippedGarage.current || state.step !== "garage") return;
+    skippedGarage.current = true;
+    flow.pickSaved(null);
+  }, [startOnPhotos, state.step, flow]);
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
