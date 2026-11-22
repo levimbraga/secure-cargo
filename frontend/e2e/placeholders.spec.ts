@@ -41,5 +41,34 @@ for (const prefix of ["", "/pt-BR"]) {
     await page.getByTestId("weight-next").click();
     await expect(page.getByTestId("inspection-result")).toBeVisible({ timeout: 20_000 });
     await expectNoPlaceholder(page, "result");
+    // Country names in the page's language ("Brazil" in English, "Brasil" in Portuguese).
+    await expect(page.getByTestId("country-BR")).toHaveAccessibleName(prefix ? "Brasil" : "Brazil");
+
+    // Every theme of the checklist, open (a phone keeps one open at a time).
+    for (const theme of ["securing", "weight", "physics", "protection", "dimensions"]) {
+      await page.getByTestId(`theme-${theme}`).click();
+      await expect(page.getByTestId(`theme-panel-${theme}`)).toBeVisible();
+      await expectNoPlaceholder(page, `theme ${theme}`);
+    }
+
+    // The simulation, on the situation the headline names, and every one of its seven tabs:
+    // the names carry the server's speeds ("at 80 km/h"), never "{speed}".
+    await page.getByTestId("open-simulation").click();
+    const panel = page.getByTestId("simulation-panel");
+    await expect(panel).toBeVisible();
+    const tabs = panel.locator("[data-sim-situation]");
+    await expect(tabs).toHaveCount(7);
+    for (let index = 0; index < 7; index++) {
+      const tab = tabs.nth(index);
+      await tab.scrollIntoViewIfNeeded();
+      await tab.click();
+      await expect(tab).toHaveAttribute("aria-pressed", "true");
+      await expect(tab).toBeInViewport();
+      await expect(panel.getByTestId("situation-plain")).not.toBeEmpty({ timeout: 20_000 });
+      await expect(panel.getByTestId("what-went-wrong")).toBeVisible();
+      await expectNoPlaceholder(page, `situation ${await tab.getAttribute("data-sim-situation")}`);
+    }
+    await panel.getByTestId("try-another").locator("summary").click();
+    await expectNoPlaceholder(page, "try another situation");
   });
 }

@@ -19,11 +19,13 @@ import { useTranslations } from "next-intl";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { useReplayText } from "@/components/scenario/replay-shared";
+import { UnitPlacesProvider } from "@/components/scenario/unit-names";
 import { pill } from "@/components/ui/pill";
 import { VerdictBadge } from "@/components/ui/verdict-badge";
 import { UnitsProvider, useShownUnits } from "@/components/units-context";
 import { type Country, useCountry } from "@/lib/country";
-import { footprints } from "@/lib/explorer/draft";
+import { footprints, type LoadDraft } from "@/lib/explorer/draft";
+import { type FixStep, fixSteps } from "@/lib/inspection/fix-steps";
 import { cutOffUnits } from "@/lib/inspection/photo-quality";
 import { SIZE_INFO, type TruckChoice } from "@/lib/inspection/trucks";
 import {
@@ -57,11 +59,11 @@ export function useMainProblem() {
   const t = useTranslations("Driver.problem");
   const { nameOf } = useReplayText();
   const units = useShownUnits();
-  const unitName = (id: string | null) => (id ? lower(nameOf(id)) : t("theLoad"));
-  return (problem: MainProblem | null): string | null => {
+  const unitName = (id: string | null) => (id ? midSentence(nameOf(id)) : t("theLoad"));
+  return (problem: MainProblem | null, speedKmh?: number | null): string | null => {
     if (!problem) return null;
     if (problem.kind === "physics") {
-      const speed = units.speed(SITUATION_SPEED_KMH[problem.situation as SituationId] ?? 80);
+      const speed = units.speed(speedKmh ?? SITUATION_SPEED_KMH[problem.situation as SituationId] ?? 80);
       const when = t(`when.${problem.situation}` as never, { speed } as never);
       return t(`physics.${problem.code}` as never, { when, unit: unitName(problem.unitId) } as never);
     }
@@ -94,6 +96,13 @@ export function RoadsideClass({ checks }: { checks: Battery["contran_945"] }) {
   );
 }
 
+/** The main problem in one sentence; inside the page's unit places, so units read "Unit 1 (front)". */
+function ProblemSentence({ problem, battery }: { problem: MainProblem; battery: Battery }) {
+  const sentence = useMainProblem();
+  const situation = problem.kind === "physics" ? battery.situations.find((s) => s.id === problem.situation) : null;
+  return <>{sentence(problem, situation?.event.speed_kmh)}</>;
+}
+
 /** The verdict badge as lists and dashboards show it. */
 export function StateBadge({ state, children }: { state: VerdictState; children?: ReactNode }) {
   const t = useTranslations("Driver.verdict");
@@ -119,6 +128,7 @@ export function ResultView({
   onReinspect,
   onHeadboard,
   onFrontEndRating,
+  onAddInvoice,
   truckAssumed = false,
   share,
   before = null,
@@ -148,6 +158,8 @@ export function ResultView({
   onHeadboard?: (heightM: number) => void;
   /** US: re-check with the front end structure's declared rating (kg of force). */
   onFrontEndRating?: (kg: number) => void;
+  /** The weight was estimated: go back and read it from the invoice, to narrow the range. */
+  onAddInvoice?: () => void;
   /** A sample whose photo does not show the truck's size: the summary says it is assumed. */
   truckAssumed?: boolean;
   share?: ReactNode;
@@ -202,10 +214,11 @@ export function ResultView({
     choose(next);
     onCountryChange?.(next);
   };
-  const problem = useMainProblem();
   const [simulation, setSimulation] = useState<SituationId | null>(null);
   const simRef = useRef<HTMLDivElement>(null);
 
+  // The headline's situation: the worst failing one (the same rule as the verdict), else the battery's worst.
+  const storySituation = (verdict.problem?.kind === "physics" ? (verdict.problem.situation as SituationId) : null) ?? shown.worst;
   const open = (id: SituationId) => {
     setSimulation(id);
     requestAnimationFrame(() => simRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
@@ -213,6 +226,7 @@ export function ResultView({
 
   return (
     <UnitsProvider country={country}>
+    <UnitPlacesProvider units={footprints(shown.draft, shown.scenario)}>
     <div data-testid="inspection-result" data-state={verdict.state} data-variant={variant} data-passed={physicsPassed(shown)} data-country={country}>
       <CountrySwitch country={country} onChange={switchCountry} busy={checking} error={rulesError} />
       {fixed && (
@@ -242,7 +256,7 @@ export function ResultView({
         </h1>
         {verdict.problem ? (
           <p className="type-card-title mt-3 text-pretty" data-testid="main-problem">
-            {problem(verdict.problem)}
+            <ProblemSentence problem={verdict.problem} battery={shown} />
           </p>
         ) : (
           <p className="type-body mt-3 text-pretty">{t(variant === "fixed" ? "verdict.approved.fixed" : "verdict.approved.sentence")}</p>
@@ -251,11 +265,7 @@ export function ResultView({
           {t("verdict.count", { passed: physicsPassed(shown), total: shown.situations.length })}
         </p>
         {country === "EU" && <RoadsideClass checks={shown.contran_945} />}
-        {weightSource === "estimated" && range && (
-          <p className="mt-3 inline-flex rounded-full bg-warn-tint px-3 py-1 text-[0.8125rem] font-medium text-warn" data-testid="weight-estimated">
-            <EstimatedRange low={range.low_kg} high={range.high_kg} />
-          </p>
-        )}
+        {weightSource === "estimated" && range && <EstimatedWeight low={range.low_kg} high={range.high_kg} onAddInvoice={readOnly ? undefined : onAddInvoice} />}
         {illustrativeKg !== null && (
           <p className="mt-3 inline-flex rounded-full bg-surface px-3 py-1 text-[0.8125rem] font-medium text-gray" data-testid="weight-illustrative">
             <IllustrativeWeight kg={illustrativeKg} />
@@ -265,7 +275,7 @@ export function ResultView({
         <div className="mt-6 flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={() => open(simulation ?? shown.worst)}
+            onClick={() => open(simulation ?? storySituation)}
             className={pill({ className: "h-12 px-5" })}
             data-testid="open-simulation"
           >
@@ -316,8 +326,11 @@ export function ResultView({
           error={error}
         />
       )}
-      {(readOnly || variant === "fixed") && plan && plan.changes.length > 0 && <ChangeList changes={plan.changes} title={t("fix.applied")} />}
+      {(readOnly || variant === "fixed") && plan && plan.changes.length > 0 && (
+        <ChangeList changes={plan.changes} before={battery.draft} after={plan.draft} title={t("fix.applied")} />
+      )}
     </div>
+    </UnitPlacesProvider>
     </UnitsProvider>
   );
 }
@@ -439,6 +452,11 @@ function lower(label: string): string {
   return label.charAt(0).toLocaleLowerCase() + label.slice(1);
 }
 
+/** A unit's name in the middle of a sentence: "the machine", but "Unit 1 (front)" keeps its capital. */
+export function midSentence(name: string): string {
+  return /^(The|An?|O|Os|As|A) /.test(name) ? lower(name) : name;
+}
+
 export function useChangeSentence() {
   const t = useTranslations("Flow");
   const { nameOf } = useReplayText();
@@ -488,37 +506,55 @@ export function useChangeSentence() {
   };
 }
 
-/** Straps added the same way on several units read as one step. */
-function groupChanges(changes: Change[]): (Change & { unit_ids?: string[] })[] {
-  const out: (Change & { unit_ids?: string[] })[] = [];
-  for (const change of changes) {
-    const previous = out[out.length - 1];
-    if (change.code === "straps" && previous?.code === "straps" && previous.before === change.before && previous.after === change.after) {
-      previous.unit_ids = [...(previous.unit_ids ?? [previous.unit_id ?? ""]), change.unit_id ?? ""];
-    } else out.push({ ...change });
-  }
-  return out;
+/** A fix step in words: the planner's change, or a restraint and its straps as one step. */
+export function useStepSentence() {
+  const t = useTranslations("Flow");
+  const sentence = useChangeSentence();
+  const { nameOf } = useReplayText();
+  const names = (ids: string[]) => ids.map((id) => nameOf(id)).join(", ");
+  return (step: FixStep): string => {
+    switch (step.kind) {
+      case "change":
+        return sentence(step.change);
+      case "straps":
+        return t("steps.straps", { to: step.to, from: step.from, units: step.every ? "every" : names(step.unitIds), count: step.unitIds.length });
+      case "restraint":
+        return t("steps.restraint", { action: t(`steps.restraintTo.${step.restraint}` as never), keep: step.keep ? "yes" : "no" });
+      case "restraintStraps":
+        return t("steps.restraintStraps", {
+          action: t(`steps.restraintTo.${step.restraint}` as never),
+          to: step.to,
+          units: step.every ? "every" : names(step.unitIds),
+          rest: step.rest ?? 0,
+        });
+      case "restraintInstead":
+        return t("steps.restraintInstead", { action: t(`steps.restraintTo.${step.restraint}` as never) });
+    }
+  };
 }
 
-function ChangeList({ changes: all, title }: { changes: Change[]; title: string }) {
-  const sentence = useChangeSentence();
+function ChangeList({ changes, before, after, title }: { changes: Change[]; before: LoadDraft | null; after: LoadDraft | null; title: string }) {
+  const sentence = useStepSentence();
   const t = useTranslations("Driver.fix");
-  const changes = groupChanges(all);
-  if (!changes.length) return null;
+  const steps = fixSteps(changes, before, after);
+  if (!steps.length) return null;
   return (
     <section className="mt-8">
       <h3 className="type-label">{title}</h3>
       <ol className="mt-3 space-y-3" data-testid="fix-changes">
-        {changes.map((change, n) => (
-          <li key={n} className="flex gap-3" data-change={change.code}>
-            <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-ink font-mono text-[0.75rem] text-paper">{n + 1}</span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-ink">{sentence(change)}</span>
-              {change.code === "edge_protectors" && <span className="type-small block text-gray">{t("advice")}</span>}
-              {change.article && <span className="type-label mt-0.5 block">{change.article}</span>}
-            </span>
-          </li>
-        ))}
+        {steps.map((step, n) => {
+          const article = step.kind === "change" ? step.change.article : step.article;
+          return (
+            <li key={n} className="flex gap-3" data-change={step.kind === "change" ? step.change.code : step.kind}>
+              <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-ink font-mono text-[0.75rem] text-paper">{n + 1}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-ink">{sentence(step)}</span>
+                {step.kind === "change" && step.change.code === "edge_protectors" && <span className="type-small block text-gray">{t("advice")}</span>}
+                {article && <span className="type-label mt-0.5 block">{article}</span>}
+              </span>
+            </li>
+          );
+        })}
       </ol>
     </section>
   );
@@ -561,7 +597,7 @@ function FixPanel({
       </h2>
       <p className="type-body mt-3 text-pretty">{t("sentence")}</p>
       {fixing && <Running startedAt={startedAt} label={t("finding")} />}
-      {plan && <ChangeList changes={plan.changes} title={t("recommended")} />}
+      {plan && <ChangeList changes={plan.changes} before={battery.draft} after={plan.draft} title={t("recommended")} />}
       {plan && (
         <p className={`type-body mt-6 ${proven ? "text-pass" : "text-ink"}`} data-testid="fix-result">
           {proven
@@ -633,8 +669,38 @@ function IllustrativeWeight({ kg }: { kg: number }) {
   return <>{t("weight.sampleInvoice", { weight: units.mass(kg) })}</>;
 }
 
-function EstimatedRange({ low, high }: { low: number; high: number }) {
+/** "Weight estimated 450–2,050 kg, tested at the upper end", why (one tap), and the invoice to narrow it. */
+function EstimatedWeight({ low, high, onAddInvoice }: { low: number; high: number; onAddInvoice?: () => void }) {
   const t = useTranslations("Driver");
   const units = useShownUnits();
-  return <>{t("verdict.estimated", { low: units.mass(low), high: units.mass(high) })}</>;
+  const [why, setWhy] = useState(false);
+  return (
+    <div className="mt-3" data-testid="weight-estimated">
+      <p className="flex flex-wrap items-center gap-2">
+        <span className="inline-flex rounded-full bg-warn-tint px-3 py-1 text-[0.8125rem] font-medium text-warn">
+          {t("verdict.estimated", { low: units.mass(low), high: units.mass(high) })}
+        </span>
+        <button
+          type="button"
+          aria-expanded={why}
+          aria-controls="weight-why"
+          title={t("verdict.estimatedWhy")}
+          onClick={() => setWhy((open) => !open)}
+          className="inline-flex size-11 items-center justify-center rounded-full text-gray hover:text-ink sm:size-8"
+          data-testid="weight-why"
+        >
+          <span aria-hidden className="inline-flex size-5 items-center justify-center rounded-full font-mono text-[0.75rem] ring-1 ring-current">?</span>
+          <span className="sr-only">{t("verdict.estimatedWhyLabel")}</span>
+        </button>
+        {onAddInvoice && (
+          <button type="button" onClick={onAddInvoice} className="type-small min-h-11 text-ink underline decoration-1 underline-offset-4 sm:min-h-8" data-testid="add-invoice">
+            {t("verdict.addInvoice")}
+          </button>
+        )}
+      </p>
+      <p id="weight-why" role="note" hidden={!why} className="type-small mt-1 max-w-prose text-gray">
+        {t("verdict.estimatedWhy")}
+      </p>
+    </div>
+  );
 }

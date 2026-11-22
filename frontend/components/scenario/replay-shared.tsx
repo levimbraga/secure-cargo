@@ -9,6 +9,7 @@
 import type { ReactNode, Ref } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 
+import { useUnitPlaces } from "@/components/scenario/unit-names";
 import { useShownUnits } from "@/components/units-context";
 import type { ChartsLabels } from "@/components/scenario/charts";
 import type { LabelFormat, ViewMode } from "@/components/scene/keyframe-player";
@@ -61,11 +62,16 @@ export function useReplayText() {
     format.number(value, { minimumFractionDigits: digits, maximumFractionDigits: digits });
   const percent = (ratio: number) => format.number(ratio, { style: "percent", maximumFractionDigits: 0 });
 
+  const places = useUnitPlaces();
+
   function nameOf(unitId: string | null): string {
     const { kind, number: index } = unitName(unitId ?? "");
-    return (UNIT_KINDS as readonly string[]).includes(kind)
+    const name = (UNIT_KINDS as readonly string[]).includes(kind)
       ? t(`units.${kind as UnitKind}`, { number: index ?? 1 })
       : t("units.other", { id: unitId ?? "" });
+    // On a page that knows where the units sit: "Unit 1 (front)", the same in every sentence.
+    const place = unitId ? places?.get(unitId) : undefined;
+    return place ? t("units.placed", { name, place }) : name;
   }
 
   /** Formatting used by the labels the 3D scene writes itself. */
@@ -373,9 +379,13 @@ export function Scrubber({
   );
 }
 
-/** The markers of the event ("0.3 s · Braking starts"); each one moves the replay to its instant. */
-export function EventMarkers({ doc, onSeek }: { doc: KeyframesDoc | undefined; onSeek: (seconds: number) => void }) {
-  const { number, markerLabel } = useReplayText();
+/**
+ * The markers of the event ("0.3 s · Braking starts"); each one moves the replay to its instant.
+ * Before a pothole or a speed bump the driver only slows down: that braking is named so.
+ */
+export function EventMarkers({ doc, onSeek, event }: { doc: KeyframesDoc | undefined; onSeek: (seconds: number) => void; event?: string }) {
+  const { t, number, markerLabel } = useReplayText();
+  const slowing = event === "speed_bump" || event === "pothole";
   return (
     <ul className="flex flex-wrap gap-x-4 gap-y-1">
       {doc?.events.map((marker) => (
@@ -385,7 +395,7 @@ export function EventMarkers({ doc, onSeek }: { doc: KeyframesDoc | undefined; o
             onClick={() => onSeek(marker.t)}
             className="type-label min-h-8 underline decoration-hairline underline-offset-4 hover:text-ink"
           >
-            {number(marker.t, 1)} s · {markerLabel(marker.kind)}
+            {number(marker.t, 1)} s · {slowing && marker.kind === "braking_start" ? t(`markers.slowing_${event as "speed_bump" | "pothole"}`) : markerLabel(marker.kind)}
           </button>
         </li>
       ))}

@@ -348,7 +348,9 @@
       "segment_lane_change": "Trecho com troca de faixa",
       "segment_sharp_curve": "Trecho com curva",
       "segment_pothole": "Trecho com buraco",
-      "segment_long_vibration": "Estrada ruim"
+      "segment_long_vibration": "Estrada ruim",
+      "slowing_speed_bump": "Reduz para a lombada",
+      "slowing_pothole": "Reduz para o buraco"
     },
     "rows": {
       "title": "Resultado",
@@ -401,7 +403,8 @@
       "sacks": "Sacaria {number}",
       "pipe": "Tubo {number}",
       "drum": "Tambor {number}",
-      "unit": "Unidade {number}"
+      "unit": "Unidade {number}",
+      "placed": "{name} ({place, select, front {frente} middle {meio} rear {traseira} other {em cima}})"
     },
     "method": "Como isso é calculado",
     "others": "Outros cenários",
@@ -1135,7 +1138,22 @@
       "photos": "Fotos",
       "details": "Caminhão e peso",
       "review": "Revisão",
-      "result": "Resultado"
+      "result": "Resultado",
+      "restraintTo": {
+        "direct": "Coloque cintas diagonais em todos os volumes, para a frente e para trás dos dois lados",
+        "chain": "Coloque correntes em todos os volumes, para a frente e para trás dos dois lados",
+        "top_over": "Passe cintas por cima de todos os volumes",
+        "mat": "Coloque uma manta antiderrapante sob a carga, com cintas por cima",
+        "blocking": "Trave a carga na frente e atrás",
+        "cradle": "Apoie as bobinas em berços",
+        "cradle_chain": "Apoie as bobinas em berços e passe correntes pelo furo",
+        "rope": "Amarre a carga com cordas",
+        "none": "Tire as amarrações"
+      },
+      "restraint": "{action}{keep, select, yes {, e mantenha as cintas por cima} other {}}.",
+      "restraintStraps": "{action}, e {to, plural, one {# cinta} other {# cintas}} por cima de {units, select, every {cada volume} other {{units}}}{rest, plural, =0 {} other { (# em cada um dos outros)}}.",
+      "restraintInstead": "{action}, no lugar das cintas por cima.",
+      "straps": "{units, select, every {Cada volume} other {{units}}}: {to, plural, =0 {nenhuma cinta} one {# cinta} other {# cintas}} por cima{from, plural, =0 {} other { em vez de {from}}}."
     },
     "restart": "Recomeçar",
     "back": "Voltar",
@@ -1651,7 +1669,10 @@
       },
       "count": "Aguenta {passed} de {total} situações.",
       "estimated": "Peso estimado: {low}–{high}, testado no limite de cima",
-      "proven": "Corrigida e comprovada por uma nova foto"
+      "proven": "Corrigida e comprovada por uma nova foto",
+      "estimatedWhy": "Por que uma faixa? Sem a nota fiscal, o peso é estimado pelo tipo de carga e pelo volume, e o caso mais pesado é testado, para o resultado ficar do lado seguro.",
+      "estimatedWhyLabel": "Por que o peso é uma faixa",
+      "addInvoice": "Informar o peso da nota fiscal"
     },
     "problem": {
       "theLoad": "a carga",
@@ -2103,7 +2124,17 @@
           "explain": "EN 12640: cada ponto de amarração aguenta 800 daN num veículo de até 7,5 t, 1.000 daN até 12 t e 2.000 daN acima disso. Uma corrente pode puxar mais do que o ponto aguenta.",
           "fix": "Use mais pontos por volume ou pontos certificados (4.000 daN), e prenda no chassi, não no assoalho de madeira."
         }
-      }
+      },
+      "unitsLabel": "Volumes",
+      "closeTheme": "Fechar e voltar à lista",
+      "groups": {
+        "fails": "Reprovado",
+        "confirm": "A confirmar",
+        "advice": "Conselho, não é regra",
+        "passes": "{count, plural, one {# item aprovado} other {# itens aprovados}}",
+        "notApplicable": "{count, plural, one {# item não se aplica} other {# itens não se aplicam}}"
+      },
+      "allUnits": "{count, plural, one {O volume} other {Todos os # volumes}}"
     },
     "fix": {
       "title": "Como deixar segura",
@@ -2132,7 +2163,7 @@
       "situations": "Situações",
       "road": "Estrada",
       "weather": "Tempo",
-      "speed": "Velocidade",
+      "speed": "Velocidade no momento",
       "event": "O que acontece",
       "running": "Simulando…",
       "status": {
@@ -2143,7 +2174,79 @@
       "unavailable": "Esta simulação não está disponível agora.",
       "server": "Resultado do servidor: o que vale para o certificado.",
       "live": "Ao vivo no seu navegador, sem valor de certificado.",
-      "explorer": "Abrir no explorador"
+      "explorer": "Abrir no explorador",
+      "customOf": "{situation}, alterada",
+      "previous": "Situações anteriores",
+      "next": "Mais situações",
+      "tryAnother": "Testar outra situação",
+      "tryAnotherHint": "Mude a estrada, o tempo ou a velocidade desta situação. Só aparecem opções que mudam a física; uma viagem alterada roda ao vivo no seu navegador.",
+      "roads": {
+        "paved": "Asfalto",
+        "dirt": "Terra ou cascalho",
+        "highwayBends": "Curvas de rodovia ({radius})",
+        "tightBends": "Curvas fechadas de serra ({radius})",
+        "dirtBends": "Curvas em estrada de terra ({radius})"
+      },
+      "weathers": {
+        "dry": "Seco",
+        "wet": "Molhado",
+        "heavy_rain": "Chuva forte",
+        "mud": "Barro no assoalho",
+        "fog": "Neblina: vê tarde, freia forte"
+      },
+      "rainNote": "Chuva não aparece aqui: ela reduz a aderência dos pneus, e esta situação nunca precisa de mais aderência do que uma pista molhada dá. Assoalho molhado mantém o atrito; só o barro o reduz.",
+      "speedNote": "A velocidade não muda nada aqui: o teste é a trepidação e depois uma parada total.",
+      "reset": "Voltar à situação testada",
+      "theLoad": "A carga",
+      "numbers": "Ver os números",
+      "push": {
+        "emergency_braking": "o empurrão da frenagem",
+        "lane_change": "o desvio",
+        "sharp_curve": "o empurrão da curva",
+        "pothole": "o tranco do buraco",
+        "speed_bump": "o empurrão da lombada",
+        "mountain_descent": "a descida com frenagens e curvas",
+        "long_vibration": "a frenagem depois que as cintas afrouxaram",
+        "full_trip": "a viagem"
+      },
+      "plain": {
+        "holds": "{subject} {count, plural, one {aguenta} other {aguentam}}: {lashed, select, yes {o atrito e as amarrações são mais fortes} other {o atrito é mais forte}} que {push}.",
+        "unit_left_bed": "{unit} cai do caminhão: {push} vence o que segura a carga.",
+        "unit_tilted": "{unit} tomba: {push} vence o peso e as amarrações que mantêm a carga em pé.",
+        "unit_rolled": "{unit} rola: {push} põe a carga em movimento, e não há calço.",
+        "unit_hit_headboard": "{unit} escorrega contra a cabeceira: {push} é mais forte que o atrito e as cintas.",
+        "headboard_overloaded": "A carga força a cabeceira além do que ela aguenta: {push} é demais para ela.",
+        "unit_slid": "{unit} escorrega: {push} é mais forte que o atrito e as cintas.",
+        "lashing_broke": "Uma cinta de {unit} arrebenta: {push} passa da resistência dela.",
+        "lashing_overloaded": "Uma cinta de {unit} passa da capacidade nominal com {push}."
+      },
+      "subject": {
+        "wood_pallet": "{count, plural, one {O palete} other {Os paletes}}",
+        "plastic_pallet": "{count, plural, one {O palete} other {Os paletes}}",
+        "crate": "{count, plural, one {O caixote} other {Os caixotes}}",
+        "drum": "{count, plural, one {O tambor} other {Os tambores}}",
+        "steel_coil": "{count, plural, one {A bobina} other {As bobinas}}",
+        "machine": "{count, plural, one {A máquina} other {As máquinas}}",
+        "tall_cabinet": "{count, plural, one {O armário} other {Os armários}}",
+        "sacks": "As sacas",
+        "long_pipes": "Os tubos",
+        "stacked_boxes": "As caixas",
+        "mixed": "A carga"
+      },
+      "wrong": {
+        "title": "O que deu errado",
+        "nothing": "Nada deu errado nesta situação.",
+        "small": "Pequenos movimentos, dentro dos limites",
+        "strap": "A amarração chegou a {percent} da capacidade.",
+        "unit_left_bed": "{unit} cai do caminhão.",
+        "unit_tilted": "{unit} tomba.",
+        "unit_rolled": "{unit} rola {distance}.",
+        "unit_hit_headboard": "{unit} bate na cabeceira.",
+        "headboard_overloaded": "A cabeceira ou parede frontal recebe mais força do que aguenta.",
+        "unit_slid": "{unit} escorrega {distance}.",
+        "lashing_broke": "Uma cinta de {unit} arrebenta.",
+        "lashing_overloaded": "Uma cinta de {unit} passa da capacidade nominal."
+      }
     },
     "share": {
       "button": "Compartilhar",

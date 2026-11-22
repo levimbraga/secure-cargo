@@ -132,6 +132,7 @@ export function NewInspection() {
                 onCorrect={() => void flow.openEditor()}
                 onHeadboard={(height) => void flow.setHeadboard(height)}
                 onFrontEndRating={(kg) => void flow.setFrontEndRating(kg)}
+                onAddInvoice={() => flow.goTo("weight")}
                 truckAssumed={Boolean(state.sample?.truck_assumed && state.truck?.size === state.sample.truck.size)}
                 onReinspect={
                   state.inspectionId

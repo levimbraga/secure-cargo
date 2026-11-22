@@ -141,7 +141,7 @@ export function ExplorerScene({
         </div>
       </div>
       <div className="mt-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
-        <EventMarkers doc={doc} onSeek={clock.scrub} />
+        <EventMarkers doc={doc} onSeek={clock.scrub} event={event} />
         <SpeedChoice speed={speed} onChange={setSpeed} />
       </div>
     </figure>

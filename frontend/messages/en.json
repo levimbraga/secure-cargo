@@ -348,7 +348,9 @@
       "segment_lane_change": "Lane change section",
       "segment_sharp_curve": "Curve section",
       "segment_pothole": "Pothole section",
-      "segment_long_vibration": "Rough road"
+      "segment_long_vibration": "Rough road",
+      "slowing_speed_bump": "Slows down for the bump",
+      "slowing_pothole": "Slows down for the pothole"
     },
     "rows": {
       "title": "Result",
@@ -401,7 +403,8 @@
       "sacks": "Sacks {number}",
       "pipe": "Pipe {number}",
       "drum": "Drum {number}",
-      "unit": "Unit {number}"
+      "unit": "Unit {number}",
+      "placed": "{name} ({place, select, front {front} middle {middle} rear {rear} other {on top}})"
     },
     "method": "How this is calculated",
     "others": "Other scenarios",
@@ -1135,7 +1138,22 @@
       "photos": "Photos",
       "details": "Truck and weight",
       "review": "Review",
-      "result": "Result"
+      "result": "Result",
+      "restraintTo": {
+        "direct": "Add diagonal straps to every unit, forward and back on both sides",
+        "chain": "Add chains to every unit, forward and back on both sides",
+        "top_over": "Put straps over the top of every unit",
+        "mat": "Put an anti-slip mat under the load, with straps over the top",
+        "blocking": "Block the load front and back",
+        "cradle": "Set the coils in cradles",
+        "cradle_chain": "Set the coils in cradles and chain them through the eye",
+        "rope": "Tie the load with ropes",
+        "none": "Take the lashings off"
+      },
+      "restraint": "{action}{keep, select, yes {, and keep the straps over the top} other {}}.",
+      "restraintStraps": "{action}, and {to, plural, one {# strap} other {# straps}} over {units, select, every {each unit} other {{units}}}{rest, plural, =0 {} other { (# over each of the others)}}.",
+      "restraintInstead": "{action}, instead of the straps over the top.",
+      "straps": "{units, select, every {Each unit} other {{units}}}: {to, plural, =0 {no straps} one {# strap} other {# straps}} over the top{from, plural, =0 {} other { instead of {from}}}."
     },
     "restart": "Start over",
     "back": "Back",
@@ -1651,7 +1669,10 @@
       },
       "count": "Holds in {passed} of {total} situations.",
       "estimated": "Weight estimated: {low}–{high}, tested at the upper end",
-      "proven": "Fixed and proven by a new photo"
+      "proven": "Fixed and proven by a new photo",
+      "estimatedWhy": "Why a range? Without the invoice, the weight is estimated from the cargo type and its volume, and the heaviest case is tested, so the result errs on the safe side.",
+      "estimatedWhyLabel": "Why the weight is a range",
+      "addInvoice": "Add the invoice weight"
     },
     "problem": {
       "theLoad": "the load",
@@ -2103,7 +2124,17 @@
           "explain": "EN 12640: each lashing point holds 800 daN on a vehicle up to 7.5 t, 1,000 daN up to 12 t and 2,000 daN above. A chain can pull more than its point holds.",
           "fix": "Use more lashing points per unit, or rated points (4,000 daN), and hook lashings to the frame, not the wooden floor."
         }
-      }
+      },
+      "unitsLabel": "Units",
+      "closeTheme": "Close and back to the list",
+      "groups": {
+        "fails": "Fails",
+        "confirm": "To confirm",
+        "advice": "Advice, not a rule",
+        "passes": "{count, plural, one {# check passes} other {# checks pass}}",
+        "notApplicable": "{count, plural, one {# check does not apply} other {# checks do not apply}}"
+      },
+      "allUnits": "{count, plural, one {The unit} other {All # units}}"
     },
     "fix": {
       "title": "How to make it safe",
@@ -2132,7 +2163,7 @@
       "situations": "Situations",
       "road": "Road",
       "weather": "Weather",
-      "speed": "Speed",
+      "speed": "Speed when it happens",
       "event": "What happens",
       "running": "Simulating…",
       "status": {
@@ -2143,7 +2174,79 @@
       "unavailable": "This run is not available right now.",
       "server": "Server result: the one the certificate uses.",
       "live": "Live in your browser, not certified.",
-      "explorer": "Open in the explorer"
+      "explorer": "Open in the explorer",
+      "customOf": "{situation}, changed",
+      "previous": "Previous situations",
+      "next": "More situations",
+      "tryAnother": "Try another situation",
+      "tryAnotherHint": "Change the road, the weather or the speed of this situation. Only choices that change the physics are offered; a changed trip runs live in your browser.",
+      "roads": {
+        "paved": "Paved road",
+        "dirt": "Dirt or gravel",
+        "highwayBends": "Highway bends ({radius})",
+        "tightBends": "Tight mountain bends ({radius})",
+        "dirtBends": "Dirt road bends ({radius})"
+      },
+      "weathers": {
+        "dry": "Dry",
+        "wet": "Wet",
+        "heavy_rain": "Heavy rain",
+        "mud": "Mud on the deck",
+        "fog": "Fog: seen late, hard braking"
+      },
+      "rainNote": "Rain is not offered here: it lowers the tyres' grip, and this situation never needs more grip than a wet road gives. A wet deck keeps its friction; only mud lowers it.",
+      "speedNote": "Speed changes nothing here: the test is the shaking, then a full stop.",
+      "reset": "Back to the tested situation",
+      "theLoad": "The load",
+      "numbers": "Show the numbers",
+      "push": {
+        "emergency_braking": "the push of the braking",
+        "lane_change": "the swerve",
+        "sharp_curve": "the push of the curve",
+        "pothole": "the jolt of the pothole",
+        "speed_bump": "the push of the bump",
+        "mountain_descent": "the push of the descent's braking and bends",
+        "long_vibration": "the braking after the straps loosened",
+        "full_trip": "the trip"
+      },
+      "plain": {
+        "holds": "{subject} {count, plural, one {holds} other {hold}}: {lashed, select, yes {friction and the lashings are} other {friction is}} stronger than {push}.",
+        "unit_left_bed": "{unit} falls off the truck: {push} is stronger than what holds it.",
+        "unit_tilted": "{unit} tips over: {push} overturns it, and nothing keeps it upright.",
+        "unit_rolled": "{unit} rolls: {push} sets it rolling, and nothing chocks it.",
+        "unit_hit_headboard": "{unit} slides into the headboard: {push} is stronger than friction and the straps.",
+        "headboard_overloaded": "The load pushes the headboard past its rating: {push} is more than it can take.",
+        "unit_slid": "{unit} slides: {push} is stronger than friction and the straps.",
+        "lashing_broke": "A strap on {unit} breaks: {push} pulls it past its strength.",
+        "lashing_overloaded": "A strap on {unit} is pulled past its rated capacity by {push}."
+      },
+      "subject": {
+        "wood_pallet": "{count, plural, one {The pallet} other {The pallets}}",
+        "plastic_pallet": "{count, plural, one {The pallet} other {The pallets}}",
+        "crate": "{count, plural, one {The crate} other {The crates}}",
+        "drum": "{count, plural, one {The drum} other {The drums}}",
+        "steel_coil": "{count, plural, one {The coil} other {The coils}}",
+        "machine": "{count, plural, one {The machine} other {The machines}}",
+        "tall_cabinet": "{count, plural, one {The cabinet} other {The cabinets}}",
+        "sacks": "The sacks",
+        "long_pipes": "The pipes",
+        "stacked_boxes": "The cartons",
+        "mixed": "The load"
+      },
+      "wrong": {
+        "title": "What went wrong",
+        "nothing": "Nothing went wrong in this situation.",
+        "small": "Small movements, within the limits",
+        "strap": "Its lashing reached {percent} of its capacity.",
+        "unit_left_bed": "{unit} falls off the truck.",
+        "unit_tilted": "{unit} tips over.",
+        "unit_rolled": "{unit} rolls {distance}.",
+        "unit_hit_headboard": "{unit} hits the headboard.",
+        "headboard_overloaded": "The headboard or front wall is loaded past its rating.",
+        "unit_slid": "{unit} slides {distance}.",
+        "lashing_broke": "A strap on {unit} breaks.",
+        "lashing_overloaded": "A strap on {unit} is pulled past its rated capacity."
+      }
     },
     "share": {
       "button": "Share",
@@ -2209,7 +2312,7 @@
     },
     "country": {
       "label": "Rules",
-      "BR": "Brasil",
+      "BR": "Brazil",
       "US": "United States",
       "hint": "Same simulation; only the rules and units change.",
       "rechecking": "Checking the rules again…",
@@ -2222,7 +2325,7 @@
       },
       "codeAssumed": "No code given: L is assumed.",
       "short": {
-        "BR": "Brasil",
+        "BR": "Brazil",
         "US": "US",
         "EU": "EU"
       }

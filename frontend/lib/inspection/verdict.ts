@@ -113,25 +113,38 @@ function firstRuleFailure(input: BatteryLike): MainProblem | null {
   return axle ? { kind: "rule", code: "axle", unitId: axle.axle_group_id, article: "CONTRAN 882/2021 art. 6", theme: "weight" } : null;
 }
 
+type FindingLike = { code?: string; severity?: string; unit_id?: string | null; countries?: string[] | null };
+
+/** Rank of a finding by how bad it is for the load (falling off first, a strap over its rating last). */
+export function findingRank(code?: string): number {
+  const index = FINDING_ORDER.indexOf(code ?? "");
+  return index < 0 ? FINDING_ORDER.length : index;
+}
+
+/**
+ * The failure a situation is told by: its worst physical finding under one country's ratings
+ * (the headline, the explanation and "What went wrong" all start from it). Null when it holds.
+ */
+export function mainFinding(findings: FindingLike[] | undefined, country = "BR"): { code: string; unitId: string | null } | null {
+  const failing = physicalFindings(findings, country).filter((f) => f.severity === "fail");
+  const first = [...failing].sort((a, b) => findingRank(a.code) - findingRank(b.code))[0];
+  return first ? { code: first.code ?? "unit_slid", unitId: first.unit_id ?? null } : null;
+}
+
+/** The situation the result is told by: the most severe failing one, else null. */
+export function worstFailing<S extends SituationLike>(situations: S[], country = "BR"): S | null {
+  const failing = situations.filter((s) => !holds(s, country));
+  return failing.length ? failing.reduce((a, b) => ((b.severity ?? 0) > (a.severity ?? 0) ? b : a)) : null;
+}
+
 export function verdictOf(battery: BatteryLike): { state: VerdictState; problem: MainProblem | null } {
   const country = battery.country ?? "BR";
-  const failing = battery.situations.filter((s) => !holds(s, country));
-  if (failing.length) {
-    const worst = failing.reduce((a, b) => ((b.severity ?? 0) > (a.severity ?? 0) ? b : a));
-    const findings = physicalFindings(
-      worst.findings as { code?: string; severity?: string; unit_id?: string | null; countries?: string[] | null }[],
-      country,
-    ).filter(
-      (f) => f.severity === "fail",
-    );
-    const rank = (code?: string) => {
-      const index = FINDING_ORDER.indexOf(code ?? "");
-      return index < 0 ? FINDING_ORDER.length : index;
-    };
-    const first = [...findings].sort((a, b) => rank(a.code) - rank(b.code))[0];
+  const worst = worstFailing(battery.situations, country);
+  if (worst) {
+    const first = mainFinding(worst.findings as FindingLike[], country);
     return {
       state: "fails",
-      problem: { kind: "physics", code: first?.code ?? "unit_slid", situation: worst.id, unitId: first?.unit_id ?? null },
+      problem: { kind: "physics", code: first?.code ?? "unit_slid", situation: worst.id, unitId: first?.unitId ?? null },
     };
   }
   const rule = firstRuleFailure(battery);
