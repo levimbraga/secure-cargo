@@ -219,6 +219,9 @@ class KeyframeBed(_Model):
     body: BodyType = BodyType.FLATBED
     rear_wall_height_m: float = 0.0
     blocks: list[KeyframeBlock] = Field(default_factory=list)
+    truck_size: str | None = Field(
+        default=None, description="The truck preset, for drawing its axles and cab (None: unknown)."
+    )
 
 
 class KeyframeEvent(_Model):

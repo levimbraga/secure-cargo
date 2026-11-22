@@ -205,6 +205,14 @@ class Vehicle(_Model):
         gt=0,
         description="Rated payload P [kg]; box-body wall strength scales with it.",
     )
+    size: str | None = Field(
+        default=None,
+        max_length=32,
+        description=(
+            "The truck preset this vehicle is (an explorer size, e.g. 'semi'), so the 3D scene "
+            "draws its axles, cab and tractor from the truck catalog. Not used by the physics."
+        ),
+    )
 
     @model_validator(mode="after")
     def _distinct_positions(self) -> Self:

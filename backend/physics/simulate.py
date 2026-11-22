@@ -445,6 +445,7 @@ def keyframe_bed(scenario: Scenario) -> KeyframeBed:
             )
             for block in bed.blocks
         ],
+        truck_size=scenario.vehicle.size if scenario.vehicle else None,
     )
 
 

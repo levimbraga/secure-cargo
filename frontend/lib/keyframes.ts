@@ -84,6 +84,8 @@ export type KeyframesDoc = {
     /** Missing in older documents: a flatbed. */
     body?: BodyType;
     rear_wall_height_m?: number;
+    /** The truck preset (`lib/inspection/truck-catalog.json`) the scene draws; missing in older documents. */
+    truck_size?: string | null;
     blocks?: KeyframeBlock[];
   };
   units: KeyframeUnit[];
