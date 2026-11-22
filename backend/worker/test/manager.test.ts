@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 
 import { canonicalJson, certificateEligibility, contentHash, verifyContent } from "../src/certificate";
-import { diffDrafts, readingVsLoad } from "../src/events";
+import { diffDrafts, logEvent, readingVsLoad } from "../src/events";
 import { csvCell, filterClauses, parseFilters, toCsv } from "../src/listing";
 import { computeOverview, isAlert, type MetricRow, weekStart } from "../src/metrics";
 import { cargoTypes, failureCodes, packList } from "../src/summary";
@@ -407,6 +407,16 @@ describe("audit trail", () => {
 		// Readers only: another organization gets a 404, a member another member's 404.
 		expect((await call("GET", "/inspections/a1/audit", as.erin)).status).toBe(404);
 		expect((await call("GET", "/inspections/a1/audit", as.bob)).status).toBe(404);
+	});
+
+	it("lists events logged in the same millisecond in the order they happened", async () => {
+		// Two requests can land in one millisecond (the flaky run of this suite): ids are random, so
+		// the order must come from the insertion, not from the id.
+		const { call, db } = setup();
+		const at = "2026-11-22T12:00:00.000Z";
+		for (let n = 0; n < 40; n++) await logEvent(db, "a1", "alice", "load_confirmed", { n }, at);
+		const audit = (await (await call("GET", "/inspections/a1/audit", as.carol)).json()) as { events: { detail: { n: number } }[] };
+		expect(audit.events.map((e) => e.detail.n)).toEqual(Array.from({ length: 40 }, (_, n) => n));
 	});
 
 	it("puts the AI's reading beside the confirmed load", () => {

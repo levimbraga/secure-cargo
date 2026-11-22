@@ -183,7 +183,7 @@ export function registerFlow(
 		const inspection = await writable(c);
 		const meta = await db.prepare("SELECT sample FROM inspections WHERE id = ?").bind(inspection.id).first<{ sample: string | null }>();
 		const { results: photos } = await db
-			.prepare("SELECT id, position, r2_key, sha256, content_type FROM photos WHERE inspection_id = ? ORDER BY created_at")
+			.prepare("SELECT id, position, r2_key, sha256, content_type FROM photos WHERE inspection_id = ? ORDER BY created_at, rowid")
 			.bind(inspection.id)
 			.all<{ id: string; position: string; r2_key: string; sha256: string; content_type: string }>();
 		if (photos.length === 0) fail(422, "no_photos", "Add at least one photo first.");
@@ -413,7 +413,7 @@ export function registerFlow(
 
 	async function scenarioOf(inspectionId: string, kind: (typeof KINDS)[number]) {
 		return db
-			.prepare("SELECT id, draft_json, battery_ref FROM scenarios WHERE inspection_id = ? AND kind = ? ORDER BY created_at DESC LIMIT 1")
+			.prepare("SELECT id, draft_json, battery_ref FROM scenarios WHERE inspection_id = ? AND kind = ? ORDER BY created_at DESC, rowid DESC LIMIT 1")
 			.bind(inspectionId, kind)
 			.first<{ id: string; draft_json: string; battery_ref: string | null }>();
 	}

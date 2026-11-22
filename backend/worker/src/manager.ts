@@ -71,7 +71,7 @@ export async function orgPolicies(db: Db, orgId: string | null): Promise<OrgPoli
 }
 
 const PROVEN_BY =
-	"(SELECT r.id FROM inspections r WHERE r.reinspection_of = i.id AND r.verdict = 'pass' ORDER BY r.created_at DESC LIMIT 1)";
+	"(SELECT r.id FROM inspections r WHERE r.reinspection_of = i.id AND r.verdict = 'pass' ORDER BY r.created_at DESC, r.rowid DESC LIMIT 1)";
 
 /** How many open alerts an organization has now (the menu badge). Same rule as `metrics.isAlert`. */
 export async function alertCount(db: Db, p: Principal, orgId: string, hours: number, at: Date = new Date()): Promise<number> {
@@ -113,7 +113,7 @@ export function registerManager(
 				   i.reinspection_of, i.failure_codes, i.truck_json, i.truck_size, i.truck_body, i.cargo_weight_kg,
 				   i.situations_passed, i.situations_total, ${PROVEN_BY} AS proven_by
 				 FROM inspections i JOIN users u ON u.id = i.author_id
-				 WHERE i.org_id = ?${sandbox.sql} ORDER BY i.created_at DESC LIMIT 10000`,
+				 WHERE i.org_id = ?${sandbox.sql} ORDER BY i.created_at DESC, i.rowid DESC LIMIT 10000`,
 			)
 			.bind(orgId, ...sandbox.params)
 			.all<MetricRow & Record<string, unknown>>();
@@ -203,7 +203,7 @@ export function registerManager(
 				   i.cargo_types, i.cargo_weight_kg, i.weight_source, i.verdict, i.fixed_verdict, ${PROVEN_BY} AS proven_by,
 				   i.situations_passed, i.situations_total, i.failure_codes, i.reinspection_of
 				 FROM inspections i JOIN users u ON u.id = i.author_id
-				 WHERE ${[auth.where, ...extra.where].join(" AND ")} ORDER BY i.created_at DESC LIMIT 5000`,
+				 WHERE ${[auth.where, ...extra.where].join(" AND ")} ORDER BY i.created_at DESC, i.rowid DESC LIMIT 5000`,
 			)
 			.bind(...auth.params, ...extra.params)
 			.all<CsvRow>();
@@ -223,7 +223,7 @@ export function registerManager(
 			.prepare(
 				`SELECT e.id, e.at, e.kind, e.actor_id, u.name AS actor_name, e.detail_json
 				 FROM inspection_events e LEFT JOIN users u ON u.id = e.actor_id
-				 WHERE e.inspection_id = ? ORDER BY e.at, e.id`,
+				 WHERE e.inspection_id = ? ORDER BY e.at, e.rowid`,
 			)
 			.bind(row.id)
 			.all<{ id: string; at: string; kind: string; actor_id: string | null; actor_name: string | null; detail_json: string }>();
@@ -244,7 +244,7 @@ export function registerManager(
 			}
 		}
 		const scenario = await db
-			.prepare("SELECT draft_json FROM scenarios WHERE inspection_id = ? AND kind = 'as_loaded' ORDER BY created_at DESC LIMIT 1")
+			.prepare("SELECT draft_json FROM scenarios WHERE inspection_id = ? AND kind = 'as_loaded' ORDER BY created_at DESC, rowid DESC LIMIT 1")
 			.bind(row.id)
 			.first<{ draft_json: string }>();
 		const draft = scenario ? JSON.parse(scenario.draft_json) : null;
@@ -266,7 +266,7 @@ export function registerManager(
 				`SELECT i.id, i.created_at, i.org_id, o.name AS org_name, o.type AS org_type, i.truck_json, i.truck_body, i.truck_size,
 				   i.cargo_weight_kg, i.weight_source, i.cargo_types, i.verdict, i.reinspection_of, ${PROVEN_BY} AS proven_by,
 				   (SELECT json_array_length(s.draft_json, '$.units') FROM scenarios s WHERE s.inspection_id = i.id AND s.kind = 'as_loaded'
-				      ORDER BY s.created_at DESC LIMIT 1) AS units
+				      ORDER BY s.created_at DESC, s.rowid DESC LIMIT 1) AS units
 				 FROM inspections i LEFT JOIN organizations o ON o.id = i.org_id WHERE i.id = ?`,
 			)
 			.bind(id)
@@ -277,7 +277,7 @@ export function registerManager(
 
 	async function batteryOf(inspectionId: string): Promise<Record<string, unknown> | null> {
 		const scenario = await db
-			.prepare("SELECT battery_ref FROM scenarios WHERE inspection_id = ? AND kind = 'as_loaded' ORDER BY created_at DESC LIMIT 1")
+			.prepare("SELECT battery_ref FROM scenarios WHERE inspection_id = ? AND kind = 'as_loaded' ORDER BY created_at DESC, rowid DESC LIMIT 1")
 			.bind(inspectionId)
 			.first<{ battery_ref: string | null }>();
 		if (!scenario?.battery_ref) return null;
@@ -286,7 +286,7 @@ export function registerManager(
 
 	async function firstPhoto(inspectionId: string) {
 		return db
-			.prepare("SELECT id, position, sha256, r2_key FROM photos WHERE inspection_id = ? ORDER BY created_at LIMIT 1")
+			.prepare("SELECT id, position, sha256, r2_key FROM photos WHERE inspection_id = ? ORDER BY created_at, rowid LIMIT 1")
 			.bind(inspectionId)
 			.first<{ id: string; position: string; sha256: string; r2_key: string }>();
 	}
@@ -311,7 +311,7 @@ export function registerManager(
 		const battery = await batteryOf(proofId ?? row.id);
 		if (!battery) fail(409, "certificate_no_result", "The simulation result is not stored; simulate the load again.");
 		const photo = await firstPhoto(proofId ?? row.id);
-		const fix = await db.prepare("SELECT changes_json FROM fixes WHERE inspection_id = ? ORDER BY created_at DESC LIMIT 1").bind(row.id).first<{ changes_json: string }>();
+		const fix = await db.prepare("SELECT changes_json FROM fixes WHERE inspection_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 1").bind(row.id).first<{ changes_json: string }>();
 		const body = certificateBody({
 			state: eligibility.state,
 			inspection: proof ? { ...inspection, cargo_types: proof.cargo_types ?? inspection.cargo_types, units: proof.units || inspection.units } : inspection,
@@ -322,7 +322,7 @@ export function registerManager(
 		});
 		// The same record again: the certificate already issued, not a new one.
 		const { results: existing } = await db
-			.prepare("SELECT id, content_json FROM certificates WHERE inspection_id = ? AND revoked_at IS NULL ORDER BY issued_at DESC")
+			.prepare("SELECT id, content_json FROM certificates WHERE inspection_id = ? AND revoked_at IS NULL ORDER BY issued_at DESC, rowid DESC")
 			.bind(row.id)
 			.all<{ id: string; content_json: string }>();
 		const same = existing.find((cert) => {
@@ -384,7 +384,7 @@ export function registerManager(
 	app.get("/inspections/:id/certificate", authenticated, async (c) => {
 		const row = await readable(c);
 		const latest = await db
-			.prepare("SELECT id FROM certificates WHERE inspection_id = ? AND revoked_at IS NULL ORDER BY issued_at DESC LIMIT 1")
+			.prepare("SELECT id FROM certificates WHERE inspection_id = ? AND revoked_at IS NULL ORDER BY issued_at DESC, rowid DESC LIMIT 1")
 			.bind(row.id)
 			.first<{ id: string }>();
 		const inspection = await facts(row.id);

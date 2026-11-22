@@ -101,9 +101,9 @@ const INSPECTION_COLUMNS = `i.id, i.org_id, i.author_id, i.created_at, i.updated
 	i.truck_body, i.truck_size, i.cargo_weight_kg, i.notes, i.plate, i.situations_passed,
 	i.situations_total, i.verdict, i.fixed_verdict, i.sample, i.truck_json, i.weight_source, i.weight_range_json, i.country,
 	i.invoice_json, i.reinspection_of, i.share_token, i.failure_codes, i.cargo_types, u.name AS author_name, o.name AS org_name,
-	(SELECT r.id FROM inspections r WHERE r.reinspection_of = i.id AND r.verdict = 'pass' ORDER BY r.created_at DESC LIMIT 1) AS proven_by,
-	(SELECT p.r2_key FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at LIMIT 1) AS cover_photo,
-	(SELECT p.id FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at LIMIT 1) AS cover_photo_id`;
+	(SELECT r.id FROM inspections r WHERE r.reinspection_of = i.id AND r.verdict = 'pass' ORDER BY r.created_at DESC, r.rowid DESC LIMIT 1) AS proven_by,
+	(SELECT p.r2_key FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at, p.rowid LIMIT 1) AS cover_photo,
+	(SELECT p.id FROM photos p WHERE p.inspection_id = i.id ORDER BY p.created_at, p.rowid LIMIT 1) AS cover_photo_id`;
 
 interface InspectionRow {
 	id: string;
@@ -247,7 +247,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
 				.prepare(
 					`SELECT ${INSPECTION_COLUMNS} FROM inspections i
 					 JOIN users u ON u.id = i.author_id LEFT JOIN organizations o ON o.id = i.org_id
-					 WHERE ${where} ORDER BY i.created_at DESC LIMIT ? OFFSET ?`,
+					 WHERE ${where} ORDER BY i.created_at DESC, i.rowid DESC LIMIT ? OFFSET ?`,
 				)
 				.bind(...params, filters.pageSize, (filters.page - 1) * filters.pageSize)
 				.all<InspectionRow>(),
@@ -394,11 +394,11 @@ export function createApp(deps: AppDeps): Hono<Env> {
 			.first<Record<string, unknown> & { id: string; share_driver_name: number | null; author_name: string | null }>();
 		if (!row) notFound();
 		const photo = await db
-			.prepare("SELECT r2_key FROM photos WHERE inspection_id = ? ORDER BY created_at LIMIT 1")
+			.prepare("SELECT r2_key FROM photos WHERE inspection_id = ? ORDER BY created_at, rowid LIMIT 1")
 			.bind(row.id)
 			.first<{ r2_key: string }>();
 		const scenario = await db
-			.prepare("SELECT battery_ref FROM scenarios WHERE inspection_id = ? AND kind = 'as_loaded' ORDER BY created_at DESC LIMIT 1")
+			.prepare("SELECT battery_ref FROM scenarios WHERE inspection_id = ? AND kind = 'as_loaded' ORDER BY created_at DESC, rowid DESC LIMIT 1")
 			.bind(row.id)
 			.first<{ battery_ref: string | null }>();
 		let checks: unknown = null;
@@ -439,7 +439,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
 		const photo = await db
 			.prepare(
 				`SELECT p.r2_key, p.content_type FROM photos p JOIN inspections i ON i.id = p.inspection_id
-				 WHERE i.share_token = ? ORDER BY p.created_at LIMIT 1`,
+				 WHERE i.share_token = ? ORDER BY p.created_at, p.rowid LIMIT 1`,
 			)
 			.bind(token)
 			.first<{ r2_key: string; content_type: string }>();
@@ -684,15 +684,15 @@ async function loadInspection(db: Db, id: string) {
 		.first<Record<string, unknown>>();
 	const [photos, scenarios, results, fixes] = await Promise.all([
 		db
-			.prepare("SELECT id, position, r2_key, sha256, content_type, bytes, created_at FROM photos WHERE inspection_id = ? ORDER BY created_at")
+			.prepare("SELECT id, position, r2_key, sha256, content_type, bytes, created_at FROM photos WHERE inspection_id = ? ORDER BY created_at, rowid")
 			.bind(id)
 			.all(),
-		db.prepare("SELECT id, kind, draft_json, battery_ref, created_by, created_at FROM scenarios WHERE inspection_id = ? ORDER BY created_at").bind(id).all<{ draft_json: string }>(),
-		db.prepare("SELECT id, scenario_id, situation, verdict, metrics_json, keyframes_ref, created_at FROM results WHERE inspection_id = ? ORDER BY created_at").bind(id).all<{ metrics_json: string }>(),
-		db.prepare("SELECT id, from_scenario_id, to_scenario_id, changes_json, passes, created_at FROM fixes WHERE inspection_id = ? ORDER BY created_at").bind(id).all<{ changes_json: string; passes: number }>(),
+		db.prepare("SELECT id, kind, draft_json, battery_ref, created_by, created_at FROM scenarios WHERE inspection_id = ? ORDER BY created_at, rowid").bind(id).all<{ draft_json: string }>(),
+		db.prepare("SELECT id, scenario_id, situation, verdict, metrics_json, keyframes_ref, created_at FROM results WHERE inspection_id = ? ORDER BY created_at, rowid").bind(id).all<{ metrics_json: string }>(),
+		db.prepare("SELECT id, from_scenario_id, to_scenario_id, changes_json, passes, created_at FROM fixes WHERE inspection_id = ? ORDER BY created_at, rowid").bind(id).all<{ changes_json: string; passes: number }>(),
 	]);
 	const reinspections = await db
-		.prepare("SELECT id, created_at, verdict, situations_passed, situations_total FROM inspections WHERE reinspection_of = ? ORDER BY created_at")
+		.prepare("SELECT id, created_at, verdict, situations_passed, situations_total FROM inspections WHERE reinspection_of = ? ORDER BY created_at, rowid")
 		.bind(id)
 		.all();
 	return {

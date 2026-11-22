@@ -114,7 +114,7 @@ export async function backfillSummaries(db: Db, read: BatteryReader, limit = 25)
 	const { results } = await db
 		.prepare(
 			`SELECT i.id, (SELECT s.battery_ref FROM scenarios s WHERE s.inspection_id = i.id AND s.kind = 'as_loaded'
-			   ORDER BY s.created_at DESC LIMIT 1) AS ref
+			   ORDER BY s.created_at DESC, s.rowid DESC LIMIT 1) AS ref
 			 FROM inspections i WHERE i.verdict IS NOT NULL AND i.failure_codes IS NULL LIMIT ?`,
 		)
 		.bind(limit)
