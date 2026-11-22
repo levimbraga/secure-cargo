@@ -49,30 +49,38 @@ function floorBoxes(draft: LoadDraft, except?: string) {
     });
 }
 
-function nextId(draft: LoadDraft): string {
-  let n = draft.units.length + 1;
-  const ids = new Set(draft.units.map((unit) => unit.id));
-  while (ids.has(`unit-${n}`)) n += 1;
-  return `unit-${n}`;
-}
-
-/** A new unit at the first free spot from the headboard, or `null` when the bed is full. */
-export function addUnit(draft: LoadDraft, bed: Bed, cargo: Cargo): LoadDraft | null {
-  const [l, w, h] = CARGO_SIZE[cargo];
+/**
+ * The first free spot on the floor for a footprint of `l` by `w`, from the headboard back and
+ * from the left side across, on the 5 cm grid; `null` when the bed has no room for it.
+ */
+export function freeSpot(draft: LoadDraft, bed: Bed, l: number, w: number): { x: number; y: number } | null {
   if (l > bed.length_m || w > bed.width_m) return null;
   const boxes = floorBoxes(draft);
   const halfL = (bed.length_m - l) / 2;
   const halfW = (bed.width_m - w) / 2;
   for (let x = grid(halfL); x >= -halfL - 1e-9; x = grid(x - GRID)) {
     for (let y = grid(halfW); y >= -halfW - 1e-9; y = grid(y - GRID)) {
-      const spot = { x, y, l, w };
-      if (!boxes.some((box) => overlaps(spot, box))) {
-        const unit: DraftUnit = { id: nextId(draft), cargo, size_m: [l, w, h], mass_kg: null, x_m: x, y_m: y, straps: 0 };
-        return { ...draft, units: [...draft.units, unit] };
-      }
+      if (!boxes.some((box) => overlaps({ x, y, l, w }, box))) return { x: Number(x.toFixed(4)), y: Number(y.toFixed(4)) };
     }
   }
   return null;
+}
+
+/** A free id: `<prefix>-<n>`, numbered after the units already there. */
+export function nextUnitId(draft: LoadDraft, prefix = "unit"): string {
+  let n = draft.units.length + 1;
+  const ids = new Set(draft.units.map((unit) => unit.id));
+  while (ids.has(`${prefix}-${n}`)) n += 1;
+  return `${prefix}-${n}`;
+}
+
+/** A new unit at the first free spot from the headboard, or `null` when the bed is full. */
+export function addUnit(draft: LoadDraft, bed: Bed, cargo: Cargo): LoadDraft | null {
+  const [l, w, h] = CARGO_SIZE[cargo];
+  const spot = freeSpot(draft, bed, l, w);
+  if (!spot) return null;
+  const unit: DraftUnit = { id: nextUnitId(draft), cargo, size_m: [l, w, h], mass_kg: null, x_m: spot.x, y_m: spot.y, straps: 0 };
+  return { ...draft, units: [...draft.units, unit] };
 }
 
 /** Remove a unit and whatever stands on it. */

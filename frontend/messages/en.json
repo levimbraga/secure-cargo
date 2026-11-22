@@ -748,7 +748,7 @@
     },
     "editor": {
       "title": "Load editor",
-      "hint": "Top view, front to the right. Drag a unit to move it; tap it to add a strap (after the last one that fits, back to none).",
+      "hint": "Top view, front to the right. Drag a unit to move it; tap it to add a strap (after the last one that fits, back to none). Open a unit in the list to change its cargo, size or weight.",
       "label": "Top view of the truck bed, front to the right. Each unit is a button: arrow keys move it, Enter adds a strap.",
       "front": "Cab",
       "unit": "{unit}{stack, plural, =1 {} other { (stack of #)}}, {straps, plural, =0 {no strap} one {# strap} other {# straps}}",
@@ -764,7 +764,15 @@
       "fewer": "One strap fewer on {unit}",
       "more": "One strap more on {unit}",
       "reset": "Undo the edits",
-      "hintSelect": "Top view, front to the right. Drag a unit to move it; tap it to edit it below."
+      "hintSelect": "Top view, front to the right. Drag a unit to move it; tap it to edit it below.",
+      "total": "{count, plural, one {# unit} other {# units}} · {weight}",
+      "usualWeight": "Empty: the usual weight of this cargo.",
+      "duplicate": "Duplicate",
+      "removeStack": "Remove this stack",
+      "quantity": "How many",
+      "add": "Add",
+      "full": "No room left on the bed for that.",
+      "partly": "Only {added} of {asked} fit on the bed: added {added}."
     },
     "errors": {
       "api_unreachable": "This load needs the simulation server, and it is not answering. What you see is the previous run.",

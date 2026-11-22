@@ -15,6 +15,8 @@ import { type KeyboardEvent, type PointerEvent, useMemo, useRef, useState } from
 
 import { useShownCountry, useShownUnits } from "@/components/units-context";
 import { useReplayText } from "@/components/scenario/replay-shared";
+
+import { UnitPanel } from "./unit-panel";
 import {
   axleLoads,
   centreOfMass,
@@ -25,7 +27,6 @@ import {
   lashedUnit,
   type LoadDraft,
   moveUnit,
-  setStraps,
   SNAP_M,
   strapRoom,
 } from "@/lib/explorer/draft";
@@ -82,6 +83,8 @@ export function LoadEditor({
   const svg = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
   const [refused, setRefused] = useState<string | null>(null);
+  // The unit open in the list below (explorer); in review mode the caller selects.
+  const [open, setOpen] = useState<string | null>(null);
 
   const bed = load.scenario.bed;
   const halfL = bed.length_m / 2;
@@ -253,7 +256,7 @@ export function LoadEditor({
         {floor.map((unit) => {
           const dragging = drag?.id === unit.id;
           const invalid = (dragging && !drag.valid) || refused === unit.id;
-          const highlighted = dragging || selected === unit.id;
+          const highlighted = dragging || (selected ?? open) === unit.id;
           const straps = strapsOf(unit);
           const name = nameOf(unit.id);
           const stack = stackSize(unit);
@@ -373,79 +376,8 @@ export function LoadEditor({
 
       <AxleBars axles={axles} />
 
-      {!hideUnitList && <UnitList load={load} draft={draft} units={units} onEdit={onEdit} />}
+      {!hideUnitList && <UnitPanel load={load} draft={draft} units={units} open={open} onOpen={setOpen} onEdit={onEdit} />}
     </section>
-  );
-}
-
-function UnitList({
-  load,
-  draft,
-  units,
-  onEdit,
-}: {
-  load: EditorLoad;
-  draft: LoadDraft;
-  units: Footprint[];
-  onEdit: (next: LoadDraft) => void;
-}) {
-  const t = useTranslations("Explorer.editor");
-  const format = useFormatter();
-  const { nameOf } = useReplayText();
-  const stackSize = (unit: Footprint) => {
-    let size = 1;
-    for (let id = unit.carries; id; id = units.find((item) => item.id === id)?.carries ?? null) size += 1;
-    return size;
-  };
-  return (
-    <>
-      <h3 className="type-label mt-6">{t("units")}</h3>
-      <ul className="mt-2 border-b border-hairline">
-        {units
-          .filter((unit) => !unit.on)
-          .map((unit) => {
-            const lashed = lashedUnit(units, unit.id);
-            const straps = lashed?.straps ?? 0;
-            const room = Math.min(strapRoom(load.scenario, unit), 6);
-            const name = nameOf(unit.id);
-            const stack = stackSize(unit);
-            return (
-              <li key={unit.id} className="flex min-h-11 items-center gap-3 border-t border-hairline py-1.5">
-                <span className="min-w-0 flex-1 truncate text-sm text-ink">
-                  {unit.index + 1}. {name}
-                  {stack > 1 ? ` ×${stack}` : ""}
-                </span>
-                <span className="font-mono text-[0.8125rem] text-gray">
-                  {format.number(unit.mass * stack, { maximumFractionDigits: 0 })} kg
-                </span>
-                <span className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    aria-label={t("fewer", { unit: name })}
-                    disabled={straps <= 0 || !lashed}
-                    onClick={() => lashed && onEdit(setStraps(draft, lashed.id, straps - 1))}
-                    className="size-11 rounded-full bg-surface text-ink disabled:opacity-40 sm:size-8"
-                  >
-                    −
-                  </button>
-                  <span className="w-20 text-center font-mono text-[0.8125rem] whitespace-nowrap text-ink" aria-live="polite">
-                    {t("straps", { count: straps })}
-                  </span>
-                  <button
-                    type="button"
-                    aria-label={t("more", { unit: name })}
-                    disabled={straps >= room || !lashed}
-                    onClick={() => lashed && onEdit(setStraps(draft, lashed.id, straps + 1))}
-                    className="size-11 rounded-full bg-surface text-ink disabled:opacity-40 sm:size-8"
-                  >
-                    +
-                  </button>
-                </span>
-              </li>
-            );
-          })}
-      </ul>
-    </>
   );
 }
 

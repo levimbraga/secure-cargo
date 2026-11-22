@@ -189,11 +189,14 @@ export function useExplorer(initial: Source): ExplorerState {
         setProgress(0);
         try {
           // Back to the configuration's own load: the cache may have it, no request needed.
-          const next =
+          const built =
             original && same(draft, original) && from.kind === "config"
               ? await fetchConfigLoad(from.config, signal)
               : await fetchDraftLoad(draft, signal);
           if (signal.aborted) return;
+          // The server answers with the draft it read, every default written out (a new unit's
+          // `on: null`, `label: ""`): keep the one sent, so the edit counts as built.
+          const next = { ...built, load: { ...built.load, draft } };
           setLoaded(next);
           await simulate(next, signal);
         } catch (cause) {

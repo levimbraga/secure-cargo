@@ -748,7 +748,7 @@
     },
     "editor": {
       "title": "Editor de carga",
-      "hint": "Vista de cima, frente à direita. Arraste um volume para mudá-lo de lugar; toque nele para pôr uma cinta (depois da última que cabe, volta a nenhuma).",
+      "hint": "Vista de cima, frente à direita. Arraste um volume para mudá-lo de lugar; toque nele para pôr uma cinta (depois da última que cabe, volta a nenhuma). Abra um volume na lista para mudar a carga, o tamanho ou o peso.",
       "label": "Vista de cima da carroceria, frente à direita. Cada volume é um botão: as setas o movem, Enter põe uma cinta.",
       "front": "Cabine",
       "unit": "{unit}{stack, plural, =1 {} other { (pilha de #)}}, {straps, plural, =0 {sem cinta} one {# cinta} other {# cintas}}",
@@ -764,7 +764,15 @@
       "fewer": "Uma cinta a menos em {unit}",
       "more": "Uma cinta a mais em {unit}",
       "reset": "Desfazer as edições",
-      "hintSelect": "Vista de cima, frente à direita. Arraste uma unidade para movê-la; toque nela para editá-la abaixo."
+      "hintSelect": "Vista de cima, frente à direita. Arraste uma unidade para movê-la; toque nela para editá-la abaixo.",
+      "total": "{count, plural, one {# volume} other {# volumes}} · {weight}",
+      "usualWeight": "Vazio: o peso usual dessa carga.",
+      "duplicate": "Duplicar",
+      "removeStack": "Remover esta pilha",
+      "quantity": "Quantos",
+      "add": "Adicionar",
+      "full": "Não sobra espaço na carroceria para isso.",
+      "partly": "Só {added} de {asked} cabem na carroceria: {added} adicionados."
     },
     "errors": {
       "api_unreachable": "Esta carga precisa do servidor de simulação, e ele não está respondendo. O que você vê é a simulação anterior.",
