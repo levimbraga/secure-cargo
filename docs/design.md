@@ -158,41 +158,43 @@ without JavaScript, and the full subtitle is always in the DOM for screen reader
 ```
 1440px                                                     375px
 ┌──────────────────────────────────────────────────────┐   ┌────────────────────┐
-│ ▣ SecureCargo    Problem  How it works  …   (PT)(Try) │   │ ▣ SecureCargo    ≡ │
-│                                                      │   │                    │
+│ ▣ SecureCargo   How it works  For insurers … (PT)(Try)│   │ ▣ SecureCargo    ≡ │
 │          Physics-tested cargo securement.            │   │ Physics-tested …   │
-│          subtitle in gray serif ▍                    │   │ subtitle ▍         │
-│          (Try the demo) (How it works)               │   │ (Try) (How)        │
-│                                                      │   │ ┌────────────────┐ │
-│ ┌──────────────────────────────────────────────────┐ │   │ │ B&W photograph │ │
-│ │        black-and-white photograph, grain         │ │   │ └────────────────┘ │
-│ └──────────────────────────────────────────────────┘ │   │ Problem            │
-│          Problem                                     │   │ Heading            │
-│          Heading in serif                            │   │ text               │
-│          three short paragraphs                      │   │ ┌────────────────┐ │
-│          ┌────────────────────────────┐              │   │ │ photograph     │ │
-│          │ black-and-white photograph │              │   │ └────────────────┘ │
-│          └────────────────────────────┘              │   │ Our solution       │
-│          Our solution                                │   │ Heading, text      │
-│          Heading, one paragraph, "How it works:"     │   │ ▢ Photo  ▢ Simul.  │
-│          ▢ Photo        ▢ Simulation                 │   │ ▢ Plan   ▢ Certif. │
-│          ▢ Plan         ▢ Certificate                │   │ Scenarios          │
-│ Scenarios                               (Open app)   │   │ ▥ ▥                │
+│          subtitle ▍  (Try the demo) (How it works)   │   │ subtitle ▍ (Try)   │
+│ ┌──────────────────────────────────────────────────┐ │   │ ┌────────────────┐ │
+│ │        black-and-white photograph, grain         │ │   │ │ B&W photograph │ │
+│ └──────────────────────────────────────────────────┘ │   │ └────────────────┘ │
+│          How it works: ▢ Photo ▢ Result ▢ Fix        │   │ steps, stacked     │
+│          The result: three sample rows (verdicts)    │   │ sample rows        │
+│          The simulation: ▶ as loaded  ▶ fixed        │   │ ▶ as loaded        │
+│          The explorer: 2×2 items, screenshot, (Open) │   │ ▶ fixed            │
+│          The rules: Brazil · US · EU, rule sources   │   │ explorer, rules    │
+│          For insurers and carriers: dashboard        │   │ dashboard tiles    │
+│ Examples                              (See all)      │   │ ▥ ▥                │
 │ ▥ Braking   ▥ Weigh station   ▥ Rope   ▥ Curve       │   │ ▥ ▥                │
-│ ▣ SecureCargo              Project  Language  note   │   │ footer             │
 └──────────────────────────────────────────────────────┘   └────────────────────┘
 ```
 
 1. **Nav.** The site header (section 5).
-2. **Hero.** Headline "Physics-tested cargo securement.", typed subtitle, two pills.
-3. **Hero photograph.**
-4. **Problem.** Label, heading, three short paragraphs.
-5. **Second photograph.**
-6. **Our solution.** Label, heading, one paragraph, then four steps in a 2×2 grid: Photo, Simulation, Plan,
-   Certificate.
-7. **Scenarios.** Heading, one line, a secondary pill, and four cards: emergency braking, weigh station,
-   rope lashing, sharp curve. Until the scenarios exist, every card opens `/app`.
-8. **Footer.**
+2. **Hero.** Headline "Physics-tested cargo securement.", typed subtitle, two pills ("Try the demo" starts
+   the demo driver on the photo step), and the black-and-white hero photograph.
+3. **How it works.** Photo, result, fix and proof.
+4. **The result.** The three verdict states on three sample photos; each opens its sample inspection.
+5. **The simulation.** The gallery's emergency-braking example as two clips of the realistic replay, as
+   loaded and fixed (`ExampleClip`: lazy poster, the video mounts near the viewport after the page has
+   loaded), with the example's own sentences, so they follow the gallery.
+6. **The explorer.** Four items (any load, each lashing, the whole trip, as safe as possible) and a
+   screenshot per language (`public/media/explorer-*.jpg`: the top view with the whole-trip failures in red
+   above the 3D replay; made with `video/landing/explorer.cjs` in the workspace).
+7. **The rules.** Brazil, the US and the EU in one line each, and a link to the rule sources page.
+8. **For insurers and carriers.** Three items, the dashboard screenshot, "Enter as demo insurer".
+9. **Examples.** Heading, one line, a secondary pill, and four photograph cards that open the replays:
+   emergency braking, weigh station, rope lashing, sharp curve.
+10. **Footer.**
+
+Claims on the landing page must match what ships: no frame rates or phone performance (not measured on
+a physical phone), and nothing that depends on the visual-only parts of the replay (the semi-trailer's
+articulation is drawn, not simulated).
 
 The landing page sends a background `/health` request to warm the API container.
 
@@ -219,8 +221,8 @@ Loading: neutral "Checking…" badge and placeholder values of fixed size, so no
 
 ## 10. 3D replay (`/app/scenarios/[id]`)
 
-There is still no 3D on the landing page; the scenario cards there are photographs and open the replay
-pages. The replay lives in the app and its job is to **prove the physics**: everything that moves or is
+On the landing page the 3D appears only as recorded clips and a screenshot; the example cards there are
+photographs and open the replay pages. The replay lives in the app and its job is to **prove the physics**: everything that moves or is
 drawn as a force comes from the simulation output, and the page shows where each number comes from.
 
 Page, in the reading column, top to bottom: mono label, one serif sentence that answers "is it safe?",
@@ -489,8 +491,8 @@ then the examples as rows: title over the trip line, and the three ways in under
 - English is the default; Brazilian Portuguese is a full translation written for truck drivers and
   carriers. The product is "Carga Segura" in pt-BR body copy; the wordmark stays "SecureCargo".
 - Errors say what happened and what to do next.
-- Every number shown to a visitor has a source recorded in the workspace `notes/`. The landing page
-  currently shows no figures.
+- Every number shown to a visitor has a source recorded in the workspace `notes/`. The landing page's
+  figures (7 situations, 14 examples, the sample results) come from the product's own recorded runs.
 - No string is hard-coded in a component: all copy is in `messages/en.json` and `messages/pt-BR.json`,
   and a test keeps the two files in sync.
 

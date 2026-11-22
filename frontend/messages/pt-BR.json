@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "Carga Segura — Amarração de carga testada com física",
-    "description": "Confira antes da viagem se a carga do caminhão está bem distribuída e bem amarrada: foto, simulação física e um plano de amarração que segue as regras brasileiras."
+    "description": "Confira antes da viagem se a carga do caminhão está bem distribuída e bem amarrada: foto, simulação física e a menor correção que cumpre as regras do Brasil, dos EUA ou da UE."
   },
   "Nav": {
     "wordmark": "SecureCargo",
@@ -39,22 +39,22 @@
       "items": {
         "photo": {
           "title": "Foto",
-          "body": "Fotografe o caminhão carregado de lado. A IA lê a carga, as cintas e o caminhão; você informa o peso."
+          "body": "Tire uma foto do caminhão carregado, ou duas: de lado e da quina traseira, enquadradas por guias desenhadas do nosso caminhão 3D. A IA lê a carga, a amarração e o caminhão; você confirma o caminhão e informa o peso, ou lê da nota fiscal."
         },
         "result": {
           "title": "Resultado",
-          "body": "Uma simulação física leva a carga por 7 situações, como frenagem forte e curva fechada, e confere as regras brasileiras."
+          "body": "Uma simulação física leva a carga por 7 situações, da frenagem forte a uma descida de serra longa, e confere as regras do Brasil, dos EUA ou da UE."
         },
         "fix": {
           "title": "Correção e prova",
-          "body": "Mostra a menor mudança que deixa a carga segura, prova na simulação, e uma nova foto confirma a correção."
+          "body": "Mostra a menor mudança que deixa a carga segura e prova na simulação. Uma nova foto da carga corrigida confirma."
         }
       }
     },
     "result": {
       "label": "O resultado",
       "title": "Uma de três respostas, numa frase.",
-      "body": "Os mesmos três estados aparecem para o motorista, no painel do gestor e no certificado. Toque num deles para abrir o exemplo.",
+      "body": "O resultado abre na pior situação: o que acontece, por quê e como corrigir. Abaixo, cada regra e situação, agrupadas por status, cada uma com sua fonte legal. Os mesmos três estados aparecem para o motorista, no painel do gestor e no certificado. Toque num deles para abrir o exemplo.",
       "states": {
         "approved": {
           "badge": "Aprovada",
@@ -76,15 +76,60 @@
     "simulation": {
       "label": "A simulação",
       "title": "Veja o que acontece, e por quê.",
-      "body": "Todo veredito vem de uma simulação física MuJoCo da carroceria. As setas mostram as forças: a inércia da carga empurrando para a frente, o atrito e as cintas segurando.",
-      "alt": "Simulação 3D de um caminhão de carroceria aberta freando forte: três paletes com uma cinta cada, setas mostrando o empurrão para a frente e o atrito que os segura, e o contorno de onde começaram.",
-      "caption": "Frenagem de emergência a 0,76 g: uma cinta por palete não basta, e os paletes deslizam em direção à cabine.",
+      "body": "Cada situação é uma simulação física MuJoCo da carroceria: frenagem de emergência, troca brusca de faixa, curva fechada, buraco, lombada, descida longa e vibração longa numa estrada de terra. O replay mostra a simulação num caminhão 3D; a visão de engenharia desenha as forças como setas.",
+      "caption": "Paletes com uma cinta cada, como foi carregado e corrigido. {event}.",
       "link": "Ver o replay"
+    },
+    "explorer": {
+      "label": "O explorador",
+      "title": "Monte qualquer carga e teste.",
+      "body": "Comece por um exemplo ou escolha qualquer caminhão, carga e viagem, sem cadastro. Cada mudança roda de novo ao vivo no seu navegador, com o mesmo modelo físico que o servidor usa.",
+      "items": {
+        "units": {
+          "title": "Qualquer carga",
+          "body": "Adicione, duplique ou remova volumes de qualquer carga, defina o peso de cada um e arraste na carroceria. A carga por eixo acompanha."
+        },
+        "lashings": {
+          "title": "Cada amarração",
+          "body": "Escolha cada amarração: cinta, corrente ou corda, por cima ou em diagonal, e o ponto de amarração onde ela vai."
+        },
+        "trip": {
+          "title": "A viagem inteira",
+          "body": "Teste a carga nas 7 situações e contra as regras: onde falha, e por quê."
+        },
+        "safe": {
+          "title": "O mais seguro possível",
+          "body": "Um botão procura a menor mudança que aguenta todas as situações e cumpre as regras, e prova no servidor. O link da página guarda a carga, para compartilhar."
+        }
+      },
+      "alt": "O explorador: vista de cima de três pilhas de paletes plásticos amarradas com corda, com os volumes e amarrações que falham no teste da viagem inteira em vermelho, e a mesma carga no replay 3D de uma troca brusca de faixa.",
+      "caption": "Paletes plásticos amarrados com corda: a vista de cima marca em vermelho o que falha no teste da viagem inteira.",
+      "cta": "Abrir o explorador"
+    },
+    "rules": {
+      "label": "As regras",
+      "title": "Brasil, Estados Unidos ou União Europeia.",
+      "body": "A mesma simulação, conferida contra as regras de onde o caminhão roda, nas unidades de lá. Cada regra que falha mostra o seu artigo.",
+      "items": {
+        "br": {
+          "title": "Brasil",
+          "body": "Resolução CONTRAN 945/2022 para a amarração da carga, e 882/2021 para pesos por eixo e dimensões."
+        },
+        "us": {
+          "title": "Estados Unidos",
+          "body": "49 CFR 393 subparte I para a amarração da carga, e os limites federais de peso e a bridge formula do 23 CFR 658."
+        },
+        "eu": {
+          "title": "União Europeia",
+          "body": "Diretiva 2014/47/UE Anexo III com EN 12195-1 e EN 12642, e os pesos e dimensões da Diretiva 96/53/CE."
+        }
+      },
+      "link": "Fontes das regras"
     },
     "companies": {
       "label": "Para seguradoras e transportadoras",
       "title": "Saiba onde está o risco da sua frota.",
-      "body": "Gestores veem todas as inspeções dos motoristas, quais cargas falharam e nunca foram corrigidas, e a prova de cada correção.",
+      "body": "Gestores veem todas as inspeções dos motoristas, quais cargas falharam e nunca foram corrigidas, e a prova de cada correção. Cada inspeção abre no mesmo resultado que o motorista vê.",
       "items": {
         "dashboard": {
           "title": "Painel",
@@ -104,25 +149,25 @@
       "cta": "Entrar como seguradora demo"
     },
     "scenarios": {
-      "title": "Galeria de cenários",
-      "lead": "Cargas prontas que dão errado de jeitos diferentes. Cada uma roda como carregada, e de novo corrigida.",
+      "title": "Exemplos",
+      "lead": "Catorze cargas que dão errado de jeitos diferentes, no Brasil, nos EUA e na UE. Cada uma roda como foi carregada, e de novo corrigida.",
       "cta": "Ver todos os exemplos",
       "items": {
         "braking": {
           "title": "Frenagem de emergência",
-          "body": "Uma freada forte com caixas soltas."
+          "body": "Paletes com uma cinta cada, numa parada de emergência."
         },
         "weighStation": {
           "title": "Balança",
-          "body": "A carga cabe, mas o peso está no eixo errado."
+          "body": "A carga fica firme, mas a máquina põe o eixo traseiro acima do limite."
         },
         "rope": {
           "title": "Amarração com corda",
-          "body": "Uma carga presa com corda em vez de cintas."
+          "body": "Paletes plásticos amarrados com corda, numa troca brusca de faixa."
         },
         "curve": {
           "title": "Curva fechada",
-          "body": "Um volume alto, uma curva fechada e amarração de menos."
+          "body": "Armários altos soltos, numa curva fechada."
         }
       }
     }

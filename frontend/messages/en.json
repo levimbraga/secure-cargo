@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "SecureCargo — Physics-tested cargo securement",
-    "description": "Check before the trip whether a truck's cargo is well distributed and properly secured: photo, physics simulation and a lashing plan that follows Brazilian rules."
+    "description": "Check before the trip whether a truck's cargo is well distributed and properly secured: photo, physics simulation and the smallest fix that meets the rules of Brazil, the US or the EU."
   },
   "Nav": {
     "wordmark": "SecureCargo",
@@ -39,22 +39,22 @@
       "items": {
         "photo": {
           "title": "Photo",
-          "body": "Photograph the loaded truck from the side. AI reads the cargo, the straps and the truck; you give the weight."
+          "body": "Take one photo of the loaded truck, or two: from the side and from the rear corner, framed by guides drawn from our 3D truck. AI reads the cargo, the lashings and the truck; you confirm the truck and give the weight, or read it from the invoice."
         },
         "result": {
           "title": "Result",
-          "body": "A physics simulation drives the load through 7 situations, like hard braking and sharp curves, and checks Brazilian rules."
+          "body": "A physics simulation drives the load through 7 situations, from hard braking to a long mountain descent, and checks the rules of Brazil, the US or the EU."
         },
         "fix": {
           "title": "Fix and proof",
-          "body": "It shows the smallest change that makes the load safe, proves it in simulation, and a new photo confirms the fix."
+          "body": "It shows the smallest change that makes the load safe and proves it in simulation. A new photo of the fixed load confirms it."
         }
       }
     },
     "result": {
       "label": "The result",
       "title": "One of three answers, in one sentence.",
-      "body": "The same three states appear for the driver, in the manager's dashboard and on the certificate. Tap one to open the sample.",
+      "body": "The result opens on the worst situation: what happens, why, and how to fix it. Below it, every rule and situation, grouped by status, each with its legal source. The same three states appear for the driver, in the manager's dashboard and on the certificate. Tap one to open the sample.",
       "states": {
         "approved": {
           "badge": "Approved",
@@ -76,15 +76,60 @@
     "simulation": {
       "label": "The simulation",
       "title": "See what happens, and why.",
-      "body": "Every verdict comes from a MuJoCo physics simulation of the truck bed. The arrows show the forces: the load's inertia pushing forward, friction and straps holding it back.",
-      "alt": "3D simulation of a flatbed truck braking hard: three pallets with one strap each, arrows showing the forward push and the friction holding them, and the outline of where they started.",
-      "caption": "Emergency braking at 0.76 g: one strap per pallet is not enough, and the pallets slide toward the cab.",
+      "body": "Each situation is a MuJoCo physics simulation of the truck bed: emergency braking, a sudden lane change, a sharp curve, a pothole, a speed bump, a long descent and long vibration on a dirt road. The replay shows the run on a 3D truck; its engineering view draws the forces as arrows.",
+      "caption": "Pallets with one strap each, as loaded and fixed. {event}.",
       "link": "Watch the replay"
+    },
+    "explorer": {
+      "label": "The explorer",
+      "title": "Build any load and test it.",
+      "body": "Start from an example or pick any truck, cargo and trip, no account needed. Every change runs again live in your browser, with the same physics model the server uses.",
+      "items": {
+        "units": {
+          "title": "Any load",
+          "body": "Add, duplicate or remove units of any cargo, set each one's weight and drag it on the bed. The axle loads follow."
+        },
+        "lashings": {
+          "title": "Each lashing",
+          "body": "Choose every lashing: strap, chain or rope, over the top or diagonal, and the lashing point it goes to."
+        },
+        "trip": {
+          "title": "The whole trip",
+          "body": "Test the load in all 7 situations and against the rules: where it fails, and why."
+        },
+        "safe": {
+          "title": "As safe as possible",
+          "body": "One button looks for the smallest change that holds in every situation and meets the rules, and proves it on the server. The page's link keeps the load, to share it."
+        }
+      },
+      "alt": "The explorer: a top view of three stacks of plastic pallets tied with rope, with the units and lashings that fail the whole-trip test in red, and the same load in the 3D replay of a sudden lane change.",
+      "caption": "Plastic pallets tied with rope: the top view marks in red what fails the whole-trip test.",
+      "cta": "Open the explorer"
+    },
+    "rules": {
+      "label": "The rules",
+      "title": "Brazil, the United States or the European Union.",
+      "body": "The same simulation, checked against the rules where the truck runs, in their units. Every rule that fails shows its article.",
+      "items": {
+        "br": {
+          "title": "Brazil",
+          "body": "CONTRAN Resolution 945/2022 for cargo lashing, and 882/2021 for weights per axle and dimensions."
+        },
+        "us": {
+          "title": "United States",
+          "body": "49 CFR 393 subpart I for cargo securement, and the federal weight limits and bridge formula of 23 CFR 658."
+        },
+        "eu": {
+          "title": "European Union",
+          "body": "Directive 2014/47/EU Annex III with EN 12195-1 and EN 12642, and the weights and dimensions of Directive 96/53/EC."
+        }
+      },
+      "link": "Rule sources"
     },
     "companies": {
       "label": "For insurers and carriers",
       "title": "Know where the risk is in your fleet.",
-      "body": "Managers see every inspection their drivers make, which loads failed and were never fixed, and proof of every fix.",
+      "body": "Managers see every inspection their drivers make, which loads failed and were never fixed, and proof of every fix. Each inspection opens on the same result the driver sees.",
       "items": {
         "dashboard": {
           "title": "Dashboard",
@@ -104,25 +149,25 @@
       "cta": "Enter as demo insurer"
     },
     "scenarios": {
-      "title": "Scenarios gallery",
-      "lead": "Ready-made loads that go wrong in different ways. Each runs as loaded, and again fixed.",
+      "title": "Examples",
+      "lead": "Fourteen loads that go wrong in different ways, in Brazil, the US and the EU. Each runs as loaded and again fixed.",
       "cta": "See all examples",
       "items": {
         "braking": {
           "title": "Emergency braking",
-          "body": "A hard stop with loose crates."
+          "body": "Pallets with one strap each, in an emergency stop."
         },
         "weighStation": {
           "title": "Weigh station",
-          "body": "The cargo fits, but the weight sits on the wrong axle."
+          "body": "The load holds, but the machine puts the rear axle over its limit."
         },
         "rope": {
           "title": "Rope lashing",
-          "body": "A load tied with rope instead of straps."
+          "body": "Plastic pallets tied with rope, in a sudden lane change."
         },
         "curve": {
           "title": "Sharp curve",
-          "body": "A tall unit, a tight curve and too little lashing."
+          "body": "Tall cabinets standing free, in a sharp curve."
         }
       }
     }

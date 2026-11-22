@@ -1,11 +1,12 @@
 import { use } from "react";
-import { Bell, Camera, FileCheck, LayoutDashboard, QrCode, ShieldCheck } from "lucide-react";
+import { Bell, Boxes, Camera, FileCheck, LayoutDashboard, Link2, QrCode, Route, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import { hasLocale, useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { ApiWarmup } from "@/components/api-warmup";
+import { ExampleClip } from "@/components/app/example-clip";
 import { RevealOnScroll } from "@/components/landing/reveal-on-scroll";
 import { ResultPreview } from "@/components/landing/result-preview";
 import { Scenarios } from "@/components/landing/scenarios";
@@ -14,14 +15,19 @@ import { SiteNav } from "@/components/site/site-nav";
 import { TryDemo } from "@/components/site/try-demo";
 import { pill } from "@/components/ui/pill";
 import { SectionLabel } from "@/components/ui/section-label";
+import { VerdictBadge } from "@/components/ui/verdict-badge";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { VARIANTS } from "@/lib/demo";
+import { demoSummary } from "@/lib/demo-summaries";
+import { explorerQueries } from "@/lib/gallery";
 import dashboardPhoneEn from "@/public/media/dashboard-phone-en.jpg";
 import dashboardPhonePt from "@/public/media/dashboard-phone-pt-BR.jpg";
 import dashboardWideEn from "@/public/media/dashboard-wide-en.jpg";
 import dashboardWidePt from "@/public/media/dashboard-wide-pt-BR.jpg";
+import explorerEn from "@/public/media/explorer-en.jpg";
+import explorerPt from "@/public/media/explorer-pt-BR.jpg";
 import heroPhoto from "@/public/media/hero.jpg";
-import simulationStill from "@/public/media/simulation-braking.jpg";
 
 /** How it works, in the order the driver lives it. */
 const STEPS = [
@@ -29,6 +35,20 @@ const STEPS = [
   { id: "result", icon: ShieldCheck },
   { id: "fix", icon: FileCheck },
 ] as const;
+
+/** What the explorer does, in the order a visitor uses it. */
+const EXPLORER = [
+  { id: "units", icon: Boxes },
+  { id: "lashings", icon: Link2 },
+  { id: "trip", icon: Route },
+  { id: "safe", icon: ShieldCheck },
+] as const;
+
+/** The three rule sets a load can be checked against. */
+const RULES = ["br", "us", "eu"] as const;
+
+/** The gallery example the simulation section plays, as loaded and fixed. */
+const CLIP_EXAMPLE = "emergency-braking";
 
 const FOR_COMPANIES = [
   { id: "dashboard", icon: LayoutDashboard },
@@ -38,7 +58,8 @@ const FOR_COMPANIES = [
 
 /**
  * The landing page tells the product story in order: try it, how it works, what the result looks
- * like, the simulation behind it, what insurers and carriers get, and the scenarios gallery.
+ * like, the simulation behind it (clips of a gallery example), the explorer, the three rule sets,
+ * what insurers and carriers get, and the examples gallery.
  * The stats row stays out until the numbers have sources.
  */
 export default function LandingPage({ params }: PageProps<"/[locale]">) {
@@ -47,6 +68,12 @@ export default function LandingPage({ params }: PageProps<"/[locale]">) {
   setRequestLocale(locale);
 
   const t = useTranslations("Landing");
+  const scenario = useTranslations("Scenario");
+  const gallery = useTranslations("Gallery");
+  const clipSummary = demoSummary(CLIP_EXAMPLE);
+  const clipQueries = { as_loaded: explorerQueries("as_loaded"), fixed: explorerQueries("fixed") };
+  const clipTitle = scenario(`titles.${CLIP_EXAMPLE}`);
+  const explorerShot = locale === "pt-BR" ? explorerPt : explorerEn;
   // The dashboard screenshots are in the page's language: the wide crop on desktop, the tiles on phones.
   const dashboard = locale === "pt-BR" ? { wide: dashboardWidePt, phone: dashboardPhonePt } : { wide: dashboardWideEn, phone: dashboardPhoneEn };
 
@@ -116,29 +143,99 @@ export default function LandingPage({ params }: PageProps<"/[locale]">) {
           <ResultPreview />
         </section>
 
-        {/* 4. The simulation behind the verdict. */}
+        {/* 4. The simulation behind the verdict: a gallery example as loaded and fixed. */}
         <section className="col mt-24 md:mt-28" data-reveal>
           <SectionLabel>{t("simulation.label")}</SectionLabel>
           <h2 className="type-heading mt-5 max-w-[30rem] text-balance">{t("simulation.title")}</h2>
           <p className="type-body mt-5">{t("simulation.body")}</p>
-          <figure className="mt-10">
-            <Image
-              src={simulationStill}
-              alt={t("simulation.alt")}
-              placeholder="blur"
-              sizes="(min-width: 760px) 688px, 100vw"
-              className="aspect-[1376/860] w-full rounded bg-surface object-cover"
-            />
-            <figcaption className="type-small mt-3 text-gray">
-              {t("simulation.caption")}{" "}
-              <Link href="/app/scenarios/emergency-braking" className="text-ink underline underline-offset-4">
-                {t("simulation.link")}
-              </Link>
-            </figcaption>
-          </figure>
+          <div className="mt-10 grid grid-cols-1 gap-x-4 gap-y-7 sm:grid-cols-2">
+            {VARIANTS.map((variant) => {
+              const status = clipSummary.runs[variant].verdict.status;
+              const name = gallery(variant === "as_loaded" ? "asLoaded" : "fixed");
+              return (
+                <figure key={variant} className="min-w-0">
+                  <ExampleClip
+                    clip={`/demo/clips/${CLIP_EXAMPLE}.${variant}`}
+                    href={clipQueries[variant][CLIP_EXAMPLE] ?? ""}
+                    label={gallery("clip.alt", { title: clipTitle, variant: name })}
+                    linkLabel={gallery("clip.openName", { title: clipTitle, variant: name })}
+                  />
+                  <figcaption className="mt-2.5">
+                    <VerdictBadge verdict={status === "pass" ? "pass" : "fail"}>
+                      {name} · {scenario(`verdict.${status}`)}
+                    </VerdictBadge>
+                    <span className="type-small mt-1.5 block text-pretty text-ink">
+                      {scenario(`sentences.${CLIP_EXAMPLE}.${variant}`)}
+                    </span>
+                  </figcaption>
+                </figure>
+              );
+            })}
+          </div>
+          <p className="type-small mt-5 text-gray">
+            {t("simulation.caption", { event: scenario(`events.${CLIP_EXAMPLE}`, { speed: clipSummary.event.speed_kmh }) })}{" "}
+            <Link href={`/app/scenarios/${CLIP_EXAMPLE}`} className="text-ink underline underline-offset-4">
+              {t("simulation.link")}
+            </Link>
+          </p>
         </section>
 
-        {/* 5. For insurers and carriers. */}
+        {/* 5. The explorer: any load, each lashing, the whole trip, made as safe as possible. */}
+        <section id="explorer" className="col mt-24 scroll-mt-20 md:mt-28" data-reveal>
+          <SectionLabel>{t("explorer.label")}</SectionLabel>
+          <h2 className="type-heading mt-5 max-w-[30rem] text-balance">{t("explorer.title")}</h2>
+          <p className="type-body mt-5">{t("explorer.body")}</p>
+          <ul className="mt-10 grid gap-8 sm:grid-cols-2 sm:gap-x-6">
+            {EXPLORER.map(({ id, icon: Icon }) => (
+              <li key={id} className="flex gap-4">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded bg-surface">
+                  <Icon aria-hidden className="size-5" strokeWidth={1.5} />
+                </span>
+                <div>
+                  <h3 className="font-medium text-ink">{t(`explorer.items.${id}.title`)}</h3>
+                  <p className="type-body mt-1 text-[0.9375rem]">{t(`explorer.items.${id}.body`)}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <figure className="mt-10">
+            <Image
+              src={explorerShot}
+              alt={t("explorer.alt")}
+              placeholder="blur"
+              sizes="(min-width: 760px) 688px, 100vw"
+              className="h-auto w-full rounded bg-surface"
+            />
+            <figcaption className="type-small mt-3 text-gray">{t("explorer.caption")}</figcaption>
+          </figure>
+          <div className="mt-8">
+            <Link href="/app/explorer" className={pill({ variant: "secondary" })}>
+              {t("explorer.cta")}
+            </Link>
+          </div>
+        </section>
+
+        {/* 6. The rule sets: Brazil, the US, the EU. */}
+        <section id="rules" className="col mt-24 scroll-mt-20 md:mt-28" data-reveal>
+          <SectionLabel>{t("rules.label")}</SectionLabel>
+          <h2 className="type-heading mt-5 max-w-[30rem] text-balance">{t("rules.title")}</h2>
+          <p className="type-body mt-5">{t("rules.body")}</p>
+          <ul className="mt-10 grid gap-8 md:grid-cols-3 md:gap-6">
+            {RULES.map((id) => (
+              <li key={id}>
+                <h3 className="font-medium text-ink">{t(`rules.items.${id}.title`)}</h3>
+                <p className="type-body mt-1 text-[0.9375rem]">{t(`rules.items.${id}.body`)}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="type-small mt-8">
+            <Link href="/rules" className="text-ink underline underline-offset-4">
+              {t("rules.link")}
+            </Link>
+          </p>
+        </section>
+
+        {/* 7. For insurers and carriers. */}
         <section id="insurers" className="col mt-24 scroll-mt-20 md:mt-32" data-reveal>
           <SectionLabel>{t("companies.label")}</SectionLabel>
           <h2 className="type-heading mt-5 max-w-[30rem] text-balance">{t("companies.title")}</h2>
@@ -178,7 +275,7 @@ export default function LandingPage({ params }: PageProps<"/[locale]">) {
           </div>
         </section>
 
-        {/* 6. The scenarios gallery. */}
+        {/* 8. The examples gallery. */}
         <section id="scenarios" className="wide mt-24 scroll-mt-20 md:mt-32" data-reveal>
           <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
