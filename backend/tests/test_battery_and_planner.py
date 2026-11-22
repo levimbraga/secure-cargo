@@ -74,12 +74,14 @@ def test_the_recommendation_follows_the_rules_without_simulating() -> None:
     assert [u.x_m for u in fixed.units] == [u.x_m for u in draft.units]
 
 
-def test_a_load_with_room_against_the_headboard_is_pushed_not_rerouted() -> None:
-    # Pallets with a gap: pushing them forward (effort 1) is cheaper than diagonals (effort 4).
-    fixed, changes = recommend(_draft("emergency-braking.as_loaded"))
-    codes = [c.code for c in changes]
-    assert "close_gaps" in codes
-    assert fixed.restraint != "direct"
+def test_on_a_brazilian_flatbed_the_fix_has_diagonals() -> None:
+    # CONTRAN 945/2022 art. 7 sole paragraph: a body without containment panels needs diagonal
+    # devices even with no gap, so pushing the pallets forward alone cannot comply.
+    draft = _draft("emergency-braking.as_loaded")
+    fixed, changes = recommend(draft)
+    assert fixed.restraint in ("direct", "chain", "blocking")
+    # Diagonals hold the pallets where they stand: no "push against the headboard" as well.
+    assert "close_gaps" not in [c.code for c in changes]
 
 
 @pytest.mark.parametrize("name", [p.name.split(".")[0] for p in EXPLORER.glob("*.as_loaded.json")])

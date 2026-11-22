@@ -10,6 +10,12 @@ A situation *passes* when its verdict is not "fail". A warning (the load crept 1
 lashing reached 90 % of its capacity) is shown as such but counts as arriving intact. An axle
 overload is not a situation's failure: it is a rule, reported once in the checklist (the
 inspection is then "holds, but out of compliance", see ``verdict.py``).
+
+Some physical findings depend on whose rules judge them (rules audit items 3 and 4). A lashing's
+load is compared with its rated capacity LC in Brazil and the EU (EN 12195-1), but with its
+*breaking strength* at these accelerations in the US (49 CFR 393.102(a)(1)); a van's front wall
+holds its EN 12642 rating in Brazil and the EU, the 393.114(c) rating in the US. Each such
+finding names the ``countries`` it applies to; every other finding applies everywhere.
 """
 
 import time
@@ -33,11 +39,13 @@ from physics.results import (
     StandardCheck,
     Status,
 )
+from physics.verdict import LASHING_FAIL_RATIO, LASHING_WARNING_RATIO
 from rules.axle_loads import axle_loads
 from rules.checklist import Checklist, checklist
 from rules.contran945 import ContranCheck, check_contran_945
 from rules.country import RuleSet, rule_sets
 from rules.en12195 import check_scenario
+from rules.fmcsa393 import front_end_rating_n, us_breaking_n
 
 SituationId = Literal[
     "emergency_braking",
@@ -82,6 +90,82 @@ class _Model(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class SituationFinding(Finding):
+    countries: list[Country] | None = Field(
+        default=None,
+        description="Whose rules this finding belongs to; None: every country's.",
+    )
+
+
+EN_COUNTRIES = [Country.BR, Country.EU]
+# Findings judged against a rating that differs by country.
+RATED_FINDINGS = {"lashing_overloaded", "headboard_overloaded"}
+
+
+def applies(finding: SituationFinding, country: Country) -> bool:
+    return finding.countries is None or country in finding.countries
+
+
+def country_findings(scenario: Scenario, result: SimulationResult) -> list[SituationFinding]:
+    """A run's physical findings, with the US versions of the rated ones."""
+    out: list[SituationFinding] = []
+    for finding in result.verdict.findings:
+        if finding.code in RULE_FINDINGS:
+            continue
+        countries = EN_COUNTRIES if finding.code in RATED_FINDINGS else None
+        out.append(SituationFinding(**finding.model_dump(), countries=countries))
+    lashings = {x.id: x for x in scenario.lashings}
+    for run in result.lashings:
+        if run.broke_at_s is not None or run.id not in lashings:
+            continue
+        breaking = us_breaking_n(lashings[run.id])
+        ratio = run.peak_force_n / breaking
+        if ratio <= LASHING_WARNING_RATIO:
+            continue
+        failed = ratio > LASHING_FAIL_RATIO
+        out.append(
+            SituationFinding(
+                code="lashing_overloaded",
+                severity="fail" if failed else "warning",
+                lashing_id=run.id,
+                unit_id=run.unit_id,
+                value=run.peak_force_n,
+                limit=breaking * (LASHING_FAIL_RATIO if failed else LASHING_WARNING_RATIO),
+                message=(
+                    f"Lashing {run.id} reached {ratio * 100:.0f} % of its breaking strength "
+                    "(49 CFR 393.102(a)(1))."
+                ),
+                countries=[Country.US],
+            )
+        )
+    headboard = scenario.bed.headboard
+    rating = front_end_rating_n(scenario)
+    if headboard is not None and headboard.rated_capacity_n is not None and rating:
+        total = sum(unit.peak_headboard_force_n for unit in result.units)
+        if total > rating:
+            out.append(
+                SituationFinding(
+                    code="headboard_overloaded",
+                    severity="fail",
+                    value=total,
+                    limit=rating,
+                    message=(
+                        f"The front end structure took {total / 1000:.1f} kN; 49 CFR 393.114(c) "
+                        f"rates it for {rating / 1000:.1f} kN."
+                    ),
+                    countries=[Country.US],
+                )
+            )
+    return out
+
+
+def physical_status(findings: list[SituationFinding], country: Country) -> Status:
+    mine = [f for f in findings if applies(f, country)]
+    if any(f.severity == "fail" for f in mine):
+        return "fail"
+    return "warning" if mine else "pass"
+
+
 class SituationResult(_Model):
     """One situation of the battery, without its keyframes (fetched on demand)."""
 
@@ -91,7 +175,7 @@ class SituationResult(_Model):
     status: Status
     passed: bool
     severity: float = Field(description="How badly it failed, for ranking (0: held).")
-    findings: list[Finding]
+    findings: list[SituationFinding]
     margins: Margins
     profile: dict[str, float | str]
     scenario_hash: str
@@ -153,9 +237,14 @@ def run_situations(
         scenario, event = scenario_for(draft, situation)
         response = simulate_cached(storage, scenario, event)
         out.append((situation, response.result, response.scenario_hash))
-        if stop_at_first_failure and response.result.verdict.status == "fail":
+        if stop_at_first_failure and situation_holds(scenario, response.result, draft) is False:
             break
     return out
+
+
+def situation_holds(scenario: Scenario, result: SimulationResult, draft: LoadDraft) -> bool:
+    """No physical failure under the draft's country's ratings (axle loads are rules)."""
+    return physical_status(country_findings(scenario, result), draft.country) != "fail"
 
 
 def situation_result(
@@ -166,12 +255,11 @@ def situation_result(
     response = simulate_cached(storage, scenario, event)
     result = response.result
     # The axle loads are the same in every situation and are a rule: the checklist has them.
-    findings = [f for f in result.verdict.findings if f.code not in RULE_FINDINGS]
-    status: Status = (
-        "fail" if any(f.severity == "fail" for f in findings) else "warning" if findings else "pass"
-    )
+    findings = country_findings(scenario, result)
+    status = physical_status(findings, draft.country)
+    mine: list[Finding] = [f for f in findings if applies(f, draft.country)]
     physical = result.model_copy(
-        update={"verdict": result.verdict.model_copy(update={"findings": findings})}
+        update={"verdict": result.verdict.model_copy(update={"findings": mine})}
     )
     summary = SituationResult(
         id=situation.id,

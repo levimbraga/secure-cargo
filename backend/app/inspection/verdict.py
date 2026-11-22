@@ -57,9 +57,15 @@ class Verdict(BaseModel):
     main_problem: MainProblem | None
 
 
-def physical_failures(findings: list[Json]) -> list[Json]:
+def physical_failures(findings: list[Json], country: str = "BR") -> list[Json]:
+    """Failing findings that are physics, under ``country``'s ratings (a finding with
+    ``countries`` belongs only to those: rules audit items 3 and 4, ``battery.py``)."""
     return [
-        f for f in findings if f.get("severity") == "fail" and f.get("code") not in RULE_FINDINGS
+        f
+        for f in findings
+        if f.get("severity") == "fail"
+        and f.get("code") not in RULE_FINDINGS
+        and (f.get("countries") is None or country in f["countries"])
     ]
 
 
@@ -74,7 +80,8 @@ def _first_finding(findings: list[Json]) -> Json:
 def verdict_of(battery: Json) -> Verdict:
     """The verdict of a battery as the API answers it (a dict, from Python or JSON)."""
     situations = battery.get("situations", [])
-    physics = [(s, physical_failures(s.get("findings", []))) for s in situations]
+    country = battery.get("country") or "BR"
+    physics = [(s, physical_failures(s.get("findings", []), country)) for s in situations]
     failing = [(s, f) for s, f in physics if f]
     total = len(situations)
     if failing:

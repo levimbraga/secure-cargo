@@ -4,6 +4,9 @@ The examples are the ones in the workspace's ``notes/us-rules.md``: the FHWA Bri
 (FHWA-HOP-06-105), the tiedown table of 393.110 and the arithmetic of 393.106(d) and 393.114(c).
 """
 
+import json
+from pathlib import Path
+
 import pytest
 
 from app.explorer import build_draft
@@ -133,11 +136,13 @@ def test_gross_weight_over_80000_lb_fails() -> None:
 # --- 393.106(d): aggregate working load limit ----------------------------------------------
 
 
-def _lashing(routing: LashingRouting, wll_lb: float, n: int) -> list[Lashing]:
+def _lashing(
+    routing: LashingRouting, wll_lb: float, n: int, kind: LashingKind = LashingKind.CHAIN
+) -> list[Lashing]:
     return [
         Lashing(
             id=f"x{i}",
-            kind=LashingKind.STRAP,
+            kind=kind,
             routing=routing,
             unit_id="crate",
             anchor_ids=["a", "b"] if routing is LashingRouting.TOP_OVER else ["a"],
@@ -154,6 +159,10 @@ def test_aggregate_wll_counts_indirect_fully_and_direct_by_half() -> None:
     assert _aggregate_wll_n(_lashing(LashingRouting.TOP_OVER, 3_335, 2)) == pytest.approx(
         6_670 * LBF_N
     )
+    # A modelled strap is the usual 2 in ratchet strap, marked WLL 3,335 lb (rules audit item 8),
+    # whatever capacity the model gives it.
+    straps = _lashing(LashingRouting.TOP_OVER, 5_620, 2, LashingKind.STRAP)
+    assert _aggregate_wll_n(straps) == pytest.approx(6_670 * LBF_N)
     assert _aggregate_wll_n(_lashing(LashingRouting.DIRECT, 1_000, 4)) == pytest.approx(required)
     assert _aggregate_wll_n(_lashing(LashingRouting.DIRECT, 1_000, 3)) < required
 
@@ -310,3 +319,84 @@ def test_one_battery_carries_both_rule_sets_and_the_verdict_follows_the_country(
         "min_tiedowns",
         "front_end_structure",
     }
+
+
+# --- 393.102(a): breaking strength at 0.8 g, WLL at 0.435 g (rules audit item 3) ----------
+
+EXPLORER = Path(__file__).parents[2] / "frontend" / "public" / "demo" / "explorer"
+
+
+def _example(name: str, country: Country) -> LoadDraft:
+    data = json.loads((EXPLORER / f"{name}.json").read_text())["draft"]
+    return LoadDraft.model_validate({**data, "country": country.value})
+
+
+def test_wll_criterion_holds_by_friction_clamping_and_direct_tiedowns() -> None:
+    # 393.102(a)(2): at 0.435 g forward, 0.5 g rearward, 0.25 g sideways, no tiedown above its WLL.
+    # Wooden pallets with straps over the top: friction (0.45) plus the straps' clamping holds.
+    pallets = _us(DraftUnit(id="p", cargo="wood_pallet", x_m=0.0, y_m=0, mass_kg=900, straps=2))
+    assert _check(pallets, "wll_criterion").status == "pass"
+    # A 6 t machine with nothing on it and room ahead: 0.435 g exceeds its friction: fail.
+    bare = _us(DraftUnit(id="m", cargo="machine", x_m=0.0, y_m=0, mass_kg=6_000, straps=0))
+    check = _check(bare, "wll_criterion")
+    assert check.status == "fail" and check.article == "49 CFR 393.102(a)(2)"
+    # Diagonal chains at their WLL hold it.
+    chained = LoadDraft.model_validate({**bare.model_dump(), "restraint": "chain"})
+    assert _check(chained, "wll_criterion").status == "pass"
+
+
+def test_a_strap_over_its_lc_but_under_its_breaking_strength_fails_only_outside_the_us() -> None:
+    # 393.102(a)(1): at 0.8 g / 0.5 g / 0.5 g the limit is the breaking strength (a 2 in strap:
+    # 10,000 lb), not the WLL; EN 12195-1 (Brazil, EU) holds a lashing to its LC.
+    from app.inspection.battery import SITUATIONS, country_findings, physical_status, scenario_for
+    from app.simulation_service import simulate_cached
+    from app.storage import create_storage
+    from rules.fmcsa393 import US_STRAP_BREAKING_N
+
+    storage = create_storage("memory://")
+    draft = _example("overloaded-strap.as_loaded", Country.US)
+    seen = False
+    for situation in SITUATIONS:
+        scenario, event = scenario_for(draft, situation)
+        result = simulate_cached(storage, scenario, event).result
+        findings = country_findings(scenario, result)
+        en = [f for f in findings if f.code == "lashing_overloaded" and f.countries != [Country.US]]
+        us = [f for f in findings if f.code == "lashing_overloaded" and f.countries == [Country.US]]
+        for finding in en:
+            assert finding.countries == [Country.BR, Country.EU]
+            peak = finding.value
+            if peak <= 0.9 * US_STRAP_BREAKING_N:
+                assert not any(u.lashing_id == finding.lashing_id for u in us)
+                seen = True
+        for finding in us:
+            assert finding.limit >= 0.9 * US_STRAP_BREAKING_N - 1
+        others = [f for f in findings if f.code not in ("lashing_overloaded",)]
+        if not others and en and not us:
+            assert physical_status(findings, Country.BR) == "fail" or en[0].severity == "warning"
+            assert physical_status(findings, Country.US) == "pass"
+    assert seen, "the example overloads a strap past its LC somewhere"
+
+
+def test_a_van_front_wall_is_judged_by_393_114_in_us_mode() -> None:
+    # Rules audit item 4: a US van's front wall is not an EN 12642 code L wall. The rule asks for
+    # its 393.114(c) rating (to confirm), and the physics' wall finding uses 0.4 W / 0.5 W.
+    from app.inspection.battery import SITUATIONS, country_findings, scenario_for
+    from app.simulation_service import simulate_cached
+    from app.storage import create_storage
+    from rules.fmcsa393 import front_end_rating_n
+
+    draft = _example("box-truck.fixed", Country.US)
+    assert _check(draft, "front_end_structure").status in ("to_confirm", "not_applicable")
+    scenario, event = scenario_for(draft, SITUATIONS[0])
+    rating = front_end_rating_n(scenario)
+    assert rating == pytest.approx(0.5 * sum(u.mass_kg for u in scenario.units) * 9.81) or (
+        rating == pytest.approx(0.4 * sum(u.mass_kg for u in scenario.units) * 9.81)
+    )
+    result = simulate_cached(create_storage("memory://"), scenario, event).result
+    total = sum(u.peak_headboard_force_n for u in result.units)
+    us = [
+        f
+        for f in country_findings(scenario, result)
+        if f.code == "headboard_overloaded" and f.countries == [Country.US]
+    ]
+    assert bool(us) == (total > rating)

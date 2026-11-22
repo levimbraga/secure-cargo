@@ -22,6 +22,7 @@ is one, and the numbers that explain it.
 """
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -44,11 +45,14 @@ from app.inspection.battery import (
     SituationId,
     run_battery,
     run_situations,
+    scenario_for,
+    situation_holds,
 )
 from app.scenario import BodyType, CylinderAxis, Scenario, UnitShape
 from app.storage import Storage
 from physics.results import AxleLoad
 from rules.axle_loads import axle_loads
+from rules.checklist import br_group_limits_kg
 from rules.contran945 import check_contran_945
 from rules.country import breaks_a_rule, rule_set, securing_checks
 from rules.en12195 import check_scenario
@@ -276,12 +280,13 @@ def _limited_loads(scenario: Scenario, draft: LoadDraft) -> list[AxleLoad]:
     """The modelled groups' loads against the draft's country's limits."""
     loads = axle_loads(scenario)
     if draft.country is Country.BR:
-        return loads
-    limits = (
-        eu_group_limits_kg(scenario, draft.truck.size)
-        if draft.country is Country.EU
-        else group_limits_kg(scenario, draft.truck.size)
-    )
+        limits: Sequence[float] | None = br_group_limits_kg(scenario)
+    else:
+        limits = (
+            eu_group_limits_kg(scenario, draft.truck.size)
+            if draft.country is Country.EU
+            else group_limits_kg(scenario, draft.truck.size)
+        )
     if limits is None:
         return loads
     return [
@@ -924,8 +929,12 @@ def proof_candidates(options: list[_Candidate]) -> list[_Candidate]:
     """
     on_paper = [c for c in options if _on_paper(c)]
     if on_paper:
-        return on_paper + [c for c in options if c not in on_paper]
-    return list(reversed(options))
+        rest = [c for c in options if c not in on_paper]
+    else:
+        rest = list(reversed(options))
+    # A candidate that breaks a rule cannot win: the ones that comply are simulated first (on an
+    # open body, CONTRAN 945 art. 7 sole paragraph rules out every candidate without diagonals).
+    return on_paper + [c for c in rest if _rules_ok(c)] + [c for c in rest if not _rules_ok(c)]
 
 
 def _rules_ok(candidate: _Candidate) -> bool:
@@ -947,7 +956,8 @@ def _rules_ok(candidate: _Candidate) -> bool:
 def _holds(storage: Storage, draft: LoadDraft, order: tuple[Situation, ...]) -> bool:
     runs = run_situations(storage, draft, order, stop_at_first_failure=True)
     return len(runs) == len(SITUATIONS) and all(
-        result.verdict.status != "fail" for _, result, _ in runs
+        situation_holds(scenario_for(draft, situation)[0], result, draft)
+        for situation, result, _ in runs
     )
 
 

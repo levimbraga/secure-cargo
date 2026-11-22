@@ -4,8 +4,18 @@ Every check carries its CFR section, a stable ``code`` the UI translates and an 
 The text, the worked examples and our readings are in the workspace's ``notes/us-rules.md``
 (section 1). Readings of ours (the text gives no number for them):
 
-* A device's working load limit (WLL) is its marked rating, taken equal to the rated capacity
-  (LC) the model uses (393.108(b) allows the marking).
+* A device's working load limit (WLL) is its marked rating (393.108(b)). A strap is the usual
+  US 2 in ratchet strap, marked WLL 3,335 lb with a breaking strength of 10,000 lb (one third,
+  the WSTDA T-1 practice; rules audit item 8). A chain or a rope: the rated capacity (LC) the
+  model uses, with a breaking strength of 4 x WLL for chain (NACM grade 70 practice) and the
+  model's figure for rope. ASSUMPTION: the simulation keeps the model's EN 12195-2 strap; only
+  the US limits change.
+* 393.102(a) has two criteria (rules audit item 3): forces below the *breaking strength* at
+  0.8 g forward, 0.5 g rearward and 0.5 g lateral, which the simulation checks (the battery's
+  events reach those values), and forces below the *WLL* at 0.435 g / 0.5 g / 0.25 g, which
+  ``wll_criterion`` checks by a static force balance: friction ``mu`` plus each top-over
+  tiedown's clamping ``2 mu sin(a) T`` (T its pretension) plus each direct tiedown at its WLL,
+  ``WLL (mu sin(a) + cos(a) cos(b))``, no safety factor (393.102 gives none).
 * "In contact with" the front end structure, "blocked forward" and "close to a wall": within
   ``CONTACT_M`` (the same 15 cm the CONTRAN 945 art. 7 check uses).
 * A tiedown over the top, side to side, is "indirect" (full WLL); one from the vehicle to the
@@ -31,6 +41,7 @@ from app.scenario import (
     UnitShape,
 )
 from physics.constants import STANDARD_GRAVITY_MPS2
+from physics.friction import resolve_friction
 from rules.contran945 import _blocked, _lashings_of, _stacks
 
 CONTACT_M = 0.15
@@ -45,6 +56,14 @@ TEN_FEET_M = 10 * FOOT_M  # 393.110: 10 ft (3.04 m)
 COIL_MIN_KG = 5_000 * LB_KG  # 393.120(a): 5,000 lb (2,268 kg)
 MACHINE_MIN_KG = 10_000 * LB_KG  # 393.130(a): 10,000 lb (4,536 kg)
 MACHINE_MIN_TIEDOWNS = 4  # 393.130(c)(1)
+LBF_N = 4.4482216152605  # one pound-force [N]
+US_STRAP_WLL_N = 3_335 * LBF_N  # a 2 in ratchet strap (rules audit item 8)
+US_STRAP_BREAKING_N = 10_000 * LBF_N
+CHAIN_BREAKING_FACTOR = 4.0
+# 393.102(a)(2): the working-load-limit criterion.
+WLL_ACCELERATION: dict[str, float] = {"forward": 0.435, "rearward": 0.5, "sideways": 0.25}
+# 393.102(a)(1): the breaking-strength criterion (the battery's events).
+BREAKING_ACCELERATION: dict[str, float] = {"forward": 0.8, "rearward": 0.5, "sideways": 0.5}
 
 Status = Literal["pass", "fail", "not_applicable", "to_confirm"]
 
@@ -72,11 +91,26 @@ def _tiedowns(scenario: Scenario, stack: list[CargoUnit]) -> list[Lashing]:
     return _lashings_of(scenario, stack)
 
 
+def us_wll_n(lashing: Lashing) -> float:
+    """The working load limit of a modelled device in US mode (393.108(b): as marked)."""
+    if lashing.kind is LashingKind.STRAP:
+        return US_STRAP_WLL_N
+    return lashing.lashing_capacity_n
+
+
+def us_breaking_n(lashing: Lashing) -> float:
+    """The breaking strength of a modelled device in US mode (393.102(a)(1))."""
+    if lashing.kind is LashingKind.STRAP:
+        return US_STRAP_BREAKING_N
+    if lashing.breaking_strength_n is not None:
+        return lashing.breaking_strength_n
+    return CHAIN_BREAKING_FACTOR * lashing.lashing_capacity_n
+
+
 def _aggregate_wll_n(lashings: list[Lashing]) -> float:
     """393.106(d): full WLL side to side over the article, half the WLL for a direct tiedown."""
     return sum(
-        x.lashing_capacity_n * (1.0 if x.routing is LashingRouting.TOP_OVER else 0.5)
-        for x in lashings
+        us_wll_n(x) * (1.0 if x.routing is LashingRouting.TOP_OVER else 0.5) for x in lashings
     )
 
 
@@ -280,8 +314,6 @@ def front_end_structure(scenario: Scenario, headboard_known: bool) -> RuleCheck:
         "share": share,
         "demand_kg": round(demand_n / STANDARD_GRAVITY_MPS2, 1),
     }
-    if headboard.rated_capacity_n is not None:
-        values["capacity_kg"] = round(headboard.rated_capacity_n / STANDARD_GRAVITY_MPS2, 1)
     if not headboard_known and not _contained(scenario):
         return RuleCheck(
             code="front_end_structure",
@@ -300,31 +332,133 @@ def front_end_structure(scenario: Scenario, headboard_known: bool) -> RuleCheck:
             values=values,
             message="The front end structure is below 4 ft and below the cargo it blocks.",
         )
-    if headboard.rated_capacity_n is None:
-        return RuleCheck(
-            code="front_end_structure",
-            article=article + "(c)",
-            status="to_confirm",
-            unit_ids=ids,
-            values=values,
-            message="Confirm the headboard is rated for the forward load 393.114(c) asks for.",
-        )
-    if headboard.rated_capacity_n + 1e-6 < demand_n:
-        return RuleCheck(
-            code="front_end_structure",
-            article=article + "(c)",
-            status="fail",
-            unit_ids=ids,
-            values=values,
-            message="The front end structure is rated for less than 393.114(c) asks for.",
-        )
+    # 393.114(c) asks for a rating the model does not know: an EN 12642 code is an EU standard
+    # US vans and headerboards are not built to (rules audit item 4), so it is never used here.
     return RuleCheck(
         code="front_end_structure",
-        article=article,
-        status="pass",
+        article=article + "(c)",
+        status="to_confirm",
         unit_ids=ids,
         values=values,
-        message="The front end structure is tall and strong enough for the cargo against it.",
+        message="Confirm the front end structure is rated for the forward load of 393.114(c).",
+    )
+
+
+def front_end_rating_n(scenario: Scenario) -> float | None:
+    """The forward load a 393.114(c) front end structure holds: 0.5 W (below 6 ft) or 0.4 W."""
+    headboard = scenario.bed.headboard
+    if headboard is None:
+        return None
+    share = 0.4 if headboard.height_m >= FRONT_END_TALL_M - 1e-9 else 0.5
+    return share * _weight_n(list(scenario.units))
+
+
+def _sine_over(scenario: Scenario, unit: CargoUnit, lashing: Lashing) -> float:
+    anchors = {a.id: a.position_m for a in scenario.bed.anchor_points}
+    top = unit.position_m[2] + unit.size_m[2]
+    sines = []
+    for anchor_id in lashing.anchor_ids:
+        anchor = anchors[anchor_id]
+        side = 1.0 if anchor[1] > unit.position_m[1] else -1.0
+        edge_y = unit.position_m[1] + side * unit.size_m[1] / 2
+        rise = top - anchor[2]
+        sines.append(rise / math.hypot(rise, anchor[1] - edge_y))
+    return min(sines)
+
+
+_MOVES: dict[str, tuple[tuple[float, float], ...]] = {
+    "forward": ((1.0, 0.0),),
+    "rearward": ((-1.0, 0.0),),
+    "sideways": ((0.0, 1.0), (0.0, -1.0)),
+}
+
+
+def _restraint_n(scenario: Scenario, stack: list[CargoUnit], mu: float, direction: str) -> float:
+    """What the tiedowns of a stack hold against a move: top-over clamping and direct at WLL."""
+    anchors = {a.id: a.position_m for a in scenario.bed.anchor_points}
+    units = {u.id: u for u in stack}
+    lashings = _tiedowns(scenario, stack)
+    clamping = sum(
+        2 * mu * _sine_over(scenario, units[x.unit_id], x) * x.pretension_n
+        for x in lashings
+        if x.routing is LashingRouting.TOP_OVER
+    )
+    worst = math.inf
+    for move in _MOVES[direction]:
+        total = 0.0
+        for x in lashings:
+            if x.routing is not LashingRouting.DIRECT or x.attachment_point_m is None:
+                continue
+            unit = units[x.unit_id]
+            point = [unit.position_m[k] + x.attachment_point_m[k] for k in range(3)]
+            anchor = anchors[x.anchor_ids[0]]
+            pull = [anchor[k] - point[k] for k in range(3)]
+            span = math.hypot(*pull)
+            against = -(pull[0] * move[0] + pull[1] * move[1]) / span
+            if against <= 0:
+                continue
+            down = max(-pull[2] / span, 0.0)
+            total += us_wll_n(x) * (mu * down + against)
+        worst = min(worst, total)
+    return clamping + worst
+
+
+def wll_criterion(scenario: Scenario, headboard_known: bool = True) -> RuleCheck:
+    """393.102(a)(2): at 0.435 g forward, 0.5 g rearward and 0.25 g lateral, no tiedown above
+    its WLL. Static: the article must be held by friction, clamping and direct tiedowns at WLL."""
+    from rules.eu_annex3 import _rolls  # the directions a cylinder rolls in (no friction)
+
+    article = "49 CFR 393.102(a)(2)"
+    if _contained(scenario):
+        return RuleCheck(
+            code="wll_criterion",
+            article=article,
+            status="not_applicable",
+            message="The van's walls contain the load (393.102(c)(2)).",
+        )
+    failing: list[str] = []
+    worst: tuple[float, str] | None = None
+    for stack in _stacks(scenario):
+        base = stack[0]
+        mu = resolve_friction(
+            base.material, scenario.bed.floor_material, override=base.friction_coefficient
+        ).coefficient
+        weight = _weight_n(stack)
+        rolls = _rolls(base)
+        for direction, c in WLL_ACCELERATION.items():
+            if direction != "sideways" and _blocked(scenario, stack):
+                continue
+            if direction == "forward" and _blocked_forward(scenario, stack, headboard_known):
+                continue  # held by the front end structure (393.114) or blocking
+            friction = 0.0 if direction in rolls else mu
+            demand = max(0.0, c - friction) * weight
+            if demand <= 0:
+                continue
+            held = _restraint_n(scenario, stack, friction, direction)
+            ratio = held / demand
+            if worst is None or ratio < worst[0]:
+                worst = (ratio, direction)
+            if held + 1e-6 < demand and base.id not in failing:
+                failing += [u.id for u in stack]
+    values = {"worst_ratio": round(worst[0], 3)} if worst else {}
+    if failing:
+        return RuleCheck(
+            code="wll_criterion",
+            article=article,
+            status="fail",
+            unit_ids=failing,
+            values=values,
+            message=(
+                "At 0.435 g braking, 0.5 g rearward or 0.25 g sideways the tiedowns would go "
+                "above their working load limit."
+            ),
+        )
+    return RuleCheck(
+        code="wll_criterion",
+        article=article,
+        status="pass",
+        values=values,
+        message="At the 393.102(a)(2) accelerations every tiedown stays within its WLL.",
     )
 
 
@@ -548,6 +682,7 @@ def check_fmcsa_393(
 ) -> list[RuleCheck]:
     """The US securing checks, in the order of the sections."""
     return [
+        wll_criterion(scenario, headboard_known),
         aggregate_wll(scenario),
         min_tiedowns(scenario, draft, headboard_known),
         front_end_structure(scenario, headboard_known),

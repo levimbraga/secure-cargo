@@ -75,3 +75,20 @@ def test_a_to_confirm_headboard_is_not_a_violation() -> None:
     art8 = {"code": "above_headboard", "status": "to_confirm", "article": "Art. 8"}
     battery = {"situations": [_situation("pothole")], "contran_945": [art8]}
     assert verdict_of(battery).state == "approved"
+
+
+def test_a_finding_counts_only_under_the_countries_it_names() -> None:
+    # Rules audit item 3: a strap over its LC fails under EN 12195-1 (Brazil, EU); in the US the
+    # 0.8 g case is judged against the breaking strength (49 CFR 393.102(a)(1)).
+    over_lc = {
+        "code": "lashing_overloaded",
+        "severity": "fail",
+        "lashing_id": "s1",
+        "value": 30_000,
+        "limit": 25_000,
+        "countries": ["BR", "EU"],
+    }
+    battery = {"situations": [_situation("emergency_braking", over_lc)], "contran_945": [PASS]}
+    assert verdict_of({**battery, "country": "BR"}).state == "fails"
+    assert verdict_of({**battery, "country": "EU"}).state == "fails"
+    assert verdict_of({**battery, "country": "US"}).state == "approved"
