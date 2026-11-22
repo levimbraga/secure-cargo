@@ -1732,6 +1732,7 @@
       },
       "flags": {
         "truck": "Not sure about the truck: check its size and body.",
+        "truckAssumed": "Truck size assumed: the photo shows neither its axles nor the whole bed.",
         "unit": "Not sure about unit {number}: {why}",
         "restraint": "Not sure about the straps: {why}",
         "unsure": "low confidence",

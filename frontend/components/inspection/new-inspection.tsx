@@ -148,6 +148,8 @@ export function NewInspection() {
                 links={state.perception?.links ?? []}
                 onCorrect={() => void flow.openEditor()}
                 onHeadboard={(height) => void flow.setHeadboard(height)}
+                onFrontEndRating={(kg) => void flow.setFrontEndRating(kg)}
+                truckAssumed={Boolean(state.sample?.truck_assumed && state.truck?.size === state.sample.truck.size)}
                 onReinspect={
                   state.inspectionId
                     ? () => window.location.assign(`${locale === "pt-BR" ? "/pt-BR" : ""}/app/new?reinspect=${state.inspectionId}`)

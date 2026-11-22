@@ -1732,6 +1732,7 @@
       },
       "flags": {
         "truck": "Não temos certeza do caminhão: confira o tamanho e a carroceria.",
+        "truckAssumed": "Tamanho do caminhão suposto: a foto não mostra os eixos nem a carroceria inteira.",
         "unit": "Não temos certeza do volume {number}: {why}",
         "restraint": "Não temos certeza das cintas: {why}",
         "unsure": "pouca confiança",

@@ -54,6 +54,9 @@ class SampleSpec:
     # A made-up invoice weight, plausible for what the photo shows.
     weight_kg: int
     position: str = "rear"
+    # The photo does not show the truck's size (axles, whole bed): the size is an assumption the
+    # result states.
+    truck_assumed: bool = False
 
 
 SAMPLES: tuple[SampleSpec, ...] = (
@@ -67,9 +70,12 @@ SAMPLES: tuple[SampleSpec, ...] = (
             "Pilhas de caixas plásticas presas só com seis cordas, que a Resolução CONTRAN"
             " 945/2022 só aceita para prender a lona.",
         ),
-        DraftTruck(body="flatbed", size="truck", style="open_low_sides"),
+        # A cab-over cab and drop sides show, but neither the axles nor the whole bed: assumed to
+        # be a two-axle rigid, the toco (consistency fixes, 2026-11-22; was a 3-axle "truck").
+        DraftTruck(body="flatbed", size="toco", style="open_low_sides"),
         4200,
         "left",
+        truck_assumed=True,
     ),
     SampleSpec(
         "steel-pipes",
@@ -79,7 +85,8 @@ SAMPLES: tuple[SampleSpec, ...] = (
             "Long steel pipes under four ratchet straps: do they hold in a hard stop?",
             "Tubos de aço longos sob quatro cintas com catraca: aguentam uma frenagem forte?",
         ),
-        DraftTruck(body="flatbed", size="semi", style="open_low_sides"),
+        # A flatbed with no sides (consistency fixes, 2026-11-22; was "open, low sides").
+        DraftTruck(body="flatbed", size="semi", style="platform"),
         18000,
     ),
     SampleSpec(
@@ -103,7 +110,7 @@ SAMPLES: tuple[SampleSpec, ...] = (
             "Packages of lumber under about ten straps on a semi-trailer.",
             "Pacotes de madeira serrada sob cerca de dez cintas numa carreta.",
         ),
-        DraftTruck(body="flatbed", size="semi", style="open_low_sides"),
+        DraftTruck(body="flatbed", size="semi", style="platform"),  # no sides (was low sides)
         12000,  # about 0.58 t/m³ over the packages the draft keeps: sawn pine
     ),
     # The three verdict states need a load that is approved and one that holds but is out of
@@ -133,7 +140,10 @@ SAMPLES: tuple[SampleSpec, ...] = (
             " está dentro da lei?",
         ),
         DraftTruck(body="flatbed", size="semi", style="platform"),
-        22400,  # about 4.5 t per rack of steel posts
+        # About 4.8 t per rack of steel posts (was 4.5 t: with the trailer's tri-axle moved to
+        # 1.75 m from the rear on 2026-11-22, 22.4 t left the drive tandem at 16.8 t of 17 t and
+        # the sample no longer showed the "holds, but out of compliance" state).
+        24000,
         "left",
     ),
 )
@@ -255,6 +265,7 @@ def main() -> None:
             "credit": credit,
             "weight_kg": spec.weight_kg,
             "truck": spec.truck.model_dump(mode="json", exclude_none=True),
+            "truck_assumed": spec.truck_assumed,
             "passed": loaded.passed,
             "fixed_passed": fix.battery.passed,
         }

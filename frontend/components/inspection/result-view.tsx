@@ -117,6 +117,8 @@ export function ResultView({
   onCorrect,
   onReinspect,
   onHeadboard,
+  onFrontEndRating,
+  truckAssumed = false,
   share,
   before = null,
   provenBy = null,
@@ -141,6 +143,10 @@ export function ResultView({
   onCorrect?: () => void;
   onReinspect?: () => void;
   onHeadboard?: (heightM: number) => void;
+  /** US: re-check with the front end structure's declared rating (kg of force). */
+  onFrontEndRating?: (kg: number) => void;
+  /** A sample whose photo does not show the truck's size: the summary says it is assumed. */
+  truckAssumed?: boolean;
   share?: ReactNode;
   /** A re-inspection: the first inspection's battery, for the before / after. */
   before?: Battery | null;
@@ -263,7 +269,7 @@ export function ResultView({
 
       {before && <BeforeAfter before={activeBattery(before, country)} after={activeBattery(base, country)} />}
 
-      <ReadingSummary battery={battery} truck={truck} analysis={analysis} links={links} onCorrect={readOnly ? undefined : onCorrect} />
+      <ReadingSummary battery={battery} truck={truck} analysis={analysis} links={links} truckAssumed={truckAssumed} onCorrect={readOnly ? undefined : onCorrect} />
 
       <div ref={simRef} className="scroll-mt-4">
         {simulation && (
@@ -277,7 +283,10 @@ export function ResultView({
         )}
       </div>
 
-      <Checklist battery={shown} onOpenSituation={open} onHeadboard={variant === "as_loaded" ? onHeadboard : undefined} readOnly={readOnly} />
+      <Checklist battery={shown} onOpenSituation={open} onHeadboard={variant === "as_loaded" ? onHeadboard : undefined}
+        onFrontEndRating={variant === "as_loaded" ? onFrontEndRating : undefined}
+        readOnly={readOnly}
+      />
 
       {variant === "as_loaded" && !readOnly && (
         <FixPanel
@@ -312,12 +321,14 @@ function ReadingSummary({
   truck,
   analysis,
   links,
+  truckAssumed = false,
   onCorrect,
 }: {
   battery: Battery;
   truck: TruckChoice | null;
   analysis: PhotoAnalysis | null;
   links: UnitLink[];
+  truckAssumed?: boolean;
   onCorrect?: () => void;
 }) {
   const t = useTranslations("Driver.summary");
@@ -339,6 +350,7 @@ function ReadingSummary({
 
   // Low confidence: what the AI was unsure of, and units cut off at the side of the photo.
   const flags: string[] = [];
+  if (truckAssumed) flags.push(t("flags.truckAssumed"));
   if (analysis) {
     if (analysis.truck.confidence < 0.6) flags.push(t("flags.truck"));
     for (const unit of analysis.units) if (unit.confidence < 0.6) flags.push(t("flags.unit", { number: unit.number, why: unit.uncertain || t("flags.unsure") }));

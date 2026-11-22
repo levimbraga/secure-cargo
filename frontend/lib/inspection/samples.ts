@@ -22,6 +22,8 @@ export type Sample = {
   /** The weight on the sample's (made-up) invoice. */
   weight_kg: number;
   truck: { body: Body; size: Size; style?: import("./trucks").BodyStyle };
+  /** The photo does not show the truck's size: the result says the size is assumed. */
+  truck_assumed?: boolean;
   passed: number;
   fixed_passed: number;
 };
