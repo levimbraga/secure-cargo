@@ -600,11 +600,12 @@
         {
           "id": "trailer",
           "kind": "tandem_3_axles",
-          "position_x_m": -4.6,
+          "position_x_m": -3.2,
           "tare_load_kg": 5500.0
         }
       ],
-      "payload_kg": 28000.0
+      "payload_kg": 28000.0,
+      "size": "semi"
     },
     "units": [
       {
@@ -1280,11 +1281,12 @@
         {
           "id": "trailer",
           "kind": "tandem_3_axles",
-          "position_x_m": -4.6,
+          "position_x_m": -3.2,
           "tare_load_kg": 5500.0
         }
       ],
-      "payload_kg": 28000.0
+      "payload_kg": 28000.0,
+      "size": "semi"
     },
     "units": [
       {

@@ -658,7 +658,8 @@
           "tare_load_kg": 4800.0
         }
       ],
-      "payload_kg": 25000.0
+      "payload_kg": 25000.0,
+      "size": "eu_semi_136"
     },
     "units": [
       {
@@ -1542,7 +1543,8 @@
           "tare_load_kg": 4800.0
         }
       ],
-      "payload_kg": 25000.0
+      "payload_kg": 25000.0,
+      "size": "eu_semi_136"
     },
     "units": [
       {

@@ -406,7 +406,8 @@
           "tare_load_kg": 4700.0
         }
       ],
-      "payload_kg": 14000.0
+      "payload_kg": 14000.0,
+      "size": "truck"
     },
     "units": [
       {
@@ -961,7 +962,8 @@
           "tare_load_kg": 4700.0
         }
       ],
-      "payload_kg": 14000.0
+      "payload_kg": 14000.0,
+      "size": "truck"
     },
     "units": [
       {

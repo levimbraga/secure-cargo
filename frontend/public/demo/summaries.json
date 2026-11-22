@@ -2195,15 +2195,15 @@
   "axle_loads": [
    {
     "axle_group_id": "tractor",
-    "load_kg": 11630.0,
+    "load_kg": 11000.0,
     "limit_kg": 17000.0,
-    "ratio": 0.6841
+    "ratio": 0.6471
    },
    {
     "axle_group_id": "trailer",
-    "load_kg": 9370.0,
+    "load_kg": 10000.0,
     "limit_kg": 25500.0,
-    "ratio": 0.3675
+    "ratio": 0.3922
    }
   ],
   "en_12195_1": [
@@ -2358,15 +2358,15 @@
   "axle_loads": [
    {
     "axle_group_id": "tractor",
-    "load_kg": 11630.0,
+    "load_kg": 11000.0,
     "limit_kg": 17000.0,
-    "ratio": 0.6841
+    "ratio": 0.6471
    },
    {
     "axle_group_id": "trailer",
-    "load_kg": 9370.0,
+    "load_kg": 10000.0,
     "limit_kg": 25500.0,
-    "ratio": 0.3675
+    "ratio": 0.3922
    }
   ],
   "en_12195_1": [
@@ -3221,15 +3221,15 @@
   "axle_loads": [
    {
     "axle_group_id": "tractor",
-    "load_kg": 16000.0,
+    "load_kg": 15918.6,
     "limit_kg": 17000.0,
-    "ratio": 0.9412
+    "ratio": 0.9364
    },
    {
     "axle_group_id": "trailer",
-    "load_kg": 6000.0,
+    "load_kg": 6081.4,
     "limit_kg": 25500.0,
-    "ratio": 0.2353
+    "ratio": 0.2385
    }
   ],
   "en_12195_1": [
@@ -3294,15 +3294,15 @@
   "axle_loads": [
    {
     "axle_group_id": "tractor",
-    "load_kg": 16000.0,
+    "load_kg": 15918.6,
     "limit_kg": 17000.0,
-    "ratio": 0.9412
+    "ratio": 0.9364
    },
    {
     "axle_group_id": "trailer",
-    "load_kg": 6000.0,
+    "load_kg": 6081.4,
     "limit_kg": 25500.0,
-    "ratio": 0.2353
+    "ratio": 0.2385
    }
   ],
   "en_12195_1": [
@@ -3417,15 +3417,15 @@
   "axle_loads": [
    {
     "axle_group_id": "tractor",
-    "load_kg": 13596.8,
+    "load_kg": 12419.1,
     "limit_kg": 17000.0,
-    "ratio": 0.7998
+    "ratio": 0.7305
    },
    {
     "axle_group_id": "trailer",
-    "load_kg": 12568.2,
+    "load_kg": 13745.9,
     "limit_kg": 17000.0,
-    "ratio": 0.7393
+    "ratio": 0.8086
    }
   ],
   "en_12195_1": [
@@ -3506,15 +3506,15 @@
   "axle_loads": [
    {
     "axle_group_id": "tractor",
-    "load_kg": 13596.8,
+    "load_kg": 12419.1,
     "limit_kg": 17000.0,
-    "ratio": 0.7998
+    "ratio": 0.7305
    },
    {
     "axle_group_id": "trailer",
-    "load_kg": 12568.2,
+    "load_kg": 13745.9,
     "limit_kg": 17000.0,
-    "ratio": 0.7393
+    "ratio": 0.8086
    }
   ],
   "en_12195_1": [

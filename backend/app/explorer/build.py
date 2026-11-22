@@ -122,7 +122,9 @@ US_TRUCKS: dict[Size, TruckSpec] = {
         payload_kg=_lb(24_250),
         headboard_m=1.22,
     ),
-    # 48 ft flatbed: kingpin 36 in behind the front, trailer tandem 2 m ahead of the rear end.
+    # 48 ft flatbed: kingpin 36 in behind the front. The trailer group is a 10 ft spread axle
+    # whose rear axle sits 1.75 m from the rear end (ASSUMPTION, as the Brazilian semi's), so
+    # its centre is 3.27 m from the rear; the rules check it as one tandem group at that centre.
     # The kingpin group carries the trailer's front share and the tractor's drive tandem tare.
     Size.US_FLATBED_48: TruckSpec(
         length_m=14.63,
@@ -138,7 +140,7 @@ US_TRUCKS: dict[Size, TruckSpec] = {
         rear=AxleGroup(
             id="trailer",
             kind=AxleGroupKind.TANDEM_2_AXLES,
-            position_x_m=-5.3,
+            position_x_m=-4.05,
             tare_load_kg=_lb(6000),
         ),
         payload_kg=_lb(48_000),
@@ -195,45 +197,49 @@ US_TRUCKS: dict[Size, TruckSpec] = {
 # is shared between the 4x2 tractor's steer and driving axles (rules/eu_weights.py); under
 # Brazil's and the US rules the kingpin group is checked as one tandem group.
 EU_TRUCKS: dict[Size, TruckSpec] = {
-    # 7.5 t rigid: 6.2 m body, wheelbase 4.2 m, plated 7.5 t.
+    # 7.5 t rigid: 6.2 m body, wheelbase 4.5 m, plated 7.5 t. The steer axle sits under the
+    # cab, 1.0 m ahead of the body (ASSUMPTION, all three rigids: a cab-over's steer axle is
+    # about 1.0-1.5 m ahead of the body; consistency fixes, 2026-11-22).
     Size.EU_7_5T: TruckSpec(
         length_m=6.2,
         width_m=2.45,
         floor_height_m=1.0,
         wall_height_m=2.3,
         front=AxleGroup(
-            id="front", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=3.3, tare_load_kg=2700
+            id="front", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=4.1, tare_load_kg=2700
         ),
         rear=AxleGroup(
-            id="rear", kind=AxleGroupKind.SINGLE_4_TYRES, position_x_m=-0.9, tare_load_kg=1600
+            id="rear", kind=AxleGroupKind.SINGLE_4_TYRES, position_x_m=-0.4, tare_load_kg=1600
         ),
         payload_kg=3200,
     ),
-    # 18 t rigid, two axles: 7.3 m body, wheelbase 5.0 m.
+    # 18 t rigid, two axles: 7.3 m body, wheelbase 5.5 m, steer axle 1.2 m ahead of the body.
     Size.EU_18T: TruckSpec(
         length_m=7.3,
         width_m=2.48,
         floor_height_m=1.25,
         wall_height_m=2.5,
         front=AxleGroup(
-            id="front", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=3.9, tare_load_kg=4600
+            id="front", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=4.85, tare_load_kg=4600
         ),
         rear=AxleGroup(
-            id="rear", kind=AxleGroupKind.SINGLE_4_TYRES, position_x_m=-1.1, tare_load_kg=2900
+            id="rear", kind=AxleGroupKind.SINGLE_4_TYRES, position_x_m=-0.65, tare_load_kg=2900
         ),
         payload_kg=10500,
     ),
-    # 26 t rigid, three axles: 9.5 m body, driving tandem 1.37 m apart (twin tyres, air).
+    # 26 t rigid, three axles: 9.5 m body, driving tandem 1.37 m apart (twin tyres, air); steer
+    # axle 1.0 m ahead of the body (11.9 m overall, within the 12 m of 96/53/EC), 6.3 m from the
+    # tandem's centre.
     Size.EU_26T: TruckSpec(
         length_m=9.5,
         width_m=2.48,
         floor_height_m=1.3,
         wall_height_m=2.5,
         front=AxleGroup(
-            id="front", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=4.6, tare_load_kg=5700
+            id="front", kind=AxleGroupKind.SINGLE_2_TYRES, position_x_m=5.75, tare_load_kg=5700
         ),
         rear=AxleGroup(
-            id="rear", kind=AxleGroupKind.TANDEM_2_AXLES, position_x_m=-0.8, tare_load_kg=4800
+            id="rear", kind=AxleGroupKind.TANDEM_2_AXLES, position_x_m=-0.55, tare_load_kg=4800
         ),
         payload_kg=15500,
     ),
@@ -347,7 +353,9 @@ TRUCKS: dict[Size, TruckSpec] = {
         payload_kg=14000,
     ),
     # The semi-trailer rests on the tractor's drive tandem (at the kingpin) and on its own
-    # triple axle; the tractor's steer axle is not modelled.
+    # triple axle; the tractor's steer axle is not modelled. The tri-axle's centre is 3.0 m
+    # from the rear, so its last axle (1.25 m spread) sits 1.75 m from the rear (ASSUMPTION:
+    # a trailer carries its last axle about 1.5-2 m in; consistency fixes, 2026-11-22).
     Size.SEMI: TruckSpec(
         length_m=12.4,
         width_m=2.4,
@@ -360,7 +368,7 @@ TRUCKS: dict[Size, TruckSpec] = {
             tare_load_kg=6500,
         ),
         rear=AxleGroup(
-            id="trailer", kind=AxleGroupKind.TANDEM_3_AXLES, position_x_m=-4.6, tare_load_kg=5500
+            id="trailer", kind=AxleGroupKind.TANDEM_3_AXLES, position_x_m=-3.2, tare_load_kg=5500
         ),
         payload_kg=28000,
     ),
@@ -759,7 +767,11 @@ def build_draft(
     if restraint in (Restraint.BLOCKING, Restraint.CRADLE, Restraint.CRADLE_CHAIN):
         blocks = _blocks(truck, units)
 
-    vehicle = Vehicle(axle_groups=(truck.front, truck.rear), payload_kg=truck.payload_kg)
+    vehicle = Vehicle(
+        axle_groups=(truck.front, truck.rear),
+        payload_kg=truck.payload_kg,
+        size=draft.truck.size.value,
+    )
     try:
         scenario = Scenario(
             id=scenario_id,

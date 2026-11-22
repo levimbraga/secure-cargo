@@ -226,7 +226,8 @@
           "tare_load_kg": 1600.0
         }
       ],
-      "payload_kg": 4000.0
+      "payload_kg": 4000.0,
+      "size": "vuc"
     },
     "units": [
       {
@@ -588,7 +589,8 @@
           "tare_load_kg": 1600.0
         }
       ],
-      "payload_kg": 4000.0
+      "payload_kg": 4000.0,
+      "size": "vuc"
     },
     "units": [
       {
