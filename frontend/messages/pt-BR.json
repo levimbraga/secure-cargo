@@ -410,7 +410,7 @@
     "others": "Outros cenários",
     "list": {
       "label": "Exemplos",
-      "title": "Nove cargas, cada uma simulada como foi carregada e corrigida."
+      "title": "Catorze cargas, cada uma simulada como foi carregada e corrigida."
     },
     "view": {
       "label": "Visão",
@@ -785,8 +785,8 @@
   "Gallery": {
     "label": "Exemplos",
     "metaTitle": "Exemplos · Carga Segura",
-    "description": "Nove cargas, cada uma simulada como foi carregada e corrigida, com o render do MuJoCo de cada simulação.",
-    "title": "Nove cargas, cada uma simulada como foi carregada e corrigida.",
+    "description": "Catorze cargas, cada uma simulada como foi carregada e corrigida: um clipe do replay 3D de cada simulação, com o render bruto do MuJoCo como prova.",
+    "title": "Catorze cargas, cada uma simulada como foi carregada e corrigida.",
     "intro": "Cada exemplo abre no explorador, onde qualquer escolha pode ser mudada. A matriz no fim mostra qual exemplo cobre cada opção que o produto suporta.",
     "asLoaded": "Como carregada",
     "fixed": "Corrigida",
@@ -798,8 +798,15 @@
     "labName": "{title}: laboratório ao vivo",
     "explorerName": "{title}: abrir como carregada no explorador",
     "explorerFixedName": "{title}: abrir corrigida no explorador",
-    "video": "Render do MuJoCo da carga como foi carregada",
-    "videoCaption": "Como foi carregada, desenhada pelo próprio renderizador do MuJoCo.",
+    "clip": {
+      "alt": "{title}, {variant}: clipe do replay 3D",
+      "open": "Abrir ao vivo no explorador",
+      "openName": "{title}, {variant}: abrir ao vivo no explorador",
+      "play": "Reproduzir o clipe",
+      "pause": "Pausar o clipe",
+      "raw": "Visão bruta do MuJoCo",
+      "rawName": "{title}, {variant}: Visão bruta do MuJoCo (vídeo)"
+    },
     "coverage": {
       "title": "Cobertura",
       "summary": "{covered} de {total} opções cobertas por {examples} exemplos.",

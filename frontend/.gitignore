@@ -47,3 +47,4 @@ next-env.d.ts
 
 # MuJoCo WebAssembly, copied from node_modules by scripts/copy-mujoco.mjs
 /public/mujoco/
+.clip-frames/

@@ -36,7 +36,9 @@ and properly secured. The loop is **perceive → simulate → plan**:
 
 Product flow (direction set on 2026-11-20):
 1. **Gallery** `/app/examples`: ready-made examples, no login, covering every supported option; each has "as
-   loaded" and "fixed", a one-sentence story, "Open in explorer" and a raw MuJoCo render video.
+   loaded" and "fixed", a one-sentence story, "Open in explorer", a short clip of the realistic replay of
+   each version (`public/demo/clips/`, recorded from the live replay with `scripts/record-example-clips.mjs`;
+   re-record after any change to the 3D scene) and a small "Raw MuJoCo view" link to the engine's own render.
    `docs/coverage.md` (generated, shown on the page) proves every option appears in at least one example.
 2. **Explorer** `/app/explorer`: any combination simulated live; one selector per dimension, a top-down load
    editor (drag units, tap to add straps, live axle loads), configuration in a shareable URL.

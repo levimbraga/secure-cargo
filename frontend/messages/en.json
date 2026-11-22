@@ -410,7 +410,7 @@
     "others": "Other scenarios",
     "list": {
       "label": "Examples",
-      "title": "Nine loads, each simulated as loaded and fixed."
+      "title": "Fourteen loads, each simulated as loaded and fixed."
     },
     "view": {
       "label": "View",
@@ -785,8 +785,8 @@
   "Gallery": {
     "label": "Examples",
     "metaTitle": "Examples · SecureCargo",
-    "description": "Nine loads, each simulated as loaded and fixed, with the raw MuJoCo render of every run.",
-    "title": "Nine loads, each simulated as loaded and fixed.",
+    "description": "Fourteen loads, each simulated as loaded and fixed: a clip of the 3D replay of every run, with MuJoCo's raw render as proof.",
+    "title": "Fourteen loads, each simulated as loaded and fixed.",
     "intro": "Every example opens in the explorer, where any of its choices can be changed. The matrix at the end shows which example covers each option the product supports.",
     "asLoaded": "As loaded",
     "fixed": "Fixed",
@@ -798,8 +798,15 @@
     "labName": "{title}: live lab",
     "explorerName": "{title}: open as loaded in the explorer",
     "explorerFixedName": "{title}: open fixed in the explorer",
-    "video": "Raw MuJoCo render of the load as loaded",
-    "videoCaption": "As loaded, drawn by MuJoCo's own renderer.",
+    "clip": {
+      "alt": "{title}, {variant}: clip of the 3D replay",
+      "open": "Open live in the explorer",
+      "openName": "{title}, {variant}: open live in the explorer",
+      "play": "Play the clip",
+      "pause": "Pause the clip",
+      "raw": "Raw MuJoCo view",
+      "rawName": "{title}, {variant}: Raw MuJoCo view (video)"
+    },
     "coverage": {
       "title": "Coverage",
       "summary": "{covered} of {total} options covered by {examples} examples.",

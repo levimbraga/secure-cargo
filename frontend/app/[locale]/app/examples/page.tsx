@@ -4,11 +4,12 @@ import { hasLocale, useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { ExampleClip } from "@/components/app/example-clip";
 import { ExampleLinks } from "@/components/app/example-links";
 import { SiteNav } from "@/components/site/site-nav";
 import { VerdictBadge } from "@/components/ui/verdict-badge";
 import { routing } from "@/i18n/routing";
-import { DEMO_IDS } from "@/lib/demo";
+import { DEMO_IDS, VARIANTS } from "@/lib/demo";
 import { demoSummary } from "@/lib/demo-summaries";
 import { COVERAGE, coverageTotals, explorerQueries } from "@/lib/gallery";
 
@@ -23,8 +24,9 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/app/exam
 const EXPLORER_DIMENSIONS = ["body", "size", "cargo", "position", "restraint", "road", "weather", "event"];
 
 /**
- * The gallery: every example as loaded and fixed, with its one-sentence story, MuJoCo's own
- * render, and the ways into it; then the coverage matrix of `docs/coverage.md`.
+ * The gallery: every example as loaded and fixed, each as a short clip of the realistic replay
+ * (a link into the explorer) with its verdict, one-sentence story and a link to MuJoCo's raw
+ * render as proof; then the ways into it and the coverage matrix of `docs/coverage.md`.
  */
 export default function ExamplesPage({ params }: PageProps<"/[locale]/app/examples">) {
   const { locale } = use(params);
@@ -56,48 +58,53 @@ export default function ExamplesPage({ params }: PageProps<"/[locale]/app/exampl
         <ol className="mt-10 border-b border-hairline">
           {DEMO_IDS.map((id, index) => {
             const summary = demoSummary(id);
+            const title = scenario(`titles.${id}`);
             return (
-              <li key={id} id={id} className="grid grid-cols-1 gap-x-8 gap-y-4 border-t border-hairline py-8 md:grid-cols-[18rem_minmax(0,1fr)]">
-                <figure>
-                  <video
-                    className="aspect-[8/5] w-full rounded bg-surface object-cover"
-                    src={`/demo/video/${id}.as_loaded.mp4`}
-                    poster={`/demo/video/${id}.as_loaded.jpg`}
-                    controls
-                    muted
-                    playsInline
-                    preload="none"
-                    aria-label={t("video")}
-                  />
-                  <figcaption className="type-label mt-1.5">{t("videoCaption")}</figcaption>
-                </figure>
-                <div className="min-w-0">
-                  <h2 className="type-card-title">
-                    <span className="font-mono text-[0.8125rem] text-gray">{index + 1}. </span>
-                    {scenario(`titles.${id}`)}
-                  </h2>
-                  <p className="mt-1 font-mono text-[0.8125rem] text-gray">
-                    {scenario(`events.${id}`, { speed: summary.event.speed_kmh })}
-                  </p>
-                  <dl className="mt-3 space-y-2">
-                    {(["as_loaded", "fixed"] as const).map((variant) => {
-                      const status = summary.runs[variant].verdict.status;
-                      return (
-                        <div key={variant} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                          <dt className="w-28 shrink-0 text-sm text-gray">{t(variant === "as_loaded" ? "asLoaded" : "fixed")}</dt>
-                          <dd className="min-w-0 flex-1 basis-60">
-                            <VerdictBadge verdict={status === "pass" ? "pass" : "fail"} className="mr-2 align-middle">
-                              {scenario(`verdict.${status}`)}
+              <li key={id} id={id} className="border-t border-hairline py-8">
+                <h2 className="type-card-title">
+                  <span className="font-mono text-[0.8125rem] text-gray">{index + 1}. </span>
+                  {title}
+                </h2>
+                <p className="mt-1 font-mono text-[0.8125rem] text-gray">
+                  {scenario(`events.${id}`, { speed: summary.event.speed_kmh })}
+                </p>
+                {/* Side by side from tablets up, stacked on a phone. */}
+                <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-7 sm:grid-cols-2">
+                  {VARIANTS.map((variant) => {
+                    const status = summary.runs[variant].verdict.status;
+                    const name = t(variant === "as_loaded" ? "asLoaded" : "fixed");
+                    const query = (variant === "as_loaded" ? asLoaded : fixed)[id] ?? "";
+                    return (
+                      <figure key={variant} className="min-w-0">
+                        <ExampleClip
+                          clip={`/demo/clips/${id}.${variant}`}
+                          href={query}
+                          label={t("clip.alt", { title, variant: name })}
+                          linkLabel={t("clip.openName", { title, variant: name })}
+                        />
+                        <figcaption className="mt-2.5">
+                          <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                            <VerdictBadge verdict={status === "pass" ? "pass" : "fail"}>
+                              {name} · {scenario(`verdict.${status}`)}
                             </VerdictBadge>
-                            <span className="text-[0.9375rem] text-pretty text-ink">{scenario(`sentences.${id}.${variant}`)}</span>
-                          </dd>
-                        </div>
-                      );
-                    })}
-                  </dl>
-                  <div className="mt-3">
-                    <ExampleLinks id={id} explorer={asLoaded[id] ?? ""} fixedExplorer={fixed[id]} />
-                  </div>
+                            <a
+                              href={`/demo/video/${id}.${variant}.mp4`}
+                              aria-label={t("clip.rawName", { title, variant: name })}
+                              className="type-label inline-flex min-h-11 items-center underline decoration-hairline underline-offset-4 hover:text-ink sm:min-h-8"
+                            >
+                              {t("clip.raw")}
+                            </a>
+                          </span>
+                          <span className="mt-1.5 block text-[0.9375rem] text-pretty text-ink">
+                            {scenario(`sentences.${id}.${variant}`)}
+                          </span>
+                        </figcaption>
+                      </figure>
+                    );
+                  })}
+                </div>
+                <div className="mt-3">
+                  <ExampleLinks id={id} explorer={asLoaded[id] ?? ""} fixedExplorer={fixed[id]} />
                 </div>
               </li>
             );
