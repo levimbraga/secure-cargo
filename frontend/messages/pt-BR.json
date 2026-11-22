@@ -872,7 +872,8 @@
     "switchToDriver": "Ver como motorista",
     "switching": "Trocando…",
     "demoMenu": "Opções da demo",
-    "switchFailed": "Não foi possível trocar. Tente de novo."
+    "switchFailed": "Não foi possível trocar. Tente de novo.",
+    "deleteAccount": "Excluir minha conta"
   },
   "Auth": {
     "label": "Conta",
@@ -2461,7 +2462,8 @@
       "shared": "Link público compartilhado",
       "unshared": "Link público desligado",
       "certificate_issued": "Certificado {id} emitido",
-      "country_changed": "Regras trocadas para {country, select, US {os Estados Unidos} other {o Brasil}}"
+      "country_changed": "Regras trocadas para {country, select, US {os Estados Unidos} other {o Brasil}}",
+      "author_deleted": "O autor excluiu a conta; a inspeção fica com a empresa, sem nome nem email dele"
     },
     "weightSource": {
       "measured": "digitado",
@@ -2636,6 +2638,24 @@
       "contact_unavailable": "O formulário de contato não está disponível agora. Tente de novo mais tarde.",
       "network": "Não conseguimos falar com o servidor. Confira sua conexão e tente de novo.",
       "unknown": "Algo deu errado. Tente de novo."
+    }
+  },
+  "Account": {
+    "delete": {
+      "title": "Excluir sua conta?",
+      "personal": "As inspeções que você fez fora de uma empresa são apagadas, com as fotos e as fotos de notas fiscais.",
+      "org": "As inspeções que você fez para uma empresa ficam com ela, nos registros dela, sem seu nome nem email.",
+      "orgNamed": "As inspeções que você fez para {org} ficam com ela, nos registros dela, sem seu nome nem email.",
+      "final": "Seu login, seus caminhões salvos e seu vínculo com a empresa são apagados. Não dá para desfazer.",
+      "word": "EXCLUIR",
+      "typeToConfirm": "Digite <word></word> para confirmar",
+      "cancel": "Cancelar",
+      "confirm": "Excluir minha conta",
+      "deleting": "Excluindo…",
+      "error": "Não foi possível excluir a conta. Nada foi perdido; tente de novo em um minuto.",
+      "errorRetry": "Seus dados foram apagados, mas encerrar a conta falhou. Tente de novo.",
+      "doneTitle": "Sua conta foi excluída.",
+      "doneBody": "Saindo…"
     }
   }
 }

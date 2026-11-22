@@ -24,6 +24,9 @@ export default async function AppLayout({ children, params }: LayoutProps<"/[loc
       signUpFallbackRedirectUrl={`${prefix}/app`}
       afterSignOutUrl={`${prefix}/app/sign-in`}
       appearance={{
+        // Clerk's own "Delete account" (profile, danger zone) would leave our records behind: the
+        // account menu's "Delete my account" calls DELETE /me instead, which also deletes in Clerk.
+        elements: { profileSection__danger: { display: "none" } },
         variables: {
           colorPrimary: "#191918",
           colorForeground: "#191918",

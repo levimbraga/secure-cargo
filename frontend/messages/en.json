@@ -872,7 +872,8 @@
     "switchToDriver": "Switch to driver view",
     "switching": "Switching…",
     "demoMenu": "Demo options",
-    "switchFailed": "Could not switch. Try again."
+    "switchFailed": "Could not switch. Try again.",
+    "deleteAccount": "Delete my account"
   },
   "Auth": {
     "label": "Account",
@@ -2461,7 +2462,8 @@
       "shared": "Public link shared",
       "unshared": "Public link turned off",
       "certificate_issued": "Certificate {id} issued",
-      "country_changed": "Rules switched to {country, select, US {the United States} other {Brazil}}"
+      "country_changed": "Rules switched to {country, select, US {the United States} other {Brazil}}",
+      "author_deleted": "The author deleted their account; the inspection stays with the organization, without their name or email"
     },
     "weightSource": {
       "measured": "typed",
@@ -2636,6 +2638,24 @@
       "contact_unavailable": "The contact form is not available right now. Please try again later.",
       "network": "We could not reach the server. Check your connection and try again.",
       "unknown": "Something went wrong. Please try again."
+    }
+  },
+  "Account": {
+    "delete": {
+      "title": "Delete your account?",
+      "personal": "Inspections you made outside an organization are deleted, with their photos and invoice photos.",
+      "org": "Inspections you made for an organization stay with it for its records, without your name or email.",
+      "orgNamed": "Inspections you made for {org} stay with it for its records, without your name or email.",
+      "final": "Your sign-in, saved trucks and membership are deleted. This cannot be undone.",
+      "word": "DELETE",
+      "typeToConfirm": "Type <word></word> to confirm",
+      "cancel": "Cancel",
+      "confirm": "Delete my account",
+      "deleting": "Deleting…",
+      "error": "The account could not be deleted. Nothing was lost; try again in a minute.",
+      "errorRetry": "Your data was deleted, but closing the account failed. Try again.",
+      "doneTitle": "Your account was deleted.",
+      "doneBody": "Signing you out…"
     }
   }
 }

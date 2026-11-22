@@ -2,9 +2,11 @@
 
 import { UserButton } from "@clerk/nextjs";
 import { cn } from "cn";
+import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 
+import { DeleteAccountDialog } from "@/components/app/delete-account";
 import { useMe } from "@/components/app/me-provider";
 import { LanguagePill } from "@/components/language-switcher";
 import { HideOnScroll } from "@/components/site/hide-on-scroll";
@@ -85,6 +87,7 @@ function AppHeaderFrame() {
  */
 export function AppHeader({ me }: { me: Me }) {
   const t = useTranslations("AppNav");
+  const [deleting, setDeleting] = useState(false);
   const nav = useTranslations("Nav");
   const { demo, exitDemo } = useMe();
   const router = useRouter();
@@ -156,7 +159,12 @@ export function AppHeader({ me }: { me: Me }) {
               exitButton("max-lg:hidden")
             ) : (
               <div className="flex size-8 items-center justify-center">
-                <UserButton />
+                <UserButton>
+                  <UserButton.MenuItems>
+                    <UserButton.Action label={t("deleteAccount")} labelIcon={<Trash2 className="size-4" aria-hidden />} onClick={() => setDeleting(true)} />
+                  </UserButton.MenuItems>
+                </UserButton>
+                <DeleteAccountDialog open={deleting} onClose={() => setDeleting(false)} />
               </div>
             )}
             <MobileMenu className="lg:hidden" openLabel={nav("openMenu")} closeLabel={nav("closeMenu")} items={menuItems}>
