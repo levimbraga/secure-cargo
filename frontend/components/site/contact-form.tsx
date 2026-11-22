@@ -107,6 +107,10 @@ export function ContactForm() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "", website: "" });
   const [error, setError] = useState<ContactError | null>(null);
   const [busy, setBusy] = useState(false);
+  // One idempotency key per submission: kept when the same text is sent again (a retry after an
+  // error), renewed when the text changes. The Worker sends a key at most once in 10 minutes.
+  const inFlight = useRef(false);
+  const submission = useRef<{ key: string; fingerprint: string } | null>(null);
   const [sent, setSent] = useState<{ name: string; email: string } | null>(null);
   const { ref: turnstileRef, token: turnstileToken, failed: turnstileFailed, interactive: turnstileShown, reset: resetTurnstile } = useTurnstile(locale);
   const errorField = error ? FIELD_OF[error] : undefined;
@@ -116,9 +120,16 @@ export function ContactForm() {
     if (error && FIELD_OF[error] === key) setError(null);
   };
 
+  function submissionKey(): string {
+    const fingerprint = JSON.stringify([form.name.trim(), form.email.trim(), form.subject, form.message.trim()]);
+    if (submission.current?.fingerprint !== fingerprint) submission.current = { key: crypto.randomUUID(), fingerprint };
+    return submission.current.key;
+  }
+
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (busy) return;
+    // A ref, not only state: a double tap in the same frame must not send twice.
+    if (busy || inFlight.current) return;
     const invalid = validateContact(form);
     if (invalid) {
       setError(invalid);
@@ -129,6 +140,7 @@ export function ContactForm() {
       setError(turnstileFailed ? "turnstile_unavailable" : "turnstile_failed");
       return;
     }
+    inFlight.current = true;
     setBusy(true);
     setError(null);
     // The page the visitor wrote from: where they came from on this site, or this page.
@@ -137,10 +149,11 @@ export function ContactForm() {
       const response = await fetch(`${API_URL}/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, locale, page, turnstile_token: turnstileToken }),
+        body: JSON.stringify({ ...form, locale, page, turnstile_token: turnstileToken, idempotency_key: submissionKey() }),
       });
       if (response.ok) {
         setSent({ name: form.name.trim(), email: form.email.trim() });
+        submission.current = null;
         setForm({ name: "", email: "", subject: "", message: "", website: "" });
       } else {
         const body = (await response.json().catch(() => null)) as { detail?: { code?: string } } | null;
@@ -150,6 +163,7 @@ export function ContactForm() {
     } catch {
       setError("network");
     } finally {
+      inFlight.current = false;
       setBusy(false);
       resetTurnstile();
     }
@@ -270,7 +284,7 @@ export function ContactForm() {
         </p>
       )}
 
-      <button type="submit" disabled={busy} className={pill({ className: "h-12 w-full text-[0.9375rem] md:w-auto md:justify-self-start md:px-8" })}>
+      <button type="submit" disabled={busy} aria-busy={busy || undefined} className={pill({ className: "h-12 w-full text-[0.9375rem] md:w-auto md:justify-self-start md:px-8" })}>
         {busy ? t("sending") : t("send")}
       </button>
 
