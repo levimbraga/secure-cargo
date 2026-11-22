@@ -62,8 +62,10 @@ SAMPLES: tuple[SampleSpec, ...] = (
         "plastic-crates-ropes-32444472.jpg",
         ("Crates tied with ropes", "Caixas amarradas com corda"),
         (
-            "Stacks of plastic crates held only by ropes, which Brazilian rules prohibit.",
-            "Pilhas de caixas plásticas presas só com cordas, proibidas pelas regras brasileiras.",
+            "Stacks of plastic crates held only by six ropes, which CONTRAN 945/2022 allows only"
+            " to hold a tarp.",
+            "Pilhas de caixas plásticas presas só com seis cordas, que a Resolução CONTRAN"
+            " 945/2022 só aceita para prender a lona.",
         ),
         DraftTruck(body="flatbed", size="truck", style="open_low_sides"),
         4200,
@@ -74,8 +76,8 @@ SAMPLES: tuple[SampleSpec, ...] = (
         "green-pipes-straps-N53wfGqwtNQ.jpg",
         ("Steel pipes with straps", "Tubos de aço com cintas"),
         (
-            "Long steel pipes under ratchet straps: do they hold in a hard stop?",
-            "Tubos de aço longos sob cintas com catraca: aguentam uma frenagem forte?",
+            "Long steel pipes under four ratchet straps: do they hold in a hard stop?",
+            "Tubos de aço longos sob quatro cintas com catraca: aguentam uma frenagem forte?",
         ),
         DraftTruck(body="flatbed", size="semi", style="open_low_sides"),
         18000,
@@ -83,10 +85,11 @@ SAMPLES: tuple[SampleSpec, ...] = (
     SampleSpec(
         "backhoe-chains",
         "backhoe-lowbed-38095094.jpg",
-        ("A backhoe on a low-bed", "Retroescavadeira em prancha"),
+        ("A backhoe on a semi-trailer", "Retroescavadeira numa carreta"),
         (
-            "A machine chained to a trailer: chains, axle loads and the rules.",
-            "Uma máquina acorrentada à carreta: correntes, carga por eixo e as regras.",
+            "A machine held by two diagonal chains and a strap: chains, axle loads and the rules.",
+            "Uma máquina presa por duas correntes em diagonal e uma cinta: correntes, carga por"
+            " eixo e as regras.",
         ),
         DraftTruck(body="flatbed", size="semi", style="platform"),
         8500,
@@ -97,8 +100,8 @@ SAMPLES: tuple[SampleSpec, ...] = (
         "lumber-strapped-semi-99HLgU4IHLY.jpg",
         ("Lumber, strapped", "Madeira serrada, com cintas"),
         (
-            "Packages of lumber under straps on a semi-trailer.",
-            "Pacotes de madeira serrada sob cintas numa carreta.",
+            "Packages of lumber under about ten straps on a semi-trailer.",
+            "Pacotes de madeira serrada sob cerca de dez cintas numa carreta.",
         ),
         DraftTruck(body="flatbed", size="semi", style="open_low_sides"),
         12000,  # about 0.58 t/m³ over the packages the draft keeps: sawn pine
@@ -108,10 +111,12 @@ SAMPLES: tuple[SampleSpec, ...] = (
     SampleSpec(
         "concrete-pipes",
         "concrete-pipes-crane-truck-DM5ZHQJvaE4.jpg",
-        ("Concrete pipes, chained", "Tubos de concreto acorrentados"),
+        ("Concrete pipes on a crane truck", "Tubos de concreto em caminhão com guindaste"),
         (
-            "Concrete pipes lying across a crane truck, held down with chains.",
-            "Tubos de concreto deitados num caminhão com guindaste, presos com correntes.",
+            "Concrete pipes lying across a crane truck; one chain shows, the rest of the lashing"
+            " is out of sight.",
+            "Tubos de concreto deitados de través num caminhão com guindaste; aparece uma"
+            " corrente, o resto da amarração não se vê.",
         ),
         DraftTruck(body="flatbed", size="truck", style="open_low_sides"),
         11200,  # four pipes of about 2.8 t: a 1.2 m reinforced pipe, 2.5 m long
@@ -122,8 +127,10 @@ SAMPLES: tuple[SampleSpec, ...] = (
         "steel-posts-racks-semi-32126810.jpg",
         ("Steel racks on a semi-trailer", "Racks de aço numa carreta"),
         (
-            "Five racks of steel posts, chained: they hold, but is the weight legal?",
-            "Cinco racks de postes de aço com correntes: aguentam, mas o peso está dentro da lei?",
+            "Five racks of steel posts held by chains and straps: they hold, but is the weight"
+            " legal?",
+            "Cinco racks de postes de aço presos com correntes e cintas: aguentam, mas o peso"
+            " está dentro da lei?",
         ),
         DraftTruck(body="flatbed", size="semi", style="platform"),
         22400,  # about 4.5 t per rack of steel posts

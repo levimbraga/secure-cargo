@@ -261,8 +261,10 @@ under the [Unsplash License](https://unsplash.com/license), Pexels photos under 
 | ------ | ------------ | ------ |
 | Crates tied with ropes | [JUNLIN ZOU](https://www.pexels.com/@fangyuanzhiwai/) | [Pexels photo](https://www.pexels.com/photo/colorful-crates-on-truck-in-urban-setting-32444472/) |
 | Steel pipes with straps | [Jaime Maldonado](https://unsplash.com/@jamoandres2021) | [Unsplash photo](https://unsplash.com/photos/a-large-truck-with-a-bunch-of-green-pipes-on-the-back-of-it-N53wfGqwtNQ) |
-| A backhoe on a low-bed | [Tayssir Kadamany](https://www.pexels.com/@sirokad/) | [Pexels photo](https://www.pexels.com/photo/yellow-construction-vehicle-on-flatbed-trailer-38095094/) |
+| A backhoe on a semi-trailer | [Tayssir Kadamany](https://www.pexels.com/@sirokad/) | [Pexels photo](https://www.pexels.com/photo/yellow-construction-vehicle-on-flatbed-trailer-38095094/) |
 | Lumber, strapped | [Riley Crawford](https://unsplash.com/@ricrawfo) | [Unsplash photo](https://unsplash.com/photos/white-truck-on-gray-road-during-daytime-99HLgU4IHLY) |
+| Concrete pipes on a crane truck | MAK | [Unsplash photo](https://unsplash.com/photos/a-large-truck-driving-down-a-street-next-to-tall-buildings-DM5ZHQJvaE4) |
+| Steel racks on a semi-trailer | X1ntao ZHOU | [Pexels photo](https://www.pexels.com/photo/truck-with-cargo-on-icelandic-road-32126810/) |
 
 ## License
 

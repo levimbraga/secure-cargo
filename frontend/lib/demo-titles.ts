@@ -24,10 +24,13 @@ export const GALLERY_TITLE_IDS: Record<string, string> = {
 export const SAMPLE_TITLES_PT: Record<string, string> = {
   "Crates tied with ropes": "Caixas amarradas com corda",
   "Steel pipes with straps": "Tubos de aço com cintas",
-  "A backhoe on a low-bed": "Retroescavadeira em prancha",
+  "A backhoe on a semi-trailer": "Retroescavadeira numa carreta",
   "Lumber, strapped": "Madeira serrada, com cintas",
-  "Concrete pipes, chained": "Tubos de concreto acorrentados",
+  "Concrete pipes on a crane truck": "Tubos de concreto em caminhão com guindaste",
   "Steel racks on a semi-trailer": "Racks de aço numa carreta",
+  // Earlier titles of two samples (2026-11-22), still on inspections seeded before the change.
+  "A backhoe on a low-bed": "Retroescavadeira em prancha",
+  "Concrete pipes, chained": "Tubos de concreto acorrentados",
 };
 /** The title in the page's language: a demo title is translated, anything else is kept. */
 export function localTitle(title: string, locale: string, galleryTitle: (id: string) => string): string {

@@ -58,7 +58,7 @@
       "states": {
         "approved": {
           "badge": "Aprovada",
-          "load": "Tubos de concreto acorrentados",
+          "load": "Tubos de concreto em caminhão com guindaste",
           "sentence": "Chega inteira e cumpre as regras: aguenta as 7 situações e atende às normas."
         },
         "holds": {
