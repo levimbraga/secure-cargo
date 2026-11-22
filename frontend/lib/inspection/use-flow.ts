@@ -610,6 +610,15 @@ export function useInspectionFlow() {
     await simulate({ ...draft, truck: draftTruck(next) }, simulatedKg ?? 0);
   }
 
+  /** The driver gives the front end structure's declared rating (US, kg of force): checked again. */
+  async function setFrontEndRating(kg: number) {
+    const { truck, draft } = latest.current;
+    if (!truck || !draft) return;
+    const next = { ...truck, front_end_rating_kg: kg };
+    patch({ truck: next });
+    await simulate({ ...draft, truck: draftTruck(next) }, simulatedKg ?? 0);
+  }
+
   function goTo(step: Step) {
     patch({ step, error: null });
   }
@@ -638,6 +647,7 @@ export function useInspectionFlow() {
     allowance: me?.analysis ?? null,
     pickSaved,
     saveTruck,
+    setFrontEndRating,
     addPhoto,
     keepPending,
     discardPending,

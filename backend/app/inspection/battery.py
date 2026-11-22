@@ -14,8 +14,12 @@ inspection is then "holds, but out of compliance", see ``verdict.py``).
 Some physical findings depend on whose rules judge them (rules audit items 3 and 4). A lashing's
 load is compared with its rated capacity LC in Brazil and the EU (EN 12195-1), but with its
 *breaking strength* at these accelerations in the US (49 CFR 393.102(a)(1)); a van's front wall
-holds its EN 12642 rating in Brazil and the EU, the 393.114(c) rating in the US. Each such
-finding names the ``countries`` it applies to; every other finding applies everywhere.
+holds its EN 12642 rating in Brazil and the EU. In the US, 393.114(c) asks for a front end
+structure rated for 0.5 (0.4 if 6 ft or taller) times the cargo weight, a rating the model does
+not know: a run fails on the wall only when the truck declares a rating (``front_end_rating_kg``)
+and the simulated wall load exceeds it; otherwise the wall is "to confirm", with the simulated
+load (``wall_load_n``) shown next to the minimum (``front_end_min_n``). Each such finding names
+the ``countries`` it applies to; every other finding applies everywhere.
 """
 
 import time
@@ -31,6 +35,7 @@ from app.inspection.verdict import RULE_FINDINGS, Verdict, verdict_of
 from app.scenario import EventKind, Scenario, TripEvent
 from app.simulation_service import simulate_cached
 from app.storage import Storage
+from physics.constants import STANDARD_GRAVITY_MPS2
 from physics.results import (
     AxleLoad,
     Finding,
@@ -106,8 +111,20 @@ def applies(finding: SituationFinding, country: Country) -> bool:
     return finding.countries is None or country in finding.countries
 
 
-def country_findings(scenario: Scenario, result: SimulationResult) -> list[SituationFinding]:
-    """A run's physical findings, with the US versions of the rated ones."""
+def wall_load_n(scenario: Scenario, result: SimulationResult) -> float | None:
+    """The peak load the cargo put on the headboard or front wall in a run (None: no wall)."""
+    if scenario.bed.headboard is None:
+        return None
+    return sum(unit.peak_headboard_force_n for unit in result.units)
+
+
+def country_findings(
+    scenario: Scenario, result: SimulationResult, declared_kg: float | None = None
+) -> list[SituationFinding]:
+    """A run's physical findings, with the US versions of the rated ones.
+
+    ``declared_kg``: the front end structure's declared rating (US only, 393.114(c)).
+    """
     out: list[SituationFinding] = []
     for finding in result.verdict.findings:
         if finding.code in RULE_FINDINGS:
@@ -138,10 +155,9 @@ def country_findings(scenario: Scenario, result: SimulationResult) -> list[Situa
                 countries=[Country.US],
             )
         )
-    headboard = scenario.bed.headboard
-    rating = front_end_rating_n(scenario)
-    if headboard is not None and headboard.rated_capacity_n is not None and rating:
-        total = sum(unit.peak_headboard_force_n for unit in result.units)
+    total = wall_load_n(scenario, result)
+    if total is not None and declared_kg is not None:
+        rating = declared_kg * STANDARD_GRAVITY_MPS2
         if total > rating:
             out.append(
                 SituationFinding(
@@ -150,8 +166,8 @@ def country_findings(scenario: Scenario, result: SimulationResult) -> list[Situa
                     value=total,
                     limit=rating,
                     message=(
-                        f"The front end structure took {total / 1000:.1f} kN; 49 CFR 393.114(c) "
-                        f"rates it for {rating / 1000:.1f} kN."
+                        f"The front end structure took {total / 1000:.1f} kN; its declared "
+                        f"rating is {rating / 1000:.1f} kN (49 CFR 393.114(c))."
                     ),
                     countries=[Country.US],
                 )
@@ -179,6 +195,13 @@ class SituationResult(_Model):
     margins: Margins
     profile: dict[str, float | str]
     scenario_hash: str
+    wall_load_n: float | None = Field(
+        default=None, description="Peak load on the headboard or front wall [N]; None: no wall."
+    )
+    front_end_min_n: float | None = Field(
+        default=None,
+        description="The forward load 49 CFR 393.114(c) asks the front end structure to hold [N].",
+    )
 
 
 class BatteryResult(_Model):
@@ -244,7 +267,17 @@ def run_situations(
 
 def situation_holds(scenario: Scenario, result: SimulationResult, draft: LoadDraft) -> bool:
     """No physical failure under the draft's country's ratings (axle loads are rules)."""
-    return physical_status(country_findings(scenario, result), draft.country) != "fail"
+    findings = country_findings(scenario, result, draft.truck.front_end_rating_kg)
+    return physical_status(findings, draft.country) != "fail"
+
+
+def wall_within_us_minimum(situations: list["SituationResult"]) -> bool:
+    """Every run keeps the wall load within the 393.114(c) minimum: then any front end structure
+    built to 393.114 holds it, whatever its (unknown) rating. The planner prefers such fixes."""
+    return all(
+        s.wall_load_n is None or s.front_end_min_n is None or s.wall_load_n <= s.front_end_min_n
+        for s in situations
+    )
 
 
 def situation_result(
@@ -255,7 +288,7 @@ def situation_result(
     response = simulate_cached(storage, scenario, event)
     result = response.result
     # The axle loads are the same in every situation and are a rule: the checklist has them.
-    findings = country_findings(scenario, result)
+    findings = country_findings(scenario, result, draft.truck.front_end_rating_kg)
     status = physical_status(findings, draft.country)
     mine: list[Finding] = [f for f in findings if applies(f, draft.country)]
     physical = result.model_copy(
@@ -272,8 +305,14 @@ def situation_result(
         margins=result.margins,
         profile=result.profile,
         scenario_hash=response.scenario_hash,
+        wall_load_n=_rounded(wall_load_n(scenario, result)),
+        front_end_min_n=_rounded(front_end_rating_n(scenario)),
     )
     return summary, result
+
+
+def _rounded(value: float | None) -> float | None:
+    return None if value is None else round(value, 1)
 
 
 class BatteryChecks(_Model):

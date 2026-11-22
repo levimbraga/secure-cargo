@@ -288,7 +288,17 @@ def min_tiedowns(scenario: Scenario, draft: LoadDraft | None, headboard_known: b
     )
 
 
-def front_end_structure(scenario: Scenario, headboard_known: bool) -> RuleCheck:
+def front_end_structure(
+    scenario: Scenario, headboard_known: bool, declared_kg: float | None = None
+) -> RuleCheck:
+    """393.114: height against the cargo it blocks, and the forward rating of (c).
+
+    The model knows no US rating (an EN 12642 code is an EU standard US vans and headerboards are
+    not built to: rules audit item 4). Without a declared rating the structure is "to confirm",
+    never failed; the battery reports the simulated wall load next to the minimum. With a
+    declared rating (``front_end_rating_kg`` from the maker's plate) it passes when it meets
+    the minimum, and the simulation fails a run whose wall load exceeds it (``battery.py``).
+    """
     article = "49 CFR 393.114"
     headboard = scenario.bed.headboard
     touching = []
@@ -332,8 +342,21 @@ def front_end_structure(scenario: Scenario, headboard_known: bool) -> RuleCheck:
             values=values,
             message="The front end structure is below 4 ft and below the cargo it blocks.",
         )
-    # 393.114(c) asks for a rating the model does not know: an EN 12642 code is an EU standard
-    # US vans and headerboards are not built to (rules audit item 4), so it is never used here.
+    if declared_kg is not None:
+        values["declared_kg"] = round(declared_kg, 1)
+        below = declared_kg * STANDARD_GRAVITY_MPS2 + 1e-6 < demand_n
+        return RuleCheck(
+            code="front_end_structure",
+            article=article + "(c)",
+            status="fail" if below else "pass",
+            unit_ids=ids if below else [],
+            values=values,
+            message=(
+                "The declared rating of the front end structure is below 393.114(c)."
+                if below
+                else "The declared rating of the front end structure meets 393.114(c)."
+            ),
+        )
     return RuleCheck(
         code="front_end_structure",
         article=article + "(c)",
@@ -685,7 +708,9 @@ def check_fmcsa_393(
         wll_criterion(scenario, headboard_known),
         aggregate_wll(scenario),
         min_tiedowns(scenario, draft, headboard_known),
-        front_end_structure(scenario, headboard_known),
+        front_end_structure(
+            scenario, headboard_known, draft.truck.front_end_rating_kg if draft else None
+        ),
         van_contained(scenario),
         rolling_articles(scenario),
         metal_coils(scenario),

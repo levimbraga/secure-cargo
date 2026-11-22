@@ -50,6 +50,8 @@ export type LoadDraft = {
     anchors_per_side?: number;
     /** EN 12642 code of the body (EU mode): an XL curtain-sider's curtains are side walls. */
     body_code?: "L" | "XL" | null;
+    /** Declared forward rating of the headboard or front wall [kg of force] (US, 49 CFR 393.114(c)). */
+    front_end_rating_kg?: number | null;
   };
   trip: { speed_kmh: number; road: Road; weather: Weather; event: ExplorerEvent };
   restraint: Restraint;

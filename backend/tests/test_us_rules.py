@@ -15,6 +15,7 @@ from app.explorer.draft import DraftTruck, DraftUnit, LoadDraft
 from app.inspection.battery import battery_checks
 from app.inspection.verdict import verdict_of
 from app.scenario import Lashing, LashingKind, LashingRouting
+from physics.constants import STANDARD_GRAVITY_MPS2
 from rules.fmcsa393 import RuleCheck, _aggregate_wll_n, check_fmcsa_393, required_tiedowns
 from rules.us_checklist import dimensions, weight
 from rules.us_weights import (
@@ -377,27 +378,67 @@ def test_a_strap_over_its_lc_but_under_its_breaking_strength_fails_only_outside_
     assert seen, "the example overloads a strap past its LC somewhere"
 
 
-def test_a_van_front_wall_is_judged_by_393_114_in_us_mode() -> None:
-    # Rules audit item 4: a US van's front wall is not an EN 12642 code L wall. The rule asks for
-    # its 393.114(c) rating (to confirm), and the physics' wall finding uses 0.4 W / 0.5 W.
-    from app.inspection.battery import SITUATIONS, country_findings, scenario_for
-    from app.simulation_service import simulate_cached
+def test_a_us_front_wall_without_a_declared_rating_is_to_confirm_and_never_fails() -> None:
+    # 393.114(c): the front end structure must hold 0.5 W (0.4 W if 6 ft or taller). The model knows
+    # no US rating, so without one declared the wall is "to confirm": the simulated wall load is
+    # reported next to the minimum and no run fails on the wall itself.
+    from app.inspection.battery import SITUATIONS, scenario_for, situation_result
     from app.storage import create_storage
     from rules.fmcsa393 import front_end_rating_n
 
+    storage = create_storage("memory://")
     draft = _example("box-truck.fixed", Country.US)
+    assert draft.truck.front_end_rating_kg is None
     assert _check(draft, "front_end_structure").status in ("to_confirm", "not_applicable")
-    scenario, event = scenario_for(draft, SITUATIONS[0])
-    rating = front_end_rating_n(scenario)
-    assert rating is not None
-    assert rating == pytest.approx(0.5 * sum(u.mass_kg for u in scenario.units) * 9.81) or (
-        rating == pytest.approx(0.4 * sum(u.mass_kg for u in scenario.units) * 9.81)
+    loads = []
+    for situation in SITUATIONS:
+        summary, _ = situation_result(storage, draft, situation)
+        assert not [f for f in summary.findings if f.code == "headboard_overloaded" and f.countries]
+        assert summary.front_end_min_n is not None and summary.wall_load_n is not None
+        loads.append(summary.wall_load_n)
+    scenario = scenario_for(draft, SITUATIONS[0])[0]
+    minimum = front_end_rating_n(scenario)
+    w = sum(u.mass_kg for u in scenario.units) * STANDARD_GRAVITY_MPS2
+    assert minimum == pytest.approx(0.4 * w) or minimum == pytest.approx(0.5 * w)
+    assert max(loads) > 0
+
+
+def test_a_declared_front_end_rating_is_checked_and_fails_a_run_above_it() -> None:
+    from app.inspection.battery import SITUATIONS, situation_result
+    from app.storage import create_storage
+
+    storage = create_storage("memory://")
+    base = _example("box-truck.fixed", Country.US)
+
+    def declared(kg: float) -> LoadDraft:
+        truck = base.truck.model_copy(update={"front_end_rating_kg": kg})
+        return base.model_copy(update={"truck": truck})
+
+    # Rated below 393.114(c)'s minimum: the rule fails, and a run whose wall load exceeds it fails.
+    weak = declared(1.0)
+    assert _check(weak, "front_end_structure").status == "fail"
+    summaries = [situation_result(storage, weak, s)[0] for s in SITUATIONS]
+    over = [s for s in summaries if (s.wall_load_n or 0) > STANDARD_GRAVITY_MPS2]
+    assert over and all(s.status == "fail" for s in over)
+    assert all(
+        any(f.code == "headboard_overloaded" and f.countries == [Country.US] for f in s.findings)
+        for s in over
     )
-    result = simulate_cached(create_storage("memory://"), scenario, event).result
-    total = sum(u.peak_headboard_force_n for u in result.units)
-    us = [
-        f
-        for f in country_findings(scenario, result)
-        if f.code == "headboard_overloaded" and f.countries == [Country.US]
-    ]
-    assert bool(us) == (total > rating)
+    # Rated well above every simulated load: the rule passes and no run fails on the wall.
+    strong = declared(50_000.0)
+    assert _check(strong, "front_end_structure").status == "pass"
+    for situation in SITUATIONS:
+        summary, _ = situation_result(storage, strong, situation)
+        assert not [f for f in summary.findings if f.code == "headboard_overloaded" and f.countries]
+
+
+def test_the_us_planner_prefers_a_fix_that_keeps_the_wall_within_the_393_114_minimum() -> None:
+    from app.inspection.battery import wall_within_us_minimum
+    from app.storage import create_storage
+    from planner.plan import plan
+
+    draft = _example("box-truck.as_loaded", Country.US)
+    result = plan(create_storage("memory://"), draft)
+    assert result.verified and result.battery is not None
+    assert result.battery.verdict.state == "approved"
+    assert wall_within_us_minimum(result.battery.situations)

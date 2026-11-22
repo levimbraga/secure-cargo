@@ -38,6 +38,8 @@ export function useSituationName(): (id: SituationResult["id"]) => string {
 const US_ONLY_IF_APPLICABLE = new Set(["van_contained", "rolling_articles", "metal_coils", "machinery", "rope_tiedowns"]);
 const EU_ONLY_IF_APPLICABLE = new Set(["eu_tipping", "eu_headboard_height", "eu_body_strength", "eu_devices", "eu_lashing_points"]);
 const EU_DIRECTIONS = new Set(["eu_forward", "eu_sideways", "eu_rearward"]);
+// Standard gravity, as the backend (physics/constants.py): newtons to kilograms of force.
+const G = 9.81;
 
 /** The article as the page shows it: the older Brazilian checks carry only "Art. 4". */
 function articleOf(article: string): string {
@@ -171,12 +173,15 @@ export function Checklist({
   battery,
   onOpenSituation,
   onHeadboard,
+  onFrontEndRating,
   readOnly = false,
 }: {
   battery: Battery;
   onOpenSituation?: (id: SituationResult["id"]) => void;
   /** Re-check with the headboard height the driver gives (m). */
   onHeadboard?: (heightM: number) => void;
+  /** US: re-check with the front end structure's declared rating (kg of force). */
+  onFrontEndRating?: (kg: number) => void;
   readOnly?: boolean;
 }) {
   const t = useTranslations("Driver.checks");
@@ -226,6 +231,20 @@ export function Checklist({
     }
     return null;
   }
+  /** US 393.114(c): the worst simulated wall load next to the minimum (and the declared rating). */
+  function wallNumbers(values: Record<string, number>): string | null {
+    const loads = battery.situations.map((s) => s.wall_load_n).filter((n): n is number => typeof n === "number");
+    const minimum = battery.situations.find((s) => typeof s.front_end_min_n === "number")?.front_end_min_n;
+    if (!loads.length || typeof minimum !== "number") return null;
+    const load = Math.max(...loads);
+    const kg = (n: number) => measure.weight(n / G, { metric: false });
+    return t("fmcsa.front_end_structure.values", {
+      load: kg(load),
+      minimum: kg(minimum),
+      within: load <= minimum ? "yes" : "no",
+      declared: values.declared_kg ? measure.weight(values.declared_kg, { metric: false }) : "none",
+    });
+  }
   const situations = SITUATION_IDS.map((id) => battery.situations.find((s) => s.id === id)).filter((s): s is SituationResult => Boolean(s));
 
   const contranMarks = battery.contran_945.map((check) => contranMark(check.status));
@@ -269,7 +288,9 @@ export function Checklist({
                       required: format.number(values.required ?? 0),
                       blocked: values.blocked ? "yes" : "no",
                     })
-                  : null;
+                  : us && check.code === "front_end_structure"
+                    ? wallNumbers(values)
+                    : null;
             const title = eu
               ? t(`eu.${check.code}.${state}` as never, { g: format.number(values.acceleration_g ?? 0) } as never)
               : us && check.code === "front_end_structure" && check.status === "to_confirm"
@@ -290,6 +311,9 @@ export function Checklist({
                     {numbers && <span className="block">{numbers}</span>}
                     {t(`${group}.${check.code}.explain` as never)}
                     {check.unit_ids.length > 0 && check.status !== "pass" && ` ${t("units", { units: units(check.unit_ids) })}`}
+                    {us && check.code === "front_end_structure" && check.status === "to_confirm" && !readOnly && onFrontEndRating && (
+                      <FrontEndRatingInput onSubmit={onFrontEndRating} />
+                    )}
                   </>
                 }
                 article={articleOf(check.article)}
@@ -549,6 +573,36 @@ function groupEn(checks: Battery["en_12195_1"]) {
     else groups.push({ check, ids: [check.unit_id] });
   }
   return groups;
+}
+
+/** US: the declared forward rating of the headboard or front wall, from its plate (lb or kg). */
+function FrontEndRatingInput({ onSubmit }: { onSubmit: (kg: number) => void }) {
+  const t = useTranslations("Driver.checks.fmcsa.front_end_structure");
+  const id = useId();
+  const units = useShownUnits();
+  const [value, setValue] = useState("");
+  const number = units.weightIn(Number(value.replace(/[,\s]/g, "")));
+  const valid = Number.isFinite(number) && number > 0 && number <= 100_000;
+  return (
+    <span className="mt-2 flex flex-wrap items-end gap-2">
+      <span>
+        <label htmlFor={id} className="type-small block text-gray">
+          {t("ratingLabel", { unit: units.weightUnit })}
+        </label>
+        <input
+          id={id}
+          inputMode="numeric"
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+          className="mt-1 h-11 w-28 rounded border border-control bg-paper px-2 font-mono"
+          data-testid="front-end-rating-input"
+        />
+      </span>
+      <button type="button" disabled={!valid} onClick={() => onSubmit(Math.round(number))} className={pill({ variant: "secondary", className: "h-11 px-4" })} data-testid="front-end-rating-save">
+        {t("ratingSave")}
+      </button>
+    </span>
+  );
 }
 
 function HeadboardInput({ initial, onSubmit }: { initial: number; onSubmit: (heightM: number) => void }) {

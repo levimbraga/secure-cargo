@@ -80,6 +80,16 @@ class DraftTruck(_Model):
             "model then assumes code L walls. An XL curtain-sider's curtains are side walls."
         ),
     )
+    front_end_rating_kg: float | None = Field(
+        default=None,
+        gt=0,
+        le=100_000,
+        description=(
+            "Declared forward rating of the headboard or front wall [kg of force], from its "
+            "maker's plate. US mode only (49 CFR 393.114(c)): without it the front end structure "
+            "is 'to confirm' and never fails; with it, a simulated wall load above it fails."
+        ),
+    )
 
     @model_validator(mode="after")
     def _style_matches(self) -> Self:

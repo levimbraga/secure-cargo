@@ -37,6 +37,9 @@ export interface Situation {
 	event: unknown;
 	trip: unknown;
 	scenario_hash: string;
+	/** Peak load on the headboard or front wall [N], and the 49 CFR 393.114(c) minimum. */
+	wall_load_n?: number | null;
+	front_end_min_n?: number | null;
 	[key: string]: unknown;
 }
 
@@ -101,6 +104,20 @@ export function worstIndex(situations: Pick<Situation, "status" | "severity">[])
 /** Approved: every situation holds and every rule passes (`verdict.ts`). */
 export function passesRules(battery: Pick<BatteryJson, "situations" | "contran_945" | "checklist" | "country" | "rules">): boolean {
 	return verdictState(battery) === "approved";
+}
+
+/**
+ * US, no declared front end rating: the planner prefers a fix whose wall load stays within the
+ * 393.114(c) minimum, so lashing or blocking takes the load instead of the wall (`plan.py`).
+ */
+export function prefersWallMinimum(draft: unknown): boolean {
+	const d = draft as { country?: string; truck?: { front_end_rating_kg?: number | null } } | null;
+	return d?.country === "US" && !d.truck?.front_end_rating_kg;
+}
+
+/** Every situation keeps the wall load within the 393.114(c) minimum. */
+export function wallWithinMinimum(battery: Pick<BatteryJson, "situations">): boolean {
+	return battery.situations.every((s) => s.wall_load_n == null || s.front_end_min_n == null || s.wall_load_n <= s.front_end_min_n);
 }
 
 /** The seven situations side by side, then the battery as the container would have answered. */
@@ -199,21 +216,30 @@ export async function runPlan(call: ContainerCall, draft: unknown): Promise<Plan
 		};
 		return { draft, changes: [change], verified: false, rounds: 0, battery: original };
 	}
+	const preferWall = prefersWallMinimum(draft);
 	let last: PlanJson | null = null;
 	let holding: PlanJson | null = null;
 	let rounds = 0;
 	let winner: { candidate: Candidate; plan: PlanJson } | null = null;
+	// Holds and complies, but leans on a front wall of unknown rating (US): kept if nothing better.
+	let leaning: { candidate: Candidate; plan: PlanJson } | null = null;
 	for (const candidate of options.candidates) {
 		rounds += 1;
 		const battery = await runBattery(call, candidate.draft, false);
 		last = { draft: candidate.draft, changes: candidate.changes, verified: passesRules(battery), rounds, battery };
 		if (last.verified) {
-			winner = { candidate, plan: last };
-			break;
+			if (!preferWall || wallWithinMinimum(battery)) {
+				winner = { candidate, plan: last };
+				break;
+			}
+			leaning ??= { candidate, plan: last };
+			continue;
 		}
 		if (!holding && verdictState(battery) !== "fails") holding = last;
 	}
-	if (winner) return minimal(call, winner, [...options.candidates, ...(options.subsets ?? [])], rounds);
+	const wallOk = winner !== null;
+	winner ??= leaning;
+	if (winner) return minimal(call, winner, [...options.candidates, ...(options.subsets ?? [])], rounds, preferWall && wallOk);
 	if (!last) throw new ApiError(502, "plan_failed", "The planner found no candidate.");
 	// Nothing both holds and complies: the best is a load that at least arrives intact.
 	return holding ?? last;
@@ -225,6 +251,7 @@ async function minimal(
 	winner: { candidate: Candidate; plan: PlanJson },
 	all: Candidate[],
 	rounds: number,
+	keepWallWithinMinimum = false,
 ): Promise<PlanJson> {
 	const tried = new Set<string>();
 	let best = winner;
@@ -240,7 +267,7 @@ async function minimal(
 			tried.add(key);
 			rounds += 1;
 			const battery = await runBattery(call, smaller.draft, false);
-			if (passesRules(battery)) {
+			if (passesRules(battery) && (!keepWallWithinMinimum || wallWithinMinimum(battery))) {
 				best = { candidate: smaller, plan: { draft: smaller.draft, changes: smaller.changes, verified: true, rounds, battery } };
 				improved = true;
 				break;

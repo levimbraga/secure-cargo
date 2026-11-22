@@ -6,11 +6,11 @@ import { type ContainerCall, runBattery, runPlan, SITUATIONS, worstIndex } from 
 type Verdicts = Partial<Record<(typeof SITUATIONS)[number], "pass" | "warning" | "fail">>;
 
 /** A fake container: each draft carries the verdict of each situation it should get. */
-function fakeContainer(options: { infeasible?: boolean; candidates?: Verdicts[] } = {}) {
+function fakeContainer(options: { infeasible?: boolean; candidates?: Verdicts[]; walls?: number[]; country?: string } = {}) {
 	const calls: { path: string; instance?: string }[] = [];
 	const call: ContainerCall = async (path, body, instance) => {
 		calls.push({ path, instance });
-		const { draft, situation } = body as { draft: { verdicts: Verdicts; name?: string }; situation?: string };
+		const { draft, situation } = body as { draft: { verdicts: Verdicts; name?: string; wall?: number }; situation?: string };
 		if (path === "/battery/checks") {
 			return Response.json({ draft, scenario: {}, axle_loads: [], en_12195_1: [], contran_945: [{ status: "pass" }], recommendation: { changes: ["x"] } });
 		}
@@ -23,6 +23,8 @@ function fakeContainer(options: { infeasible?: boolean; candidates?: Verdicts[] 
 					passed: status !== "fail",
 					severity: status === "fail" ? (situation === "long_vibration" ? 9 : 2) : 0,
 					findings: status === "fail" ? [{ code: "unit_slid", severity: "fail" }] : [],
+					wall_load_n: draft.wall ?? 0,
+					front_end_min_n: 100,
 				},
 				result: { keyframes: situation },
 			});
@@ -31,7 +33,11 @@ function fakeContainer(options: { infeasible?: boolean; candidates?: Verdicts[] 
 			return Response.json({
 				infeasible: options.infeasible ? "overweight" : null,
 				values: options.infeasible ? { mass_kg: 20000, payload_kg: 14000 } : {},
-				candidates: (options.candidates ?? []).map((verdicts, n) => ({ name: `c${n}`, draft: { verdicts, name: `c${n}` }, changes: [`change-${n}`] })),
+				candidates: (options.candidates ?? []).map((verdicts, n) => ({
+					name: `c${n}`,
+					draft: { verdicts, name: `c${n}`, wall: options.walls?.[n], country: options.country },
+					changes: [`change-${n}`],
+				})),
 			});
 		}
 		return new Response("{}", { status: 404 });
@@ -90,6 +96,19 @@ describe("the planner's proof in parallel", () => {
 		expect(plan).toMatchObject({ verified: false, rounds: 2, changes: ["change-1"] });
 	});
 
+	it("US, no declared front end rating: prefers a fix that keeps the wall within the 393.114 minimum", async () => {
+		const { call } = fakeContainer({ candidates: [{}, {}], walls: [500, 40], country: "US" });
+		const plan = await runPlan(call, { verdicts: { emergency_braking: "fail" }, country: "US" });
+		expect(plan).toMatchObject({ verified: true, rounds: 2, changes: ["change-1"] });
+	});
+
+	it("keeps the first fix that holds when none keeps the wall within the minimum, and outside the US", async () => {
+		const leaning = fakeContainer({ candidates: [{}, {}], walls: [500, 400], country: "US" });
+		expect(await runPlan(leaning.call, { verdicts: { pothole: "fail" }, country: "US" })).toMatchObject({ verified: true, changes: ["change-0"] });
+		const br = fakeContainer({ candidates: [{}, {}], walls: [500, 40], country: "BR" });
+		expect(await runPlan(br.call, { verdicts: { pothole: "fail" }, country: "BR" })).toMatchObject({ verified: true, rounds: 1, changes: ["change-0"] });
+	});
+
 	it("passes the container's refusal on as a 422 with its code", async () => {
 		const call: ContainerCall = async () => Response.json({ detail: { code: "units_overlap", message: "overlap" } }, { status: 422 });
 		await expect(runBattery(call, {})).rejects.toMatchObject({ status: 422, code: "units_overlap" });
@@ -127,7 +146,7 @@ describe("the minimal fix in parallel", () => {
 		const pass = {};
 		const fail = { emergency_braking: "fail" as const };
 		const call: ContainerCall = async (path, body, instance) => {
-			const { draft, situation } = body as { draft: { verdicts: Verdicts; name?: string }; situation?: string };
+			const { draft, situation } = body as { draft: { verdicts: Verdicts; name?: string; wall?: number }; situation?: string };
 			if (path === "/battery/checks") {
 				return Response.json({ draft, scenario: {}, axle_loads: [], en_12195_1: [], contran_945: [{ status: "pass" }], recommendation: null });
 			}

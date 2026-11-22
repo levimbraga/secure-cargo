@@ -98,6 +98,9 @@ export type SituationResult = {
   margins: Margins;
   profile: Record<string, number | string>;
   scenario_hash: string;
+  /** Peak load on the headboard or front wall [N], and the 49 CFR 393.114(c) minimum (absent before 2026-11-22). */
+  wall_load_n?: number | null;
+  front_end_min_n?: number | null;
 };
 
 export type ContranCheck = {

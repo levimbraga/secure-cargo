@@ -47,6 +47,7 @@ from app.inspection.battery import (
     run_situations,
     scenario_for,
     situation_holds,
+    wall_load_n,
 )
 from app.scenario import BodyType, CylinderAxis, Scenario, UnitShape
 from app.storage import Storage
@@ -59,7 +60,7 @@ from rules.en12195 import check_scenario
 from rules.eu_annex3 import DIRECTIONS as EU_DIRECTIONS
 from rules.eu_annex3 import check_annex3
 from rules.eu_weights import group_limits_kg as eu_group_limits_kg
-from rules.fmcsa393 import RuleCheck, aggregate_wll, min_tiedowns
+from rules.fmcsa393 import RuleCheck, aggregate_wll, front_end_rating_n, min_tiedowns
 from rules.us_weights import group_limits_kg
 
 # Simulated candidates at most; each costs up to one battery.
@@ -950,6 +951,22 @@ def _rules_ok(candidate: _Candidate) -> bool:
     return all(c.status != "fail" for c in rules) and _axles_legal(scenario, candidate.draft)
 
 
+def prefers_wall_minimum(draft: LoadDraft) -> bool:
+    """US, no declared front end rating: prefer a fix whose wall load stays within the 393.114(c)
+    minimum (lashing or blocking take the load instead of the wall)."""
+    return draft.country is Country.US and draft.truck.front_end_rating_kg is None
+
+
+def _wall_ok(storage: Storage, draft: LoadDraft) -> bool:
+    """Every situation keeps the wall load within the 393.114(c) minimum (cached runs)."""
+    for situation, result, _ in run_situations(storage, draft):
+        scenario = scenario_for(draft, situation)[0]
+        load, minimum = wall_load_n(scenario, result), front_end_rating_n(scenario)
+        if load is not None and minimum is not None and load > minimum:
+            return False
+    return True
+
+
 def _holds(storage: Storage, draft: LoadDraft, order: tuple[Situation, ...]) -> bool:
     runs = run_situations(storage, draft, order, stop_at_first_failure=True)
     return len(runs) == len(SITUATIONS) and all(
@@ -985,16 +1002,23 @@ def plan(storage: Storage, draft: LoadDraft) -> Plan:
             tried[key] = _rules_ok(candidate) and _holds(storage, candidate.draft, order)
         return tried[key]
 
+    prefer_wall = prefers_wall_minimum(draft)
     rounds = 0
     winner: _Candidate | None = None
+    leaning: _Candidate | None = None  # holds and complies, but leans on the wall
     physics_only: _Candidate | None = None
     for candidate in on_paper[:MAX_ROUNDS]:
         rounds += 1
         if holds(candidate):
-            winner = candidate
-            break
+            if not prefer_wall or _wall_ok(storage, candidate.draft):
+                winner = candidate
+                break
+            leaning = leaning or candidate
+            continue
         if physics_only is None and _holds(storage, candidate.draft, order):
             physics_only = candidate  # cached run: it holds, but breaks a rule
+    wall_ok = winner is not None
+    winner = winner or leaning
     if winner is None:
         # Nothing both holds and complies: the best is a load that at least arrives intact.
         last = physics_only or on_paper[min(len(on_paper), MAX_ROUNDS) - 1]
@@ -1017,7 +1041,9 @@ def plan(storage: Storage, draft: LoadDraft) -> Plan:
                 continue
             if smaller.draft.model_dump_json() not in tried:
                 rounds += 1
-            if holds(smaller):
+            if holds(smaller) and (
+                not (prefer_wall and wall_ok) or _wall_ok(storage, smaller.draft)
+            ):
                 winner, improved = smaller, True
                 break
     battery = run_battery(storage, winner.draft)  # cached: no new simulation

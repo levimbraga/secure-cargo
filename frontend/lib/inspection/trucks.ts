@@ -115,6 +115,8 @@ export type TruckChoice = {
   anchors_per_side?: number | null;
   /** EN 12642 code of the body (EU mode); null: not given (code L assumed). */
   body_code?: BodyCode | null;
+  /** Declared forward rating of the front end structure [kg of force] (US, 393.114(c)). */
+  front_end_rating_kg?: number | null;
   /** A truck from "My trucks". */
   truck_id?: string | null;
   nickname?: string | null;
@@ -140,6 +142,7 @@ export function draftTruck(choice: TruckChoice): LoadDraft["truck"] {
     ...(choice.headboard_height_m ? { headboard_height_m: choice.headboard_height_m } : {}),
     ...(choice.anchors_per_side ? { anchors_per_side: choice.anchors_per_side } : {}),
     ...(choice.body_code ? { body_code: choice.body_code } : {}),
+    ...(choice.front_end_rating_kg ? { front_end_rating_kg: choice.front_end_rating_kg } : {}),
   };
 }
 
@@ -166,6 +169,7 @@ export function choiceOf(truck: Partial<LoadDraft["truck"]> & { truck_id?: strin
     headboard_height_m: truck.headboard_height_m ?? null,
     anchors_per_side: truck.anchors_per_side ?? null,
     body_code: truck.body_code ?? null,
+    front_end_rating_kg: truck.front_end_rating_kg ?? null,
     truck_id: truck.truck_id ?? null,
   };
 }

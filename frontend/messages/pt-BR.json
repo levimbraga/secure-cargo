@@ -1957,6 +1957,9 @@
           "fail": "A cabeceira é baixa ou fraca demais para a carga encostada.",
           "na": "Nenhuma carga encosta na cabeceira.",
           "confirm": "Confirme a cabeceira: ela deve aguentar {demand} para a frente e chegar a {height}.",
+          "values": "Carga simulada na parede: {load} no pior caso; o mínimo da 393.114(c) é {minimum}{within, select, yes { (dentro dele)} other { (acima dele)}}{declared, select, none {.} other {; capacidade declarada {declared}.}}",
+          "ratingLabel": "Capacidade declarada ({unit}), da plaqueta da cabeceira",
+          "ratingSave": "Verificar com esta capacidade",
           "explain": "Contra a carga que trava, a cabeceira deve chegar a 4 pés (ou à altura da carga) e aguentar metade do peso da carga (0,4 se tiver 6 pés ou mais).",
           "fix": "Use uma cabeceira mais alta ou certificada, ou segure a carga com amarrações."
         },

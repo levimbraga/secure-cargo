@@ -1957,6 +1957,9 @@
           "fail": "The headboard is too low or too weak for the cargo against it.",
           "na": "No cargo touches the headboard.",
           "confirm": "Confirm the headboard: it must hold {demand} forward and reach {height}.",
+          "values": "Simulated wall load: {load} at worst; the 393.114(c) minimum is {minimum}{within, select, yes { (within it)} other { (above it)}}{declared, select, none {.} other {; declared rating {declared}.}}",
+          "ratingLabel": "Declared rating ({unit}), from the headboard's plate",
+          "ratingSave": "Check with this rating",
           "explain": "Against the cargo it blocks, the headboard must reach 4 ft (or the cargo's height) and hold half the cargo's weight (0.4 if 6 ft or taller).",
           "fix": "Use a taller or rated headboard, or hold the cargo with tiedowns instead."
         },
