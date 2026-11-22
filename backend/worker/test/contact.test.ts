@@ -6,7 +6,7 @@ import { createTestDb, setup } from "./helpers";
 const TO = "owner-inbox@example.com";
 const SITE = ["https://securecargo.app"];
 
-function contactSetup(options: { turnstile?: boolean; sendFails?: boolean; to?: string } = {}) {
+function contactSetup(options: { turnstile?: boolean; sendFails?: boolean; to?: string; sendDelayMs?: number; now?: () => Date } = {}) {
 	const sent: ContactMail[] = [];
 	const env = setup({
 		extra: {
@@ -16,10 +16,11 @@ function contactSetup(options: { turnstile?: boolean; sendFails?: boolean; to?: 
 				siteOrigins: SITE,
 				verifyTurnstile: async (token) => (options.turnstile ?? true) && token === "ok-token",
 				send: async (mail) => {
+					if (options.sendDelayMs) await new Promise((r) => setTimeout(r, options.sendDelayMs));
 					if (options.sendFails) throw Object.assign(new Error("refused"), { code: "E_DELIVERY_FAILED" });
 					sent.push(mail);
 				},
-				now: () => new Date("2026-11-22T01:30:00.000Z"),
+				now: options.now ?? (() => new Date("2026-11-22T01:30:00.000Z")),
 			},
 		},
 	});
@@ -165,6 +166,72 @@ describe("POST /contact", () => {
 	});
 });
 
+describe("POST /contact idempotency", () => {
+	const KEYED = { ...VALID, idempotency_key: "4b1d6c0e-8f0a-4c4e-9a52-6a9e8d1f2b3c" };
+
+	it("sends once when the same submission arrives twice", async () => {
+		const { post, sent } = contactSetup();
+		expect((await post(KEYED)).status).toBe(200);
+		const again = await post(KEYED);
+		expect(again.status).toBe(200);
+		expect(await again.json()).toEqual({ ok: true, duplicate: true });
+		expect(sent).toHaveLength(1);
+	});
+
+	it("sends once when a slow send is retried before it answers", async () => {
+		const { post, sent } = contactSetup({ sendDelayMs: 300 });
+		const [first, second] = await Promise.all([post(KEYED), post(KEYED)]);
+		expect([first.status, second.status]).toEqual([200, 200]);
+		expect(sent).toHaveLength(1);
+	});
+
+	it("lets a different submission through", async () => {
+		const { post, sent } = contactSetup();
+		await post(KEYED);
+		await post({ ...KEYED, idempotency_key: "0f0e0d0c-0b0a-4908-8706-050403020100" });
+		expect(sent).toHaveLength(2);
+	});
+
+	it("releases the key when the send fails, so a retry can go", async () => {
+		const failing = contactSetup({ sendFails: true });
+		expect((await failing.post(KEYED)).status).toBe(502);
+		const rows = failing.db.raw.prepare("SELECT * FROM contact_dedupe").all();
+		expect(rows).toHaveLength(0);
+	});
+
+	it("releases the key when Turnstile fails", async () => {
+		const { post, sent, db } = contactSetup({ turnstile: false });
+		expect((await post(KEYED)).status).toBe(422);
+		expect(db.raw.prepare("SELECT * FROM contact_dedupe").all()).toHaveLength(0);
+		expect(sent).toHaveLength(0);
+	});
+
+	it("treats the same key as new after 10 minutes", async () => {
+		let at = new Date("2026-11-22T01:30:00.000Z");
+		const { post, sent } = contactSetup({ now: () => at });
+		await post(KEYED);
+		at = new Date("2026-11-22T01:39:00.000Z");
+		await post(KEYED);
+		expect(sent).toHaveLength(1);
+		at = new Date("2026-11-22T01:41:00.000Z");
+		await post(KEYED);
+		expect(sent).toHaveLength(2);
+	});
+
+	it("keeps only an HMAC of the key", async () => {
+		const { post, db } = contactSetup();
+		await post(KEYED);
+		const rows = db.raw.prepare("SELECT key_hash FROM contact_dedupe").all() as { key_hash: string }[];
+		expect(rows[0]?.key_hash).toMatch(/^[0-9a-f]{64}$/);
+		expect(JSON.stringify(rows)).not.toContain(KEYED.idempotency_key);
+	});
+
+	it("rejects a malformed key", async () => {
+		const { post } = contactSetup();
+		expect(await code(await post({ ...VALID, idempotency_key: "<script>" }))).toBe("invalid_field");
+	});
+});
+
 describe("contact helpers", () => {
 	it("drops a page URL from another origin", () => {
 		const input = parseContact({ ...VALID, page: "https://evil.example/x" }, SITE);
@@ -178,6 +245,13 @@ describe("contact helpers", () => {
 
 	it("writes Brasília time (UTC−3)", () => {
 		expect(brasiliaTime(new Date("2026-11-22T00:05:00.000Z"))).toBe("2026-11-21 21:05 BRT");
+	});
+
+	it("purges dedupe keys older than an hour", async () => {
+		const db = createTestDb();
+		db.raw.exec(`INSERT INTO contact_dedupe (key_hash, created_at) VALUES ('old', '2026-11-21T22:00:00.000Z'), ('new', '2026-11-22T00:10:00.000Z')`);
+		await purgeContactRate(db, new Date("2026-11-22T00:30:00.000Z"));
+		expect((db.raw.prepare("SELECT key_hash FROM contact_dedupe").all() as { key_hash: string }[]).map((r) => r.key_hash)).toEqual(["new"]);
 	});
 
 	it("purges counters older than two hours", async () => {

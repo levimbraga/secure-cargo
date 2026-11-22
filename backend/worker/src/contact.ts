@@ -10,6 +10,10 @@
  * (filled → answered "sent" without sending, so a bot learns nothing), server-side validation
  * (lengths, email format, no HTML, no control characters), Cloudflare Turnstile verified on the
  * server, and 5 messages per IP per hour counted in D1 under an HMAC of the IP.
+ *
+ * Idempotency: the browser sends a random `idempotency_key` per submission. The first request with
+ * a key claims it (an HMAC of it, in D1); another request with the same key within 10 minutes is
+ * answered "sent" and sends nothing. A request that fails releases its claim, so a retry can go.
  */
 import type { Hono } from "hono";
 
@@ -27,6 +31,9 @@ export const CONTACT_SUBJECTS = {
 export type ContactSubject = keyof typeof CONTACT_SUBJECTS;
 
 export const CONTACT_LIMITS = { name: 100, email: 254, message: 2000, messageMin: 10, perHour: 5 } as const;
+
+export const DEDUPE_WINDOW_MS = 10 * 60 * 1000;
+const IDEMPOTENCY_KEY = /^[A-Za-z0-9-]{8,100}$/;
 
 export const CONTACT_FROM = { email: "no-reply@securecargo.app", name: "SecureCargo contact form" } as const;
 
@@ -190,6 +197,26 @@ async function withinHourlyLimit(db: Db, ipHash: string, at: Date): Promise<bool
 export async function purgeContactRate(db: Db, at: Date = new Date()): Promise<void> {
 	const cutoff = new Date(at.getTime() - 2 * 60 * 60 * 1000).toISOString().slice(0, 13);
 	await db.prepare("DELETE FROM contact_rate WHERE window_start < ?").bind(cutoff).run();
+	const dedupeCutoff = new Date(at.getTime() - 60 * 60 * 1000).toISOString();
+	await db.prepare("DELETE FROM contact_dedupe WHERE created_at < ?").bind(dedupeCutoff).run();
+}
+
+/**
+ * Claims an idempotency key: true for the first request with it (or when its last claim is older
+ * than the window), false for a duplicate. One atomic statement, so two parallel requests cannot
+ * both win.
+ */
+async function claimKey(db: Db, keyHash: string, at: Date): Promise<boolean> {
+	const stale = new Date(at.getTime() - DEDUPE_WINDOW_MS).toISOString();
+	const row = await db
+		.prepare(
+			`INSERT INTO contact_dedupe (key_hash, created_at) VALUES (?, ?)
+			 ON CONFLICT (key_hash) DO UPDATE SET created_at = excluded.created_at WHERE contact_dedupe.created_at < ?
+			 RETURNING key_hash`,
+		)
+		.bind(keyHash, at.toISOString(), stale)
+		.first<{ key_hash: string }>();
+	return row !== null;
 }
 
 export function registerContact(app: Hono<any>, deps: ContactDeps): void {
@@ -204,24 +231,38 @@ export function registerContact(app: Hono<any>, deps: ContactDeps): void {
 		if (text(body, "website").trim() !== "") return c.json({ ok: true });
 
 		const input = parseContact(body, deps.siteOrigins);
-		const token = text(body, "turnstile_token");
-		if (!token || token.length > 2048 || !(await deps.verifyTurnstile(token, ip))) {
-			fail(422, "turnstile_failed", "We could not confirm you are not a robot. Try again.");
-		}
-		if (!deps.to) fail(503, "contact_unavailable", "The contact form is not available right now.");
-
 		const at = deps.now?.() ?? new Date();
-		const ipHash = await hmacHex(deps.hashKey, ip ?? "unknown");
-		if (!(await withinHourlyLimit(deps.db, ipHash, at))) {
-			fail(429, "contact_hourly_limit", `You can send up to ${CONTACT_LIMITS.perHour} messages an hour. Try again later.`);
-		}
 
+		// A repeated submission (same key within 10 minutes) is answered "sent" and not sent again.
+		const key = text(body, "idempotency_key");
+		if (key && !IDEMPOTENCY_KEY.test(key)) fail(422, "invalid_field", "idempotency_key is malformed.");
+		const keyHash = key ? await hmacHex(deps.hashKey, `dedupe:${key}`) : null;
+		if (keyHash && !(await claimKey(deps.db, keyHash, at))) return c.json({ ok: true, duplicate: true });
+
+		let sent = false;
 		try {
-			await deps.send(buildContactMail(input, deps.to, at));
-		} catch (error) {
-			const code = (error as { code?: string }).code ?? "unknown";
-			console.error("Contact email failed:", code, (error as Error).message);
-			fail(502, "send_failed", "Your message could not be sent. Try again in a few minutes.");
+			const token = text(body, "turnstile_token");
+			if (!token || token.length > 2048 || !(await deps.verifyTurnstile(token, ip))) {
+				fail(422, "turnstile_failed", "We could not confirm you are not a robot. Try again.");
+			}
+			if (!deps.to) fail(503, "contact_unavailable", "The contact form is not available right now.");
+
+			const ipHash = await hmacHex(deps.hashKey, ip ?? "unknown");
+			if (!(await withinHourlyLimit(deps.db, ipHash, at))) {
+				fail(429, "contact_hourly_limit", `You can send up to ${CONTACT_LIMITS.perHour} messages an hour. Try again later.`);
+			}
+
+			try {
+				await deps.send(buildContactMail(input, deps.to, at));
+			} catch (error) {
+				const code = (error as { code?: string }).code ?? "unknown";
+				console.error("Contact email failed:", code, (error as Error).message);
+				fail(502, "send_failed", "Your message could not be sent. Try again in a few minutes.");
+			}
+			sent = true;
+		} finally {
+			// A request that did not send releases its key, so the visitor can retry.
+			if (keyHash && !sent) await deps.db.prepare("DELETE FROM contact_dedupe WHERE key_hash = ?").bind(keyHash).run();
 		}
 		return c.json({ ok: true });
 	});
