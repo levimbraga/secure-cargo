@@ -1410,7 +1410,7 @@
       "looksLike": "Looks like a {truck}. Tap to confirm, or pick another.",
       "aiPick": "AI pick",
       "sizeTitle": "Which truck is it?",
-      "sizeSentence": "Pick the size. The axles and a typical payload are under each one.",
+      "sizeSentence": "Pick the size. Each card shows its length, axles and gross vehicle weight (GVW), drawn to scale.",
       "bodyTitle": "What body does it have?",
       "bodySentence": "The body decides what holds the cargo besides the straps.",
       "backToSize": "Change the size",
@@ -1424,7 +1424,6 @@
     },
     "sizes": {
       "axles": "{count, plural, one {# axle} other {# axles}}",
-      "line": "{axles, plural, one {# axle} other {# axles}} · about {payload} of cargo",
       "vuc": {
         "name": "VUC",
         "hint": "Small urban truck"
@@ -1445,7 +1444,6 @@
         "name": "Semi-trailer",
         "hint": "Tractor and trailer"
       },
-      "lineUs": "{axles, plural, one {# axle} other {# axles}} · about {payload} of cargo · {bed}",
       "us_box": {
         "name": "Box truck (Class 6)",
         "hint": "26 ft box, two axles"
@@ -1485,7 +1483,9 @@
       "eu_flatbed_136": {
         "name": "40 t articulated, flatbed",
         "hint": "Tractor and 13.6 m flatbed trailer"
-      }
+      },
+      "caption": "{length} · {axles, plural, one {# axle} other {# axles}} · GVW {gvw}",
+      "payload": "about {payload} of cargo"
     },
     "styles": {
       "open_low_sides": {
@@ -1534,12 +1534,12 @@
         "side": {
           "title": "Full side",
           "card": "The whole truck from the side, front to back.",
-          "hint": "Fit the whole truck inside the outline, from the cab to the rear."
+          "hint": "Fit the whole truck inside the corner marks, from the cab to the rear, with the phone level at chest height."
         },
         "rear_three_quarter": {
           "title": "Rear three-quarter",
           "card": "From behind one rear corner, showing the back and one side.",
-          "hint": "Stand behind a rear corner so the back and one side are both in view."
+          "hint": "Stand behind a rear corner and fit the back and one side inside the corner marks."
         }
       },
       "retakeHint": "Tap to take it again.",
@@ -1565,7 +1565,16 @@
       "wholeTitle": "Is the whole load in the photo?",
       "wholeSentence": "From the front of the load to the back, with nothing cut off at the sides. The check needs all of it.",
       "wholeYes": "Yes, all of it",
-      "wholeRetake": "No, retake"
+      "wholeRetake": "No, retake",
+      "guide": {
+        "eye": "eye level ≈ {height}",
+        "alt": "How to take the {shot} photo: the whole truck inside the corner marks, the load visible, the phone level at chest height.",
+        "like": "Like this",
+        "tooClose": "Too close",
+        "cutOff": "Cut off",
+        "night": "At night",
+        "tip": "The whole truck inside the marks, the load visible, the phone held level at chest height (about {height}), in daylight."
+      }
     },
     "weight": {
       "title": "How much does the cargo weigh?",
@@ -2129,7 +2138,9 @@
       "saving": "Saving…",
       "delete": "Remove",
       "optional": "Leave empty if you don't know.",
-      "signIn": "Sign in to save your trucks."
+      "signIn": "Sign in to save your trucks.",
+      "bedLengthValue": "bed {length}",
+      "headboardValue": "headboard {height}"
     },
     "shared": {
       "label": "Shared inspection",

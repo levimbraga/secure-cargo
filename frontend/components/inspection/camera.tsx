@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * The guided camera: the phone's rear camera full screen, with a dashed truck silhouette to fit
- * the truck in ("full side" or "rear three-quarter"), and a shutter. Where the browser has no
+ * The guided camera: the phone's rear camera full screen, with the photo guide over it (corner
+ * marks to fit the whole truck in, the eye level, a faint drawing of the shot: "full side" or
+ * "rear three-quarter"), and a shutter. Where the browser has no
  * camera access (or the driver refuses it), the system camera / file picker opens instead.
  */
 
@@ -12,34 +13,22 @@ import { useEffect, useId, useRef, useState } from "react";
 import { pill } from "@/components/ui/pill";
 import type { Shot } from "@/lib/inspection/use-flow";
 
+import { PhotoGuide } from "./photo-guide";
+
 const ACCEPT = "image/jpeg,image/png,image/heic,image/heif,.heic,.heif";
 
-/** Our own outline of a truck: from the side, or from behind one corner. */
-export function Silhouette({ shot, className }: { shot: Shot; className?: string }) {
-  return shot === "side" ? (
-    <svg viewBox="0 0 320 120" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeDasharray="6 5" aria-hidden>
-      <path d="M20 92V44h30l14-18h34v66" />
-      <path d="M104 92V30h196v62" />
-      <path d="M12 92h300" strokeDasharray="none" strokeWidth={1} opacity={0.6} />
-      <circle cx="58" cy="94" r="11" />
-      <circle cx="230" cy="94" r="11" />
-      <circle cx="258" cy="94" r="11" />
-    </svg>
-  ) : (
-    <svg viewBox="0 0 240 160" className={className} fill="none" stroke="currentColor" strokeWidth={2} strokeDasharray="6 5" aria-hidden>
-      {/* The rear end, square to the camera, and the side going away to the right. */}
-      <path d="M30 120V40h80v80" />
-      <path d="M110 40l100-22v78l-100 24" />
-      <path d="M30 40l100-22h80" />
-      <circle cx="48" cy="126" r="10" />
-      <circle cx="94" cy="126" r="10" />
-      <circle cx="176" cy="108" r="8" />
-      <path d="M10 140h220" strokeDasharray="none" strokeWidth={1} opacity={0.6} />
-    </svg>
-  );
-}
-
-export function GuidedCamera({ shot, onPhoto, onClose }: { shot: Shot; onPhoto: (file: File) => void; onClose: () => void }) {
+export function GuidedCamera({
+  shot,
+  eyeLabel,
+  onPhoto,
+  onClose,
+}: {
+  shot: Shot;
+  /** The eye-level label, in the country's units ("≈ 1.5 m"). */
+  eyeLabel: string;
+  onPhoto: (file: File) => void;
+  onClose: () => void;
+}) {
   const t = useTranslations("Driver.capture");
   const video = useRef<HTMLVideoElement>(null);
   const [failed, setFailed] = useState(false);
@@ -99,7 +88,7 @@ export function GuidedCamera({ shot, onPhoto, onClose }: { shot: Shot; onPhoto: 
       <div className="relative min-h-0 flex-1 overflow-hidden">
         {!failed && <video ref={video} playsInline muted className="absolute inset-0 size-full object-contain" />}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
-          <Silhouette shot={shot} className="w-full max-w-md text-paper/90 drop-shadow" />
+          <PhotoGuide shot={shot} overlay phone={false} eyeLabel={eyeLabel} className="w-full max-w-2xl drop-shadow" />
         </div>
         <p className="absolute inset-x-0 bottom-4 px-6 text-center text-[0.9375rem] text-paper">{failed ? t("noCamera") : t(`shots.${shot}.hint`)}</p>
       </div>

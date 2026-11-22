@@ -12,14 +12,16 @@ import { type ReactNode, useEffect, useId, useState } from "react";
 import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
 import { fetchSamples, type Sample } from "@/lib/inspection/samples";
-import { bodyOptions, SIZE_INFO, sizesOf, stylesOf, type TruckChoice } from "@/lib/inspection/trucks";
+import { TRUCK_CATALOG } from "@/lib/inspection/truck-catalog";
+import { bodyOptions, SIZE_INFO, sizesOf, type TruckChoice, type TruckSize } from "@/lib/inspection/trucks";
 import { useMe } from "@/components/app/me-provider";
 import { MAX_PHOTOS, type Shot, type useInspectionFlow } from "@/lib/inspection/use-flow";
 import { describeSplit, perUnitMatches, withWeights } from "@/lib/inspection/weight";
-import { useUnits } from "@/lib/units";
+import { kgToLb, mToFt, useUnits } from "@/lib/units";
 
-import { GuidedCamera, Silhouette } from "./camera";
+import { GuidedCamera } from "./camera";
 import { CountrySwitch } from "./country-switch";
+import { type GuideVariant, PhotoGuide } from "./photo-guide";
 import { TruckArt } from "./truck-art";
 
 type Flow = ReturnType<typeof useInspectionFlow>;
@@ -80,6 +82,37 @@ function truckName(t: ReturnType<typeof useTranslations<"Driver">>, truck: Pick<
   return t("truck.name", { size: t(`sizes.${truck.size}.name`), body: t(`styles.${truck.style}.short`) });
 }
 
+/**
+ * The small caption of a truck card: overall length, axles and gross vehicle weight, from the
+ * truck catalog, in the units of the truck's country (ft and lb for the US presets).
+ */
+export function useTruckCaption(): (size: TruckSize) => string {
+  const t = useTranslations("Driver");
+  const format = useFormatter();
+  return (size) => {
+    const truck = TRUCK_CATALOG[size];
+    const us = truck.country === "US";
+    const length = us
+      ? `${format.number(Math.round(mToFt(truck.length_m)))} ft`
+      : `${format.number(truck.length_m, { maximumFractionDigits: 1 })} m`;
+    const gvw = us
+      ? `${format.number(truck.gvw_lb ?? Math.round(kgToLb(truck.gvw_kg)))} lb`
+      : `${format.number(truck.gvw_kg / 1000, { maximumFractionDigits: 1 })} t`;
+    return t("sizes.caption", { length, axles: truck.axle_count, gvw });
+  };
+}
+
+/** The typical payload under a size card: tonnes, or pounds for the US presets. */
+export function useTruckPayload(): (size: TruckSize) => string {
+  const t = useTranslations("Driver");
+  const format = useFormatter();
+  return (size) => {
+    const info = SIZE_INFO[size];
+    const payload = info.payloadLb ? `${format.number(info.payloadLb)} lb` : `${format.number(info.payloadT)} t`;
+    return t("sizes.payload", { payload });
+  };
+}
+
 // ---- my trucks ------------------------------------------------------------------------------
 
 export function GarageStep({ flow }: { flow: Flow }) {
@@ -131,6 +164,7 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
   const reinspecting = Boolean(state.parent);
   // Organization policy: 2 photos (the server refuses a load confirmed with fewer).
   const twoPhotos = Boolean(useMe().me?.org?.policies?.require_two_photos) && !state.sample;
+  const eyeLabel = t("capture.guide.eye", { height: state.country === "US" ? "5 ft" : "1.5 m" });
 
   return (
     <section aria-labelledby="photos-title" data-testid="photo-step">
@@ -164,12 +198,11 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
                       // eslint-disable-next-line @next/next/no-img-element -- a local preview of the driver's own photo
                       <img src={photo.url} alt={t("capture.alt", { shot: t(`capture.shots.${shot}.title`) })} className="aspect-[16/9] w-full rounded object-cover" />
                     ) : (
-                      <span className="flex aspect-[16/9] w-full items-center justify-center rounded bg-surface p-4 text-gray">
-                        <Silhouette shot={shot} className="h-full max-h-24 w-auto" />
-                      </span>
+                      <PhotoGuide shot={shot} eyeLabel={eyeLabel} title={t("capture.guide.alt", { shot: t(`capture.shots.${shot}.title`) })} />
                     )}
                     <span className="mt-3 block font-[450] text-ink">{t(`capture.shots.${shot}.title`)}</span>
                     <span className="type-small block text-gray">{photo ? t("capture.retakeHint") : t(`capture.shots.${shot}.card`)}</span>
+                    {!photo && <GuideExamples shot={shot} />}
                   </ChoiceCard>
                   {photo && (
                     <button type="button" onClick={() => flow.removePhoto(index)} className="type-small mt-1 min-h-11 text-gray underline decoration-1 underline-offset-4">
@@ -180,6 +213,9 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
               );
             })}
           </ul>
+          <p className="type-small mt-3 text-gray" data-testid="guide-tip">
+            {t("capture.guide.tip", { height: state.country === "US" ? "5 ft" : "1.5 m" })}
+          </p>
           {twoPhotos && (
             <p className="type-small mt-3 text-ink" data-testid="policy-two-photos">
               {t("capture.policyTwo")}
@@ -219,6 +255,7 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
       {camera && (
         <GuidedCamera
           shot={camera}
+          eyeLabel={eyeLabel}
           onClose={() => setCamera(null)}
           onPhoto={(file) => {
             setCamera(null);
@@ -230,6 +267,33 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
       {!reinspecting && <Samples flow={flow} />}
       {state.photos.length < MAX_PHOTOS && null}
     </section>
+  );
+}
+
+const EXAMPLES: { variant: GuideVariant; key: "like" | "tooClose" | "cutOff" | "night" }[] = [
+  { variant: "good", key: "like" },
+  { variant: "too_close", key: "tooClose" },
+  { variant: "cut_off", key: "cutOff" },
+  { variant: "night", key: "night" },
+];
+
+/** "Like this" and three "not like this" thumbnails under a photo guide. */
+function GuideExamples({ shot }: { shot: Shot }) {
+  const t = useTranslations("Driver.capture.guide");
+  return (
+    <span className="mt-3 grid grid-cols-4 gap-2" data-testid={`guide-examples-${shot}`}>
+      {EXAMPLES.map(({ variant, key }) => (
+        <span key={key} className="block min-w-0">
+          <PhotoGuide shot={shot} variant={variant} phone={false} className="rounded-sm border border-hairline" />
+          <span className="mt-1 block text-[0.75rem] leading-tight text-gray">
+            <span aria-hidden className={variant === "good" ? "text-pass" : "text-fail"}>
+              {variant === "good" ? "✓" : "✗"}
+            </span>{" "}
+            {t(key)}
+          </span>
+        </span>
+      ))}
+    </span>
   );
 }
 
@@ -415,12 +479,11 @@ function AnalysisLine({ flow }: { flow: Flow }) {
 
 export function TruckStep({ flow }: { flow: Flow }) {
   const t = useTranslations("Driver");
-  const format = useFormatter();
   const { state, guess } = flow;
   const stage = state.truckStage;
   const size = state.truck?.size ?? null;
-  const style = state.truck?.style ?? guess?.style ?? "open_low_sides";
-  const units = useUnits(state.country);
+  const caption = useTruckCaption();
+  const payload = useTruckPayload();
 
   return (
     <section aria-labelledby="truck-title" data-testid="truck-step" data-stage={stage}>
@@ -438,25 +501,14 @@ export function TruckStep({ flow }: { flow: Flow }) {
                   testId={`size-${option}`}
                   badge={guess?.size === option ? t("truck.aiPick") : null}
                 >
-                  <TruckArt
-                    size={option}
-                    style={stylesOf(option).includes(style) ? style : (stylesOf(option)[0] ?? style)}
-                    className="max-h-16 w-auto self-start"
-                  />
+                  <TruckArt size={option} style={null} scaled title={t(`sizes.${option}.name`)} />
                   <span className="mt-3 block font-[450] text-ink">{t(`sizes.${option}.name`)}</span>
-                  <span className="type-small block text-gray">
-                    {SIZE_INFO[option].payloadLb
-                      ? t("sizes.lineUs", {
-                          axles: SIZE_INFO[option].axles,
-                          payload: units.weight(0, { lb: SIZE_INFO[option].payloadLb, metric: false }),
-                          bed: units.length(SIZE_INFO[option].bedM),
-                        })
-                      : t("sizes.line", {
-                          axles: SIZE_INFO[option].axles,
-                          payload: `${format.number(SIZE_INFO[option].payloadT)} t`,
-                        })}
+                  <span className="type-label mt-1 block" data-testid="truck-caption">
+                    {caption(option)}
                   </span>
-                  <span className="type-small block text-gray">{t(`sizes.${option}.hint`)}</span>
+                  <span className="type-small mt-1 block text-gray">
+                    {t(`sizes.${option}.hint`)} · {payload(option)}
+                  </span>
                 </ChoiceCard>
               </li>
             ))}
@@ -475,7 +527,7 @@ export function TruckStep({ flow }: { flow: Flow }) {
                   testId={code ? `style-${option}-${code}` : `style-${option}`}
                   badge={guess?.style === option && code !== "XL" ? t("truck.aiPick") : null}
                 >
-                  <TruckArt size={size ?? "toco"} style={option} code={code} className="max-h-16 w-auto self-start" />
+                  <TruckArt size={size ?? "toco"} style={option} code={code} scaled />
                   <span className="mt-3 block font-[450] text-ink">
                     {t(`styles.${option}.name`)}
                     {code && ` · ${t("truck.code", { code })}`}

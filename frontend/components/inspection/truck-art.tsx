@@ -14,7 +14,7 @@ import { type CatalogTruck, LONGEST_M, TRUCK_CATALOG } from "@/lib/inspection/tr
 import type { BodyStyle, TruckSize } from "@/lib/inspection/trucks";
 
 /** Height of every drawing [cm]: ground at GROUND, the tallest body (4.1 m) fits above it. */
-const VIEW_H = 440;
+export const VIEW_H = 440;
 const GROUND = 432;
 const MARGIN = 12;
 const STROKE = 9;
@@ -157,7 +157,7 @@ function Body({ truck, style, code }: { truck: CatalogTruck; style: BodyStyle | 
           {[0.25, 0.5, 0.75].map((share) => (
             <path key={share} d={`M${X(x1 - 0.12)} ${Y(deckTop + wall * share)}h-14`} strokeWidth={THIN} />
           ))}
-          {code && <CodeMark code={code} x={x1 - 0.3} y={roof - 0.4} />}
+          {code && <CodeMark code={code} x={x1 - 0.3} y={roof - 0.75} />}
         </g>
       );
     }
@@ -186,7 +186,7 @@ function Body({ truck, style, code }: { truck: CatalogTruck; style: BodyStyle | 
           {folds.map((x) => (
             <path key={x} data-part="fold" d={`M${X(x)} ${Y(top)}q10 ${sag / 2} 0 ${sag}`} strokeWidth={THIN} opacity={0.75} />
           ))}
-          {code && <CodeMark code={code} x={x1 - 0.3} y={roof - 0.4} />}
+          {code && <CodeMark code={code} x={x1 - 0.3} y={roof - 0.75} />}
         </g>
       );
     }
@@ -259,6 +259,7 @@ export function TruckArt({
   title,
   code = null,
   scaled = false,
+  placement,
 }: {
   size: TruckSize;
   /** The body; null draws the chassis with a neutral outline of the load space. */
@@ -273,6 +274,8 @@ export function TruckArt({
    * truck at one scale. Without it, give the drawing a height: the scale is then shared too.
    */
   scaled?: boolean;
+  /** Nested inside another drawing: its box there (the stroke then scales with it). */
+  placement?: { x: number; y: number; width: number; height: number };
 }) {
   const truck = TRUCK_CATALOG[size];
   const width = viewWidth(truck);
@@ -280,6 +283,7 @@ export function TruckArt({
   return (
     <svg
       viewBox={`0 0 ${width} ${VIEW_H}`}
+      {...placement}
       className={cn("text-ink", scaled ? "block h-auto" : "h-auto w-full", className)}
       style={scaled ? { width: `${(width / LONGEST_VIEW) * 100}%` } : undefined}
       fill="none"

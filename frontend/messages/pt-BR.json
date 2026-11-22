@@ -1410,7 +1410,7 @@
       "looksLike": "Parece um {truck}. Toque para confirmar ou escolha outro.",
       "aiPick": "Sugestão da IA",
       "sizeTitle": "Qual é o caminhão?",
-      "sizeSentence": "Escolha o tamanho. Os eixos e a carga típica estão em cada um.",
+      "sizeSentence": "Escolha o tamanho. Cada cartão mostra o comprimento, os eixos e o peso bruto total (PBT), desenhados em escala.",
       "bodyTitle": "Qual é a carroceria?",
       "bodySentence": "A carroceria decide o que segura a carga além das cintas.",
       "backToSize": "Trocar o tamanho",
@@ -1424,7 +1424,6 @@
     },
     "sizes": {
       "axles": "{count, plural, one {# eixo} other {# eixos}}",
-      "line": "{axles, plural, one {# eixo} other {# eixos}} · cerca de {payload} de carga",
       "vuc": {
         "name": "VUC",
         "hint": "Caminhão urbano pequeno"
@@ -1445,7 +1444,6 @@
         "name": "Carreta",
         "hint": "Cavalo e semirreboque"
       },
-      "lineUs": "{axles, plural, one {# eixo} other {# eixos}} · cerca de {payload} de carga · {bed}",
       "us_box": {
         "name": "Caminhão baú (Classe 6)",
         "hint": "Baú de 26 pés, dois eixos"
@@ -1485,7 +1483,9 @@
       "eu_flatbed_136": {
         "name": "Articulado 40 t, plataforma",
         "hint": "Cavalo e semirreboque plataforma de 13,6 m"
-      }
+      },
+      "caption": "{length} · {axles, plural, one {# eixo} other {# eixos}} · PBT {gvw}",
+      "payload": "cerca de {payload} de carga"
     },
     "styles": {
       "open_low_sides": {
@@ -1534,12 +1534,12 @@
         "side": {
           "title": "Lateral inteira",
           "card": "O caminhão todo de lado, da frente até a traseira.",
-          "hint": "Enquadre o caminhão todo dentro do contorno, da cabine à traseira."
+          "hint": "Enquadre o caminhão inteiro dentro das marcas, da cabine à traseira, com o celular reto na altura do peito."
         },
         "rear_three_quarter": {
           "title": "Traseira em 3/4",
           "card": "De trás de um canto traseiro, mostrando a traseira e uma lateral.",
-          "hint": "Fique atrás de um canto traseiro para ver a traseira e uma lateral."
+          "hint": "Fique atrás de um canto traseiro e enquadre a traseira e uma lateral dentro das marcas."
         }
       },
       "retakeHint": "Toque para tirar de novo.",
@@ -1565,7 +1565,16 @@
       "wholeTitle": "A carga inteira está na foto?",
       "wholeSentence": "Da frente ao fundo da carga, sem nada cortado nas laterais. A verificação precisa dela toda.",
       "wholeYes": "Sim, inteira",
-      "wholeRetake": "Não, tirar de novo"
+      "wholeRetake": "Não, tirar de novo",
+      "guide": {
+        "eye": "altura dos olhos ≈ {height}",
+        "alt": "Como tirar a foto {shot}: o caminhão inteiro dentro das marcas, a carga visível, o celular reto na altura do peito.",
+        "like": "Assim",
+        "tooClose": "Perto demais",
+        "cutOff": "Cortada",
+        "night": "À noite",
+        "tip": "O caminhão inteiro dentro das marcas, a carga visível, o celular reto na altura do peito (cerca de {height}), com luz do dia."
+      }
     },
     "weight": {
       "title": "Quanto pesa a carga?",
@@ -2129,7 +2138,9 @@
       "saving": "Salvando…",
       "delete": "Remover",
       "optional": "Deixe em branco se não souber.",
-      "signIn": "Entre para salvar seus caminhões."
+      "signIn": "Entre para salvar seus caminhões.",
+      "bedLengthValue": "carroceria {length}",
+      "headboardValue": "cabeceira {height}"
     },
     "shared": {
       "label": "Inspeção compartilhada",
