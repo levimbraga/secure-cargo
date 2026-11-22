@@ -605,10 +605,26 @@
   },
   "Footer": {
     "wordmark": "SecureCargo",
-    "project": "Project",
-    "github": "GitHub",
     "language": "Language",
-    "disclaimer": "SecureCargo is a decision-support tool, not an engineering certification."
+    "columns": "Site map",
+    "product": "Product",
+    "howItWorks": "How it works",
+    "examples": "Examples",
+    "explorer": "Explorer",
+    "insurers": "For insurers",
+    "resources": "Resources",
+    "methodology": "How we calculate",
+    "rules": "Rule sources",
+    "github": "GitHub",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "cookies": "Cookies",
+    "contact": "Contact",
+    "contactUs": "Contact us",
+    "copyright": "© 2026 SecureCargo",
+    "madeIn": "Made in Jundiaí, Brazil",
+    "disclaimer": "Decision-support tool, not an engineering certification"
   },
   "Explorer": {
     "label": "Explorer",
@@ -914,7 +930,8 @@
         "too_many": "Too many attempts. Wait a few minutes and try again.",
         "invite_used": "This invitation is no longer valid. Ask your manager for a new one.",
         "failed": "Something went wrong. Try again."
-      }
+      },
+      "consent": "By creating an account you agree to the <terms>Terms</terms> and the <privacy>Privacy policy</privacy>."
     }
   },
   "Member": {
@@ -2507,5 +2524,56 @@
     "check": "Check again",
     "failed": "Could not join. Try again.",
     "admin": "Platform admin: open the admin page"
+  },
+  "Legal": {
+    "updated": "Last updated: {date}",
+    "notReviewed": "Prepared for a hackathon project; not reviewed by a lawyer.",
+    "onThisPage": "On this page"
+  },
+  "Contact": {
+    "label": "Contact",
+    "title": "Contact us.",
+    "description": "Write to the SecureCargo team: questions, insurers and carriers, partnerships, press, privacy requests or a problem to report.",
+    "intro": "Questions, partnerships, press or a privacy request: write to us here and we answer by email.",
+    "name": "Name",
+    "email": "Email",
+    "emailHint": "We reply to this address.",
+    "subject": "Subject",
+    "subjectPlaceholder": "Choose a subject",
+    "subjects": {
+      "general": "General question",
+      "insurers": "Insurers and carriers",
+      "partnership": "Partnership",
+      "press": "Press",
+      "privacy": "Privacy or data request",
+      "problem": "Report a problem"
+    },
+    "message": "Message",
+    "messageCount": "{count} of {max} characters",
+    "honeypot": "Leave this field empty",
+    "send": "Send",
+    "sending": "Sending…",
+    "verifying": "Checking that you are not a robot…",
+    "privacyNote": "We use what you send only to answer you. <link>Privacy policy</link>.",
+    "success": {
+      "title": "Message sent.",
+      "body": "Thank you, {name}. We will reply to {email}.",
+      "again": "Send another message"
+    },
+    "errors": {
+      "invalid_name": "Enter your name, up to 100 characters.",
+      "invalid_email": "Enter a valid email address, so we can reply.",
+      "invalid_subject": "Choose a subject.",
+      "invalid_message": "Write a message of 10 to 2,000 characters.",
+      "html_not_allowed": "Write the message as plain text, without HTML or links in angle brackets.",
+      "turnstile_failed": "We could not confirm you are not a robot. Wait for the check to finish and send again.",
+      "turnstile_unavailable": "The anti-spam check did not load. Turn off a blocker for challenges.cloudflare.com or try another browser.",
+      "rate_limited": "Too many messages at once. Wait a minute and try again.",
+      "contact_hourly_limit": "You can send up to 5 messages an hour. Please try again later.",
+      "send_failed": "Your message could not be sent. Please try again in a few minutes.",
+      "contact_unavailable": "The contact form is not available right now. Please try again later.",
+      "network": "We could not reach the server. Check your connection and try again.",
+      "unknown": "Something went wrong. Please try again."
+    }
   }
 }

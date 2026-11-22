@@ -1,0 +1,449 @@
+{
+  "privacy": {
+    "label": "Jurídico",
+    "title": "Política de privacidade.",
+    "description": "O que o SecureCargo coleta, por quê, quem trata os dados, por quanto tempo eles ficam guardados e como exercer seus direitos pela LGPD e pelo GDPR.",
+    "intro": [
+      "Esta política explica, em linguagem simples, o que o SecureCargo faz com dados pessoais. Ela foi escrita para a Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018) e para o Regulamento Geral de Proteção de Dados da União Europeia (GDPR), e descreve o que o sistema faz de verdade hoje."
+    ],
+    "sections": [
+      {
+        "id": "who",
+        "heading": "Quem somos",
+        "body": [
+          "O SecureCargo é uma ferramenta de verificação da amarração de cargas criada por um desenvolvedor independente em Jundiaí, São Paulo, como projeto para o hackathon Hack Brasil 2026. Para os dados pessoais descritos aqui, o SecureCargo é o controlador.",
+          "Para falar conosco sobre privacidade, use o [formulário de contato](/contact) e escolha o assunto **Privacidade ou pedido sobre dados**. Não publicamos endereço de email."
+        ]
+      },
+      {
+        "id": "collect",
+        "heading": "O que coletamos",
+        "body": [
+          { "list": [
+            "**Conta:** seu email e nome, o nome e o tipo da sua empresa (seguradora ou transportadora) e seu papel nela. Sua senha fica com o nosso provedor de login, o Clerk; nós nunca a vemos. Se um gestor convida um colega, guardamos o email convidado até o convite ser usado ou expirar.",
+            "**Visitantes da demonstração:** os botões de demonstração não criam conta. Seu navegador recebe uma sessão de demonstração aleatória e uma área isolada, e nada sobre você é pedido.",
+            "**Inspeções:** as fotos da carga que você tira ou envia (de 1 a 4), o caminhão escolhido (carroceria, tamanho, medidas, apelido opcional em \"Meus caminhões\"), o peso da carga, observações, as leituras e correções que você confirma, os resultados da simulação, a correção e o certificado. O campo de placa existe, mas fica desligado a menos que sua empresa o ative.",
+            "**Foto da nota fiscal:** se você escolhe \"Ler da nota fiscal\", guardamos a foto da DANFE e o peso bruto lido nela. Uma nota fiscal pode mostrar razão social, CNPJ e endereços.",
+            "**Atividade e uso:** um histórico de cada inspeção (quem criou, editou, corrigiu ou compartilhou, e quando) e um registro de cada análise de foto (o modelo de IA, o número de tokens e o custo estimado) para aplicar as cotas e o orçamento mensal.",
+            "**Mensagens do formulário de contato:** seu nome, o email para a resposta, o assunto, a mensagem, a página de onde você escreveu, o idioma do site e a data.",
+            "**Endereço IP e dados técnicos:** usados para limites de uso, antispam e proteção contra abuso, e registrados por pouco tempo nos logs de requisições dos nossos provedores. Veja \"Por quanto tempo guardamos\".",
+            "**Cookies e armazenamento local:** listados na [página de cookies](/cookies)."
+          ] },
+          "Removemos a localização (GPS) e os outros metadados (EXIF) de todas as fotos, primeiro no seu celular, antes do envio, e de novo no nosso servidor, antes de guardar. Evite fotografar rostos ou placas legíveis: eles não são necessários para a verificação."
+        ]
+      },
+      {
+        "id": "why",
+        "heading": "Para que usamos, e a base legal",
+        "body": [
+          { "list": [
+            "**Para prestar o serviço de inspeção** (análise, simulação, resultados, certificados, o painel da sua empresa): execução de contrato (LGPD art. 7º, V; GDPR art. 6(1)(b)).",
+            "**Para manter o serviço seguro e livre de abuso** (login, limites de uso, Turnstile, histórico): nosso legítimo interesse (LGPD art. 7º, IX; GDPR art. 6(1)(f)).",
+            "**Para controlar custos** (cotas e o orçamento mensal da análise de fotos): nosso legítimo interesse em manter um serviço gratuito disponível.",
+            "**Para responder suas mensagens:** nosso legítimo interesse em responder você, ou procedimentos preliminares que você pediu antes de um contrato (LGPD art. 7º, V e IX; GDPR art. 6(1)(b) e (f)). Para pedidos sobre privacidade, também uma obrigação legal (LGPD art. 7º, II; GDPR art. 6(1)(c)).",
+            "**Cookies estritamente necessários:** eles fazem o login e a demonstração funcionarem, por isso não precisam de consentimento."
+          ] },
+          "Não vendemos dados pessoais, não os usamos para publicidade e não os usamos para treinar modelos de IA. Não tomamos decisões sobre você baseadas apenas em tratamento automatizado: um resultado do SecureCargo é uma orientação sobre uma carga, e quem decide são o motorista e a transportadora."
+        ]
+      },
+      {
+        "id": "companies",
+        "heading": "Quando você usa o SecureCargo pela sua empresa",
+        "body": [
+          "Uma seguradora ou transportadora pode usar o SecureCargo com seus motoristas e inspetores. Os gestores da empresa veem todas as inspeções dela e decidem como essas inspeções são usadas. Para esses dados agimos em nome da empresa, então alguns pedidos (por exemplo, apagar uma inspeção que sua empresa precisa guardar) podem precisar passar por ela."
+        ]
+      },
+      {
+        "id": "processors",
+        "heading": "Quem trata dados para nós",
+        "body": [
+          "Usamos estes prestadores de serviço (operadores, na LGPD), cada um com seus próprios termos de tratamento de dados:",
+          { "list": [
+            "**Clerk** (Estados Unidos): contas, login, empresas e convites, e os emails de login. [Política de privacidade do Clerk](https://clerk.com/legal/privacy)",
+            "**Cloudflare** (Estados Unidos, rede global): nossa API, o banco de dados (D1), o armazenamento privado das fotos (R2), o email do formulário de contato (Email Service), o antispam Turnstile e os logs de requisições. [Política de privacidade da Cloudflare](https://www.cloudflare.com/privacypolicy/) · [Adendo de privacidade do Turnstile](https://www.cloudflare.com/turnstile-privacy-policy/)",
+            "**Vercel** (Estados Unidos): hospeda o site e guarda logs curtos de requisições. [Política de privacidade da Vercel](https://vercel.com/legal/privacy-policy)",
+            "**Anthropic** (Estados Unidos): o modelo Claude lê as fotos da carga e da nota fiscal para sugerir volumes, amarrações e o peso bruto. Usamos a API comercial da Anthropic. Pelos termos dela, a Anthropic não usa por padrão as entradas e saídas da API para treinar seus modelos, e as apaga em até 30 dias, exceto quando precisa guardá-las por mais tempo para aplicar sua política de uso ou por lei. [Meus dados são usados para treinar modelos?](https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training) · [Por quanto tempo a Anthropic guarda dados da API](https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data) · [Termos comerciais da Anthropic](https://www.anthropic.com/legal/commercial-terms)",
+            "**Google** (Gmail): as mensagens do formulário de contato chegam na nossa caixa de email lá."
+          ] }
+        ]
+      },
+      {
+        "id": "transfers",
+        "heading": "Transferência internacional",
+        "body": [
+          "Esses provedores tratam dados nos Estados Unidos e em outros países onde operam, então seus dados saem do Brasil e, para visitantes europeus, do Espaço Econômico Europeu. Usamos as garantias dos termos de tratamento de dados deles, como cláusulas contratuais padrão (LGPD art. 33; GDPR art. 46) e, quando o provedor é certificado, o EU-U.S. Data Privacy Framework (GDPR art. 45)."
+        ]
+      },
+      {
+        "id": "retention",
+        "heading": "Por quanto tempo guardamos",
+        "body": [
+          { "list": [
+            "**Sessões de demonstração:** tudo o que um visitante da demonstração cria é apagado automaticamente 24 horas depois de criado. O cookie da sessão de demonstração também expira em 24 horas. As inspeções prontas da demonstração usam fotos de exemplo e nomes fictícios e ficam guardadas.",
+            "**Contas:** até você pedir para apagar a conta. Inspeções, fotos, fotos de notas fiscais, resultados, certificados, caminhões, histórico e registros de uso ficam guardados enquanto a conta existir e são apagados com ela. A página pública de verificação de um certificado deixa de funcionar quando a inspeção é apagada.",
+            "**Cache da análise de fotos:** a leitura da IA de uma foto fica guardada, identificada pela impressão digital da foto (SHA-256), para que a mesma foto nunca seja paga duas vezes. Ela descreve a carga, não pessoas.",
+            "**Mensagens do formulário de contato:** não ficam no nosso banco de dados. Elas só são enviadas por email para nós, e as apagamos da nossa caixa de email em até 90 dias depois do fim da conversa, a menos que precisemos delas para tratar de uma questão legal.",
+            "**Contador do formulário de contato:** para limitar cada endereço a 5 mensagens por hora guardamos um hash com chave (HMAC) do seu IP, nunca o endereço em si, por no máximo 2 horas.",
+            "**Logs de requisições:** a Cloudflare guarda os logs da API por até 7 dias e a Vercel guarda os logs do site por até 1 hora no nosso plano.",
+            "**Na Anthropic:** até 30 dias, como descrito acima."
+          ] }
+        ]
+      },
+      {
+        "id": "rights",
+        "heading": "Seus direitos",
+        "body": [
+          "Você pode nos pedir para confirmar se tratamos seus dados; acessá-los; corrigi-los; apagá-los; receber uma cópia em formato portável (JSON); saber com quem os compartilhamos; se opor a um tratamento baseado em legítimo interesse; e revogar um consentimento que tenha dado. Você também pode reclamar à Autoridade Nacional de Proteção de Dados, a [ANPD](https://www.gov.br/anpd), ou, na União Europeia, à autoridade de proteção de dados do seu país.",
+          "**Como:** envie o pedido pelo [formulário de contato](/contact) com o assunto **Privacidade ou pedido sobre dados**, a partir do email da sua conta, para podermos confirmar que é você. Respondemos em até 15 dias. Para apagar sua conta, peça do mesmo jeito: apagamos a conta e tudo o que há nela e avisamos quando terminar. Você mesmo pode corrigir seu nome e suas inspeções no app."
+        ]
+      },
+      {
+        "id": "security",
+        "heading": "Segurança",
+        "body": [
+          "Todo o tráfego usa HTTPS. As fotos ficam num armazenamento privado e só são entregues a quem tem permissão para vê-las; cada requisição é verificada no servidor (um motorista vê só as próprias inspeções, um gestor só as da sua empresa). As senhas ficam com o Clerk. Chaves de API e outros segredos ficam só nos cofres de segredos dos nossos provedores. Nenhum sistema é perfeitamente seguro; se um incidente colocar você em risco, avisaremos você e as autoridades como a lei exige."
+        ]
+      },
+      {
+        "id": "children",
+        "heading": "Menores de idade",
+        "body": [
+          "O SecureCargo é feito para uso profissional e não se destina a menores de 18 anos. Não coletamos de propósito dados de crianças ou adolescentes."
+        ]
+      },
+      {
+        "id": "changes",
+        "heading": "Mudanças nesta política",
+        "body": [
+          "Se mudarmos o que coletamos ou por quê, atualizaremos esta página e a data no topo dela."
+        ]
+      }
+    ]
+  },
+  "terms": {
+    "label": "Jurídico",
+    "title": "Termos de uso.",
+    "description": "Os termos para usar o SecureCargo: uma ferramenta de apoio à decisão para a amarração de cargas, não uma certificação de engenharia nem aconselhamento jurídico.",
+    "intro": [
+      "Ao usar o SecureCargo (o site securecargo.app, o app e a API) você concorda com estes termos. Se não concordar, por favor não use."
+    ],
+    "sections": [
+      {
+        "id": "what",
+        "heading": "O que é o SecureCargo",
+        "body": [
+          "O SecureCargo verifica se a carga de um caminhão está bem distribuída e bem amarrada, usando uma foto ou os dados que você informa, uma simulação física e um conjunto de regras de transporte rodoviário (Brasil, Estados Unidos ou União Europeia). [Como calculamos](/methodology) explica o modelo e seus limites.",
+          "**O SecureCargo é uma ferramenta de apoio à decisão.** Não é certificação de engenharia, fiscalização de uma autoridade, vistoria de seguro nem aconselhamento jurídico. Um certificado do SecureCargo registra o que a ferramenta calculou; ele não atesta que uma carga cumpre a lei."
+        ]
+      },
+      {
+        "id": "responsibility",
+        "heading": "Sua responsabilidade",
+        "body": [
+          "O motorista e a transportadora continuam responsáveis por amarrar a carga conforme a lei aplicável à viagem (no Brasil, entre outras, o Código de Trânsito Brasileiro e as Resoluções CONTRAN 945/2022 e 882/2021). Sempre confira a carga pessoalmente, respeite os limites do fabricante para cintas, correntes e pontos de amarração, e reaperte as amarrações durante a viagem."
+        ]
+      },
+      {
+        "id": "inputs",
+        "heading": "O resultado depende do que você informa",
+        "body": [
+          "Um resultado só é tão bom quanto a foto e os dados informados. A IA pode deixar de ver ou ler errado cintas, volumes ou pesos; um peso marcado como \"estimado\" é uma estimativa, não uma medição. Revise o que foi lido e corrija antes de confiar no resultado. A simulação representa uma carga rígida numa carroceria plana e não cobre todas as situações reais."
+        ]
+      },
+      {
+        "id": "use",
+        "heading": "Uso aceitável",
+        "body": [
+          { "list": [
+            "Não envie spam, publicidade ou mensagens abusivas pelo formulário de contato nem por qualquer outro recurso.",
+            "Não envie conteúdo que você não tem direito de compartilhar, nem fotos de rostos de pessoas ou de placas legíveis.",
+            "Não tente quebrar, sobrecarregar ou contornar a segurança, os limites de uso ou as cotas do serviço, nem acessar dados que não são seus.",
+            "Não use o serviço para nada ilegal."
+          ] },
+          "Podemos bloquear uma conta ou um endereço que desrespeite estas regras."
+        ]
+      },
+      {
+        "id": "demo",
+        "heading": "Os dados da demonstração são apagados",
+        "body": [
+          "Os botões de demonstração dão acesso a qualquer pessoa sem conta. O que for criado numa sessão de demonstração é apagado automaticamente depois de 24 horas, e a empresa de demonstração pode ser reiniciada a qualquer momento. Não coloque informações reais ou sensíveis numa sessão de demonstração."
+        ]
+      },
+      {
+        "id": "beta",
+        "heading": "Projeto de hackathon, sem garantia",
+        "body": [
+          "O SecureCargo é um projeto feito para o hackathon Hack Brasil 2026 e está em versão beta. Ele é oferecido \"no estado em que se encontra\", sem garantias de qualquer tipo, e pode mudar, parar de funcionar ou ser desligado sem aviso. Na medida permitida pela lei, não respondemos por perdas decorrentes do uso ou da confiança nos seus resultados. Nada nestes termos limita direitos que a lei do consumidor garante a você e que não podem ser renunciados.",
+          "O código-fonte é aberto (licença MIT) no [GitHub](https://github.com/levimbraga/secure-cargo)."
+        ]
+      },
+      {
+        "id": "privacy",
+        "heading": "Privacidade",
+        "body": [
+          "Como tratamos dados pessoais está descrito na [política de privacidade](/privacy) e na [página de cookies](/cookies)."
+        ]
+      },
+      {
+        "id": "law",
+        "heading": "Lei aplicável e mudanças",
+        "body": [
+          "Estes termos seguem a lei brasileira. Podemos atualizá-los; a data no topo desta página mostra a versão atual."
+        ]
+      },
+      {
+        "id": "contact",
+        "heading": "Contato",
+        "body": [
+          "Dúvidas sobre estes termos: use o [formulário de contato](/contact)."
+        ]
+      }
+    ]
+  },
+  "cookies": {
+    "label": "Jurídico",
+    "title": "Cookies.",
+    "description": "Todos os cookies e itens de armazenamento do navegador que o SecureCargo usa. Nenhum cookie de análise ou publicidade.",
+    "intro": [
+      "O SecureCargo não usa cookies de análise, publicidade ou rastreamento. Os cookies abaixo fazem o login, a demonstração e a segurança funcionarem, mais um que lembra uma preferência padrão. Como eles são necessários para o serviço que você pediu, não mostramos um aviso de consentimento."
+    ],
+    "sections": [
+      {
+        "id": "list",
+        "heading": "Cookies",
+        "body": [
+          { "table": {
+            "head": ["Nome", "Quem define", "Para que serve", "Duração"],
+            "rows": [
+              ["`sc_demo`", "API do SecureCargo (api.securecargo.app)", "A sessão de demonstração depois de \"Entrar como motorista demo\" ou \"Entrar como seguradora demo\". HttpOnly: scripts não conseguem lê-lo.", "24 horas"],
+              ["`sc_geo`", "Site do SecureCargo", "Seu país (só BR, US ou EU), a partir do país de onde sua conexão parece vir, para o seletor de regras começar na sua região. Nenhum outro dado de localização é guardado.", "30 dias"],
+              ["`__client`", "Clerk (clerk.securecargo.app)", "Identifica seu navegador para o serviço de login e mantém você conectado. HttpOnly.", "Até 400 dias"],
+              ["`__client_uat`, `__client_uat_*`", "Clerk", "Quando você entrou ou saiu pela última vez, para o site saber se precisa pedir uma sessão nova.", "Até 400 dias"],
+              ["`__session`, `__session_*`", "Clerk", "O token da sua sessão atual, enviado à nossa API para provar quem você é. Só quando você está conectado.", "Cerca de 1 minuto, renovado enquanto você usa o app"],
+              ["`__cf_bm`", "Cloudflare, no domínio de login do Clerk", "Proteção contra robôs do serviço de login.", "30 minutos"],
+              ["`_cfuvid`", "Cloudflare, no domínio de login do Clerk", "Limite de uso do serviço de login.", "Até você fechar o navegador"]
+            ]
+          } },
+          "Os cookies do Clerk são definidos nas páginas do app (em /app), onde fica o login; a página inicial e as páginas jurídicas definem só o `sc_geo`."
+        ]
+      },
+      {
+        "id": "storage",
+        "heading": "Armazenamento local",
+        "body": [
+          { "list": [
+            "`securecargo.country`: o país das regras que você escolheu (Brasil, Estados Unidos ou UE), para a escolha continuar na próxima vez.",
+            "`__clerk_environment` e `__clerk_protect_*`: as configurações de login do Clerk e sua proteção contra robôs."
+          ] }
+        ]
+      },
+      {
+        "id": "turnstile",
+        "heading": "Turnstile",
+        "body": [
+          "O formulário de contato e o formulário de cadastro são protegidos pelo Cloudflare Turnstile, que verifica se quem envia é uma pessoa e não um robô. Ele roda num quadro servido pela Cloudflare (challenges.cloudflare.com), não define cookies em securecargo.app e trata seu endereço IP e sinais do navegador como descrito no [adendo de privacidade do Turnstile](https://www.cloudflare.com/turnstile-privacy-policy/)."
+        ]
+      },
+      {
+        "id": "control",
+        "heading": "Como controlar",
+        "body": [
+          "Você pode apagar ou bloquear cookies nas configurações do navegador. Se bloquear, o login e a demonstração não vão funcionar; o resto do site, sim. Mais sobre seus dados: [política de privacidade](/privacy)."
+        ]
+      }
+    ]
+  },
+  "methodology": {
+    "label": "Recursos",
+    "title": "Como calculamos.",
+    "description": "Como o SecureCargo decide se uma carga chega inteira: o modelo físico MuJoCo, as situações da viagem, os limites do veredito e a validação com a EN 12195-1.",
+    "intro": [
+      "O veredito do SecureCargo vem de uma simulação física, não de uma regra de bolso. Esta página explica o modelo em palavras simples e mostra que, onde existe uma fórmula fechada, a simulação dá a mesma resposta. Os documentos técnicos completos estão no GitHub, em inglês: [modelo físico](https://github.com/levimbraga/secure-cargo/blob/main/docs/physics-model.md) e [validação](https://github.com/levimbraga/secure-cargo/blob/main/docs/validation.md)."
+    ],
+    "sections": [
+      {
+        "id": "pipeline",
+        "heading": "Perceber, simular, planejar",
+        "body": [
+          { "list": [
+            "**Perceber.** A partir de uma foto (lida pelo modelo de visão Claude e depois confirmada ou corrigida pelo motorista) ou do editor manual, obtemos o caminhão, cada volume da carga (tamanho, peso, posição) e as amarrações existentes. A IA nunca inventa pesos: eles vêm do total que você informa ou da nota fiscal.",
+            "**Simular.** O motor de física MuJoCo submete a carroceria a sete situações de viagem: frenagem de emergência, troca de faixa, curva fechada, buraco, lombada, descida longa e vibração longa. Ele registra o que escorrega, tomba, rola, bate na cabeceira ou sobrecarrega uma cinta.",
+            "**Planejar.** Se algo falha, o planejador tenta primeiro as mudanças mais baratas (mover volumes, mais cintas, manta antiderrapante, amarrações diagonais, cantoneiras), mantém só as necessárias e comprova a carga corrigida nas mesmas sete situações.",
+            "**Conferir as regras.** À parte, a carga é conferida com as regras de amarração, peso e dimensões do Brasil, dos Estados Unidos ou da União Europeia. Veja as [fontes das regras](/rules)."
+          ] }
+        ]
+      },
+      {
+        "id": "model",
+        "heading": "O modelo",
+        "body": [
+          { "list": [
+            "A **carroceria** é um corpo com movimento prescrito: ela segue a aceleração de cada situação com erro de um micrômetro. O caminhão em si não rola, não arfa nem guina, e a suspensão não é modelada.",
+            "Os **volumes** são caixas ou cilindros rígidos (bobinas, tambores, tubos) com o seu peso, apoiados no piso ou uns nos outros. O atrito entre cada par de materiais vem da tabela da EN 12195-1.",
+            "**Cintas, correntes e cordas** são molas que só trabalham à tração, com pré-tensão, capacidade de trabalho (LC) e alongamento. Uma cinta por cima só pressiona a carga para baixo e segura por atrito, exatamente como a norma supõe. Uma amarração diagonal (direta) puxa um ponto fixo.",
+            "**Paredes e calços** (cabeceira, paredes laterais, calços, berços de bobina) só empurram. A parede frontal de um baú ou sider é tratada como parede EN 12642 código L (0,4 × carga útil, no máximo 5.000 daN); as lonas de um sider não seguram nada.",
+            "Toda simulação usa passo fixo de 2 ms e nenhum fator aleatório: a mesma entrada sempre dá a mesma saída."
+          ] }
+        ]
+      },
+      {
+        "id": "events",
+        "heading": "Condições da viagem",
+        "body": [
+          "Velocidade (20 a 100 km/h), tipo de via e clima mudam as situações. Pista molhada reduz quanto o caminhão consegue frear, mas não o atrito entre a carga e um piso limpo; lama e cascalho reduzem, porque o piso deixa de estar limpo. Neblina significa uma frenagem mais tardia e mais forte. Cada número tem uma fonte ou está marcado como hipótese no [modelo físico](https://github.com/levimbraga/secure-cargo/blob/main/docs/physics-model.md):",
+          { "table": {
+            "head": ["Grandeza", "Valor", "Fonte"],
+            "rows": [
+              ["Frenagem mais forte", "Aderência do pneu, nunca acima de 0,8 g", "EN 12195-1; Wong, Theory of Ground Vehicles"],
+              ["Limite lateral", "0,5 g", "EN 12195-1; pesquisa de tombamento da UMTRI"],
+              ["Buraco", "Choque vertical de 2,7 g", "USDA FPL-22, choques medidos em carrocerias"],
+              ["Lombada", "3,70 m de comprimento, 0,10 m de altura", "Manual Brasileiro de Sinalização de Trânsito, vol. VI"],
+              ["Rampa de descida", "8 %", "Manual de projeto geométrico do DNIT"],
+              ["Alongamento da cinta na LC", "5 %", "EN 12195-2, citada pela UNECE e pela IRU"],
+              ["Pré-tensão restante após vibração longa", "50 %", "Hipótese; a Resolução CONTRAN 945/2022, art. 4º §2º, exige reaperto"]
+            ]
+          } }
+        ]
+      },
+      {
+        "id": "verdict",
+        "heading": "Da simulação ao veredito",
+        "body": [
+          "A norma projeta para nenhum movimento. Nossos limites separam movimento real de folga elástica:",
+          { "table": {
+            "head": ["O que é medido", "Atenção", "Falha"],
+            "rows": [
+              ["Deslizamento na carroceria", "mais de 1 cm", "mais de 5 cm"],
+              ["Inclinação", "mais de 1°", "mais de 5°"],
+              ["Força na amarração", "acima de 90 % da capacidade", "acima da capacidade, ou rompeu"],
+              ["Volume saiu da carroceria ou bateu na cabeceira", "", "sempre"]
+            ]
+          } },
+          "O resultado tem três estados, iguais em todo lugar: **Aprovada** (aguenta todas as situações e cumpre as regras), **Aguenta, mas está fora das regras** (a física aguenta, mas uma regra falha, por exemplo um eixo acima do limite) e **Não chega inteira** (um volume escorrega, tomba, rola, bate na cabeceira ou rompe uma amarração em pelo menos uma situação)."
+        ]
+      },
+      {
+        "id": "validation",
+        "heading": "Validação com a EN 12195-1",
+        "body": [
+          "A EN 12195-1 é a norma europeia para calcular as forças de amarração de cargas. Nos casos em que ela tem uma fórmula, rodamos a simulação e comparamos. Cada número abaixo é conferido por um teste automático que roda a cada mudança.",
+          { "table": {
+            "head": ["Verificação", "Fórmula", "Simulação", "Diferença"],
+            "rows": [
+              ["Palete com 2 cintas: frenagem em que escorrega", "1,051 g", "1,053 g", "+0,2 %"],
+              ["Caixote com 4 cintas: frenagem em que escorrega", "0,847 g", "0,849 g", "+0,2 %"],
+              ["Palete plástico com 5 cintas", "0,896 g", "0,899 g", "+0,3 %"],
+              ["Caixa solta: frenagem em que escorrega", "0,450 g", "0,450 g", "+0,1 %"],
+              ["Caixa solta de 0,8 × 2,0 m: frenagem em que tomba", "0,400 g", "0,400 g", "−0,1 %"],
+              ["Tensão em duas amarrações diretas, caixa de 3 t a 0,8 g", "755 daN", "775 daN", "+2,7 %"],
+              ["Força na cabeceira, caixa de 2 t a 0,8 g", "981 daN", "989 daN", "+0,8 %"],
+              ["Bobina de aço solta de 10 t rolando, frenagem de 0,5 g", "0,318 g", "0,316 g", "−0,5 %"],
+              ["Bobina passando por cima de um calço de 15 cm", "0,717 g", "0,710 g", "−1,1 %"]
+            ]
+          } },
+          "Em cinco casos de amarração a simulação falha com uma cinta a menos do que a fórmula pede e passa com o número da fórmula, e a carga não se move nada nas simulações que passam. Os cenários corrigidos da demonstração usam o que a norma pede **com** o fator de segurança (1,25 para a frente), então passam com folga."
+        ]
+      },
+      {
+        "id": "browser",
+        "heading": "Ao vivo no navegador, certificado no servidor",
+        "body": [
+          "O laboratório ao vivo roda o mesmo modelo MuJoCo no seu navegador, via WebAssembly. O servidor envia exatamente o modelo que ele simula, e nas oito simulações da demonstração navegador e servidor concordam no décimo de milímetro e no newton. Resultados do navegador aparecem como \"ao vivo, não certificado\": certificados sempre usam o resultado do servidor."
+        ]
+      },
+      {
+        "id": "limits",
+        "heading": "O que isto não mostra",
+        "body": [
+          { "list": [
+            "A simulação é validada contra o próprio modelo da norma, de uma carga rígida num piso plano. Ela não foi comparada com ensaios físicos de frenagem ou colisão.",
+            "Os coeficientes de atrito vêm da tabela da norma. Um piso real com óleo, gelo ou desgaste tem menos atrito.",
+            "Os volumes são rígidos, com o centro de gravidade no meio; uma cinta sobre uma pilha fica presa ao volume de cima.",
+            "A leitura da foto pode deixar de ver ou ler errado cintas e volumes. Revise antes de confiar no resultado.",
+            "**O SecureCargo é uma ferramenta de apoio à decisão, não uma certificação de engenharia.**"
+          ] }
+        ]
+      }
+    ]
+  },
+  "rules": {
+    "label": "Recursos",
+    "title": "Fontes das regras.",
+    "description": "As regras brasileiras, americanas e europeias de amarração, peso e dimensões que o SecureCargo confere, com links para os textos oficiais.",
+    "intro": [
+      "O SecureCargo confere cada carga com um de três conjuntos de regras. Cada regra no app mostra seu artigo; estes são os textos de onde elas vêm, lidos nas versões oficiais em 21 de novembro de 2026. Normas pagas são usadas por meio de guias oficiais que as reproduzem, e isso é indicado."
+    ],
+    "sections": [
+      {
+        "id": "br",
+        "heading": "Brasil",
+        "body": [
+          { "table": {
+            "head": ["Regra", "O que conferimos", "Situação"],
+            "rows": [
+              ["[Resolução CONTRAN 945/2022](https://www.in.gov.br/web/dou/-/resolucao-contran-n-945-de-28-de-marco-de-2022-390343667) e seu [anexo](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao9452022ANEXO.pdf)", "Amarração de cargas: fator de segurança 2, nada de cordas como amarração, 4 terminais por volume em carrocerias abertas, cintas por dentro das guardas laterais, diagonais quando a carga não ocupa a carroceria toda, nenhuma carga acima da cabeceira que possa deslizar para a frente", "Em vigor"],
+              ["[Resolução CONTRAN 882/2021](https://www.in.gov.br/en/web/dou/-/resolucao-contran-n-882-de-13-de-dezembro-de-2021-370017699)", "Pesos por grupo de eixos e total, tolerâncias de fiscalização, dimensões legais", "Em vigor, alterada"],
+              ["[Resolução CONTRAN 994/2023](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao9942023.pdf/@@display-file/file)", "Altera a 882: redação da largura (2,60 m mantidos)", "Em vigor"],
+              ["[Resolução CONTRAN 1005/2024](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao10052024.pdf/@@display-file/file)", "Altera a 882: cavalo e semirreboque com 19,30 m", "Em vigor"],
+              ["[Resolução CONTRAN 1015/2024](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao10152024.pdf/@@display-file/file)", "Altera a 882: eixo dianteiro de 7 t, peso extra para combustíveis mais limpos", "Em vigor"],
+              ["[Código de Trânsito Brasileiro, Lei 9.503/1997](https://www.planalto.gov.br/ccivil_03/leis/l9503compilado.htm)", "As infrações por trás das regras (arts. 99, 102, 231, 235)", "Em vigor"],
+              ["[Lista oficial das resoluções do CONTRAN](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-Senatran/resolucoes-contran)", "Usada para confirmar que nenhuma resolução posterior altera a 882 ou a 945", "Índice oficial"]
+            ]
+          } }
+        ]
+      },
+      {
+        "id": "us",
+        "heading": "Estados Unidos",
+        "body": [
+          { "table": {
+            "head": ["Regra", "O que conferimos", "Situação"],
+            "rows": [
+              ["[49 CFR parte 393, subparte I](https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-393/subpart-I)", "Amarração de cargas: limite de carga de trabalho somado, número de amarrações por comprimento e peso, travamento e as regras por tipo de carga que se aplicam", "Em vigor"],
+              ["[49 CFR 393.87](https://www.ecfr.gov/current/title-49/section-393.87)", "Bandeiras de aviso em cargas que se projetam", "Em vigor"],
+              ["[23 CFR parte 658](https://www.ecfr.gov/current/title-23/chapter-I/subchapter-G/part-658)", "Limites federais de peso (658.17), a fórmula das pontes e larguras e comprimentos (658.15)", "Em vigor"],
+              ["[23 U.S.C. 127](https://www.law.cornell.edu/uscode/text/23/127)", "A fórmula das pontes na lei", "Em vigor"],
+              ["[FHWA, Bridge Formula Weights](https://ops.fhwa.dot.gov/freight/publications/brdg_frm_wghts/bridge_formula_all_rev.pdf)", "Como a fórmula das pontes é arredondada", "Orientação"]
+            ]
+          } }
+        ]
+      },
+      {
+        "id": "eu",
+        "heading": "União Europeia",
+        "body": [
+          { "table": {
+            "head": ["Regra", "O que conferimos", "Situação"],
+            "rows": [
+              ["[Diretiva 2014/47/UE](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02014L0047-20220927), art. 13 e Anexo III", "Fiscalização na estrada da amarração de cargas, com a classe da deficiência (leve, grave, perigosa) de cada falha", "Em vigor"],
+              ["[Diretiva 96/53/CE do Conselho](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:01996L0053-20190814), Anexo I", "Pesos no tráfego internacional e dimensões", "Em vigor (texto consolidado de 2019)"],
+              ["[Revisão da 96/53/CE, 2023/0265(COD)](https://oeil.europarl.europa.eu/oeil/en/procedure-file?reference=2023/0265(COD))", "Não aplicada: ainda é uma proposta", "Proposta"]
+            ]
+          } }
+        ]
+      },
+      {
+        "id": "standards",
+        "heading": "Normas e guias",
+        "body": [
+          { "table": {
+            "head": ["Fonte", "Usada para", "Situação"],
+            "rows": [
+              ["[EN 12195-1:2010, prévia pública](https://cdn.standards.iteh.ai/samples/32961/4592590bcf194f1a8ffa917a5db7d258/SIST-EN-12195-1-2011.pdf)", "Forças de amarração, coeficientes de atrito, fatores de segurança, as acelerações da estrada", "Norma (paga; prévia lida)"],
+              ["[Comissão Europeia, Cargo securing for road transport, guia de boas práticas de 2014](https://op.europa.eu/en/publication-detail/-/publication/30c7c1dc-f26e-44af-bd4c-2434b43edd7e)", "Resistência das paredes (EN 12642), equipamentos de amarração (EN 12195-2, -3, -4), exemplos resolvidos", "Orientação"],
+              ["[IRU, International Guidelines on Safe Load Securing](https://www.iru.org/sites/default/files/2016-01/en-safe-load-securing-8th.pdf)", "Exemplos resolvidos, alongamento das cintas", "Orientação"]
+            ]
+          } }
+        ]
+      },
+      {
+        "id": "note",
+        "heading": "Sobre a precisão",
+        "body": [
+          "Conferimos as regras nos textos oficiais e testamos cada uma com um caso que passa e um que falha, mas leis mudam e interpretações variam. O SecureCargo é uma ferramenta de apoio à decisão, não aconselhamento jurídico. Se encontrar uma regra que erramos, avise pelo [formulário de contato](/contact) com o assunto **Relatar um problema**."
+        ]
+      }
+    ]
+  }
+}

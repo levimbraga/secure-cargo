@@ -605,10 +605,26 @@
   },
   "Footer": {
     "wordmark": "SecureCargo",
-    "project": "Projeto",
-    "github": "GitHub",
     "language": "Idioma",
-    "disclaimer": "O Carga Segura é uma ferramenta de apoio à decisão, não uma certificação de engenharia."
+    "columns": "Mapa do site",
+    "product": "Produto",
+    "howItWorks": "Como funciona",
+    "examples": "Exemplos",
+    "explorer": "Explorador",
+    "insurers": "Para seguradoras",
+    "resources": "Recursos",
+    "methodology": "Como calculamos",
+    "rules": "Fontes das regras",
+    "github": "GitHub",
+    "legal": "Jurídico",
+    "privacy": "Privacidade",
+    "terms": "Termos",
+    "cookies": "Cookies",
+    "contact": "Contato",
+    "contactUs": "Fale conosco",
+    "copyright": "© 2026 SecureCargo",
+    "madeIn": "Feito em Jundiaí, Brasil",
+    "disclaimer": "Ferramenta de apoio à decisão, não uma certificação de engenharia"
   },
   "Explorer": {
     "label": "Explorador",
@@ -914,7 +930,8 @@
         "too_many": "Muitas tentativas. Espere alguns minutos e tente de novo.",
         "invite_used": "Este convite não vale mais. Peça um novo ao seu gestor.",
         "failed": "Algo deu errado. Tente de novo."
-      }
+      },
+      "consent": "Ao criar uma conta você concorda com os <terms>Termos</terms> e a <privacy>Política de privacidade</privacy>."
     }
   },
   "Member": {
@@ -2507,5 +2524,56 @@
     "check": "Verificar de novo",
     "failed": "Não foi possível entrar. Tente de novo.",
     "admin": "Admin da plataforma: abrir a página de admin"
+  },
+  "Legal": {
+    "updated": "Última atualização: {date}",
+    "notReviewed": "Preparado para um projeto de hackathon; não revisado por advogado.",
+    "onThisPage": "Nesta página"
+  },
+  "Contact": {
+    "label": "Contato",
+    "title": "Fale conosco.",
+    "description": "Escreva para a equipe do SecureCargo: dúvidas, seguradoras e transportadoras, parcerias, imprensa, pedidos sobre privacidade ou um problema para relatar.",
+    "intro": "Dúvidas, parcerias, imprensa ou um pedido sobre privacidade: escreva aqui e respondemos por email.",
+    "name": "Nome",
+    "email": "Email",
+    "emailHint": "Respondemos neste endereço.",
+    "subject": "Assunto",
+    "subjectPlaceholder": "Escolha um assunto",
+    "subjects": {
+      "general": "Dúvida geral",
+      "insurers": "Seguradoras e transportadoras",
+      "partnership": "Parceria",
+      "press": "Imprensa",
+      "privacy": "Privacidade ou pedido sobre dados",
+      "problem": "Relatar um problema"
+    },
+    "message": "Mensagem",
+    "messageCount": "{count} de {max} caracteres",
+    "honeypot": "Deixe este campo vazio",
+    "send": "Enviar",
+    "sending": "Enviando…",
+    "verifying": "Verificando que você não é um robô…",
+    "privacyNote": "Usamos o que você envia só para responder você. <link>Política de privacidade</link>.",
+    "success": {
+      "title": "Mensagem enviada.",
+      "body": "Obrigado, {name}. Vamos responder para {email}.",
+      "again": "Enviar outra mensagem"
+    },
+    "errors": {
+      "invalid_name": "Informe seu nome, com até 100 caracteres.",
+      "invalid_email": "Informe um email válido, para podermos responder.",
+      "invalid_subject": "Escolha um assunto.",
+      "invalid_message": "Escreva uma mensagem de 10 a 2.000 caracteres.",
+      "html_not_allowed": "Escreva a mensagem em texto simples, sem HTML nem links entre sinais de menor e maior.",
+      "turnstile_failed": "Não conseguimos confirmar que você não é um robô. Espere a verificação terminar e envie de novo.",
+      "turnstile_unavailable": "A verificação antispam não carregou. Desative um bloqueador para challenges.cloudflare.com ou tente outro navegador.",
+      "rate_limited": "Muitas mensagens de uma vez. Espere um minuto e tente de novo.",
+      "contact_hourly_limit": "Você pode enviar até 5 mensagens por hora. Tente de novo mais tarde.",
+      "send_failed": "Não foi possível enviar sua mensagem. Tente de novo em alguns minutos.",
+      "contact_unavailable": "O formulário de contato não está disponível agora. Tente de novo mais tarde.",
+      "network": "Não conseguimos falar com o servidor. Confira sua conexão e tente de novo.",
+      "unknown": "Algo deu errado. Tente de novo."
+    }
   }
 }

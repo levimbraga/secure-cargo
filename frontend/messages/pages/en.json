@@ -1,0 +1,713 @@
+{
+  "privacy": {
+    "label": "Legal",
+    "title": "Privacy policy.",
+    "description": "What SecureCargo collects, why, who processes it, how long it is kept and how to exercise your rights under the LGPD and the GDPR.",
+    "intro": [
+      "This policy explains, in plain language, what SecureCargo does with personal data. It is written for Brazil's General Data Protection Law (LGPD, Law 13.709/2018) and the EU General Data Protection Regulation (GDPR), and it describes what the system really does today."
+    ],
+    "sections": [
+      {
+        "id": "who",
+        "heading": "Who we are",
+        "body": [
+          "SecureCargo is a cargo-securement checking tool built by an individual developer in Jundiaí, São Paulo, Brazil, as a project for the Hack Brasil 2026 hackathon. For the personal data described here, SecureCargo is the controller (in the LGPD's words, the *controlador*).",
+          "To reach us about privacy, use the [contact form](/contact) and pick the subject **Privacy or data request**. We do not publish an email address."
+        ]
+      },
+      {
+        "id": "collect",
+        "heading": "What we collect",
+        "body": [
+          {
+            "list": [
+              "**Account:** your email address and name, your organization's name and type (insurer or carrier) and your role in it. Your password is handled by our sign-in provider, Clerk; we never see it. If a manager invites a colleague, we keep the invited email address until the invitation is used or expires.",
+              "**Demo visitors:** the demo buttons create no account. Your browser gets a random demo session and a sandbox, and nothing about you is asked.",
+              "**Inspections:** the photos of the load you take or upload (1 to 4), the truck you pick (body, size, dimensions, optional nickname in \"My trucks\"), the cargo weight, any notes, the readings and edits you confirm, the simulation results, the fix and the certificate. The plate field exists but is off unless your organization turns it on.",
+              "**Invoice photo:** if you choose \"Read from invoice\", we keep the photo of the invoice (DANFE) and the gross weight read from it. An invoice can show company names, tax numbers and addresses.",
+              "**Activity and usage:** an audit trail of each inspection (who created, edited, fixed or shared it, and when) and a record of each photo analysis (the AI model, the number of tokens and the estimated cost) to enforce quotas and the monthly budget.",
+              "**Contact form messages:** your name, the email address you want the reply sent to, the subject, the message, the page you wrote from, the site language and the date.",
+              "**IP address and technical data:** used for rate limits, anti-spam and abuse protection, and recorded for a short time in our providers' request logs. See \"How long we keep data\".",
+              "**Cookies and local storage:** listed on the [cookie page](/cookies)."
+            ]
+          },
+          "We remove the location (GPS) and other metadata (EXIF) from every photo, first on your phone before it is sent and again on our server before it is stored. Please avoid photographing faces or readable plates: they are not needed for the check."
+        ]
+      },
+      {
+        "id": "why",
+        "heading": "Why we use it, and the legal basis",
+        "body": [
+          {
+            "list": [
+              "**To provide the inspection service** (analysis, simulation, results, certificates, your organization's dashboard): performance of a contract (LGPD art. 7, V; GDPR art. 6(1)(b)).",
+              "**To keep the service secure and free of abuse** (sign-in, rate limits, Turnstile, audit trail): our legitimate interest (LGPD art. 7, IX; GDPR art. 6(1)(f)).",
+              "**To control costs** (quotas and the monthly budget for photo analysis): our legitimate interest in keeping a free service available.",
+              "**To answer your messages:** our legitimate interest in replying to you, or steps you asked for before a contract (LGPD art. 7, V and IX; GDPR art. 6(1)(b) and (f)). For privacy requests, also a legal obligation (LGPD art. 7, II; GDPR art. 6(1)(c)).",
+              "**Strictly necessary cookies:** they make sign-in and the demo work, so they need no consent."
+            ]
+          },
+          "We do not sell personal data, we do not use it for advertising, and we do not use it to train AI models. We do not make decisions about you based only on automated processing: a SecureCargo result is advice about a load, and the driver and the carrier decide."
+        ]
+      },
+      {
+        "id": "companies",
+        "heading": "When you use SecureCargo through your company",
+        "body": [
+          "An insurer or a carrier can use SecureCargo for its drivers and inspectors. The organization's managers see every inspection of their organization, and they decide how those inspections are used. For that data we act on the organization's behalf, so some requests (for example, deleting an inspection your company must keep) may need to go through your company."
+        ]
+      },
+      {
+        "id": "processors",
+        "heading": "Who processes data for us",
+        "body": [
+          "We use these service providers (processors, or *operadores* in the LGPD), each under its own data processing terms:",
+          {
+            "list": [
+              "**Clerk** (United States): accounts, sign-in, organizations and invitations, and the sign-in emails. [Clerk privacy policy](https://clerk.com/legal/privacy)",
+              "**Cloudflare** (United States, global network): our API, the database (D1), the private photo storage (R2), the contact form's email (Email Service), Turnstile anti-spam and request logs. [Cloudflare privacy policy](https://www.cloudflare.com/privacypolicy/) · [Turnstile privacy addendum](https://www.cloudflare.com/turnstile-privacy-policy/)",
+              "**Vercel** (United States): hosts the website and keeps short request logs. [Vercel privacy policy](https://vercel.com/legal/privacy-policy)",
+              "**Anthropic** (United States): the Claude model reads your load and invoice photos to suggest units, restraints and the gross weight. We use Anthropic's commercial API. Under its terms, Anthropic does not use API inputs or outputs to train its models by default, and deletes them within 30 days, except when it must keep them longer to enforce its usage policy or by law. [Is my data used for model training?](https://privacy.claude.com/en/articles/7996868-is-my-data-used-for-model-training) · [How long Anthropic stores API data](https://privacy.claude.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data) · [Anthropic commercial terms](https://www.anthropic.com/legal/commercial-terms)",
+              "**Google** (Gmail): the contact form's messages arrive in our mailbox there."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "transfers",
+        "heading": "International transfers",
+        "body": [
+          "These providers process data in the United States and in other countries where they operate, so your data leaves Brazil and, for European visitors, the European Economic Area. We rely on the safeguards in their data processing terms, such as standard contractual clauses (LGPD art. 33; GDPR art. 46) and, where a provider is certified, the EU-U.S. Data Privacy Framework (GDPR art. 45)."
+        ]
+      },
+      {
+        "id": "retention",
+        "heading": "How long we keep data",
+        "body": [
+          {
+            "list": [
+              "**Demo sessions:** everything a demo visitor creates is deleted automatically 24 hours after it was created. The demo session cookie also expires after 24 hours. The pre-made demo inspections use sample photos and fictitious names and are kept.",
+              "**Accounts:** until you ask us to delete the account. Inspections, photos, invoice photos, results, certificates, trucks, the audit trail and usage records are kept while the account exists, and deleted with it. A certificate's public verification page stops working when its inspection is deleted.",
+              "**Photo analysis cache:** the AI's reading of a photo is kept, keyed by the photo's fingerprint (SHA-256), so the same photo is never paid for twice. It describes cargo, not people.",
+              "**Contact form messages:** we do not store them in our database. They are only emailed to us, and we delete them from our mailbox within 90 days after the conversation ends, unless we need them to handle a legal claim.",
+              "**Contact form counter:** to limit each address to 5 messages an hour we keep a keyed hash (HMAC) of your IP address, never the address itself, for at most 2 hours.",
+              "**Request logs:** Cloudflare keeps the API's logs for up to 7 days and Vercel keeps the website's logs for up to 1 hour on our plan.",
+              "**At Anthropic:** up to 30 days, as described above."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "rights",
+        "heading": "Your rights",
+        "body": [
+          "You can ask us to confirm whether we process your data; to access it; to correct it; to delete it; to receive a copy in a portable format (JSON); to know who we share it with; to object to processing based on legitimate interest; and to withdraw any consent you gave. You can also complain to Brazil's data protection authority, the [ANPD](https://www.gov.br/anpd), or, in the EU, to your local supervisory authority.",
+          "**How:** send the request through the [contact form](/contact) with the subject **Privacy or data request**, writing from the email address of your account so we can confirm it is you. We answer within 15 days. To delete your account, ask the same way: we delete the account and everything in it, and confirm when it is done. You can correct your name and inspections yourself in the app."
+        ]
+      },
+      {
+        "id": "security",
+        "heading": "Security",
+        "body": [
+          "All traffic uses HTTPS. Photos are kept in a private bucket and are only served to people allowed to see them; every request is checked on the server (a driver sees only their own inspections, a manager only their organization's). Passwords are handled by Clerk. API keys and other secrets live only in our providers' secret stores. No system is perfectly secure; if a breach puts you at risk, we will tell you and the authorities as the law requires."
+        ]
+      },
+      {
+        "id": "children",
+        "heading": "Children",
+        "body": [
+          "SecureCargo is meant for professional use and is not intended for anyone under 18. We do not knowingly collect data from children."
+        ]
+      },
+      {
+        "id": "changes",
+        "heading": "Changes to this policy",
+        "body": [
+          "If we change what we collect or why, we will update this page and the date at its top."
+        ]
+      }
+    ]
+  },
+  "terms": {
+    "label": "Legal",
+    "title": "Terms of use.",
+    "description": "The terms for using SecureCargo: a decision-support tool for cargo securement, not an engineering certification or legal advice.",
+    "intro": [
+      "By using SecureCargo (the website at securecargo.app, the app and the API) you agree to these terms. If you do not agree, please do not use it."
+    ],
+    "sections": [
+      {
+        "id": "what",
+        "heading": "What SecureCargo is",
+        "body": [
+          "SecureCargo checks whether a truck's cargo is well distributed and properly secured, using a photo or the data you enter, a physics simulation and a set of road-transport rules (Brazil, the United States or the European Union). [How we calculate](/methodology) explains the model and its limits.",
+          "**SecureCargo is a decision-support tool.** It is not an engineering certification, an inspection by an authority, an insurance assessment or legal advice. A SecureCargo certificate records what the tool computed; it does not certify that a load complies with the law."
+        ]
+      },
+      {
+        "id": "responsibility",
+        "heading": "Your responsibility",
+        "body": [
+          "The driver and the carrier remain responsible for securing the load under the law that applies to the trip (in Brazil, among others, the Brazilian Traffic Code and CONTRAN Resolutions 945/2022 and 882/2021). Always check the load yourself, follow the manufacturer's limits for straps, chains and anchor points, and re-tighten restraints during the trip."
+        ]
+      },
+      {
+        "id": "inputs",
+        "heading": "Results depend on what you give us",
+        "body": [
+          "A result is only as good as the photo and the data entered. The AI can miss or misread straps, units or weights; a weight marked \"estimated\" is a guess, not a measurement. Review what was read and correct it before relying on the result. The simulation models a rigid load on a flat bed and does not cover every real situation."
+        ]
+      },
+      {
+        "id": "use",
+        "heading": "Acceptable use",
+        "body": [
+          {
+            "list": [
+              "Do not send spam, advertising or abusive messages through the contact form or any other feature.",
+              "Do not upload content you have no right to share, or photos of people's faces or readable plates.",
+              "Do not try to break, overload or get around the security, rate limits or quotas of the service, or access data that is not yours.",
+              "Do not use the service for anything illegal."
+            ]
+          },
+          "We may block an account or an address that breaks these rules."
+        ]
+      },
+      {
+        "id": "demo",
+        "heading": "Demo data resets",
+        "body": [
+          "The demo buttons give anyone access without an account. Anything created in a demo session is deleted automatically after 24 hours, and the demo organization can be reset at any time. Do not put real or sensitive information into a demo session."
+        ]
+      },
+      {
+        "id": "beta",
+        "heading": "Hackathon project, no warranty",
+        "body": [
+          "SecureCargo is a project built for the Hack Brasil 2026 hackathon and is in beta. It is provided \"as is\", without warranties of any kind, and it may change, stop working or be shut down without notice. To the extent the law allows, we are not liable for losses that come from using it or relying on its results. Nothing in these terms limits rights that consumer law gives you and that cannot be waived.",
+          "The source code is open (MIT license) on [GitHub](https://github.com/levimbraga/secure-cargo)."
+        ]
+      },
+      {
+        "id": "privacy",
+        "heading": "Privacy",
+        "body": [
+          "How we handle personal data is described in the [privacy policy](/privacy) and the [cookie page](/cookies)."
+        ]
+      },
+      {
+        "id": "law",
+        "heading": "Applicable law and changes",
+        "body": [
+          "These terms are governed by Brazilian law. We may update them; the date at the top of this page shows the current version."
+        ]
+      },
+      {
+        "id": "contact",
+        "heading": "Contact",
+        "body": [
+          "Questions about these terms: use the [contact form](/contact)."
+        ]
+      }
+    ]
+  },
+  "cookies": {
+    "label": "Legal",
+    "title": "Cookies.",
+    "description": "Every cookie and browser storage item SecureCargo uses. No analytics or advertising cookies.",
+    "intro": [
+      "SecureCargo uses no analytics, advertising or tracking cookies. The cookies below make sign-in, the demo and security work, plus one that remembers a default. Because they are needed for the service you asked for, we do not show a consent banner."
+    ],
+    "sections": [
+      {
+        "id": "list",
+        "heading": "Cookies",
+        "body": [
+          {
+            "table": {
+              "head": [
+                "Name",
+                "Set by",
+                "Purpose",
+                "Lasts"
+              ],
+              "rows": [
+                [
+                  "`sc_demo`",
+                  "SecureCargo API (api.securecargo.app)",
+                  "The demo session after \"Enter as demo driver\" or \"Enter as demo insurer\". HttpOnly: scripts cannot read it.",
+                  "24 hours"
+                ],
+                [
+                  "`sc_geo`",
+                  "SecureCargo website",
+                  "Your country (BR, US or EU only), from the country your connection appears to come from, so the rules switch starts on your region. No other location data is kept.",
+                  "30 days"
+                ],
+                [
+                  "`__client`",
+                  "Clerk (clerk.securecargo.app)",
+                  "Identifies your browser to the sign-in service and keeps you signed in. HttpOnly.",
+                  "Up to 400 days"
+                ],
+                [
+                  "`__client_uat`, `__client_uat_*`",
+                  "Clerk",
+                  "When you last signed in or out, so the site knows whether to ask for a fresh session.",
+                  "Up to 400 days"
+                ],
+                [
+                  "`__session`, `__session_*`",
+                  "Clerk",
+                  "Your current session token, sent to our API to prove who you are. Only when signed in.",
+                  "About 1 minute, renewed while you use the app"
+                ],
+                [
+                  "`__cf_bm`",
+                  "Cloudflare, on Clerk's sign-in domain",
+                  "Bot protection for the sign-in service.",
+                  "30 minutes"
+                ],
+                [
+                  "`_cfuvid`",
+                  "Cloudflare, on Clerk's sign-in domain",
+                  "Rate limiting for the sign-in service.",
+                  "Until you close the browser"
+                ]
+              ]
+            }
+          },
+          "Clerk's cookies are set on the app pages (under /app), where sign-in lives; the landing page and the legal pages set only `sc_geo`."
+        ]
+      },
+      {
+        "id": "storage",
+        "heading": "Local storage",
+        "body": [
+          {
+            "list": [
+              "`securecargo.country`: the rules country you picked (Brazil, United States or EU), so the choice stays the next time.",
+              "`__clerk_environment` and `__clerk_protect_*`: Clerk's sign-in settings and its bot protection."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "turnstile",
+        "heading": "Turnstile",
+        "body": [
+          "The contact form and the sign-up form are protected by Cloudflare Turnstile, which checks that a person, not a bot, is sending. It runs in a frame served by Cloudflare (challenges.cloudflare.com), sets no cookies on securecargo.app, and processes your IP address and browser signals as described in the [Turnstile privacy addendum](https://www.cloudflare.com/turnstile-privacy-policy/)."
+        ]
+      },
+      {
+        "id": "control",
+        "heading": "How to control them",
+        "body": [
+          "You can delete or block cookies in your browser's settings. If you block them, sign-in and the demo will not work; the rest of the site will. More about your data: [privacy policy](/privacy)."
+        ]
+      }
+    ]
+  },
+  "methodology": {
+    "label": "Resources",
+    "title": "How we calculate.",
+    "description": "How SecureCargo decides whether a load arrives intact: the MuJoCo physics model, the trip events, the verdict thresholds and the validation against EN 12195-1.",
+    "intro": [
+      "SecureCargo's verdict comes from a physics simulation, not from a rule of thumb. This page explains the model in plain words and shows that, wherever a closed-form calculation exists, the simulation gives the same answer. The full technical documents are on GitHub: [physics model](https://github.com/levimbraga/secure-cargo/blob/main/docs/physics-model.md) and [validation](https://github.com/levimbraga/secure-cargo/blob/main/docs/validation.md)."
+    ],
+    "sections": [
+      {
+        "id": "pipeline",
+        "heading": "Perceive, simulate, plan",
+        "body": [
+          {
+            "list": [
+              "**Perceive.** From a photo (read by the Claude vision model, then confirmed or corrected by the driver) or from the manual editor, we get the truck, each cargo unit (size, weight, position) and the restraints in place. The AI never invents weights: they come from the total you enter or from the invoice.",
+              "**Simulate.** The MuJoCo physics engine puts the truck bed through seven trip situations: emergency braking, a lane change, a sharp curve, a pothole, a speed bump, a long descent and long vibration. It records what slides, tips, rolls, hits the headboard or overloads a strap.",
+              "**Plan.** If something fails, the planner tries the cheapest changes first (move units, add straps, an anti-slip mat, diagonals, edge protectors), keeps only the ones that are needed, and proves the fixed load in the same seven situations.",
+              "**Check the rules.** Separately, the load is checked against the securing, weight and dimension rules of Brazil, the United States or the European Union. See [rule sources](/rules)."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "model",
+        "heading": "The model",
+        "body": [
+          {
+            "list": [
+              "The **truck bed** is a body whose motion is prescribed: it follows the acceleration of each trip event within a micrometre. The truck itself does not roll, pitch or yaw, and its suspension is not modelled.",
+              "**Cargo units** are rigid boxes or cylinders (coils, drums, pipes) with their weight, standing on the floor or on each other. Friction between each pair of materials comes from the EN 12195-1 table.",
+              "**Straps, chains and ropes** are tension-only springs with a pretension, a working capacity (LC) and a stretch. A top-over strap only presses the load down and holds by friction, exactly as the standard assumes. A diagonal (direct) lashing pulls on a fixed point.",
+              "**Walls and blocks** (headboard, side walls, chocks, coil cradles) only push. The front wall of a box truck or curtain-sider is taken as an EN 12642 code L wall (0.4 × payload, at most 5,000 daN); a curtain-sider's curtains restrain nothing.",
+              "Every run uses a fixed 2 ms time step and no randomness: the same input always gives the same output."
+            ]
+          }
+        ]
+      },
+      {
+        "id": "events",
+        "heading": "Trip conditions",
+        "body": [
+          "Speed (20 to 100 km/h), road type and weather change the events. A wet road lowers how hard the truck can brake, but not the friction between cargo and a clean deck; mud and gravel do, because the deck is no longer clean. Fog means a later, harsher braking. Every number has a source or is labelled as an assumption in the [physics model](https://github.com/levimbraga/secure-cargo/blob/main/docs/physics-model.md):",
+          {
+            "table": {
+              "head": [
+                "Quantity",
+                "Value",
+                "Source"
+              ],
+              "rows": [
+                [
+                  "Hardest braking",
+                  "Tyre grip, never above 0.8 g",
+                  "EN 12195-1; Wong, Theory of Ground Vehicles"
+                ],
+                [
+                  "Sideways limit",
+                  "0.5 g",
+                  "EN 12195-1; UMTRI rollover research"
+                ],
+                [
+                  "Pothole",
+                  "2.7 g vertical shock",
+                  "USDA FPL-22, shocks measured on truck beds"
+                ],
+                [
+                  "Speed bump",
+                  "3.70 m long, 0.10 m high",
+                  "Brazilian traffic signalling manual, vol. VI"
+                ],
+                [
+                  "Downhill grade",
+                  "8 %",
+                  "DNIT geometric design manual"
+                ],
+                [
+                  "Strap stretch at LC",
+                  "5 %",
+                  "EN 12195-2, as quoted by UNECE and IRU"
+                ],
+                [
+                  "Pretension left after long vibration",
+                  "50 %",
+                  "Assumption; CONTRAN 945/2022 art. 4 §2 requires re-tightening"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "verdict",
+        "heading": "From simulation to verdict",
+        "body": [
+          "The standard designs for no movement. Our thresholds separate real movement from elastic give:",
+          {
+            "table": {
+              "head": [
+                "What is measured",
+                "Warning",
+                "Fail"
+              ],
+              "rows": [
+                [
+                  "Slide on the bed",
+                  "more than 1 cm",
+                  "more than 5 cm"
+                ],
+                [
+                  "Tilt",
+                  "more than 1°",
+                  "more than 5°"
+                ],
+                [
+                  "Lashing force",
+                  "above 90 % of its capacity",
+                  "above its capacity, or it broke"
+                ],
+                [
+                  "Unit left the bed or hit the headboard",
+                  "",
+                  "always"
+                ]
+              ]
+            }
+          },
+          "The result has three states, the same everywhere: **Approved** (every situation holds and every rule passes), **Holds, but out of compliance** (the physics holds but a rule fails, for example an axle over its limit) and **Does not arrive intact** (a unit slides, tips, rolls, hits the headboard or breaks a lashing in at least one situation)."
+        ]
+      },
+      {
+        "id": "validation",
+        "heading": "Validation against EN 12195-1",
+        "body": [
+          "EN 12195-1 is the European standard for calculating cargo-securing forces. On the cases where it has a formula, we ran the simulation and compared. Every number below is asserted by an automated test that runs on every change.",
+          {
+            "table": {
+              "head": [
+                "Check",
+                "Formula",
+                "Simulation",
+                "Difference"
+              ],
+              "rows": [
+                [
+                  "Pallet with 2 straps: braking at which it slides",
+                  "1.051 g",
+                  "1.053 g",
+                  "+0.2 %"
+                ],
+                [
+                  "Crate with 4 straps: braking at which it slides",
+                  "0.847 g",
+                  "0.849 g",
+                  "+0.2 %"
+                ],
+                [
+                  "Plastic pallet with 5 straps",
+                  "0.896 g",
+                  "0.899 g",
+                  "+0.3 %"
+                ],
+                [
+                  "Unsecured box: braking at which it slides",
+                  "0.450 g",
+                  "0.450 g",
+                  "+0.1 %"
+                ],
+                [
+                  "Unsecured 0.8 × 2.0 m box: braking at which it tips",
+                  "0.400 g",
+                  "0.400 g",
+                  "−0.1 %"
+                ],
+                [
+                  "Tension in two direct lashings, 3 t box at 0.8 g",
+                  "755 daN",
+                  "775 daN",
+                  "+2.7 %"
+                ],
+                [
+                  "Force on the headboard, 2 t box at 0.8 g",
+                  "981 daN",
+                  "989 daN",
+                  "+0.8 %"
+                ],
+                [
+                  "Free 10 t steel coil rolling, braking at 0.5 g",
+                  "0.318 g",
+                  "0.316 g",
+                  "−0.5 %"
+                ],
+                [
+                  "Coil rolling over a 15 cm chock",
+                  "0.717 g",
+                  "0.710 g",
+                  "−1.1 %"
+                ]
+              ]
+            }
+          },
+          "In five lashing cases the simulation fails with one strap fewer than the formula asks for and passes with the formula's number, and the load does not move at all in the passing runs. The fixed demo scenarios carry what the standard asks for **with** its safety factor (1.25 forward), so they pass with margin."
+        ]
+      },
+      {
+        "id": "browser",
+        "heading": "Live in your browser, certified on the server",
+        "body": [
+          "The live lab runs the same MuJoCo model in your browser through WebAssembly. The server sends the exact model it simulates, and on the eight demo runs the browser and the server agree to the tenth of a millimetre and the newton. Browser results are labelled \"live, not certified\": certificates only ever use the server's result."
+        ]
+      },
+      {
+        "id": "limits",
+        "heading": "What this does not show",
+        "body": [
+          {
+            "list": [
+              "The simulation is validated against the standard's own model of a rigid load on a flat floor. It has not been compared with physical crash or braking tests.",
+              "Friction factors come from the standard's table. A real deck that is oily, icy or worn has less.",
+              "Units are rigid, with the centre of gravity in the middle; a strap over a stack is attached to the top unit.",
+              "The photo reading can miss or misread straps and units. Review it before relying on the result.",
+              "**SecureCargo is a decision-support tool, not an engineering certification.**"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "rules": {
+    "label": "Resources",
+    "title": "Rule sources.",
+    "description": "The Brazilian, US and EU cargo-securement, weight and dimension rules SecureCargo checks, with links to the official texts.",
+    "intro": [
+      "SecureCargo checks each load against one of three rule sets. Every rule in the app shows its article; these are the texts they come from, read in their official versions on November 21, 2026. Paywalled standards are used through official guidelines that reproduce them, and say so."
+    ],
+    "sections": [
+      {
+        "id": "br",
+        "heading": "Brazil",
+        "body": [
+          {
+            "table": {
+              "head": [
+                "Rule",
+                "What we check",
+                "Status"
+              ],
+              "rows": [
+                [
+                  "[CONTRAN Resolution 945/2022](https://www.in.gov.br/web/dou/-/resolucao-contran-n-945-de-28-de-marco-de-2022-390343667) and its [annex](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao9452022ANEXO.pdf)",
+                  "Cargo lashing: safety factor of 2, no ropes as lashings, 4 terminals per unit on open bodies, straps inside the side rails, diagonals when the load does not fill the body, no cargo above the headboard that could slide forward",
+                  "In force"
+                ],
+                [
+                  "[CONTRAN Resolution 882/2021](https://www.in.gov.br/en/web/dou/-/resolucao-contran-n-882-de-13-de-dezembro-de-2021-370017699)",
+                  "Weights per axle group and total, enforcement tolerances, legal dimensions",
+                  "In force, amended"
+                ],
+                [
+                  "[CONTRAN Resolution 994/2023](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao9942023.pdf/@@display-file/file)",
+                  "Amends 882: width wording (2.60 m unchanged)",
+                  "In force"
+                ],
+                [
+                  "[CONTRAN Resolution 1005/2024](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao10052024.pdf/@@display-file/file)",
+                  "Amends 882: tractor and semi-trailer length 19.30 m",
+                  "In force"
+                ],
+                [
+                  "[CONTRAN Resolution 1015/2024](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao10152024.pdf/@@display-file/file)",
+                  "Amends 882: 7 t front axle, extra weight for cleaner fuels",
+                  "In force"
+                ],
+                [
+                  "[Brazilian Traffic Code, Law 9.503/1997](https://www.planalto.gov.br/ccivil_03/leis/l9503compilado.htm)",
+                  "The infractions behind the rules (arts. 99, 102, 231, 235)",
+                  "In force"
+                ],
+                [
+                  "[Official list of CONTRAN resolutions](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-Senatran/resolucoes-contran)",
+                  "Used to confirm that no later resolution amends 882 or 945",
+                  "Official index"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "us",
+        "heading": "United States",
+        "body": [
+          {
+            "table": {
+              "head": [
+                "Rule",
+                "What we check",
+                "Status"
+              ],
+              "rows": [
+                [
+                  "[49 CFR part 393, subpart I](https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-393/subpart-I)",
+                  "Cargo securement: aggregate working load limit, number of tiedowns by length and weight, blocking and the commodity rules that apply",
+                  "In force"
+                ],
+                [
+                  "[49 CFR 393.87](https://www.ecfr.gov/current/title-49/section-393.87)",
+                  "Warning flags on projecting loads",
+                  "In force"
+                ],
+                [
+                  "[23 CFR part 658](https://www.ecfr.gov/current/title-23/chapter-I/subchapter-G/part-658)",
+                  "Federal weight limits (658.17), the bridge formula and widths and lengths (658.15)",
+                  "In force"
+                ],
+                [
+                  "[23 U.S.C. 127](https://www.law.cornell.edu/uscode/text/23/127)",
+                  "The bridge formula in the statute",
+                  "In force"
+                ],
+                [
+                  "[FHWA, Bridge Formula Weights](https://ops.fhwa.dot.gov/freight/publications/brdg_frm_wghts/bridge_formula_all_rev.pdf)",
+                  "How the bridge formula is rounded",
+                  "Guidance"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "eu",
+        "heading": "European Union",
+        "body": [
+          {
+            "table": {
+              "head": [
+                "Rule",
+                "What we check",
+                "Status"
+              ],
+              "rows": [
+                [
+                  "[Directive 2014/47/EU](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02014L0047-20220927), Art. 13 and Annex III",
+                  "Roadside inspection of cargo securing, with the deficiency class (minor, major, dangerous) of each failure",
+                  "In force"
+                ],
+                [
+                  "[Council Directive 96/53/EC](https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:01996L0053-20190814), Annex I",
+                  "Weights in international traffic and dimensions",
+                  "In force (2019 consolidated text)"
+                ],
+                [
+                  "[Revision of 96/53/EC, 2023/0265(COD)](https://oeil.europarl.europa.eu/oeil/en/procedure-file?reference=2023/0265(COD))",
+                  "Not applied: still a proposal",
+                  "Proposal"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "standards",
+        "heading": "Standards and guidelines",
+        "body": [
+          {
+            "table": {
+              "head": [
+                "Source",
+                "Used for",
+                "Status"
+              ],
+              "rows": [
+                [
+                  "[EN 12195-1:2010, public preview](https://cdn.standards.iteh.ai/samples/32961/4592590bcf194f1a8ffa917a5db7d258/SIST-EN-12195-1-2011.pdf)",
+                  "Securing forces, friction factors, safety factors, the road accelerations",
+                  "Standard (paywalled; preview read)"
+                ],
+                [
+                  "[European Commission, Cargo securing for road transport, 2014 best practices guidelines](https://op.europa.eu/en/publication-detail/-/publication/30c7c1dc-f26e-44af-bd4c-2434b43edd7e)",
+                  "Wall strengths (EN 12642), lashing equipment (EN 12195-2, -3, -4), worked examples",
+                  "Guidance"
+                ],
+                [
+                  "[IRU, International Guidelines on Safe Load Securing](https://www.iru.org/sites/default/files/2016-01/en-safe-load-securing-8th.pdf)",
+                  "Worked examples, strap stretch",
+                  "Guidance"
+                ]
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "note",
+        "heading": "A note on accuracy",
+        "body": [
+          "We check rules from the official texts and test each one with a passing and a failing case, but laws change and interpretations differ. SecureCargo is a decision-support tool, not legal advice. If you find a rule we got wrong, tell us through the [contact form](/contact) with the subject **Report a problem**."
+        ]
+      }
+    ]
+  }
+}

@@ -8,7 +8,7 @@ import { useEffect, useId, useState } from "react";
 import { DemoButtons } from "@/components/app/demo-buttons";
 import { useMe } from "@/components/app/me-provider";
 import { pill } from "@/components/ui/pill";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { type AuthErrorKey, authErrorKey, localAuthError, passwordMinLength } from "@/lib/auth-errors";
 
 export type AuthTab = "sign-in" | "sign-up";
@@ -212,6 +212,22 @@ function Submit({ busy, label, busyLabel }: { busy: boolean; label: string; busy
   );
 }
 
+/** Under the sign-up buttons: creating an account means agreeing to the terms and the privacy policy. */
+function Consent() {
+  const t = useTranslations("Auth.form");
+  const link = (href: "/terms" | "/privacy") => {
+    function ConsentLink(chunks: React.ReactNode) {
+      return (
+        <Link href={href} className="text-ink underline decoration-hairline underline-offset-4">
+          {chunks}
+        </Link>
+      );
+    }
+    return ConsentLink;
+  };
+  return <p className="type-small -mt-2 text-gray">{t.rich("consent", { terms: link("/terms"), privacy: link("/privacy") })}</p>;
+}
+
 /** Send the signed-in user to their home; `/app` decides between inspections and the org choice. */
 function useGoHome() {
   const router = useRouter();
@@ -412,6 +428,7 @@ function SignUpForm({ onHaveAccount }: { onHaveAccount: () => void }) {
       {/* Clerk's bot protection draws its challenge here when it needs one. */}
       <div id="clerk-captcha" />
       <Submit busy={busy} label={t("createAccount")} busyLabel={t("creating")} />
+      <Consent />
     </form>
   ) : (
     <form onSubmit={verify} noValidate className="grid gap-5">
@@ -496,6 +513,7 @@ function InvitedForm({ invite }: { invite: Invite }) {
       <FormError error={error} />
       <div id="clerk-captcha" />
       <Submit busy={busy} label={t("acceptInvite")} busyLabel={t("creating")} />
+      <Consent />
     </form>
   );
 }
