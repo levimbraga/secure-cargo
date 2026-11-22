@@ -79,7 +79,7 @@ export function SiteFooter() {
 
         <div className="mt-14 flex flex-col gap-4 text-[0.8125rem] text-gray md:flex-row md:items-center md:justify-between md:px-8">
           <p className="text-pretty">
-            {t("copyright")} · {t("madeIn")} · {t("disclaimer")}
+            {t("copyright")} · {t("disclaimer")}
           </p>
           <LanguageLinks className="flex gap-4" linkClassName={link} />
         </div>
