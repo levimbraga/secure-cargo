@@ -30,6 +30,13 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+const OG_IMAGE = {
+  url: "/og.png",
+  width: 1200,
+  height: 630,
+  alt: "SecureCargo: physics-tested cargo securement",
+};
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -47,6 +54,22 @@ export async function generateMetadata({
     metadataBase: new URL("https://securecargo.app"),
     title: t("title"),
     description: t("description"),
+    // Link previews (WhatsApp, LinkedIn, X). A file in `public/` keeps the image URL stable; the
+    // file-based `opengraph-image.png` under `[locale]` is served at `/-/...`.
+    openGraph: {
+      type: "website",
+      siteName: "SecureCargo",
+      title: t("title"),
+      description: t("description"),
+      locale: locale === "pt-BR" ? "pt_BR" : "en_US",
+      images: [OG_IMAGE],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("title"),
+      description: t("description"),
+      images: [OG_IMAGE],
+    },
   };
 }
 
