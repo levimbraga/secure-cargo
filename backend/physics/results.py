@@ -165,6 +165,13 @@ class KeyframeStrap(_Model):
     lashing_capacity_n: float
     anchor_points_m: list[Vec3] = Field(description="Fixed points on the bed, bed frame.")
     unit_points_m: list[Vec3] = Field(description="Points on the unit, relative to its centre.")
+    point_unit_ids: list[str] | None = Field(
+        default=None,
+        description=(
+            "A strap over several units side by side: the unit each of unit_points_m is on "
+            "(relative to that unit's centre). None: all on unit_id."
+        ),
+    )
     path_m: list[Vec3] = Field(description="Path as installed, bed frame.")
 
 

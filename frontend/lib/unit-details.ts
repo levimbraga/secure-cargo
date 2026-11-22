@@ -42,7 +42,7 @@ export function unitDetails(doc: KeyframesDoc, sample: Sample, unitIndex: number
   const start = doc.frames[0]?.units[unitIndex]?.p ?? pose.p;
   const lashings: LashingDetails[] = [];
   doc.straps.forEach((strap, index) => {
-    if (strap.unit_id !== unit.id) return;
+    if (strap.unit_id !== unit.id && !strap.point_unit_ids?.includes(unit.id)) return;
     const tension = sample.straps[index]?.tension ?? 0;
     const capacity = strap.lashing_capacity_n && strap.lashing_capacity_n > 0 ? strap.lashing_capacity_n : null;
     lashings.push({ index, id: strap.id, tension, capacity, ratio: capacity === null ? null : tension / capacity });

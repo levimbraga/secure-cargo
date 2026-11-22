@@ -538,9 +538,11 @@ def _prepare_lashings(
         damping[index] = 2 * LASHING_DAMPING_RATIO * np.sqrt(stiffness[index] * mass)
         if item.lashing.breaking_strength_n is not None:
             breaking[index] = item.lashing.breaking_strength_n
-        if item.saddle_joint is not None:
+        for saddle in (item.saddle_joint, *item.extra_saddle_joints):
+            if saddle is None:
+                continue
             # Light damping of the strap sliding along the unit, so it does not ring.
-            dof = model.joint(item.saddle_joint).dofadr[0]
+            dof = model.joint(saddle).dofadr[0]
             model.dof_damping[dof] = max(1.0, 0.2 * np.sqrt(target[index]))
     return _Lashings(
         tendon_ids=tendon_ids,
@@ -760,15 +762,22 @@ def keyframe_strap(scene: Scene, index: int) -> KeyframeStrap:
     """Geometry of one lashing for the replay."""
     item = scene.lashings[index]
     unit = scene.units[item.unit_index].unit
-    centre = (unit.position_m[0], unit.position_m[1], unit.position_m[2] + unit.size_m[2] / 2)
-    on_unit = [
-        (centre[0] + point[0], centre[1] + point[1], centre[2] + point[2])
-        for point in item.unit_points_m
-    ]
+    owners = item.point_units or tuple(item.unit_index for _ in item.unit_points_m)
+    on_unit = []
+    for point, owner in zip(item.unit_points_m, owners, strict=True):
+        at = scene.units[owner].unit
+        on_unit.append(
+            (
+                at.position_m[0] + point[0],
+                at.position_m[1] + point[1],
+                at.position_m[2] + at.size_m[2] / 2 + point[2],
+            )
+        )
     if item.lashing.routing is LashingRouting.TOP_OVER:
-        path = [item.anchor_points_m[0], on_unit[0], on_unit[1], item.anchor_points_m[1]]
+        path = [item.anchor_points_m[0], *on_unit, item.anchor_points_m[1]]
     else:
         path = [item.anchor_points_m[0], on_unit[0]]
+    row = len(set(owners)) > 1
     return KeyframeStrap(
         id=item.lashing.id,
         unit_id=unit.id,
@@ -777,6 +786,7 @@ def keyframe_strap(scene: Scene, index: int) -> KeyframeStrap:
         lashing_capacity_n=item.lashing.lashing_capacity_n,
         anchor_points_m=list(item.anchor_points_m),
         unit_points_m=list(item.unit_points_m),
+        point_unit_ids=[scene.units[owner].unit.id for owner in owners] if row else None,
         path_m=path,
     )
 

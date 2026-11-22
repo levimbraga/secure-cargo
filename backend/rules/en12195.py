@@ -66,7 +66,7 @@ def check_scenario(scenario: Scenario) -> list[StandardCheck]:
 
 
 def _check_unit(scenario: Scenario, unit: CargoUnit) -> StandardCheck:
-    lashings = [lashing for lashing in scenario.lashings if lashing.unit_id == unit.id]
+    lashings = [lashing for lashing in scenario.lashings if unit.id in lashing.unit_ids]
     top_over = [item for item in lashings if item.routing is LashingRouting.TOP_OVER]
     direct = [item for item in lashings if item.routing is LashingRouting.DIRECT]
     carries_another = any(
@@ -105,7 +105,10 @@ def _check_unit(scenario: Scenario, unit: CargoUnit) -> StandardCheck:
             meets_standard=all(check.ok for check in checks),
             checks=checks,
         )
-    checks = _top_over_checks(scenario, unit, top_over, friction)
+    # Straps over a row of units side by side hold the row: it slides as one mass.
+    row = {uid for item in top_over for uid in item.unit_ids}
+    row_mass = sum(other.mass_kg for other in scenario.units if other.id in row) or unit.mass_kg
+    checks = _top_over_checks(scenario, unit, top_over, friction, sliding_mass_kg=row_mass)
     required = max((math.ceil(check.required - 1e-9) for check in checks), default=0)
     uses_rope = any(item.kind is LashingKind.ROPE for item in top_over)
     note = ""
@@ -165,7 +168,11 @@ def _overlaps(scenario: Scenario, unit: CargoUnit) -> bool:
 
 
 def _top_over_checks(
-    scenario: Scenario, unit: CargoUnit, lashings: list[Lashing], friction: float
+    scenario: Scenario,
+    unit: CargoUnit,
+    lashings: list[Lashing],
+    friction: float,
+    sliding_mass_kg: float | None = None,
 ) -> list[DirectionCheck]:
     """Sliding (eq. 10) and tilting of a unit under top-over lashings, or under none."""
     length, width, height = unit.size_m
@@ -186,7 +193,7 @@ def _top_over_checks(
     for direction, (coefficient, safety_factor) in _DESIGN.items():
         # Sliding: n >= (c - mu cz) m g / (2 mu sin(alpha) F_T) * f_s.
         sliding = lashings_for(
-            (coefficient - friction * EN_CZ) * unit.mass_kg * _G,
+            (coefficient - friction * EN_CZ) * (sliding_mass_kg or unit.mass_kg) * _G,
             safety_factor,
             2 * friction * sine * tension,
         )

@@ -341,12 +341,14 @@ def _assess(scenario: Scenario, draft: LoadDraft | None) -> list[_Stack]:
             h = _Hold(friction_alone=mu * EN_CZ >= ACCELERATION[direction])
             for lashing in lashings:
                 if lashing.routing is LashingRouting.TOP_OVER:
+                    under = next(u for u in stack if u.id in lashing.unit_ids)
+                    # A strap over a row of units holds the row: each gets its share.
                     held = top_over_mass_kg(
                         mu,
-                        _top_over_sine(scenario, units[lashing.unit_id], lashing),
+                        _top_over_sine(scenario, under, lashing),
                         lashing.pretension_n,
                         direction,
-                    )
+                    ) / len(lashing.unit_ids)
                     h.lashing_kg += held
                     h.lashing_lc_kg += held
                     h.methods.add("top_over")
@@ -567,7 +569,6 @@ def tipping(scenario: Scenario, stacks: list[_Stack]) -> RuleCheck:
     """Annex III I.1: securing "must prevent tilting or tipping"; EN 12195-1 eq. 3 and eq. 16."""
     article = "Directive 2014/47/EU Annex III I.1; EN 12195-1"
     bed = scenario.bed
-    units = {u.id: u for u in scenario.units}
     failing: list[tuple[_Stack, Direction]] = []
     unstable = 0
     for stack in stacks:
@@ -605,7 +606,10 @@ def tipping(scenario: Scenario, stacks: list[_Stack]) -> RuleCheck:
                 if x.routing is LashingRouting.TOP_OVER
             ]
             if top_over:
-                sine = min(_top_over_sine(scenario, units[x.unit_id], x) for x in top_over)
+                sine = min(
+                    _top_over_sine(scenario, next(u for u in stack.units if u.id in x.unit_ids), x)
+                    for x in top_over
+                )
                 tension = min(x.pretension_n for x in top_over)
                 needed = _required_tilting_lashings(stack, direction, b, height, sine, tension)
                 if len(top_over) >= needed - 1e-9:

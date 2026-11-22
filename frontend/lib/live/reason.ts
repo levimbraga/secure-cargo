@@ -119,7 +119,7 @@ function isTall(doc: KeyframesDoc, unitIndex: number): boolean {
 
 /** Tension of a unit's straps when the event starts, and their lowest before the given frame [N]. */
 function strapLoosening(doc: KeyframesDoc, unitId: string | null, beforeFrame: number): { start: number; low: number } {
-  const straps = doc.straps.flatMap((strap, index) => (strap.unit_id === unitId ? [index] : []));
+  const straps = doc.straps.flatMap((strap, index) => (strap.unit_id === unitId || (unitId !== null && strap.point_unit_ids?.includes(unitId)) ? [index] : []));
   if (!straps.length) return { start: 0, low: 0 };
   const total = (frame: number) =>
     straps.reduce((sum, index) => sum + (doc.frames[frame]?.straps[index]?.tension_n ?? 0), 0) / straps.length;

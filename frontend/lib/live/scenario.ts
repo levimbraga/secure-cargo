@@ -51,6 +51,8 @@ export type ScenarioLashing = {
   routing: "top_over" | "direct";
   unit_id: string;
   anchor_ids: string[];
+  /** Top-over only: the other units the strap passes over (a row side by side). */
+  also_over?: string[];
   attachment_point_m: Vec3 | null;
   pretension_n: number;
   lashing_capacity_n: number;

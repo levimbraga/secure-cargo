@@ -109,8 +109,10 @@ def us_breaking_n(lashing: Lashing) -> float:
 
 def _aggregate_wll_n(lashings: list[Lashing]) -> float:
     """393.106(d): full WLL side to side over the article, half the WLL for a direct tiedown."""
+    # A tiedown over a row of articles side by side shares its WLL among them.
     return sum(
-        us_wll_n(x) * (1.0 if x.routing is LashingRouting.TOP_OVER else 0.5) for x in lashings
+        us_wll_n(x) * (1.0 / len(x.unit_ids) if x.routing is LashingRouting.TOP_OVER else 0.5)
+        for x in lashings
     )
 
 
@@ -402,7 +404,11 @@ def _restraint_n(scenario: Scenario, stack: list[CargoUnit], mu: float, directio
     units = {u.id: u for u in stack}
     lashings = _tiedowns(scenario, stack)
     clamping = sum(
-        2 * mu * _sine_over(scenario, units[x.unit_id], x) * x.pretension_n
+        2
+        * mu
+        * _sine_over(scenario, next(units[u] for u in x.unit_ids if u in units), x)
+        * x.pretension_n
+        / len(x.unit_ids)
         for x in lashings
         if x.routing is LashingRouting.TOP_OVER
     )

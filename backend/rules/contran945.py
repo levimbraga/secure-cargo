@@ -99,7 +99,8 @@ def _stacks(scenario: Scenario) -> list[list[CargoUnit]]:
 
 def _lashings_of(scenario: Scenario, stack: list[CargoUnit]) -> list[Lashing]:
     ids = {unit.id for unit in stack}
-    return [lashing for lashing in scenario.lashings if lashing.unit_id in ids]
+    # A strap over a row of units side by side holds each of them.
+    return [lashing for lashing in scenario.lashings if ids & set(lashing.unit_ids)]
 
 
 def _held_by_contact(scenario: Scenario, stack: list[CargoUnit]) -> bool:
@@ -161,7 +162,8 @@ def _safety_factor(scenario: Scenario) -> ContranCheck:
         ]
         assessed += 1
         weight_n = sum(unit.mass_kg for unit in stack) * STANDARD_GRAVITY_MPS2
-        capacity_n = sum(lashing.lashing_capacity_n for lashing in rated)
+        # A strap over a row shares its capacity among the units it goes over.
+        capacity_n = sum(lashing.lashing_capacity_n / len(lashing.unit_ids) for lashing in rated)
         if capacity_n < SAFETY_FACTOR * weight_n:
             failing += [unit.id for unit in stack]
     if not assessed:

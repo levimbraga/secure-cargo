@@ -68,6 +68,15 @@ describe("lab controls", () => {
     expect(many.scenario.lashings).toHaveLength(9);
   });
 
+  it("put one strap over units side by side, not one through the other", () => {
+    // The curtain-sider as loaded: six drums, two abreast, nothing over them.
+    const drums = demo("curtain-sider", "as_loaded");
+    const { scenario } = applyControls(drums.scenario, drums.event, { ...defaultControls(drums.event), strapsPerUnit: 1 });
+    const over = scenario.lashings.filter((lashing) => lashing.routing === "top_over");
+    expect(over).toHaveLength(3);
+    for (const lashing of over) expect(lashing.also_over).toHaveLength(1);
+  });
+
   it("leave units held by direct lashings alone", () => {
     const sacks = demo("dirt-road", "fixed");
     const controls = { ...defaultControls(sacks.event), strapsPerUnit: 1 };

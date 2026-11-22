@@ -51,6 +51,9 @@ BED_ARMATURE_KG = 1.0e9
 
 _WALL_THICKNESS_M = 0.10
 _FLOOR_THICKNESS_M = 0.20
+# Two points of a strap over a row closer than this are one: where two units touch, the
+# strap passes from one top to the next (a zero-length piece of tendon has no direction).
+_ROW_POINT_GAP_M = 0.03
 # Mass of the stretch of lashing that rides on top of a unit [kg].
 _SADDLE_MASS_KG = 0.5
 
@@ -107,6 +110,15 @@ class LashingModel:
     # Geometry for the replay: anchors in the bed frame, unit points relative to the unit centre.
     anchor_points_m: tuple[Vec3, ...]
     unit_points_m: tuple[Vec3, ...]
+    # The unit (index) each of ``unit_points_m`` is on: one, or a row under a top-over strap.
+    point_units: tuple[int, ...] = ()
+    # The saddles of the other units of the row, which slide like ``saddle_joint``.
+    extra_saddle_joints: tuple[str, ...] = ()
+
+    @property
+    def unit_indices(self) -> tuple[int, ...]:
+        """Every unit the lashing acts on, its own first."""
+        return tuple(dict.fromkeys((self.unit_index, *self.point_units)))
 
 
 @dataclass(frozen=True)
@@ -244,6 +256,7 @@ def build_scene(
 
     tendons = ET.SubElement(root, "tendon")
     unit_index = {unit.id: index for index, unit in enumerate(scenario.units)}
+    by_id = {unit.id: unit for unit in scenario.units}
     lashings: list[LashingModel] = []
     for lashing in scenario.lashings:
         unit = scenario.units[unit_index[lashing.unit_id]]
@@ -257,40 +270,97 @@ def build_scene(
         anchor_points: tuple[Vec3, ...]
         unit_points: tuple[Vec3, ...]
 
+        point_units: tuple[int, ...] = ()
+        extra_saddles: list[str] = []
         if lashing.routing is LashingRouting.TOP_OVER:
             first, second = lashing.anchor_ids
             # Order the anchors left (higher Y) then right.
             if anchors[first][1] < anchors[second][1]:
                 first, second = second, first
-            strap_x = (anchors[first][0] + anchors[second][0]) / 2 - unit.position_m[0]
-            saddle_joint = f"saddle_joint:{lashing.id}"
-            saddle = ET.SubElement(
-                body, "body", name=f"saddle:{lashing.id}", pos=_vec((strap_x, 0, sz / 2))
+            # The units under the strap, from left to right: one, or a row side by side.
+            row = sorted(
+                [unit, *(by_id[other] for other in lashing.also_over)],
+                key=lambda item: -item.position_m[1],
             )
-            ET.SubElement(
-                saddle,
-                "joint",
-                name=saddle_joint,
-                type="slide",
-                axis="1 0 0",
-                limited="true",
-                range=f"{_fmt(-sx / 2 - strap_x)} {_fmt(sx / 2 - strap_x)}",
-            )
-            ET.SubElement(
-                saddle,
-                "inertial",
-                pos="0 0 0",
-                mass=_fmt(_SADDLE_MASS_KG),
-                diaginertia="0.01 0.01 0.01",
-            )
-            left, right = f"edge_left:{lashing.id}", f"edge_right:{lashing.id}"
-            edge_left, edge_right = top_over_edges(unit, strap_x, anchors[first], anchors[second])
-            for name, edge in ((left, edge_left), (right, edge_right)):
-                ET.SubElement(saddle, "site", name=name, pos=_vec((0, edge[1], edge[2] - sz / 2)))
-            for site in (f"anchor:{first}", left, right, f"anchor:{second}"):
+            path = [f"anchor:{first}"]
+            last_world: Vec3 = anchors[first]
+            points: list[Vec3] = []
+            owners: list[int] = []
+            for place, covered in enumerate(row):
+                cx, cy, cz = covered.size_m
+                strap_x = (anchors[first][0] + anchors[second][0]) / 2 - covered.position_m[0]
+                primary = covered.id == unit.id
+                suffix = lashing.id if primary else f"{lashing.id}:{covered.id}"
+                joint = f"saddle_joint:{suffix}"
+                if primary:
+                    saddle_joint = joint
+                else:
+                    extra_saddles.append(joint)
+                saddle = ET.SubElement(
+                    unit_bodies[covered.id],
+                    "body",
+                    name=f"saddle:{suffix}",
+                    pos=_vec((strap_x, 0, cz / 2)),
+                )
+                ET.SubElement(
+                    saddle,
+                    "joint",
+                    name=joint,
+                    type="slide",
+                    axis="1 0 0",
+                    limited="true",
+                    range=f"{_fmt(-cx / 2 - strap_x)} {_fmt(cx / 2 - strap_x)}",
+                )
+                ET.SubElement(
+                    saddle,
+                    "inertial",
+                    pos="0 0 0",
+                    mass=_fmt(_SADDLE_MASS_KG),
+                    diaginertia="0.01 0.01 0.01",
+                )
+                edge_left, edge_right = top_over_edges(
+                    covered, strap_x, anchors[first], anchors[second]
+                )
+                on_covered: list[tuple[str, Vec3]] = [
+                    (f"edge_left:{suffix}", edge_left),
+                    (f"edge_right:{suffix}", edge_right),
+                ]
+                round_along = covered.shape is UnitShape.CYLINDER and covered.axis is CylinderAxis.X
+                if round_along and len(row) > 1:
+                    # Between two pipes the strap rests on each one's crest.
+                    crest = (strap_x, 0.0, cy / 2)
+                    inner = [
+                        item
+                        for side, item in enumerate(on_covered)
+                        if (side == 0 and place == 0) or (side == 1 and place == len(row) - 1)
+                    ]
+                    if place == 0:
+                        on_covered = [inner[0], (f"crest:{suffix}", crest)]
+                    elif place == len(row) - 1:
+                        on_covered = [(f"crest:{suffix}", crest), inner[-1]]
+                    else:
+                        on_covered = [(f"crest:{suffix}", crest)]
+                for name, point in on_covered:
+                    world = (
+                        covered.position_m[0] + point[0],
+                        covered.position_m[1] + point[1],
+                        covered.position_m[2] + cz / 2 + point[2],
+                    )
+                    if math.dist(world, last_world) < _ROW_POINT_GAP_M:
+                        continue  # two units touching: the strap passes from one to the next
+                    last_world = world
+                    ET.SubElement(
+                        saddle, "site", name=name, pos=_vec((0, point[1], point[2] - cz / 2))
+                    )
+                    path.append(name)
+                    points.append(point)
+                    owners.append(unit_index[covered.id])
+            path.append(f"anchor:{second}")
+            for site in path:
                 ET.SubElement(tendon, "site", site=site)
             anchor_points = (anchors[first], anchors[second])
-            unit_points = (edge_left, edge_right)
+            unit_points = tuple(points)
+            point_units = tuple(owners)
         else:
             assert lashing.attachment_point_m is not None
             local = attachment_on_unit(unit, lashing.attachment_point_m)
@@ -300,6 +370,7 @@ def build_scene(
                 ET.SubElement(tendon, "site", site=site)
             anchor_points = (anchors[lashing.anchor_ids[0]],)
             unit_points = (local,)
+            point_units = (unit_index[unit.id],)
 
         lashings.append(
             LashingModel(
@@ -310,6 +381,8 @@ def build_scene(
                 saddle_joint=saddle_joint,
                 anchor_points_m=anchor_points,
                 unit_points_m=unit_points,
+                point_units=point_units,
+                extra_saddle_joints=tuple(extra_saddles),
             )
         )
     if not lashings:

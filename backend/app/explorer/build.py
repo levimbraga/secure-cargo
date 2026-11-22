@@ -762,6 +762,7 @@ def build_draft(
                 f"{unit.id} has room for {len(pairs)} lashings over it, not {item.straps}.",
             )
         lashings += _over(unit, pairs, item.straps, properties)
+    lashings = _over_rows(lashings, units, draft, bed.anchor_points)
     floor_units = [unit for unit in units if unit.position_m[2] == 0]
     if restraint in (
         Restraint.DIRECT,
@@ -777,7 +778,13 @@ def build_draft(
         for unit in floor_units:
             if unit.id in by_hand:
                 continue
-            lashings += _diagonals(unit, bed.anchor_points, kind, device, sets.get(unit.id, 1))
+            lashings += [
+                lashing
+                for lashing in _diagonals(
+                    unit, bed.anchor_points, kind, device, sets.get(unit.id, 1)
+                )
+                if not _crosses_another(lashing, unit, floor_units, bed.anchor_points)
+            ]
     blocks: list[Block] = []
     if restraint in (Restraint.BLOCKING, Restraint.CRADLE, Restraint.CRADLE_CHAIN):
         blocks = _blocks(truck, units)
@@ -926,6 +933,44 @@ def _over(
     ]
 
 
+def _over_rows(
+    lashings: list[Lashing],
+    units: list[CargoUnit],
+    draft: LoadDraft,
+    anchors: list[AnchorPoint],
+) -> list[Lashing]:
+    """A top-over strap goes over everything under its line across the bed.
+
+    The anchors are on the rails, so with units side by side the strap of one unit passes over
+    the others too (lashing audit, 2026-11-22): each top-over lashing lists them in
+    ``also_over``, and two units' straps on the same pair of anchors are one strap over both.
+    Only the top unit of a stack is under a strap.
+    """
+    supporters = {item.on for item in draft.units if item.on}
+    tops = [unit for unit in units if unit.id not in supporters]
+    by_hand = {item.id for item in draft.units if item.lashings is not None}
+    out: list[Lashing] = []
+    seen: set[tuple[str, ...]] = set()
+    anchor_x = {anchor.id: anchor.position_m[0] for anchor in anchors}
+    for lashing in lashings:
+        if lashing.routing is not LashingRouting.TOP_OVER:
+            out.append(lashing)
+            continue
+        x = sum(anchor_x[a] for a in lashing.anchor_ids) / 2
+        row = sorted(
+            unit.id
+            for unit in tops
+            if unit.id != lashing.unit_id
+            and abs(x - unit.position_m[0]) < unit.size_m[0] / 2 - 0.01
+        )
+        key = tuple(sorted([*lashing.anchor_ids, lashing.unit_id, *row]))
+        if lashing.unit_id not in by_hand and key in seen:
+            continue  # the strap of a unit beside it already goes over this one here
+        seen.add(key)
+        out.append(lashing.model_copy(update={"also_over": row}) if row else lashing)
+    return out
+
+
 DEVICES: dict[LashingKind, dict[str, object]] = {
     LashingKind.STRAP: STRAP,
     LashingKind.CHAIN: CHAIN,
@@ -996,6 +1041,48 @@ def _closest_anchor(anchors: list[AnchorPoint], side: int, x: float) -> AnchorPo
         (anchor for anchor in anchors if anchor.position_m[1] * side > 0),
         key=lambda anchor: abs(anchor.position_m[0] - x),
     )
+
+
+def _crosses_another(
+    lashing: Lashing, unit: CargoUnit, floor_units: list[CargoUnit], anchors: list[AnchorPoint]
+) -> bool:
+    """Whether a direct lashing, seen from above, runs across another unit on the floor.
+
+    With units side by side, a unit's diagonals on the side of its neighbour would go through
+    the neighbour to the rail; that side is held by the neighbour and the straps over the row
+    instead, and the lashing is left out (lashing audit, 2026-11-22).
+    """
+    assert lashing.attachment_point_m is not None
+    anchor = next(a.position_m for a in anchors if a.id == lashing.anchor_ids[0])
+    start = (
+        unit.position_m[0] + lashing.attachment_point_m[0],
+        unit.position_m[1] + lashing.attachment_point_m[1],
+    )
+    for other in floor_units:
+        if other.id == unit.id:
+            continue
+        low = (
+            other.position_m[0] - other.size_m[0] / 2 + 0.01,
+            other.position_m[1] - other.size_m[1] / 2 + 0.01,
+        )
+        high = (
+            other.position_m[0] + other.size_m[0] / 2 - 0.01,
+            other.position_m[1] + other.size_m[1] / 2 - 0.01,
+        )
+        t0, t1 = 0.0, 1.0
+        for axis in (0, 1):
+            d = anchor[axis] - start[axis]
+            if abs(d) < 1e-12:
+                if not low[axis] <= start[axis] <= high[axis]:
+                    break
+                continue
+            a, b = (low[axis] - start[axis]) / d, (high[axis] - start[axis]) / d
+            t0, t1 = max(t0, min(a, b)), min(t1, max(a, b))
+            if t0 >= t1:
+                break
+        else:
+            return True
+    return False
 
 
 def _diagonals(

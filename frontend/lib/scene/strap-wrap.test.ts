@@ -105,6 +105,40 @@ describe("lashings drawn on round units", () => {
     expect(drawnPointCount(d, 0)).toBe(2);
   });
 
+  it("draw a strap over a row through each unit, each point moving with its own unit", () => {
+    const box = (id: string): KeyframeUnit => ({ id, size_m: [1, 1, 1], shape: "box" });
+    const row: KeyframeStrap = {
+      id: "s",
+      unit_id: "a",
+      kind: "strap",
+      routing: "top_over",
+      path_m: [
+        [0, 1.2, 0],
+        [0, 1, 1],
+        [0.2, -1, 1],
+        [0, -1.2, 0],
+      ],
+      anchor_points_m: [
+        [0, 1.2, 0],
+        [0, -1.2, 0],
+      ],
+      unit_points_m: [
+        [0, 0.5, 0.5],
+        [0, -0.5, 0.5],
+      ],
+      point_unit_ids: ["a", "b"],
+    };
+    const d = doc(box("a"), [0, 0.5, 0.5], [row]);
+    d.units.push(box("b"));
+    d.frames = [{ t: 0, units: [{ p: [0, 0.5, 0.5], q: [1, 0, 0, 0] }, { p: [0.2, -0.5, 0.5], q: [1, 0, 0, 0] }], straps: [{ tension_n: 0 }] }];
+    const path = drawnStrapPath(d, sampleFrame(d, 0), 0);
+    expect(path).toHaveLength(4);
+    expect(drawnPointCount(d, 0)).toBe(4);
+    expect(path[1]).toEqual([0, 1, 1]);
+    // The second point is on unit "b", which stands 0.2 m further forward.
+    expect(path[2]).toEqual([0.2, -1, 1]);
+  });
+
   it("draw every lashing of the demo runs on its unit's surface, at every frame", () => {
     const root = join(__dirname, "..", "..", "public", "demo");
     const files = [
@@ -123,13 +157,16 @@ describe("lashings drawn on round units", () => {
           const path = drawnStrapPath(keyframes, sample, index);
           expect(path).toHaveLength(drawnPointCount(keyframes, index));
           expect(path.flat().every(Number.isFinite)).toBe(true);
-          const unitIndex = keyframes.units.findIndex((unit) => unit.id === strap.unit_id);
-          const unit = keyframes.units[unitIndex];
-          const pose = sample.units[unitIndex];
-          if (unit?.shape !== "cylinder" || !unit.axis || !pose) return;
-          const axis = { x: 0, y: 1, z: 2 }[unit.axis];
-          const radius = Math.min(...unit.size_m.filter((_, i) => i !== axis)) / 2;
-          for (const point of path.slice(1, strap.routing === "top_over" ? -1 : undefined)) {
+          const points = path.slice(1, strap.routing === "top_over" ? -1 : undefined);
+          points.forEach((point, pointIndex) => {
+            // A strap over a row: each point is on its own unit.
+            const owner = strap.point_unit_ids?.[pointIndex] ?? strap.unit_id;
+            const unitIndex = keyframes.units.findIndex((unit) => unit.id === owner);
+            const unit = keyframes.units[unitIndex];
+            const pose = sample.units[unitIndex];
+            if (unit?.shape !== "cylinder" || !unit.axis || !pose) return;
+            const axis = { x: 0, y: 1, z: 2 }[unit.axis];
+            const radius = Math.min(...unit.size_m.filter((_, i) => i !== axis)) / 2;
             const local = rotate([pose.q[0], -pose.q[1], -pose.q[2], -pose.q[3]], [
               point[0] - pose.p[0],
               point[1] - pose.p[1],
@@ -138,7 +175,7 @@ describe("lashings drawn on round units", () => {
             const across = local.filter((_, i) => i !== axis);
             expect(Math.hypot(across[0] ?? 0, across[1] ?? 0)).toBeLessThanOrEqual(radius + 1e-3);
             checked += 1;
-          }
+          });
         });
       }
     }

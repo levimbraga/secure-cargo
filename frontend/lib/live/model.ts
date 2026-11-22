@@ -47,6 +47,8 @@ export type LiveLashing = {
   unit_index: number;
   tendon: string;
   saddle_joint: string | null;
+  /** A strap over a row of units: the other units' saddles (`physics/live.py`). */
+  extra_saddle_joints?: string[];
   kind: "strap" | "chain" | "rope";
   routing: "top_over" | "direct";
   axial_stiffness_n: number;

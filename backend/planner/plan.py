@@ -738,9 +738,15 @@ def _securing(draft: LoadDraft) -> list[_Candidate]:
         )
     # Diagonals hold by their strength, not by friction: they survive a dirty deck and loose
     # straps. Top-over straps stay on tall or stacked loads, which also tip.
+    # Units side by side: their inner sides cannot take diagonals (they would run through the
+    # neighbour), so straps over the row hold the row together.
+    abreast = any(
+        lashing.routing is LashingRouting.TOP_OVER and lashing.also_over
+        for lashing in build_draft(_with_straps(draft, two, Restraint.TOP_OVER))[0].lashings
+    )
     keep = (
         two
-        if (_tall(draft) or any(u.on for u in draft.units))
+        if (_tall(draft) or any(u.on for u in draft.units) or abreast)
         else {uid: n for uid, n in existing.items() if uid in room}
     )
     if draft.restraint in (Restraint.MAT, Restraint.MAT_DIRECT):

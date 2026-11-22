@@ -43,13 +43,18 @@ test("a sample photo goes from photo to a proven fix without an account or the A
 
 test("the three verdict states, from the sample photos", async ({ page }) => {
   for (const [sample, state] of [
-    ["concrete-pipes", "approved"],
     ["steel-racks", "holds_noncompliant"],
     ["lumber-straps", "fails"],
   ] as const) {
     const result = await throughTheQuestions(page, sample);
     await expect(result).toHaveAttribute("data-state", state);
   }
+  // Approved: the concrete pipes once straps go over them (as photographed, chains only, they fail).
+  const pipes = await throughTheQuestions(page, "concrete-pipes");
+  await expect(pipes).toHaveAttribute("data-state", "fails");
+  await page.getByTestId("apply-fix").click();
+  await expect(pipes).toHaveAttribute("data-variant", "fixed", { timeout: 20_000 });
+  await expect(pipes).toHaveAttribute("data-state", "approved");
 });
 
 test("the weight must be given before the result", async ({ page }) => {
@@ -68,33 +73,28 @@ test("switching country re-checks only the rules: same simulation, another check
   page.on("request", (request) => {
     if (/\/(battery|plan|simulate)$/.test(new URL(request.url()).pathname)) physics.push(request.url());
   });
+  // The concrete pipes as photographed: chains only, they leave the bed in every situation.
   const result = await throughTheQuestions(page, "concrete-pipes");
   await expect(result).toHaveAttribute("data-country", "BR");
-  await expect(result).toHaveAttribute("data-state", "approved");
+  await expect(result).toHaveAttribute("data-state", "fails");
   await expect(page.getByTestId("theme-securing")).toContainText("CONTRAN 945");
   const passed = await result.getAttribute("data-passed");
 
   await page.getByTestId("country-US").click();
   await expect(result).toHaveAttribute("data-country", "US");
-  // Round pipes need chocks under 49 CFR 393.106(c)(1); the physics is the same 7 of 7. The main
-  // problem is the 393.102(a)(2) WLL check (checked first): friction does not hold a pipe sideways.
-  await expect(result).toHaveAttribute("data-state", "holds_noncompliant");
-  await expect(result).toHaveAttribute("data-passed", passed ?? "7");
+  await expect(result).toHaveAttribute("data-passed", passed ?? "0");
   await expect(page.getByTestId("theme-securing")).toContainText("FMCSA 393");
   // The checks show inside the open theme (it stays open when the country changes).
   await page.getByTestId("theme-securing").click();
+  // Round pipes need chocks under 49 CFR 393.106(c)(1).
   await expect(page.locator('[data-check="rolling_articles"]')).toHaveAttribute("data-mark", "fail");
-  await expect(page.locator('[data-check="wll_criterion"]')).toHaveAttribute("data-mark", "fail");
-  await expect(page.getByTestId("main-problem")).toContainText("working load limit");
 
-  // EU rules: round pipes under straps have nothing against rolling sideways (Annex III I.1):
-  // a dangerous deficiency at a roadside check; still the same simulation.
+  // EU rules: round pipes with nothing against rolling sideways (Annex III I.1): a dangerous
+  // deficiency at a roadside check; still the same simulation.
   await page.getByTestId("country-EU").click();
   await expect(result).toHaveAttribute("data-country", "EU");
-  await expect(result).toHaveAttribute("data-state", "holds_noncompliant");
-  await expect(result).toHaveAttribute("data-passed", passed ?? "7");
+  await expect(result).toHaveAttribute("data-passed", passed ?? "0");
   await expect(page.getByTestId("theme-securing")).toContainText("2014/47");
-  await expect(page.getByTestId("roadside-class")).toHaveAttribute("data-class", "dangerous");
   await expect(page.locator('[data-check="eu_sideways"]')).toHaveAttribute("data-deficiency", "dangerous");
   expect(physics).toEqual([]);
 });

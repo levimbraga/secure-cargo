@@ -53,6 +53,8 @@ export type KeyframeStrap = {
   lashing_capacity_n?: number;
   anchor_points_m?: Vec3[];
   unit_points_m?: Vec3[];
+  /** A strap over several units side by side: the unit each of `unit_points_m` is on. */
+  point_unit_ids?: string[] | null;
 };
 export type KeyframeFrame = {
   t: number;
@@ -220,9 +222,13 @@ export function strapPath(doc: KeyframesDoc, sample: Sample, strapIndex: number)
   if (!anchors || !unitPoints || !pose || !first) return strap.path_m;
 
   const slide = strap.routing === "top_over" ? (sample.straps[strapIndex]?.slide ?? 0) : 0;
-  const onUnit = unitPoints.map(([x, y, z]): Vec3 => {
-    const [rx, ry, rz] = rotate(pose.q, [x + slide, y, z]);
-    return [pose.p[0] + rx, pose.p[1] + ry, pose.p[2] + rz];
+  const onUnit = unitPoints.map(([x, y, z], pointIndex): Vec3 => {
+    // A strap over a row of units: each point moves with its own unit.
+    const own = strap.point_unit_ids?.[pointIndex];
+    const owner = own ? sample.units[doc.units.findIndex((unit) => unit.id === own)] : pose;
+    const at = owner ?? pose;
+    const [rx, ry, rz] = rotate(at.q, [x + slide, y, z]);
+    return [at.p[0] + rx, at.p[1] + ry, at.p[2] + rz];
   });
   const last = anchors[1];
   return last ? [first, ...onUnit, last] : [first, ...onUnit];

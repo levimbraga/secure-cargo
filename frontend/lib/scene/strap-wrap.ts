@@ -66,6 +66,8 @@ export function drawnStrapPath(doc: KeyframesDoc, sample: Sample, strapIndex: nu
   if (!strap?.anchor_points_m || !strap.unit_points_m || !unit || !pose || unit.shape !== "cylinder" || !unit.axis) {
     return path;
   }
+  // A strap over a row of units is drawn through its points on each unit.
+  if (overRow(strap)) return path;
   const axis = unit.axis;
   const plane = PLANES[axis];
   const sides = unit.size_m.filter((_, index) => index !== { x: 0, y: 1, z: 2 }[axis]);
@@ -127,6 +129,10 @@ export function drawnStrapPath(doc: KeyframesDoc, sample: Sample, strapIndex: nu
   return [first, ...spread(onA, onB, WRAP_POINTS).map(world), last];
 }
 
+function overRow(strap: KeyframesDoc["straps"][number]): boolean {
+  return new Set(strap.point_unit_ids ?? []).size > 1;
+}
+
 /** How many points `drawnStrapPath` gives for a lashing, whatever the sample. */
 export function drawnPointCount(doc: KeyframesDoc, strapIndex: number): number {
   const strap = doc.straps[strapIndex];
@@ -134,6 +140,7 @@ export function drawnPointCount(doc: KeyframesDoc, strapIndex: number): number {
   const unit = doc.units.find((candidate) => candidate.id === strap.unit_id);
   const wraps =
     strap.routing === "top_over" &&
+    !overRow(strap) &&
     strap.anchor_points_m?.length === 2 &&
     strap.unit_points_m?.length === 2 &&
     unit?.shape === "cylinder" &&

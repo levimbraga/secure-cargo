@@ -16,13 +16,13 @@
       "variants": {
         "as_loaded": {
           "file": "emergency-braking.as_loaded.json",
-          "scenario_hash": "f389e49e2225d5591168fa2be6b34f6872dc3c13e82e22a53304bf7aa5018dc6",
+          "scenario_hash": "cfe9465168a9b9ae9f0b37bccd15677b0d9bd9819a3f2748d3ed032a05844290",
           "status": "fail",
           "explorer": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=1.1.1"
         },
         "fixed": {
           "file": "emergency-braking.fixed.json",
-          "scenario_hash": "3cf60b68e0667ec3672305e400b2451afc891e598495a26e75a41844d130a1fd",
+          "scenario_hash": "d4020e5758bfb557e128b0cd1eb99c9bb70e40ee073c4daf406b9bda4150c7ca",
           "status": "pass",
           "explorer": "body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=direct&speed=80&road=straight&weather=dry&event=emergency_braking&straps=1.1.1"
         }
@@ -50,7 +50,7 @@
         },
         "fixed": {
           "file": "sharp-curve.fixed.json",
-          "scenario_hash": "ee7d8e7ff4585fd0f56c15727ef39cd88f4b665cd9eeee66b4fc44054e1c193a",
+          "scenario_hash": "b8263c5dd509707fa0ed9ed7c938a35ccfb666e55e189b4b42e8278bc02962f0",
           "status": "pass",
           "explorer": "body=flatbed&size=toco&cargo=tall_cabinet&position=headboard&restraint=direct&speed=60&road=curvy&weather=dry&event=sharp_curve&straps=1.1"
         }
@@ -72,13 +72,13 @@
       "variants": {
         "as_loaded": {
           "file": "rope-lashing.as_loaded.json",
-          "scenario_hash": "72fa7b1db27ba99b5199510c0e06d2641364f0137ece208aeb5ca5674f348c42",
+          "scenario_hash": "d74d6c0175b6dce6f05c4f7d2cef514f773fb262121a14292e33eddfba4b80ab",
           "status": "fail",
           "explorer": "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=rope&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2"
         },
         "fixed": {
           "file": "rope-lashing.fixed.json",
-          "scenario_hash": "fc8f570958367e41fdcc0e1088eba9aa7d0b5d33d1c16e54907d621f8d259892",
+          "scenario_hash": "e80bfd14848827576c6616865980c7b665c6d84e9ca791c35ecbc54bb4279fd2",
           "status": "pass",
           "explorer": "body=flatbed&size=toco&cargo=plastic_pallet&position=gap&restraint=direct&speed=80&road=straight&weather=dry&event=lane_change&straps=2.2.2"
         }
@@ -106,7 +106,7 @@
         },
         "fixed": {
           "file": "steel-coil.fixed.json",
-          "scenario_hash": "248fc3d1dddf839825e87d0c86084c41565e6aef30595c0caf173de0b2f1cf69",
+          "scenario_hash": "f83de3629a9af56fbe91f856ca443101ecffe410108de73aa9f98befb0e26c66",
           "status": "pass",
           "explorer": "body=flatbed&size=truck&cargo=steel_coil&position=gap&restraint=cradle_chain&speed=60&road=straight&weather=wet&event=emergency_braking&straps=0&moves=0_0.00_0.00"
         }
@@ -128,13 +128,13 @@
       "variants": {
         "as_loaded": {
           "file": "weigh-station.as_loaded.json",
-          "scenario_hash": "2126ed5cd077fc5857d7ed234e625ed1354c2a35fe30d119f6d45ccaf9fe6e0a",
+          "scenario_hash": "af721af56c8f98c3e65d76025a5ebf50f16584eaceea38cd221c9ba4e8817761",
           "status": "fail",
           "explorer": "body=flatbed&size=toco&cargo=machine&position=rear&restraint=chain&speed=20&road=urban&weather=dry&event=speed_bump&kg=8000&moves=0_-1.60_0.00"
         },
         "fixed": {
           "file": "weigh-station.fixed.json",
-          "scenario_hash": "4c25c12c03353ab528b5c5a078c40e71773b3e53798cbd6476c48d2d887775e8",
+          "scenario_hash": "0a0940d74f21d7baf14efbc607b80ab455a53bb29d48240aaccf8383652fd659",
           "status": "pass",
           "explorer": "body=flatbed&size=toco&cargo=machine&position=rear&restraint=chain&speed=20&road=urban&weather=dry&event=speed_bump&kg=8000&moves=0_0.40_0.00"
         }
@@ -184,13 +184,13 @@
       "variants": {
         "as_loaded": {
           "file": "dirt-road.as_loaded.json",
-          "scenario_hash": "6005718e343f79e35d891262b48b2b16aaaec0e53d12621f1ab9a57d9f373c9f",
+          "scenario_hash": "b898fc961668cb137e4e6bed6da37577c8324e467bed7b251cdd7da905aa4750",
           "status": "fail",
           "explorer": "body=flatbed&size=toco&cargo=sacks&position=gap&restraint=top_over&speed=40&road=dirt&weather=dry&event=long_vibration&straps=3.3.3"
         },
         "fixed": {
           "file": "dirt-road.fixed.json",
-          "scenario_hash": "f509c3d6f30fca528a80a5274406e75c4183f7e95afc6bf9e280cf8f39cddc1f",
+          "scenario_hash": "92349cff908c82fe628ce945a71148e2d2cdbe1673a2c6f0f371002a4d29191c",
           "status": "pass",
           "explorer": "body=flatbed&size=toco&cargo=sacks&position=gap&restraint=direct&speed=40&road=dirt&weather=dry&event=long_vibration"
         }
@@ -212,13 +212,13 @@
       "variants": {
         "as_loaded": {
           "file": "anti-slip-mat.as_loaded.json",
-          "scenario_hash": "c713fd6fa5bd82250eaeb7ebbd528a5c126d36fe065d048514baac9ccdd1a27e",
+          "scenario_hash": "bdacb9b41fb4a58dd78716a6210aa1cf645e2751420af19cfca86042b90d0242",
           "status": "fail",
           "explorer": "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=top_over&speed=60&road=straight&weather=wet&event=emergency_braking"
         },
         "fixed": {
           "file": "anti-slip-mat.fixed.json",
-          "scenario_hash": "450e114d1e6ffad427d4db318ed78fd2c901e6a30ae74c29d2d1aa0d6889fd7b",
+          "scenario_hash": "35f77018e15fac5f7a240a9367ed4029e44b47be6f0c2d2845627765da81ea5a",
           "status": "pass",
           "explorer": "body=flatbed&size=truck&cargo=plastic_pallet&position=gap&restraint=mat_direct&speed=60&road=straight&weather=wet&event=emergency_braking&straps=2.2.2"
         }
@@ -250,7 +250,7 @@
         },
         "fixed": {
           "file": "full-trip.fixed.json",
-          "scenario_hash": "9aca6b200556f9fcc8bd00c3e351899f6fad0243cb92c547aeb370ddb1052b6d",
+          "scenario_hash": "bdccb40094fc1c8da9a067bfe091f05cd58291e9a3c3925081288df6dddf5593",
           "status": "pass",
           "explorer": "body=flatbed&size=semi&cargo=crate&position=gap&restraint=direct&speed=60&road=mountain&weather=heavy_rain&event=full_trip&n=6&straps=0.0.0.0.0.0"
         }
@@ -278,7 +278,7 @@
         },
         "fixed": {
           "file": "curtain-sider.fixed.json",
-          "scenario_hash": "03758811916a3234c437ac311516e0078a085b3450fcbe13e3b2503c86561f09",
+          "scenario_hash": "1efe9584da029fed6880a2fde74c8d9cce0dfd9df086b57053f2558600f92cc1",
           "status": "pass",
           "explorer": "body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=direct&speed=60&road=curvy&weather=dry&event=sharp_curve&n=6&straps=1.1.1.1.1.1&moves=0_2.20_0.00*1_1.45_0.00*2_0.70_0.00*3_-0.05_0.00*4_-0.80_0.00*5_-1.55_0.00"
         }
@@ -306,7 +306,7 @@
         },
         "fixed": {
           "file": "potholed-road.fixed.json",
-          "scenario_hash": "d87ff667bc9bc47e3064bf2ca93fed127d81ffaff142e4d1e7a3348b9f807836",
+          "scenario_hash": "b7a0201bb677dd6fc76254cdec0f8f31b6c285267cb63d7affb459089df71145",
           "status": "pass",
           "explorer": "body=flatbed&size=truck&cargo=long_pipes&position=gap&restraint=chain&speed=60&road=potholed&weather=mud&event=pothole"
         }
@@ -328,13 +328,13 @@
       "variants": {
         "as_loaded": {
           "file": "overloaded-strap.as_loaded.json",
-          "scenario_hash": "3e6c4c76866307f971d63cb4bfbffb15e42c5c6e1332e86052105782afb2caad",
+          "scenario_hash": "ebb51ef53d90358a6a413b33ae3b962d1107752ba97cec19f91dc75966849954",
           "status": "fail",
           "explorer": "body=flatbed&size=semi&cargo=steel_coil&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking"
         },
         "fixed": {
           "file": "overloaded-strap.fixed.json",
-          "scenario_hash": "3d9a082fca1aa6ba09d2165fa06dc29b617069b65db6e63fe34d5a4da4da8222",
+          "scenario_hash": "68940946b67e7c690ca4c7a5efcf989af3e87e39a83cfae5a62231abd2c26de0",
           "status": "pass",
           "explorer": "body=flatbed&size=semi&cargo=steel_coil&position=gap&restraint=cradle&speed=80&road=straight&weather=dry&event=emergency_braking&straps=2"
         }
@@ -356,13 +356,13 @@
       "variants": {
         "as_loaded": {
           "file": "us-steel-coils.as_loaded.json",
-          "scenario_hash": "2bc32040b6f6db81e20594b94a670b31e4cfbcffd365313c7a82d89b9468f4d2",
+          "scenario_hash": "e7eaa76d917e1b9b26f00dcb1667eddd793a24ea3a3dadabe7d5391d711ea201",
           "status": "fail",
           "explorer": "body=flatbed&size=us_flatbed_48&cargo=steel_coil&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&n=2&kg=9000&moves=0_1.00_0.00*1_-1.00_0.00&country=US"
         },
         "fixed": {
           "file": "us-steel-coils.fixed.json",
-          "scenario_hash": "a9eab0523dbb7faabfafa4a4e6fcaa3759bdcf1194cded8d584dbf4953808e47",
+          "scenario_hash": "d50ca34713bf5a581bfaee266ec7bfdec134cf7bc9b14048bd5efa8522ad2892",
           "status": "pass",
           "explorer": "body=flatbed&size=us_flatbed_48&cargo=steel_coil&position=gap&restraint=cradle_chain&speed=80&road=straight&weather=dry&event=emergency_braking&n=2&kg=9000&straps=0.0&moves=0_1.00_0.00*1_-1.00_0.00&country=US"
         }
@@ -390,7 +390,7 @@
         },
         "fixed": {
           "file": "eu-curtain-pallets.fixed.json",
-          "scenario_hash": "7b10b7a5ff46fba0c87e1c4b28d06f868dfc55f9291be1f570664e6d41fa507a",
+          "scenario_hash": "9b65c972cf0b1d05d3846255657f3a8acf2616caf1476731d5bc0f158a7518f8",
           "status": "pass",
           "explorer": "body=curtain_sider&size=eu_semi_136&cargo=wood_pallet&position=headboard&restraint=mat&speed=70&road=curvy&weather=dry&event=sharp_curve&n=11&kg=700&straps=2.2.2.2.2.2.2.2.2.2.2&country=EU"
         }

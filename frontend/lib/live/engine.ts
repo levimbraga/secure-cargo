@@ -287,9 +287,10 @@ export class LiveRun {
       this.stiffness[index] = stiffness;
       this.damping[index] = 2 * settings.lashing_damping_ratio * Math.sqrt(stiffness * mass);
       if (lashing.breaking_strength_n !== null) this.breaking[index] = lashing.breaking_strength_n;
-      if (lashing.saddle_joint) {
+      for (const saddle of [lashing.saddle_joint, ...(lashing.extra_saddle_joints ?? [])]) {
+        if (!saddle) continue;
         // Light damping of the strap sliding along the unit, so it does not ring.
-        const dof = dofAddress[id(mjOBJ_JOINT, lashing.saddle_joint)] as number;
+        const dof = dofAddress[id(mjOBJ_JOINT, saddle)] as number;
         dofDamping[dof] = Math.max(1, 0.2 * Math.sqrt(target));
       }
       this.restLength[index] = installed - target / stiffness;

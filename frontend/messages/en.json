@@ -58,8 +58,8 @@
       "states": {
         "approved": {
           "badge": "Approved",
-          "load": "Concrete pipes on a crane truck",
-          "sentence": "Arrives intact and complies: it holds in all 7 situations and meets the rules."
+          "load": "Concrete pipes on a crane truck, after the fix",
+          "sentence": "Arrives intact and complies once two straps go over the pipes, beside the chains: it holds in all 7 situations and meets the rules. As photographed, with chains only, 0 of 7."
         },
         "holds": {
           "badge": "Holds, out of compliance",

@@ -97,6 +97,10 @@ class LiveLashing(_Model):
     unit_index: int
     tendon: str
     saddle_joint: str | None
+    extra_saddle_joints: list[str] = Field(
+        default_factory=list,
+        description="A strap over a row of units: the other units' saddles, damped the same.",
+    )
     kind: LashingKind
     routing: LashingRouting
     axial_stiffness_n: float = Field(description="EA [N]: force per unit strain.")
@@ -209,6 +213,7 @@ def build_live_model(scenario: Scenario, event: TripEvent) -> LiveModel:
                 unit_index=item.unit_index,
                 tendon=item.tendon,
                 saddle_joint=item.saddle_joint,
+                extra_saddle_joints=list(item.extra_saddle_joints),
                 kind=item.lashing.kind,
                 routing=item.lashing.routing,
                 axial_stiffness_n=item.axial_stiffness_n,

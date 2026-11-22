@@ -58,8 +58,8 @@
       "states": {
         "approved": {
           "badge": "Aprovada",
-          "load": "Tubos de concreto em caminhão com guindaste",
-          "sentence": "Chega inteira e cumpre as regras: aguenta as 7 situações e atende às normas."
+          "load": "Tubos de concreto em caminhão com guindaste, depois da correção",
+          "sentence": "Chega inteira e cumpre as regras com duas cintas por cima dos tubos, além das correntes: aguenta as 7 situações e atende às normas. Como foi fotografada, só com correntes, 0 de 7."
         },
         "holds": {
           "badge": "Aguenta, fora das regras",

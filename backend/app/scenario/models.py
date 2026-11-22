@@ -294,6 +294,14 @@ class Lashing(_Model):
         max_length=2,
         description="Two anchors on opposite sides for top-over routing, one for direct.",
     )
+    also_over: list[Identifier] = Field(
+        default_factory=list,
+        max_length=8,
+        description=(
+            "Top-over routing only: the other units the strap passes over on its way across, "
+            "when units stand side by side (one strap over the whole row)."
+        ),
+    )
     attachment_point_m: Vec3 | None = Field(
         default=None,
         description=(
@@ -323,6 +331,11 @@ class Lashing(_Model):
         description="Force at which the lashing breaks [N]. If unset it never breaks.",
     )
 
+    @property
+    def unit_ids(self) -> list[str]:
+        """Every unit the lashing holds: its own and, for a strap over a row, the others."""
+        return [self.unit_id, *self.also_over]
+
     @model_validator(mode="after")
     def _routing_is_consistent(self) -> Self:
         if self.routing is LashingRouting.TOP_OVER:
@@ -330,7 +343,11 @@ class Lashing(_Model):
                 raise ValueError("top-over routing needs two different anchor points")
             if self.attachment_point_m is not None:
                 raise ValueError("attachment_point_m only applies to direct routing")
+            if self.unit_id in self.also_over or len(set(self.also_over)) != len(self.also_over):
+                raise ValueError("also_over names other units, each once")
         else:
+            if self.also_over:
+                raise ValueError("also_over only applies to top-over routing")
             if len(self.anchor_ids) != 1:
                 raise ValueError("direct routing needs exactly one anchor point")
             if self.attachment_point_m is None:
@@ -406,15 +423,19 @@ class Scenario(_Model):
                 raise ValueError(f"lashing {lashing.id!r} refers to unknown anchor {missing[0]!r}")
             if lashing.routing is LashingRouting.TOP_OVER:
                 first, second = (anchors[a].position_m for a in lashing.anchor_ids)
-                unit_y = unit.position_m[1]
-                if (first[1] - unit_y) * (second[1] - unit_y) >= 0:
-                    raise ValueError(
-                        f"lashing {lashing.id!r}: top-over anchors must be on opposite sides "
-                        "of the unit"
-                    )
                 strap_x = (first[0] + second[0]) / 2
-                if abs(strap_x - unit.position_m[0]) > unit.size_m[0] / 2:
-                    raise ValueError(f"lashing {lashing.id!r} does not pass over its unit")
+                for other_id in [lashing.unit_id, *lashing.also_over]:
+                    other = units.get(other_id)
+                    if other is None:
+                        raise ValueError(f"lashing {lashing.id!r} refers to unknown unit")
+                    unit_y = other.position_m[1]
+                    if (first[1] - unit_y) * (second[1] - unit_y) >= 0:
+                        raise ValueError(
+                            f"lashing {lashing.id!r}: top-over anchors must be on opposite sides "
+                            "of the unit"
+                        )
+                    if abs(strap_x - other.position_m[0]) > other.size_m[0] / 2:
+                        raise ValueError(f"lashing {lashing.id!r} does not pass over its unit")
             else:
                 point = lashing.attachment_point_m
                 assert point is not None

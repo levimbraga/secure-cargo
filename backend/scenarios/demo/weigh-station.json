@@ -351,6 +351,7 @@
         "anchor_ids": [
           "L8"
         ],
+        "also_over": [],
         "attachment_point_m": [
           1.0,
           0.8,
@@ -369,6 +370,7 @@
         "anchor_ids": [
           "R8"
         ],
+        "also_over": [],
         "attachment_point_m": [
           1.0,
           -0.8,
@@ -387,6 +389,7 @@
         "anchor_ids": [
           "L0"
         ],
+        "also_over": [],
         "attachment_point_m": [
           -1.0,
           0.8,
@@ -405,6 +408,7 @@
         "anchor_ids": [
           "R0"
         ],
+        "also_over": [],
         "attachment_point_m": [
           -1.0,
           -0.8,
@@ -757,6 +761,7 @@
         "anchor_ids": [
           "L13"
         ],
+        "also_over": [],
         "attachment_point_m": [
           1.0,
           0.8,
@@ -775,6 +780,7 @@
         "anchor_ids": [
           "R13"
         ],
+        "also_over": [],
         "attachment_point_m": [
           1.0,
           -0.8,
@@ -793,6 +799,7 @@
         "anchor_ids": [
           "L3"
         ],
+        "also_over": [],
         "attachment_point_m": [
           -1.0,
           0.8,
@@ -811,6 +818,7 @@
         "anchor_ids": [
           "R3"
         ],
+        "also_over": [],
         "attachment_point_m": [
           -1.0,
           -0.8,

@@ -117,6 +117,54 @@ def test_each_restraint_secures_the_load_its_way() -> None:
     assert {block.kind.value for block in cradle.bed.blocks} == {"cradle"}
 
 
+def test_a_mat_with_diagonal_straps_keeps_the_mat_and_adds_the_diagonals() -> None:
+    scenario = build(config("cargo=plastic_pallet&restraint=mat_direct&straps=2.2.2")).scenario
+    assert {unit.material.value for unit in scenario.units} == {"rubber_mat"}
+    routings = [lashing.routing for lashing in scenario.lashings]
+    assert routings.count(LashingRouting.TOP_OVER) == 6
+    assert routings.count(LashingRouting.DIRECT) == 12
+
+
+def test_units_side_by_side_share_one_strap_over_the_row() -> None:
+    # Two drums abreast in each row: a strap from rail to rail goes over both.
+    scenario = build(
+        config("body=curtain_sider&size=three_quarter&cargo=drum&position=side&n=4&straps=2.2.2.2")
+    ).scenario
+    over = [x for x in scenario.lashings if x.routing is LashingRouting.TOP_OVER]
+    assert len(over) == 4  # two per row, not two per drum
+    for lashing in over:
+        assert len(lashing.unit_ids) == 2
+    # Every drum is under two straps.
+    for unit in scenario.units:
+        assert sum(unit.id in x.unit_ids for x in over) == 2
+
+
+def test_a_diagonal_never_runs_through_the_unit_beside_it() -> None:
+    # Two drums abreast per row, diagonal chains: seen from above, no chain crosses a drum.
+    scenario = build(
+        config("body=curtain_sider&size=three_quarter&cargo=drum&position=side&restraint=chain")
+    ).scenario
+    anchors = {a.id: a.position_m for a in scenario.bed.anchor_points}
+    direct = [x for x in scenario.lashings if x.routing is LashingRouting.DIRECT]
+    assert direct
+    for lashing in direct:
+        unit = next(u for u in scenario.units if u.id == lashing.unit_id)
+        assert lashing.attachment_point_m is not None
+        start = [unit.position_m[k] + lashing.attachment_point_m[k] for k in (0, 1)]
+        end = anchors[lashing.anchor_ids[0]]
+        for step in range(1, 100):
+            x = start[0] + (end[0] - start[0]) * step / 100
+            y = start[1] + (end[1] - start[1]) * step / 100
+            for other in scenario.units:
+                if other.id == unit.id:
+                    continue
+                inside = all(
+                    abs(p - other.position_m[k]) < other.size_m[k] / 2 - 0.02
+                    for k, p in ((0, x), (1, y))
+                )
+                assert not inside, (lashing.id, other.id)
+
+
 def test_the_road_and_weather_become_the_trip_event() -> None:
     event = build(config("road=dirt&weather=wet&event=full_trip&speed=50")).event
     assert event.road_surface is RoadSurface.MUD

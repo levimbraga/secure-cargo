@@ -56,6 +56,37 @@ function hasDirect(scenario: Scenario, unitId: string): boolean {
   return scenario.lashings.some((lashing) => lashing.unit_id === unitId && lashing.routing === "direct");
 }
 
+/**
+ * A top-over strap goes over every unit under its line across the bed (mirrors `_over_rows` in
+ * backend/app/explorer/build.py): units side by side share one strap, listed in `also_over`.
+ */
+export function overRows(lashings: ScenarioLashing[], scenario: Scenario): ScenarioLashing[] {
+  const overlaps = (a: ScenarioUnit, b: ScenarioUnit) =>
+    [0, 1].every((axis) => Math.abs((a.position_m[axis] ?? 0) - (b.position_m[axis] ?? 0)) < ((a.size_m[axis] ?? 0) + (b.size_m[axis] ?? 0)) / 2 - 0.01);
+  const tops = scenario.units.filter(
+    (unit) => !scenario.units.some((other) => other !== unit && other.position_m[2] > unit.position_m[2] && overlaps(unit, other)),
+  );
+  const anchorX = new Map(scenario.bed.anchor_points.map((anchor) => [anchor.id, anchor.position_m[0]]));
+  const seen = new Set<string>();
+  const out: ScenarioLashing[] = [];
+  for (const lashing of lashings) {
+    if (lashing.routing !== "top_over") {
+      out.push(lashing);
+      continue;
+    }
+    const x = lashing.anchor_ids.reduce((sum, id) => sum + (anchorX.get(id) ?? 0), 0) / 2;
+    const row = tops
+      .filter((unit) => unit.id !== lashing.unit_id && Math.abs(x - unit.position_m[0]) < unit.size_m[0] / 2 - 0.01)
+      .map((unit) => unit.id)
+      .sort();
+    const key = [...lashing.anchor_ids, lashing.unit_id, ...row].sort().join(",");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(row.length ? { ...lashing, also_over: row } : { ...lashing, also_over: [] });
+  }
+  return out;
+}
+
 /** Anchor pairs (left, right) a top-over lashing over `unit` can use, from rear to front. */
 export function anchorPairs(scenario: Scenario, unit: ScenarioUnit): { x: number; left: string; right: string }[] {
   // Mirrors _strap_reach in backend/app/explorer/build.py: 5 cm inside the unit's ends, and on
@@ -165,6 +196,7 @@ export function applyControls(
       });
     }
   }
+  if (controls.strapsPerUnit !== null) lashings = overRows(lashings, scenario);
   if (controls.pretensionN !== null) {
     const wanted = controls.pretensionN;
     lashings = lashings.map((lashing) =>
