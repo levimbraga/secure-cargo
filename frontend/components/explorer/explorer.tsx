@@ -10,9 +10,13 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState, useSyncExternalStore } from "react";
 
 import type { Trouble } from "@/lib/explorer/trouble";
+import { useRuleCheck } from "@/lib/explorer/use-rule-check";
+import type { Battery } from "@/lib/inspection/types";
+import { physicsPassed, verdictOf } from "@/lib/inspection/verdict";
 
 import { UnitsProvider, useShownUnits } from "@/components/units-context";
 import { BodyCodeSwitch, CountrySwitch } from "@/components/inspection/country-switch";
+import { ProblemSentence, StateBadge, useMainProblem } from "@/components/inspection/result-view";
 import { useReasonSentence } from "@/components/lab/lab-result";
 import { Findings, ResultRows, useReplayText } from "@/components/scenario/replay-shared";
 import { SectionLabel } from "@/components/ui/section-label";
@@ -107,11 +111,18 @@ function ExplorerContent({ explorer }: { explorer: ReturnType<typeof useExplorer
   const lab = useTranslations("Lab");
   const format = useFormatter();
   const units = useShownUnits();
-  const { t: scenario, standardValue } = useReplayText();
+  const { standardValue } = useReplayText();
   const sentence = useReasonSentence();
   const { run, load, draft } = explorer;
   // Where the whole-trip test found the load failing, while the editor shows that load.
   const [trouble, setTrouble] = useState<Trouble | null>(null);
+  // The whole-trip result while the editor shows the tested load: the page then leads with it.
+  const [trip, setTrip] = useState<Battery | null>(null);
+  const rules = useRuleCheck(draft, explorer.country);
+  const verdictText = useTranslations("Driver.verdict");
+  const live = useTranslations("Explorer.live");
+  const problemSentence = useMainProblem();
+  const tripVerdict = trip ? verdictOf(trip) : null;
   const status = run?.summary.verdict.status;
   const state = explorer.error && !explorer.busy ? "error" : !run ? "loading" : explorer.busy ? "running" : "ready";
   const floorUnits = draft ? draft.units.filter((unit) => !unit.on) : [];
@@ -154,9 +165,10 @@ function ExplorerContent({ explorer }: { explorer: ReturnType<typeof useExplorer
 
           {run && (
             <div className="mt-12">
-              <h2 className="type-card-title">{scenario("rows.title")}</h2>
+              <h2 className="type-card-title">{live("rowsTitle")}</h2>
               <ResultRows
                 run={run.summary}
+                verdict={{ label: live("rowLabel"), value: live(`rowValue.${run.summary.verdict.status}` as never) }}
                 event={lab("eventLine", {
                   event: lab(`events.${load?.event.kind ?? "emergency_braking"}` as never),
                   speed: units.speed(load?.event.speed_kmh ?? 0),
@@ -167,7 +179,7 @@ function ExplorerContent({ explorer }: { explorer: ReturnType<typeof useExplorer
             </div>
           )}
 
-          <ExplorerTrip draft={draft} country={explorer.country} onApply={explorer.edit} onTrouble={setTrouble} />
+          <ExplorerTrip draft={draft} country={explorer.country} onApply={explorer.edit} onTrouble={setTrouble} onResult={setTrip} />
         </div>
 
         <aside className="contents lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:block">
@@ -177,14 +189,60 @@ function ExplorerContent({ explorer }: { explorer: ReturnType<typeof useExplorer
           {explorer.country === "EU" && draft && draft.truck.body !== "flatbed" && (
             <BodyCodeSwitch code={draft.truck.body_code ?? null} onChange={(code) => explorer.choose("body_code", code)} />
           )}
+          {trip && tripVerdict ? (
+            // The whole trip was tested on this load: its verdict leads; the live run is one situation of it.
+            <div data-testid="explorer-trip-verdict" data-state={tripVerdict.state}>
+              <p className="type-label mb-2">{live("tripLabel")}</p>
+              <StateBadge state={tripVerdict.state} />
+              <p className="type-card-title mt-3 text-pretty">{verdictText(`${tripVerdict.state}.title`)}</p>
+              {tripVerdict.problem && (
+                <p className="type-body mt-2 text-pretty">
+                  <ProblemSentence problem={tripVerdict.problem} battery={trip} />
+                </p>
+              )}
+              <p className="type-small mt-2 text-gray">{verdictText("count", { passed: physicsPassed(trip), total: trip.situations.length })}</p>
+            </div>
+          ) : null}
           {run && status ? (
-            <>
-              <VerdictBadge verdict={status === "pass" ? "pass" : "fail"}>{scenario(`verdict.${status}`)}</VerdictBadge>
-              <p data-testid="explorer-reason" className="type-card-title mt-3 text-pretty">
+            <div className={trip ? "mt-6 border-t border-hairline pt-4" : undefined} data-testid="explorer-live-verdict">
+              {trip && <p className="type-label mb-2">{live("liveLabel")}</p>}
+              <VerdictBadge verdict={status === "fail" ? "fail" : !trip && rules?.problem ? "warn" : "pass"}>{live(`badge.${status}` as never)}</VerdictBadge>
+              <p className="type-small mt-2 text-gray" data-testid="explorer-situation">
+                {lab("eventLine", {
+                  event: lab(`events.${load?.event.kind ?? "emergency_braking"}` as never),
+                  speed: units.speed(load?.event.speed_kmh ?? 0),
+                  surface: lab(`surfaces.${load?.event.road_surface ?? "dry"}` as never),
+                })}
+              </p>
+              <p data-testid="explorer-reason" className={`${trip ? "type-body" : "type-card-title"} mt-2 text-pretty`}>
                 {sentence(run.reason)}
               </p>
               <p className="type-small mt-2 text-gray">{lab("result.standard", { value: standardValue(run.summary) })}</p>
-            </>
+              {!trip && (
+                <>
+                  {rules && (
+                    <p className="mt-3 text-sm text-pretty" data-testid="explorer-rules" data-failing={rules.failing}>
+                      {rules.problem ? (
+                        <>
+                          <span className="mr-2 inline-flex rounded-full bg-warn-tint px-2.5 py-0.5 text-[0.8125rem] font-medium text-warn">
+                            {live("rulesBreak", { count: rules.failing })}
+                          </span>
+                          <span className="text-ink">{problemSentence(rules.problem)}</span>
+                        </>
+                      ) : (
+                        <span className="text-gray">{live("rulesOk")}</span>
+                      )}
+                    </p>
+                  )}
+                  <p className="type-small mt-3 text-pretty text-gray">
+                    {live("oneSituation")}{" "}
+                    <a href="#explorer-trip" className="text-ink underline decoration-1 underline-offset-4">
+                      {live("testAll")}
+                    </a>
+                  </p>
+                </>
+              )}
+            </div>
           ) : (
             <>
               <VerdictBadge verdict="neutral">{explorer.error ? lab("state.error") : lab("state.running")}</VerdictBadge>

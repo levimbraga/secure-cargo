@@ -75,6 +75,9 @@ test("tests the whole trip, marks where it fails and makes the load as safe as p
   await expect(result).toHaveAttribute("data-state", "fails", { timeout: 150_000 });
   await expect(page.getByTestId("trip-where")).toContainText("Pallet 1");
   await expect(page.locator("[data-unit][data-failing]")).not.toHaveCount(0);
+  // The top of the page leads with the whole trip; the live run is one situation of it.
+  await expect(page.getByTestId("explorer-trip-verdict")).toHaveAttribute("data-state", "fails");
+  await expect(page.getByTestId("explorer-live-verdict")).toContainText("this situation");
 
   await page.getByTestId("trip-make-safe").click();
   await expect(page.getByTestId("trip-plan")).toBeVisible({ timeout: 150_000 });

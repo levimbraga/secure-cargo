@@ -468,11 +468,20 @@ export function RawVideo({ clip, ref }: { clip: string; ref?: Ref<HTMLVideoEleme
 }
 
 /** The numbers of a run as data rows. */
-export function ResultRows({ run, event }: { run: RunSummary; event: string }) {
+export function ResultRows({
+  run,
+  event,
+  verdict,
+}: {
+  run: RunSummary;
+  event: string;
+  /** The verdict row's label and value when the page scopes it (the explorer: "This situation: holds"). */
+  verdict?: { label: string; value: string };
+}) {
   const { t, number, percent, standardValue, peakAcceleration } = useReplayText();
   return (
     <dl className="mt-4 border-b border-hairline">
-      <DataRow label={t("rows.verdict")}>{t(`verdict.${run.verdict.status}`)}</DataRow>
+      <DataRow label={verdict?.label ?? t("rows.verdict")}>{verdict?.value ?? t(`verdict.${run.verdict.status}`)}</DataRow>
       <DataRow label={t("rows.maxSlide")}>
         {run.units.some((unit) => unit.left_bed)
           ? t("values.leftBed")

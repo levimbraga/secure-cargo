@@ -899,6 +899,26 @@
         "direct": "+ Diagonal"
       },
       "ropeNote": "Corda não é dispositivo de amarração: proibida no Brasil (CONTRAN 945/2022 art. 4 §3) e não conta na UE."
+    },
+    "live": {
+      "tripLabel": "Viagem inteira · 7 situações",
+      "liveLabel": "Ao vivo: uma situação",
+      "badge": {
+        "pass": "Segura nesta situação",
+        "warning": "Segura nesta situação, com um alerta",
+        "fail": "Falha nesta situação"
+      },
+      "rulesOk": "Regras: nenhuma descumprida.",
+      "rulesBreak": "{count, plural, one {Fora da norma: # regra} other {Fora da norma: # regras}}",
+      "oneSituation": "Esta é uma situação da viagem.",
+      "testAll": "Testar as sete",
+      "rowsTitle": "Esta situação em números",
+      "rowLabel": "Esta situação",
+      "rowValue": {
+        "pass": "Segura",
+        "warning": "Segura, com um alerta",
+        "fail": "Falha"
+      }
     }
   },
   "Gallery": {

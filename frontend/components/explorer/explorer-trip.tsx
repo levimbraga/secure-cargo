@@ -38,6 +38,7 @@ export function ExplorerTrip({
   country,
   onApply,
   onTrouble,
+  onResult,
 }: {
   draft: LoadDraft | null;
   country: Country;
@@ -45,6 +46,8 @@ export function ExplorerTrip({
   onApply: (draft: LoadDraft) => void;
   /** Where the tested load fails, while the editor still shows that load; `null` otherwise. */
   onTrouble: (trouble: Trouble | null) => void;
+  /** The whole-trip result while the editor still shows the tested load (the page leads with it); `null` otherwise. */
+  onResult?: (battery: Battery | null) => void;
 }) {
   const t = useTranslations("Explorer.trip");
   const verdictText = useTranslations("Driver.verdict");
@@ -71,6 +74,9 @@ export function ExplorerTrip({
   useEffect(() => {
     onTrouble(fresh && trouble ? trouble : null);
   }, [fresh, trouble, onTrouble]);
+  useEffect(() => {
+    onResult?.(fresh && !busy && shown ? shown : null);
+  }, [fresh, busy, shown, onResult]);
   useEffect(() => () => abort.current?.abort(), []);
 
   async function start<T>(kind: Exclude<Busy, null>, call: (signal: AbortSignal) => Promise<T>): Promise<T | null> {
@@ -134,7 +140,7 @@ export function ExplorerTrip({
   const proven = Boolean(plan?.verified);
 
   return (
-    <section className="mt-14 border-t border-hairline pt-8" aria-labelledby="trip-title" data-testid="explorer-trip" data-fresh={fresh} data-state={verdict?.state}>
+    <section id="explorer-trip" className="mt-14 scroll-mt-20 border-t border-hairline pt-8" aria-labelledby="trip-title" data-testid="explorer-trip" data-fresh={fresh} data-state={verdict?.state}>
       <h2 id="trip-title" className="type-card-title">
         {t("title")}
       </h2>

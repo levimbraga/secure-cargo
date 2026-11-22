@@ -899,6 +899,26 @@
         "direct": "+ Diagonal"
       },
       "ropeNote": "A rope is not a rated lashing: prohibited in Brazil (CONTRAN 945/2022 art. 4 §3) and not counted in the EU."
+    },
+    "live": {
+      "tripLabel": "Whole trip · 7 situations",
+      "liveLabel": "Live: one situation",
+      "badge": {
+        "pass": "Holds in this situation",
+        "warning": "Holds in this situation, with a warning",
+        "fail": "Fails in this situation"
+      },
+      "rulesOk": "Rules: none broken.",
+      "rulesBreak": "{count, plural, one {Out of compliance: # rule} other {Out of compliance: # rules}}",
+      "oneSituation": "This is one situation of the trip.",
+      "testAll": "Test all seven",
+      "rowsTitle": "This situation in numbers",
+      "rowLabel": "This situation",
+      "rowValue": {
+        "pass": "Holds",
+        "warning": "Holds, with a warning",
+        "fail": "Fails"
+      }
     }
   },
   "Gallery": {
