@@ -8,7 +8,7 @@
  */
 
 import { useFormatter, useTranslations } from "next-intl";
-import { type ReactNode, useId, useState } from "react";
+import { Children, isValidElement, type ReactElement, type ReactNode, useId, useRef, useState } from "react";
 
 import { useReplayText } from "@/components/scenario/replay-shared";
 import { pill } from "@/components/ui/pill";
@@ -28,11 +28,14 @@ export const SITUATION_SPEED_KMH: Record<SituationResult["id"], number> = {
   long_vibration: 60,
 };
 
-/** A situation's name, with its speed in the shown country's units ("at 50 mph"). */
-export function useSituationName(): (id: SituationResult["id"]) => string {
+/**
+ * A situation's name, with its speed in the shown country's units ("at 50 mph"): the speed the
+ * server ran it at when the page has it, else the battery's standard one.
+ */
+export function useSituationName(): (id: SituationResult["id"], speedKmh?: number | null) => string {
   const flow = useTranslations("Flow");
   const units = useShownUnits();
-  return (id) => flow(`situations.${id}.name` as never, { speed: units.speed(SITUATION_SPEED_KMH[id]) } as never);
+  return (id, speedKmh) => flow(`situations.${id}.name` as never, { speed: units.speed(speedKmh ?? SITUATION_SPEED_KMH[id]) } as never);
 }
 
 const US_ONLY_IF_APPLICABLE = new Set(["van_contained", "rolling_articles", "metal_coils", "machinery", "rope_tiedowns"]);
@@ -48,7 +51,7 @@ function articleOf(article: string): string {
 
 export type Mark = "pass" | "fail" | "warn" | "na" | "advice";
 
-export function MarkIcon({ mark }: { mark: Mark }) {
+export function MarkIcon({ mark, small = false }: { mark: Mark; small?: boolean }) {
   const style =
     mark === "pass"
       ? "bg-pass text-white"
@@ -59,85 +62,188 @@ export function MarkIcon({ mark }: { mark: Mark }) {
           : "bg-surface text-gray";
   const symbol = mark === "pass" ? "✓" : mark === "fail" ? "✕" : mark === "na" ? "–" : "!";
   return (
-    <span aria-hidden className={`inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[0.8125rem] font-medium ${style}`}>
+    <span
+      aria-hidden
+      className={`inline-flex shrink-0 items-center justify-center rounded-full font-medium ${small ? "mt-0.5 size-[1.125rem] text-[0.625rem]" : "size-6 text-[0.8125rem]"} ${style}`}
+    >
       {symbol}
     </span>
   );
 }
 
-function Item({
-  mark,
-  title,
-  detail,
-  article,
-  fix,
-  children,
-  testId,
-  deficiency = null,
-}: {
+/** The legal source as a small tag: "CONTRAN 945/2022 · art. 5". */
+function sourceTag(article: string): string {
+  return article.replace(/,?\s+art\.\s*/i, " · art. ");
+}
+
+type ItemProps = {
   mark: Mark;
   title: ReactNode;
+  /** Why it matters, in one line (and the numbers behind it, when there are any). */
   detail?: ReactNode;
   article?: string | null;
   fix?: ReactNode;
+  /** The units it is about, shown as chips ("Unit 1 (front)"); all of a load's `total` as one chip. */
+  units?: string[];
+  total?: number;
   children?: ReactNode;
   testId?: string;
   /** EU: the class a roadside inspection would give this failure. */
   deficiency?: "minor" | "major" | "dangerous" | null;
-}) {
+};
+
+/** One check inside an open theme: title, why it matters, the units, the fix and the legal source. */
+function Item({ mark, title, detail, article, fix, units = [], total = 0, children, testId, deficiency = null }: ItemProps) {
   const t = useTranslations("Driver.checks");
   const roadside = useTranslations("Driver.roadside");
+  const { nameOf } = useReplayText();
+  const quiet = mark === "na" || mark === "advice";
   return (
-    <li className="flex items-start gap-3 border-t border-hairline py-3" data-check={testId} data-mark={mark} data-deficiency={deficiency ?? undefined}>
-      <MarkIcon mark={mark} />
-      <span className="min-w-0 flex-1">
-        <span className="block text-ink">{title}</span>
+    <li className="flex items-start gap-2.5 py-3" data-check={testId} data-mark={mark} data-deficiency={deficiency ?? undefined}>
+      {mark !== "na" && <MarkIcon mark={mark} small />}
+      <div className="min-w-0 flex-1">
+        <p className={`text-[0.9375rem] leading-snug ${quiet ? "text-gray" : "text-ink"}`}>{title}</p>
         {deficiency && (
-          <span className="type-small mt-1 block">
+          <p className="type-small mt-1">
             <span
               className={`mr-2 inline-flex rounded-full px-2 py-0.5 text-[0.75rem] font-medium ${
-                deficiency === "dangerous" ? "bg-fail text-white" : deficiency === "major" ? "bg-warn-tint text-warn ring-1 ring-warn" : "bg-surface text-ink"
+                deficiency === "dangerous" ? "bg-fail text-white" : deficiency === "major" ? "bg-warn-tint text-warn ring-1 ring-warn" : "bg-paper text-ink"
               }`}
             >
               {roadside(deficiency)}
             </span>
             <span className="text-gray">{roadside(`${deficiency}Meaning`)}</span>
-          </span>
+          </p>
         )}
-        {detail && <span className="type-small mt-0.5 block text-gray">{detail}</span>}
-        {fix && (mark === "fail" || mark === "warn" || mark === "advice") && (
-          <span className="type-small mt-1 block text-ink">
-            <span className="font-medium">{t("fixLabel")}</span> {fix}
-          </span>
+        {detail && <div className="type-small mt-0.5 text-gray">{detail}</div>}
+        {units.length > 0 && mark !== "pass" && (
+          <ul className="mt-1.5 flex flex-wrap gap-1" aria-label={t("unitsLabel")} data-testid="unit-chips">
+            {(units.length > 2 && units.length === total ? [t("allUnits", { count: total })] : units.map((id) => nameOf(id))).map((name) => (
+              <li key={name} className="rounded-full bg-paper px-2 py-0.5 text-[0.75rem] text-ink ring-1 ring-hairline">
+                {name}
+              </li>
+            ))}
+          </ul>
         )}
-        {article && <span className="type-label mt-1 block">{article}</span>}
         {children}
-      </span>
+        {fix && (mark === "fail" || mark === "warn" || mark === "advice") && (
+          <p className={`type-small mt-2 rounded-md px-3 py-2 ${mark === "fail" ? "bg-paper text-ink ring-1 ring-ink/15" : "bg-paper/70 text-ink"}`} data-testid="fix-box">
+            <span className="font-medium">{t("fixLabel")}</span> {fix}
+          </p>
+        )}
+        {article && (
+          <p className="mt-2">
+            <span className="inline-flex rounded bg-paper px-1.5 py-0.5 font-mono text-[0.6875rem] text-gray">{sourceTag(article)}</span>
+          </p>
+        )}
+      </div>
     </li>
   );
 }
 
-function Theme({ id, title, marks, children, open = false }: { id: string; title: string; marks: Mark[]; children: ReactNode; open?: boolean }) {
+const MOBILE = "(max-width: 639px)";
+
+/** A group of checks folded into one line: "6 checks pass ›". */
+function Folded({ label, children, testId }: { label: string; children: ReactNode; testId: string }) {
+  return (
+    <details className="group/fold mt-1" data-testid={testId}>
+      <summary className="type-small flex min-h-11 cursor-pointer list-none items-center gap-1 text-gray hover:text-ink sm:min-h-9 [&::-webkit-details-marker]:hidden">
+        <span>{label}</span>
+        <span aria-hidden className="transition-transform group-open/fold:rotate-90">
+          ›
+        </span>
+      </summary>
+      <ul className="divide-y divide-hairline">{children}</ul>
+    </details>
+  );
+}
+
+/**
+ * A theme row (bold, with its mark and chevron) and, when open, its checks in an inset panel,
+ * grouped by status: what fails (each with its fix), what to confirm, advice that is not a
+ * rule, then the passing checks and those that do not apply, folded.
+ */
+function Theme({
+  id,
+  title,
+  marks,
+  children,
+  open,
+  onToggle,
+}: {
+  id: string;
+  title: string;
+  marks: Mark[];
+  children: ReactNode;
+  open: boolean;
+  onToggle: (id: string, row: HTMLElement | null) => void;
+}) {
   const t = useTranslations("Driver.checks");
+  const row = useRef<HTMLDivElement>(null);
+  const panelId = useId();
   const failing = marks.filter((m) => m === "fail").length;
   const warning = marks.filter((m) => m === "warn" || m === "advice").length;
   const summary: Mark = failing ? "fail" : warning ? "warn" : "pass";
+  const items = Children.toArray(children).filter(isValidElement) as ReactElement<ItemProps>[];
+  const of = (...wanted: Mark[]) => items.filter((item) => wanted.includes(item.props.mark));
+  const groups: { key: string; label: string; items: ReactElement<ItemProps>[]; tone: string }[] = [
+    { key: "fail", label: t("groups.fails"), items: of("fail"), tone: "text-fail" },
+    { key: "warn", label: t("groups.confirm"), items: of("warn"), tone: "text-warn" },
+    { key: "advice", label: t("groups.advice"), items: of("advice"), tone: "text-gray" },
+  ];
+  const passing = of("pass");
+  const notApplicable = of("na");
   return (
-    <details className="group border-b border-hairline" open={open} data-theme={id} data-summary={summary}>
-      <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 py-3 [&::-webkit-details-marker]:hidden">
+    <div className="border-b border-hairline" data-theme={id} data-summary={summary} data-open={open} ref={row}>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => onToggle(id, row.current)}
+        className="flex min-h-14 w-full scroll-mt-20 items-center gap-3 py-3 text-left"
+        data-testid={`theme-${id}`}
+      >
         <MarkIcon mark={summary} />
         <span className="min-w-0 flex-1">
-          <span className="block font-[450] text-ink">{title}</span>
+          <span className="block font-medium text-ink">{title}</span>
           <span className="type-small block text-gray">
             {failing ? t("themeFails", { count: failing }) : warning ? t("themeAdvice", { count: warning }) : t("themeOk")}
           </span>
         </span>
-        <span aria-hidden className="text-gray transition-transform group-open:rotate-90">
+        <span aria-hidden className={`text-lg text-gray transition-transform ${open ? "rotate-90" : ""}`}>
           ›
         </span>
-      </summary>
-      <ul className="pb-3">{children}</ul>
-    </details>
+      </button>
+      {open && (
+        <div id={panelId} className="mb-4 ml-3 rounded-r-md border-l-2 border-hairline bg-surface/70 py-1 pr-3 pl-4 sm:ml-9" data-testid={`theme-panel-${id}`}>
+          {groups
+            .filter((group) => group.items.length)
+            .map((group) => (
+              <section key={group.key} className="pt-2" data-group={group.key}>
+                <h4 className={`type-label ${group.tone}`}>{group.label}</h4>
+                <ul className={`divide-y divide-hairline ${group.key === "advice" ? "opacity-90" : ""}`}>{group.items}</ul>
+              </section>
+            ))}
+          {passing.length > 0 && (
+            <Folded label={t("groups.passes", { count: passing.length })} testId={`passes-${id}`}>
+              {passing}
+            </Folded>
+          )}
+          {notApplicable.length > 0 && (
+            <Folded label={t("groups.notApplicable", { count: notApplicable.length })} testId={`na-${id}`}>
+              {notApplicable}
+            </Folded>
+          )}
+          <button
+            type="button"
+            onClick={() => onToggle(id, row.current)}
+            className="type-small mt-1 min-h-11 text-gray underline decoration-1 underline-offset-4 hover:text-ink sm:hidden"
+          >
+            {t("closeTheme")}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -192,7 +298,8 @@ export function Checklist({
   const eu = country === "EU";
   const measure = useShownUnits();
   const situationName = useSituationName();
-  const units = (ids: string[]) => ids.map((id) => nameOf(id)).join(", ");
+  const units = (ids: string[]) =>
+    ids.length > 2 && ids.length === battery.draft.units.length ? t("allUnits", { count: ids.length }) : ids.map((id) => nameOf(id)).join(", ");
   const tonnes = (kg: number) => measure.weight(kg, { metric: false });
   const metres = (m: number) => measure.length(m);
   const checklist = battery.checklist;
@@ -246,6 +353,15 @@ export function Checklist({
     });
   }
   const situations = SITUATION_IDS.map((id) => battery.situations.find((s) => s.id === id)).filter((s): s is SituationResult => Boolean(s));
+  // One theme open at a time on a phone; opening scrolls it into view, closing returns to the list.
+  const [open, setOpen] = useState<string[]>([]);
+  const toggle = (id: string, row: HTMLElement | null) => {
+    const phone = typeof window !== "undefined" && window.matchMedia(MOBILE).matches;
+    const closing = open.includes(id);
+    setOpen(closing ? open.filter((item) => item !== id) : phone ? [id] : [...open, id]);
+    requestAnimationFrame(() => row?.scrollIntoView({ behavior: "smooth", block: closing || !phone ? "nearest" : "start" }));
+  };
+  const themeProps = (id: string) => ({ id, open: open.includes(id), onToggle: toggle });
 
   const contranMarks = battery.contran_945.map((check) => contranMark(check.status));
   const weightItems = checklist?.weight ?? [];
@@ -263,7 +379,7 @@ export function Checklist({
       </h2>
       <p className="type-small mt-1 text-gray">{t("sentence")}</p>
       <div className="mt-4 border-t border-hairline">
-        <Theme id="securing" title={t(`${themes}.securing` as never)} marks={[...contranMarks, ...en.map((c) => (c.meets_standard === false ? "advice" : "pass") as Mark)]}>
+        <Theme {...themeProps("securing")} title={t(`${themes}.securing` as never)} marks={[...contranMarks, ...en.map((c) => (c.meets_standard === false ? "advice" : "pass") as Mark)]}>
           {battery.contran_945
             // US commodity rules that do not apply to this load (no van, no coils...) stay out of the list.
             .filter((check) => !(us && check.status === "not_applicable" && US_ONLY_IF_APPLICABLE.has(check.code)))
@@ -308,14 +424,15 @@ export function Checklist({
                 deficiency={deficiency}
                 detail={
                   <>
-                    {numbers && <span className="block">{numbers}</span>}
+                    {numbers && <span className="block font-mono text-[0.75rem]">{numbers}</span>}
                     {t(`${group}.${check.code}.explain` as never)}
-                    {check.unit_ids.length > 0 && check.status !== "pass" && ` ${t("units", { units: units(check.unit_ids) })}`}
                     {us && check.code === "front_end_structure" && check.status === "to_confirm" && !readOnly && onFrontEndRating && (
                       <FrontEndRatingInput onSubmit={onFrontEndRating} />
                     )}
                   </>
                 }
+                units={check.status === "pass" ? [] : check.unit_ids}
+                total={battery.draft.units.length}
                 article={articleOf(check.article)}
                 fix={t(`${group}.${check.code}.fix` as never)}
               />
@@ -341,7 +458,7 @@ export function Checklist({
           ))}
         </Theme>
 
-        <Theme id="weight" title={t(`${themes}.weight` as never)} marks={weightItems.map(itemMark)}>
+        <Theme {...themeProps("weight")} title={t(`${themes}.weight` as never)} marks={weightItems.map(itemMark)}>
           {weightItems.map((item, index) => {
             const v = item.values;
             if (item.code === "eu_axle") {
@@ -476,7 +593,7 @@ export function Checklist({
           {!weightItems.length && <Item mark="na" title={t("weight.none")} />}
         </Theme>
 
-        <Theme id="physics" title={t("themes.physics")} marks={situations.map((s) => situationMark(s, country))}>
+        <Theme {...themeProps("physics")} title={t("themes.physics")} marks={situations.map((s) => situationMark(s, country))}>
           {situations.map((situation) => {
             const outcome = outcomeOf(situation, country);
             return (
@@ -484,10 +601,12 @@ export function Checklist({
                 key={situation.id}
                 testId={situation.id}
                 mark={situationMark(situation, country)}
-                title={t(`outcome.${outcome}` as never, { situation: situationName(situation.id) } as never)}
+                total={battery.draft.units.length}
+                units={[...new Set(physicalFindings(situation.findings as Finding[], country).filter((f) => f.severity === "fail" && f.unit_id).map((f) => f.unit_id as string))]}
+                title={t(`outcome.${outcome}` as never, { situation: situationName(situation.id, situation.event.speed_kmh) } as never)}
                 detail={t("physicsExplain", {
                   speed: measure.speed(situation.event.speed_kmh),
-                  situation: situationName(situation.id),
+                  situation: situationName(situation.id, situation.event.speed_kmh),
                 })}
                 article={t(eu ? "physicsArticleEu" : us ? "physicsArticleUs" : "physicsArticle")}
                 fix={t("physicsFix")}
@@ -507,7 +626,7 @@ export function Checklist({
           })}
         </Theme>
 
-        <Theme id="protection" title={t("themes.protection")} marks={protectionItems.map(itemMark)}>
+        <Theme {...themeProps("protection")} title={t("themes.protection")} marks={protectionItems.map(itemMark)}>
           {protectionItems.map((item) => (
             <Item
               key={item.code}
@@ -532,7 +651,7 @@ export function Checklist({
           ))}
         </Theme>
 
-        <Theme id="dimensions" title={t(`${themes}.dimensions` as never)} marks={dimensionItems.map(itemMark)}>
+        <Theme {...themeProps("dimensions")} title={t(`${themes}.dimensions` as never)} marks={dimensionItems.map(itemMark)}>
           {dimensionItems
             // The overall length is known only on the EU presets.
             .filter((item) => !(item.code === "eu_length" && item.status === "not_applicable"))

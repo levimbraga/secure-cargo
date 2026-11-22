@@ -71,7 +71,7 @@ test("switching country re-checks only the rules: same simulation, another check
   const result = await throughTheQuestions(page, "concrete-pipes");
   await expect(result).toHaveAttribute("data-country", "BR");
   await expect(result).toHaveAttribute("data-state", "approved");
-  await expect(page.locator('[data-theme="securing"] summary')).toContainText("CONTRAN 945");
+  await expect(page.getByTestId("theme-securing")).toContainText("CONTRAN 945");
   const passed = await result.getAttribute("data-passed");
 
   await page.getByTestId("country-US").click();
@@ -80,7 +80,9 @@ test("switching country re-checks only the rules: same simulation, another check
   // problem is the 393.102(a)(2) WLL check (checked first): friction does not hold a pipe sideways.
   await expect(result).toHaveAttribute("data-state", "holds_noncompliant");
   await expect(result).toHaveAttribute("data-passed", passed ?? "7");
-  await expect(page.locator('[data-theme="securing"] summary')).toContainText("FMCSA 393");
+  await expect(page.getByTestId("theme-securing")).toContainText("FMCSA 393");
+  // The checks show inside the open theme (it stays open when the country changes).
+  await page.getByTestId("theme-securing").click();
   await expect(page.locator('[data-check="rolling_articles"]')).toHaveAttribute("data-mark", "fail");
   await expect(page.locator('[data-check="wll_criterion"]')).toHaveAttribute("data-mark", "fail");
   await expect(page.getByTestId("main-problem")).toContainText("working load limit");
@@ -91,7 +93,7 @@ test("switching country re-checks only the rules: same simulation, another check
   await expect(result).toHaveAttribute("data-country", "EU");
   await expect(result).toHaveAttribute("data-state", "holds_noncompliant");
   await expect(result).toHaveAttribute("data-passed", passed ?? "7");
-  await expect(page.locator('[data-theme="securing"] summary')).toContainText("2014/47");
+  await expect(page.getByTestId("theme-securing")).toContainText("2014/47");
   await expect(page.getByTestId("roadside-class")).toHaveAttribute("data-class", "dangerous");
   await expect(page.locator('[data-check="eu_sideways"]')).toHaveAttribute("data-deficiency", "dangerous");
   expect(physics).toEqual([]);
