@@ -213,6 +213,27 @@ export default function KeyframePlayer({
               {t("replay.wholeTruck")}
             </span>
           </button>
+          {/* Zoom, under "Whole truck" (which frames the truck again). */}
+          <div
+            data-scene-control=""
+            className="pointer-events-auto absolute top-12 right-1 flex flex-col overflow-hidden rounded-full bg-paper/85 sm:top-10"
+          >
+            {([
+              ["zoomIn", 1 / ZOOM_STEP, "+"],
+              ["zoomOut", ZOOM_STEP, "−"],
+            ] as const).map(([label, factor, sign]) => (
+              <button
+                key={label}
+                type="button"
+                aria-label={t(`replay.${label}`)}
+                title={`${t(`replay.${label}`)} · ${t("replay.zoomHint")}`}
+                onClick={() => zoomScene(orbit.current, factor)}
+                className="flex size-11 items-center justify-center text-[1.125rem] leading-none font-medium text-ink hover:bg-paper sm:size-8"
+              >
+                {sign}
+              </button>
+            ))}
+          </div>
           {mode === "engineering" && layout.tractor && (
             <p data-scene-control="" className="type-label absolute bottom-2 left-2 rounded bg-paper/85 px-2 py-1 text-gray">
               {t("replay.articulationVisual")}
@@ -392,6 +413,26 @@ function Stage({
   );
 }
 
+/** Closest and farthest the camera may be from what it looks at [m]. */
+const ZOOM_RANGE_M = [3, 75] as const;
+/** One press of + or − moves the camera this much closer or farther. */
+const ZOOM_STEP = 1.35;
+
+/**
+ * Moves the camera closer (factor < 1) or farther along its line of sight, within the zoom
+ * range. The controls report it as a gesture, so the framing stops following the replay.
+ */
+function zoomScene(orbit: OrbitControls | null, factor: number) {
+  if (!orbit) return;
+  const camera = orbit.object;
+  const offset = camera.position.clone().sub(orbit.target);
+  const distance = Math.min(Math.max(offset.length() * factor, orbit.minDistance), orbit.maxDistance);
+  orbit.dispatchEvent({ type: "start" });
+  camera.position.copy(orbit.target).addScaledVector(offset.normalize(), distance);
+  orbit.update();
+  orbit.dispatchEvent({ type: "end" });
+}
+
 function CameraRig({
   view,
   controlsRef,
@@ -447,10 +488,20 @@ function CameraRig({
   }, -0.5);
 
   useEffect(() => {
+    // The page keeps the plain scroll wheel: only Ctrl/⌘ + wheel zooms the scene, which is
+    // also what a trackpad pinch sends. Registered before the controls, so it runs first.
+    const keepScroll = (event: WheelEvent) => {
+      if (!event.ctrlKey && !event.metaKey) event.stopImmediatePropagation();
+    };
+    canvas.addEventListener("wheel", keepScroll, { capture: true });
     const orbit = new OrbitControls(camera, canvas);
     orbit.target.set(...TARGET);
     orbit.enablePan = false;
-    orbit.enableZoom = false; // the page keeps the scroll wheel
+    // Zoom: Ctrl/⌘ + wheel, a trackpad or touch pinch, and the + / − buttons (`zoomScene`).
+    orbit.enableZoom = true;
+    orbit.zoomSpeed = 1.2;
+    orbit.minDistance = ZOOM_RANGE_M[0];
+    orbit.maxDistance = ZOOM_RANGE_M[1];
     orbit.enableDamping = true;
     orbit.dampingFactor = 0.08;
     orbit.rotateSpeed = 0.6;
@@ -465,6 +516,7 @@ function CameraRig({
     orbit.update();
     controlsRef.current = orbit;
     return () => {
+      canvas.removeEventListener("wheel", keepScroll, { capture: true });
       orbit.removeEventListener("start", onStart);
       orbit.removeEventListener("change", onChange);
       orbit.dispose();
