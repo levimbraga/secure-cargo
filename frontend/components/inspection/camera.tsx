@@ -2,8 +2,8 @@
 
 /**
  * The guided camera: the phone's rear camera full screen, with the photo guide over it (corner
- * marks to fit the whole truck in, the eye level, a faint drawing of the shot: "full side" or
- * "rear three-quarter"), and a shutter. Where the browser has no
+ * marks to fit the whole truck in, a faint drawing of the shot: "full side" or "rear
+ * three-quarter"), and a shutter. Where the browser has no
  * camera access (or the driver refuses it), the system camera / file picker opens instead.
  */
 
@@ -19,13 +19,10 @@ const ACCEPT = "image/jpeg,image/png,image/heic,image/heif,.heic,.heif";
 
 export function GuidedCamera({
   shot,
-  eyeLabel,
   onPhoto,
   onClose,
 }: {
   shot: Shot;
-  /** The eye-level label, in the country's units ("≈ 1.5 m"). */
-  eyeLabel: string;
   onPhoto: (file: File) => void;
   onClose: () => void;
 }) {
@@ -88,7 +85,7 @@ export function GuidedCamera({
       <div className="relative min-h-0 flex-1 overflow-hidden">
         {!failed && <video ref={video} playsInline muted className="absolute inset-0 size-full object-contain" />}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
-          <PhotoGuide shot={shot} overlay phone={false} eyeLabel={eyeLabel} className="w-full max-w-2xl drop-shadow" />
+          <PhotoGuide shot={shot} overlay phone={false} className="w-full max-w-2xl drop-shadow" />
         </div>
         <p className="absolute inset-x-0 bottom-4 px-6 text-center text-[0.9375rem] text-paper">{failed ? t("noCamera") : t(`shots.${shot}.hint`)}</p>
       </div>

@@ -1583,14 +1583,18 @@
       "wholeYes": "Yes, all of it",
       "wholeRetake": "No, retake",
       "guide": {
-        "eye": "eye level ≈ {height}",
         "alt": "How to take the {shot} photo: the whole truck inside the corner marks, the load visible, the phone level at chest height.",
         "like": "Like this",
         "tooClose": "Too close",
         "cutOff": "Cut off",
         "night": "At night",
-        "tip": "The whole truck inside the marks, the load visible, the phone held level at chest height (about {height}), in daylight."
-      }
+        "level": "Hold the phone level at chest height (~{height})."
+      },
+      "takePhoto": "Take photo",
+      "uploadPhoto": "Upload photo",
+      "thisPhoto": "This photo: {shot}",
+      "howToFrame": "How to frame it",
+      "trySample": "No truck at hand? Use a sample photo."
     },
     "weight": {
       "title": "How much does the cargo weigh?",

@@ -1583,14 +1583,18 @@
       "wholeYes": "Sim, inteira",
       "wholeRetake": "Não, tirar de novo",
       "guide": {
-        "eye": "altura dos olhos ≈ {height}",
         "alt": "Como tirar a foto {shot}: o caminhão inteiro dentro das marcas, a carga visível, o celular reto na altura do peito.",
         "like": "Assim",
         "tooClose": "Perto demais",
         "cutOff": "Cortada",
         "night": "À noite",
-        "tip": "O caminhão inteiro dentro das marcas, a carga visível, o celular reto na altura do peito (cerca de {height}), com luz do dia."
-      }
+        "level": "Segure o celular reto, na altura do peito (~{height})."
+      },
+      "takePhoto": "Tirar foto",
+      "uploadPhoto": "Enviar foto",
+      "thisPhoto": "Esta foto: {shot}",
+      "howToFrame": "Como enquadrar",
+      "trySample": "Sem caminhão por perto? Use uma foto de exemplo."
     },
     "weight": {
       "title": "Quanto pesa a carga?",

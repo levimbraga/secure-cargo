@@ -72,25 +72,6 @@ export function NewInspection() {
     window.scrollTo({ top: 0 });
   }, [state.step, state.truckStage]);
 
-  // On a phone the sample photos sit below the capture cards: the demo's first screen shows them.
-  const shownSamples = useRef(false);
-  useEffect(() => {
-    if (!startOnPhotos || shownSamples.current || state.step !== "photos") return;
-    if (!window.matchMedia("(max-width: 767px)").matches) return;
-    shownSamples.current = true;
-    let frame = 0;
-    const until = performance.now() + 4000;
-    const reveal = () => {
-      const samples = document.querySelector<HTMLElement>('[aria-labelledby="samples-title"]');
-      if (samples) {
-        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        window.scrollTo({ top: samples.getBoundingClientRect().top + window.scrollY - 16, behavior: reduce ? "auto" : "smooth" });
-      } else if (performance.now() < until) frame = requestAnimationFrame(reveal);
-    };
-    frame = requestAnimationFrame(reveal);
-    return () => cancelAnimationFrame(frame);
-  }, [startOnPhotos, state.step]);
-
   const title = state.perception
     ? loadTitle(state.perception.draft, (cargo) => options(`cargo.${cargo}` as never), flowT("review.mixed"))
     : undefined;

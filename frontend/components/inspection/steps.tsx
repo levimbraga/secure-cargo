@@ -9,13 +9,15 @@ import { cn } from "cn";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useEffect, useId, useState } from "react";
 
+import { Camera, ChevronDown, ImageUp } from "lucide-react";
+
 import { pill } from "@/components/ui/pill";
 import { Link } from "@/i18n/navigation";
 import { fetchSamples, type Sample } from "@/lib/inspection/samples";
 import { TRUCK_CATALOG } from "@/lib/inspection/truck-catalog";
 import { bodyOptions, SIZE_INFO, sizesOf, type TruckChoice, type TruckSize } from "@/lib/inspection/trucks";
 import { useMe } from "@/components/app/me-provider";
-import { MAX_PHOTOS, type Shot, type useInspectionFlow } from "@/lib/inspection/use-flow";
+import { type Shot, type useInspectionFlow } from "@/lib/inspection/use-flow";
 import { describeSplit, perUnitMatches, withWeights } from "@/lib/inspection/weight";
 import { kgToLb, mToFt, useUnits } from "@/lib/units";
 
@@ -164,7 +166,13 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
   const reinspecting = Boolean(state.parent);
   // Organization policy: 2 photos (the server refuses a load confirmed with fewer).
   const twoPhotos = Boolean(useMe().me?.org?.policies?.require_two_photos) && !state.sample;
-  const eyeLabel = t("capture.guide.eye", { height: state.country === "US" ? "5 ft" : "1.5 m" });
+  const format = useFormatter();
+  const height = state.country === "US" ? "5 ft" : `${format.number(1.5)} m`;
+  const photoOf = (shot: Shot) => state.photos.find((photo) => photo.shot === shot);
+  // The big buttons fill the first shot still missing: the full side, then the rear corner.
+  const next = SHOTS.find((shot) => !photoOf(shot)) ?? null;
+  const badge = (shot: Shot) => (twoPhotos ? t("capture.required") : shot === "side" ? t("capture.enough") : t("capture.recommended"));
+  const fileId = useId();
 
   return (
     <section aria-labelledby="photos-title" data-testid="photo-step">
@@ -180,54 +188,126 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
       )}
 
       {signedIn ? (
-        <>
-          {demoMode && <p className="type-small mt-4 text-fail">{flowT(`photos.demoMode.${allowance?.reason ?? "kill_switch"}`)}</p>}
-          <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {SHOTS.map((shot) => {
-              const index = state.photos.findIndex((photo) => photo.shot === shot);
-              const photo = index >= 0 ? state.photos[index] : undefined;
-              return (
-                <li key={shot}>
-                  <ChoiceCard
-                    onClick={() => !busy && !demoMode && setCamera(shot)}
-                    selected={Boolean(photo)}
-                    testId={`shot-${shot}`}
-                    badge={twoPhotos ? t("capture.required") : shot === "side" ? t("capture.enough") : t("capture.recommended")}
+        <div className="mt-6 grid grid-cols-1 gap-x-12 gap-y-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,25rem)]">
+          <div className="min-w-0">
+            {demoMode && <p className="type-small mb-4 text-fail">{flowT(`photos.demoMode.${allowance?.reason ?? "kill_switch"}`)}</p>}
+            {next && (
+              <>
+                <p className="type-small text-gray" data-testid="next-shot">
+                  {t("capture.thisPhoto", { shot: t(`capture.shots.${next}.title`) })} · {badge(next)}
+                </p>
+                {/* The main action: the camera on phones, a file on any device. */}
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row" data-testid="photo-actions">
+                  <button
+                    type="button"
+                    onClick={() => setCamera(next)}
+                    disabled={busy || demoMode}
+                    className={pill({ className: "h-14 gap-2 px-6 text-base not-pointer-coarse:hidden" })}
+                    data-testid="take-photo"
                   >
-                    {photo ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- a local preview of the driver's own photo
-                      <img src={photo.url} alt={t("capture.alt", { shot: t(`capture.shots.${shot}.title`) })} className="aspect-[16/9] w-full rounded object-cover" />
-                    ) : (
-                      <PhotoGuide shot={shot} eyeLabel={eyeLabel} title={t("capture.guide.alt", { shot: t(`capture.shots.${shot}.title`) })} />
+                    <Camera aria-hidden className="size-5" />
+                    {t("capture.takePhoto")}
+                  </button>
+                  <label
+                    htmlFor={fileId}
+                    aria-disabled={busy || demoMode}
+                    className={cn(
+                      pill({ className: "h-14 cursor-pointer gap-2 px-6 text-base" }),
+                      "pointer-coarse:bg-surface pointer-coarse:text-ink pointer-coarse:hover:bg-hairline",
+                      (busy || demoMode) && "pointer-events-none opacity-50",
                     )}
-                    <span className="mt-3 block font-[450] text-ink">{t(`capture.shots.${shot}.title`)}</span>
-                    <span className="type-small block text-gray">{photo ? t("capture.retakeHint") : t(`capture.shots.${shot}.card`)}</span>
-                    {!photo && <GuideExamples shot={shot} />}
-                  </ChoiceCard>
-                  {photo && (
-                    <button type="button" onClick={() => flow.removePhoto(index)} className="type-small mt-1 min-h-11 text-gray underline decoration-1 underline-offset-4">
-                      {t("capture.remove")}
+                    data-testid="upload-photo"
+                  >
+                    <ImageUp aria-hidden className="size-5" />
+                    {t("capture.uploadPhoto")}
+                  </label>
+                  <input
+                    id={fileId}
+                    type="file"
+                    accept="image/jpeg,image/png,image/heic,image/heif,.heic,.heif"
+                    className="sr-only"
+                    disabled={busy || demoMode}
+                    data-testid="upload-input"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) void flow.addPhoto(file, next);
+                      event.target.value = "";
+                    }}
+                  />
+                </div>
+                {!reinspecting && (
+                  <a href="#samples-title" className="type-small mt-3 inline-block text-gray underline decoration-1 underline-offset-4" data-testid="try-sample">
+                    {t("capture.trySample")}
+                  </a>
+                )}
+              </>
+            )}
+
+            {/* The two shots: taken (tap to retake) or still to take. */}
+            <ul className="mt-5 grid max-w-md grid-cols-2 gap-3" data-testid="shots">
+              {SHOTS.map((shot) => {
+                const index = state.photos.findIndex((photo) => photo.shot === shot);
+                const photo = index >= 0 ? state.photos[index] : undefined;
+                return (
+                  <li key={shot} className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => !busy && !demoMode && setCamera(shot)}
+                      aria-pressed={Boolean(photo)}
+                      data-testid={`shot-${shot}`}
+                      className={cn(
+                        "block w-full rounded-md border p-2 text-left transition-colors hover:border-ink",
+                        photo ? "border-ink" : "border-dashed border-hairline",
+                      )}
+                    >
+                      {photo ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- a local preview of the driver's own photo
+                        <img src={photo.url} alt={t("capture.alt", { shot: t(`capture.shots.${shot}.title`) })} className="aspect-[16/9] w-full rounded object-cover" />
+                      ) : (
+                        <PhotoGuide shot={shot} phone={false} className="rounded-sm opacity-60" />
+                      )}
+                      <span className="mt-2 block truncate text-[0.875rem] font-[450] text-ink">{t(`capture.shots.${shot}.title`)}</span>
+                      <span className="block truncate text-[0.75rem] text-gray">{photo ? t("capture.retakeHint") : badge(shot)}</span>
                     </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-          <p className="type-small mt-3 text-gray" data-testid="guide-tip">
-            {t("capture.guide.tip", { height: state.country === "US" ? "5 ft" : "1.5 m" })}
-          </p>
-          {twoPhotos && (
-            <p className="type-small mt-3 text-ink" data-testid="policy-two-photos">
-              {t("capture.policyTwo")}
-            </p>
-          )}
-          <p className="type-small mt-3 text-gray">{flowT("photos.privacy")}</p>
-          {busy && (
-            <p className="type-small mt-3 text-gray" role="status">
-              {state.busy === "check" ? t("capture.checking") : flowT("photos.preparing")}
-            </p>
-          )}
-        </>
+                    {photo && (
+                      <button type="button" onClick={() => flow.removePhoto(index)} className="type-small mt-1 min-h-11 text-gray underline decoration-1 underline-offset-4">
+                        {t("capture.remove")}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            {state.pending && <QualityPrompt flow={flow} onRetake={(shot) => setCamera(shot)} />}
+            <ErrorLine code={state.error} />
+            {busy && (
+              <p className="type-small mt-3 text-gray" role="status">
+                {state.busy === "check" ? t("capture.checking") : flowT("photos.preparing")}
+              </p>
+            )}
+
+            {state.photos.length > 0 && !state.sample && (
+              <button
+                type="button"
+                onClick={() => void flow.toTruck()}
+                disabled={busy || (twoPhotos && state.photos.length < 2)}
+                className={pill({ variant: next ? "secondary" : "primary", className: "mt-6 h-14 w-full px-6 text-base sm:w-auto" })}
+                data-testid="photos-next"
+              >
+                {t("capture.next")}
+              </button>
+            )}
+            {twoPhotos && (
+              <p className="type-small mt-3 text-ink" data-testid="policy-two-photos">
+                {t("capture.policyTwo")}
+              </p>
+            )}
+            <p className="type-small mt-3 text-gray">{flowT("photos.privacy")}</p>
+          </div>
+
+          <FramingGuide height={height} />
+        </div>
       ) : (
         <div className="mt-6 rounded bg-surface p-4">
           <p className="text-ink">{flowT("photos.signIn")}</p>
@@ -237,25 +317,9 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
         </div>
       )}
 
-      {state.pending && <QualityPrompt flow={flow} onRetake={(shot) => setCamera(shot)} />}
-      <ErrorLine code={state.error} />
-
-      {state.photos.length > 0 && !state.sample && (
-        <button
-          type="button"
-          onClick={() => void flow.toTruck()}
-          disabled={busy || (twoPhotos && state.photos.length < 2)}
-          className={pill({ className: "mt-8 h-14 w-full px-6 text-base sm:w-auto" })}
-          data-testid="photos-next"
-        >
-          {t("capture.next")}
-        </button>
-      )}
-
       {camera && (
         <GuidedCamera
           shot={camera}
-          eyeLabel={eyeLabel}
           onClose={() => setCamera(null)}
           onPhoto={(file) => {
             setCamera(null);
@@ -265,8 +329,52 @@ export function PhotoStep({ flow, signedIn }: { flow: Flow; signedIn: boolean })
       )}
 
       {!reinspecting && <Samples flow={flow} />}
-      {state.photos.length < MAX_PHOTOS && null}
     </section>
+  );
+}
+
+/**
+ * How to frame each shot, kept small and secondary: beside the buttons on a wide screen, behind
+ * "How to frame it" on a phone. The drawings come from the 3D truck (`photo-guide.tsx`).
+ */
+function FramingGuide({ height }: { height: string }) {
+  const t = useTranslations("Driver.capture");
+  const [open, setOpen] = useState(false);
+  const panel = useId();
+  return (
+    <aside className="min-w-0" aria-labelledby={`${panel}-title`} data-testid="framing-guide">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        aria-controls={panel}
+        className="flex min-h-11 w-full items-center justify-between gap-3 border-t border-hairline pt-3 text-left text-ink lg:hidden"
+        data-testid="framing-toggle"
+      >
+        <span className="font-[450]">{t("howToFrame")}</span>
+        <ChevronDown aria-hidden className={cn("size-5 shrink-0 transition-transform", open && "rotate-180")} />
+      </button>
+      <p id={`${panel}-title`} className="type-label max-lg:sr-only">
+        {t("howToFrame")}
+      </p>
+      <div id={panel} className={cn("mt-3 space-y-6 lg:block", open ? "block" : "hidden")} data-testid="framing-panel">
+        {SHOTS.map((shot) => (
+          <figure key={shot} className="min-w-0">
+            <div className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] items-center gap-4">
+              <PhotoGuide shot={shot} title={t("guide.alt", { shot: t(`shots.${shot}.title`) })} />
+              <figcaption>
+                <span className="block text-[0.875rem] font-[450] text-ink">{t(`shots.${shot}.title`)}</span>
+                <span className="block text-[0.8125rem] leading-snug text-gray">{t(`shots.${shot}.card`)}</span>
+              </figcaption>
+            </div>
+            <GuideExamples shot={shot} />
+          </figure>
+        ))}
+        <p className="type-small text-ink" data-testid="guide-level">
+          {t("guide.level", { height })}
+        </p>
+      </div>
+    </aside>
   );
 }
 

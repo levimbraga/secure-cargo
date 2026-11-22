@@ -233,7 +233,10 @@ export function useInspectionFlow() {
 
   /** A new photo: checked on the phone first; only a photo that passes (or is kept) is sent. */
   async function addPhoto(file: File, shot: Shot | null) {
-    if (latest.current.photos.length >= MAX_PHOTOS || latest.current.sample) return;
+    const { photos, sample } = latest.current;
+    // A new photo of a shot already taken replaces it (`keep`), even when both are there.
+    const retake = shot !== null && photos.some((photo) => photo.shot === shot);
+    if ((photos.length >= MAX_PHOTOS && !retake) || sample) return;
     patch({ busy: "check", error: null });
     try {
       const prepared = await preparePhoto(file);

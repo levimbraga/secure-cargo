@@ -12,6 +12,7 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
+    "guides": "WRITE_GUIDES=1 vitest run lib/inspection/photo-guide-art.test.ts",
     "e2e": "playwright test",
     "postinstall": "node scripts/copy-mujoco.mjs"
   },
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.64.0",
+    "@react-three/test-renderer": "9.1.1",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.6",
