@@ -2,6 +2,7 @@ import type { RefObject } from "react";
 
 import type { KeyframesDoc, Sample, Vec3 } from "@/lib/keyframes";
 import type { Impact, Series } from "@/lib/replay";
+import type { TruckPose } from "@/lib/scene/motion";
 
 /** Scene colours. The neutral ones mirror the design tokens in app/globals.css. */
 export const COLOR = {
@@ -29,8 +30,10 @@ export type Live = {
   sample: Sample;
   /** Distance the truck has covered on the road [m]. */
   distance: number;
-  /** Height of the bed above its starting level [m]. */
+  /** Vertical displacement of the bed in the simulation, without its drift [m]. */
   height: number;
+  /** The truck on the road at this instant (`lib/scene/motion.ts`); missing before the first frame. */
+  pose?: TruckPose;
   /** Index of the strap under the pointer (or last tapped), or -1. */
   activeStrap: number;
 };

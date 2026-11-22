@@ -1,25 +1,28 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { type RefObject, useEffect, useRef } from "react";
+import { type RefObject, useEffect, useMemo, useRef } from "react";
 import { type Group, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import { type KeyframesDoc, type Sample, sampleFrame, type Vec3 } from "@/lib/keyframes";
 import { type Quality, QUALITY_SETTINGS } from "@/lib/quality";
-import { GRAVITY, type Impact, type Series, seriesAt } from "@/lib/replay";
+import type { Impact, Series } from "@/lib/replay";
+import { lookOf } from "@/lib/scene/look";
+import { buildScenePath, type Conditions, DRY, truckPose } from "@/lib/scene/motion";
+import { REDUCED_MOTION, useMediaQuery } from "@/lib/use-media-query";
 import { useQuality } from "@/lib/use-quality";
 import { usePageVisible } from "@/lib/use-scene-visibility";
 
 import { AxisTriad, Units } from "./cargo";
-import { ContactShadow, Lighting, Road } from "./environment";
+import { ContactShadow, Lighting, Rain, RoadScene, WheelSpray } from "./environment";
 import { Contacts, ForceArrows, ImpactFlash, type LabelFormat, Labels, Lashings, PushArrow } from "./forces";
 import { type PushProps, useUnitPush } from "./push";
 import type { Live, ViewMode } from "./shared";
 import { TruckBody, Wheels } from "./truck";
 
 export type CameraView = "hero" | "side" | "rear" | "top";
-export type { LabelFormat, PushProps, Quality, ViewMode };
+export type { Conditions, LabelFormat, PushProps, Quality, ViewMode };
 
 /**
  * The state of a model that is being stepped right now, drawn instead of the keyframes.
@@ -40,12 +43,6 @@ const VIEW_DIRECTION: Record<CameraView, Vec3> = {
 const TARGET: Vec3 = [0.7, 1.35, 0];
 /** Camera distance per view at a 16:10 frame, chosen so the truck fills most of it. */
 const VIEW_DISTANCE: Record<CameraView, number> = { hero: 11.4, side: 12.4, rear: 12, top: 13.5 };
-
-/** How the body of the truck answers the acceleration of the event; all of it is visual only. */
-const PITCH_RAD_PER_G = 0.035; // nose dips two degrees per g of braking
-const ROLL_RAD_PER_G = 0.07; // body leans four degrees per g sideways
-const CAMERA_LAG_M_PER_G = 0.45; // the camera falls behind a truck that brakes
-const RESPONSE_S = 0.14; // time constant of the suspension and of the camera
 
 export type KeyframePlayerProps = {
   doc: KeyframesDoc;
@@ -84,6 +81,8 @@ export type KeyframePlayerProps = {
   sampler?: RefObject<(() => LiveState | null) | null>;
   /** The live lab: pressing on a unit and dragging pushes it (see `useUnitPush`). */
   push?: PushProps;
+  /** Road surface, fog and grade of the run (`sceneConditions`); a dry road by default. */
+  conditions?: Conditions;
 };
 
 /** Replays a keyframes document as a 3D scene of a flatbed truck. */
@@ -106,8 +105,11 @@ export default function KeyframePlayer({
   onSelectUnit,
   sampler,
   push,
+  conditions = DRY,
 }: KeyframePlayerProps) {
   const realistic = mode === "realistic";
+  const look = useMemo(() => lookOf(conditions), [conditions]);
+  const reducedMotion = useMediaQuery(REDUCED_MOTION);
   // Shared by the camera and by the push: the camera stands still while a unit is dragged.
   const orbit = useRef<OrbitControls | null>(null);
   const detected = useQuality();
@@ -138,7 +140,7 @@ export default function KeyframePlayer({
       className="scene-canvas"
       data-quality={level}
     >
-      <Lighting mode={mode} quality={level} />
+      <Lighting mode={mode} quality={level} look={look} />
       <CameraRig view={view} controlsRef={orbit} />
       <Stage
         doc={doc}
@@ -156,6 +158,9 @@ export default function KeyframePlayer({
         sampler={sampler}
         push={push}
         orbit={orbit}
+        conditions={conditions}
+        quality={level}
+        animateWeather={!reducedMotion}
       />
     </Canvas>
   );
@@ -177,6 +182,9 @@ function Stage({
   sampler,
   push,
   orbit,
+  conditions,
+  quality,
+  animateWeather,
 }: Pick<
   KeyframePlayerProps,
   | "doc"
@@ -196,30 +204,36 @@ function Stage({
   /** Draw the flat shadow under the truck that stands in for shadow maps. */
   contactShadow: boolean;
   orbit: RefObject<OrbitControls | null>;
+  conditions: Conditions;
+  quality: Quality;
+  /** Rain, spray and dust move (off with `prefers-reduced-motion`). */
+  animateWeather: boolean;
 }) {
   const invalidate = useThree((state) => state.invalidate);
   const width = useThree((state) => state.size.width);
   const compact = compactLabels ?? width <= COMPACT_LABELS_MAX_WIDTH;
+  const realistic = mode === "realistic";
   // A new replay time, a new view or a pointer over the scene each ask for a fresh frame.
   useEffect(() => {
     invalidate();
   }, [invalidate, revision, mode, doc]);
+  // The truck's drive on the road, rebuilt from the run (the engineering view: a flat ground).
+  const path = useMemo(() => buildScenePath(doc, conditions, !realistic), [doc, conditions, realistic]);
+  const look = useMemo(() => lookOf(conditions), [conditions]);
   // The instant being drawn, shared by every part of the scene.
   const live = useRef<Live>({ t: 0, sample: sampleFrame(doc, 0), distance: 0, height: 0, activeStrap: -1 });
-  const world = useRef<Group>(null);
-  const wheels = useRef<Group>(null);
+  const view = useRef<Group>(null);
+  const truck = useRef<Group>(null);
   const body = useRef<Group>(null);
-  const motion = useRef({ pitch: 0, roll: 0, lag: 0 });
+  const wheelRefs = useRef<(Group | null)[]>([]);
+  const axleRefs = useRef<(Group | null)[]>([]);
   const floorHeight = doc.bed.floor_height_m;
-  // After the end of the event the truck keeps the speed it had.
-  const finalSpeed = doc.frames[doc.frames.length - 1]?.truck_speed_mps ?? 0;
   const unitHandlers = useUnitPush({ doc, live, body, orbit, push });
 
   // Runs before every other part of the scene, so they all draw the same instant.
-  useFrame((_, delta) => {
+  useFrame(() => {
     const state = live.current;
     const t = Math.min(Math.max(time.current, 0), doc.duration_s);
-    state.t = t;
     // A model stepped live is drawn as it is; otherwise the keyframes at the replay time. A
     // state left over from another model (other units or lashings) is not drawn.
     const stepped = sampler?.current?.() ?? null;
@@ -228,63 +242,76 @@ function Stage({
       stepped.sample.units.length === doc.units.length &&
       stepped.sample.straps.length === doc.straps.length;
     state.sample = fits ? stepped.sample : sampleFrame(doc, t);
-    const beyond = fits ? Math.max(stepped.time - doc.duration_s, 0) : 0;
-    state.distance = seriesAt(doc, series.distance, t) + beyond * finalSpeed;
-    state.height = seriesAt(doc, series.bedHeight, t);
+    // A live model keeps stepping after the end of the event: the truck keeps driving.
+    const drawn = fits ? Math.max(stepped.time, t) : t;
+    state.t = t;
+    const pose = truckPose(path, drawn, floorHeight);
+    state.pose = pose;
+    state.distance = pose.s;
+    state.height = pose.heave;
 
-    // Suspension and camera follow the acceleration with a short lag.
-    const [ax, ay] = state.sample.bedAccel;
-    const k = 1 - Math.exp(-Math.min(delta, 0.1) / RESPONSE_S);
-    const braking = -ax / GRAVITY;
-    const sideways = ay / GRAVITY;
-    const current = motion.current;
-    const unsettled =
-      Math.abs(braking * PITCH_RAD_PER_G - current.pitch) + Math.abs(sideways * ROLL_RAD_PER_G - current.roll);
-    current.pitch += (braking * PITCH_RAD_PER_G - current.pitch) * k;
-    current.roll += (sideways * ROLL_RAD_PER_G - current.roll) * k;
-    current.lag += (braking * CAMERA_LAG_M_PER_G - current.lag) * k;
-    // When paused, keep drawing until the body has settled into its new attitude.
-    if (unsettled > 1e-4) invalidate();
-
-    body.current?.position.setY(floorHeight + state.height);
-    // Rotation about the truck's width: a negative angle lowers the front.
-    body.current?.rotation.set(current.roll, 0, -current.pitch);
-    wheels.current?.position.setY(state.height);
-    world.current?.position.setX(current.lag);
+    // The view follows a camera that trails the truck a little, so turns and lane changes show.
+    const { cam } = pose;
+    const group = view.current;
+    if (group) {
+      group.rotation.set(0, -cam.yaw, 0);
+      const c = Math.cos(-cam.yaw);
+      const s = Math.sin(-cam.yaw);
+      // Position = R_y(-yaw) * -(cam in three.js coordinates: x, z, -y).
+      const px = -cam.x;
+      const pz = cam.y;
+      group.position.set(c * px + s * pz, -cam.z, -s * px + c * pz);
+    }
+    truck.current?.position.set(pose.x, 0, -pose.y);
+    truck.current?.rotation.set(0, pose.yaw, 0);
+    pose.wheels.forEach((wheel, index) => wheelRefs.current[index]?.position.setY(wheel.centre));
+    const fronts = pose.wheels.filter((wheel) => wheel.axle === "front");
+    const rears = pose.wheels.filter((wheel) => wheel.axle === "rear");
+    const mean = (set: typeof fronts) => set.reduce((sum, wheel) => sum + wheel.centre, 0) / Math.max(set.length, 1);
+    axleRefs.current[0]?.position.setY(mean(fronts));
+    axleRefs.current[1]?.position.setY(mean(rears));
+    body.current?.position.setY(pose.bodyZ);
+    // three.js: +x rotation leans the top to the right, +z raises the nose.
+    body.current?.rotation.set(pose.bodyRoll, 0, pose.bodyPitch);
   }, -1);
 
   const scene = { doc, series, impacts, live, mode };
+  const spray = look.spray;
 
   return (
     <>
+      {realistic && animateWeather && look.rain > 0 && <Rain live={live} heavy={look.rain === 2} quality={quality} />}
       <group
-        ref={world}
+        ref={view}
         onPointerMissed={() => {
           live.current.activeStrap = -1;
           invalidate();
         }}
         onPointerMove={() => invalidate()}
       >
-        <Road live={live} mode={mode} />
-        {contactShadow && <ContactShadow bed={doc.bed} />}
-        <group ref={wheels}>
-          <Wheels bed={doc.bed} mode={mode} />
-        </group>
-        <group ref={body} position={[0, floorHeight, 0]}>
-          <TruckBody bed={doc.bed} mode={mode} />
-          <Units {...scene} unitHandlers={unitHandlers} />
-          <Lashings {...scene} />
-          <ForceArrows doc={doc} live={live} />
-          {push && <PushArrow doc={doc} live={live} push={push.state} />}
-          <ImpactFlash impacts={impacts} live={live} />
-          {mode === "engineering" && (
-            <>
-              <Contacts live={live} />
-              <group position={[-doc.bed.length_m / 2, 0.02, -doc.bed.width_m / 2]}>
-                <AxisTriad length={0.9} />
-              </group>
-            </>
-          )}
+        <RoadScene path={path} look={look} mode={mode} />
+        {realistic && animateWeather && spray !== "none" && (
+          <WheelSpray path={path} live={live} kind={spray} quality={quality} bed={doc.bed} />
+        )}
+        <group ref={truck}>
+          {contactShadow && <ContactShadow path={path} live={live} bed={doc.bed} />}
+          <Wheels bed={doc.bed} mode={mode} wheelRefs={wheelRefs} axleRefs={axleRefs} />
+          <group ref={body} position={[0, floorHeight, 0]}>
+            <TruckBody bed={doc.bed} mode={mode} />
+            <Units {...scene} unitHandlers={unitHandlers} />
+            <Lashings {...scene} />
+            <ForceArrows doc={doc} live={live} />
+            {push && <PushArrow doc={doc} live={live} push={push.state} />}
+            <ImpactFlash impacts={impacts} live={live} />
+            {mode === "engineering" && (
+              <>
+                <Contacts live={live} />
+                <group position={[-doc.bed.length_m / 2, 0.02, -doc.bed.width_m / 2]}>
+                  <AxisTriad length={0.9} />
+                </group>
+              </>
+            )}
+          </group>
         </group>
       </group>
       <Labels

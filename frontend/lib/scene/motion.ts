@@ -254,7 +254,7 @@ const ROAD_AHEAD = 220;
 const GRID_HZ = 120;
 /** Time constants of the drawn suspension and camera [s]. */
 const SUSPENSION_S = 0.14;
-const CAMERA_SIDE_S = 0.7;
+const CAMERA_SIDE_S = 2;
 const CAMERA_YAW_S = 0.5;
 /** How the body answers the run's accelerations; drawing only (the simulated bed does not tilt). */
 export const PITCH_RAD_PER_G = 0.035;

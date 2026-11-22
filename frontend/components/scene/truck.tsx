@@ -1,47 +1,56 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { type RefObject, useEffect, useMemo } from "react";
 import {
   BoxGeometry,
   CanvasTexture,
   EdgesGeometry,
   ExtrudeGeometry,
+  type Group,
   RepeatWrapping,
   Shape,
   SRGBColorSpace,
 } from "three";
 
 import type { KeyframesDoc } from "@/lib/keyframes";
+import { axlePositions, WHEEL_RADIUS, wheelLayout } from "@/lib/scene/truck-geometry";
 
 import { COLOR, type ViewMode } from "./shared";
 
 type Bed = KeyframesDoc["bed"];
 
-const WHEEL_RADIUS = 0.5;
-
-/** Position of the axles along the truck, relative to the middle of the bed [m]. */
-export function axlePositions(bed: Bed): { front: number; rear: number } {
-  return { front: bed.length_m / 2 + 0.9, rear: -bed.length_m / 2 + 2.3 };
-}
-
 /**
- * Wheels and axles. They are drawn apart from the body because the body dips and rolls on
- * its suspension while the wheels stay on the road.
+ * Wheels and axles, in the truck's frame. They are drawn apart from the body because the
+ * body dips and rolls on its suspension while each wheel rests on the road under it: the
+ * scene moves every wheel to its own height (`truckPose` in `lib/scene/motion.ts`) through
+ * `wheelRefs`, and each axle to the mean of its two wheels through `axleRefs`.
  */
-export function Wheels({ bed, mode }: { bed: Bed; mode: ViewMode }) {
+export function Wheels({
+  bed,
+  mode,
+  wheelRefs,
+  axleRefs,
+}: {
+  bed: Bed;
+  mode: ViewMode;
+  wheelRefs?: RefObject<(Group | null)[]>;
+  axleRefs?: RefObject<(Group | null)[]>;
+}) {
+  const wheels = wheelLayout(bed);
   const { front, rear } = axlePositions(bed);
-  const half = bed.width_m / 2;
-  const wheels = [
-    { x: front, z: half - 0.17, width: 0.3 },
-    { x: rear, z: half - 0.3, width: 0.58 },
-  ];
   const realistic = mode === "realistic";
 
   return (
-    <group position={[0, WHEEL_RADIUS, 0]}>
-      {wheels.flatMap((wheel) =>
-        [-wheel.z, wheel.z].map((z) => (
-          <group key={`${wheel.x}:${z}`} position={[wheel.x, 0, z]} rotation={[Math.PI / 2, 0, 0]}>
+    <group>
+      {wheels.map((wheel, index) => (
+        <group
+          key={`${wheel.x}:${wheel.y}`}
+          ref={(node) => {
+            if (wheelRefs?.current) wheelRefs.current[index] = node;
+          }}
+          position={[wheel.x, WHEEL_RADIUS, -wheel.y]}
+        >
+          <group rotation={[Math.PI / 2, 0, 0]}>
             <mesh castShadow={realistic}>
               <cylinderGeometry args={[WHEEL_RADIUS, WHEEL_RADIUS, wheel.width, 36]} />
               {realistic ? (
@@ -57,14 +66,22 @@ export function Wheels({ bed, mode }: { bed: Bed; mode: ViewMode }) {
               </mesh>
             )}
           </group>
-        )),
-      )}
+        </group>
+      ))}
       {realistic &&
-        [front, rear].map((x) => (
-          <mesh key={x} position={[x, 0, 0]} rotation={[Math.PI / 2, 0, 0]}>
-            <cylinderGeometry args={[0.07, 0.07, bed.width_m - 0.5, 12]} />
-            <meshStandardMaterial color={COLOR.chassis} roughness={0.6} metalness={0.5} />
-          </mesh>
+        [front, rear].map((x, index) => (
+          <group
+            key={x}
+            ref={(node) => {
+              if (axleRefs?.current) axleRefs.current[index] = node;
+            }}
+            position={[x, WHEEL_RADIUS, 0]}
+          >
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+              <cylinderGeometry args={[0.07, 0.07, bed.width_m - 0.5, 12]} />
+              <meshStandardMaterial color={COLOR.chassis} roughness={0.6} metalness={0.5} />
+            </mesh>
+          </group>
         ))}
     </group>
   );
