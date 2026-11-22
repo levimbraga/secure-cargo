@@ -22,7 +22,7 @@
 import type { KeyframesDoc } from "@/lib/keyframes";
 
 import SIM from "./sim-constants.json";
-import { axlePositions, WHEEL_RADIUS, wheelLayout } from "./truck-geometry";
+import { axlePositions, WHEEL_RADIUS, type WheelSpec, wheelLayout } from "./truck-geometry";
 
 export const G = SIM.gravity_mps2;
 
@@ -713,7 +713,7 @@ export function poseAt(path: ScenePath, time: number): Pose {
   };
 }
 
-export type WheelPose = { x: number; y: number; s: number; d: number; centre: number; width: number; axle: "front" | "rear" };
+export type WheelPose = { x: number; y: number; s: number; d: number; centre: number; width: number; radius: number; axle: WheelSpec["axle"] };
 export type TruckPose = Pose & {
   wheels: WheelPose[];
   /** Height of the bed floor's middle above the world origin [m], and the body's pitch and roll [rad]. */
@@ -733,14 +733,15 @@ export function truckPose(path: ScenePath, time: number, floorHeight: number): T
     const x = pose.x + wheel.x * cos - wheel.y * sin;
     const y = pose.y + wheel.x * sin + wheel.y * cos;
     const place = project(path.road, x, y, pose.s + wheel.x);
-    return { x, y, s: place.s, d: place.d, centre: wheelCentre(path, place.s, place.d, wheel.width), width: wheel.width, axle: wheel.axle };
+    return { x, y, s: place.s, d: place.d, centre: wheelCentre(path, place.s, place.d, wheel.width, wheel.radius), width: wheel.width, radius: wheel.radius, axle: wheel.axle };
   });
   const { front, rear } = path.axles;
   const base = (axle: "front" | "rear") => {
     const set = wheels.filter((wheel) => wheel.axle === axle);
     const grade = set.reduce((sum, wheel) => sum + (path.flat ? 0 : roadFrame(path.road, wheel.s).z), 0) / set.length;
     const actual = set.reduce((sum, wheel) => sum + wheel.centre, 0) / set.length;
-    return { grade: grade + WHEEL_RADIUS, feature: actual - grade - WHEEL_RADIUS };
+    const radius = set.reduce((sum, wheel) => sum + wheel.radius, 0) / set.length;
+    return { grade: grade + radius, feature: actual - grade - radius };
   };
   const f = base("front");
   const r = base("rear");
@@ -752,7 +753,7 @@ export function truckPose(path: ScenePath, time: number, floorHeight: number): T
   return {
     ...pose,
     wheels,
-    bodyZ: atOrigin - WHEEL_RADIUS + floorHeight + pose.heave,
+    bodyZ: atOrigin - (wheels[0]?.radius ?? WHEEL_RADIUS) + floorHeight + pose.heave,
     // Positive slope (front higher) raises the nose; the braking response lowers it.
     bodyPitch: slope + featurePitch - pose.pitch,
     bodyRoll: pose.roll,

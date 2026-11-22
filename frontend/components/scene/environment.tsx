@@ -27,7 +27,7 @@ import {
   roadSurfaceMesh,
   shoulderMeshes,
 } from "@/lib/scene/road-mesh";
-import { WHEEL_RADIUS, wheelLayout } from "@/lib/scene/truck-geometry";
+import { wheelLayout } from "@/lib/scene/truck-geometry";
 
 import { COLOR, type Live, type ViewMode } from "./shared";
 import { checkerTexture, puffTexture, ROAD_TILING, roadTexture, shadowTexture } from "./textures";
@@ -438,7 +438,7 @@ export function WheelSpray({
       const cos = Math.cos(pose.yaw);
       const sin = Math.sin(pose.yaw);
       // Behind the tyre, at the road.
-      const lx = emitter.x - WHEEL_RADIUS * 0.9;
+      const lx = emitter.x - emitter.radius * 0.9;
       const ly = emitter.y + (emitter.y > 0 ? 0.25 : -0.25);
       const ex = pose.x + lx * cos - ly * sin;
       const ey = pose.y + lx * sin + ly * cos;

@@ -265,11 +265,11 @@ function Stage({
     truck.current?.position.set(pose.x, 0, -pose.y);
     truck.current?.rotation.set(0, pose.yaw, 0);
     pose.wheels.forEach((wheel, index) => wheelRefs.current[index]?.position.setY(wheel.centre));
-    const fronts = pose.wheels.filter((wheel) => wheel.axle === "front");
-    const rears = pose.wheels.filter((wheel) => wheel.axle === "rear");
-    const mean = (set: typeof fronts) => set.reduce((sum, wheel) => sum + wheel.centre, 0) / Math.max(set.length, 1);
-    axleRefs.current[0]?.position.setY(mean(fronts));
-    axleRefs.current[1]?.position.setY(mean(rears));
+    // Each axle at the mean height of its wheels (the path's wheels follow `wheelLayout`'s order).
+    axleRefs.current.forEach((axle, index) => {
+      const set = pose.wheels.filter((_, wheel) => path.wheels[wheel]?.axleIndex === index);
+      axle?.position.setY(set.reduce((sum, wheel) => sum + wheel.centre, 0) / Math.max(set.length, 1));
+    });
     body.current?.position.setY(pose.bodyZ);
     // three.js: +x rotation leans the top to the right, +z raises the nose.
     body.current?.rotation.set(pose.bodyRoll, 0, pose.bodyPitch);
