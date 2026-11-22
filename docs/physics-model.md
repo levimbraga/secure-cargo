@@ -162,7 +162,13 @@ wait for it. A test keeps the demo runs under one second of CPU (`tests/test_api
 - Units are rigid, axis-aligned boxes with the centre of gravity in the middle.
 - Top-over lashings do not restrain lengthwise (conservative, as in the standard).
 - A lashing secures one unit; a strap over a stack is attached to the top unit.
-- The truck does not roll, pitch or yaw; its suspension is not modelled.
+- The truck does not roll, pitch or yaw; its suspension is not modelled. The 3D replay draws a road,
+  a path, body pitch and roll from the same accelerations (`docs/design.md`, section 10); none of that
+  feeds back into the result.
+- The pothole and speed-bump shocks are timed with the event's starting speed, although the driver has
+  been braking for about 0.75 s when the wheels reach them (at 30 km/h the truck is down to about
+  23 km/h): the simulated shock is shorter and stronger than at the real crossing speed, which is
+  conservative.
 - No published friction factor exists for cargo on cargo or for plank floors: the 0.3 fallback is used
   and reported in the result.
 - The simulated bed is an idealisation of a real one: decision support, not certification.

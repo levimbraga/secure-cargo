@@ -231,12 +231,26 @@ MuJoCo's own render; three charts; the result rows; the findings.
 
 **What the scene shows, in both views**
 
-- **Motion of the trip.** Every pose is relative to the truck, so the truck stands still and the road
-  streams past at the truck's real speed from the keyframes: lane dashes, roadside posts and the grain of
-  the surface. Under braking it visibly slows to a stop. A read-out in the corner gives the speed in km/h
-  and the acceleration in g. The body dips at the nose under braking and leans in curves (2° and 4° per
-  g), rides up over a speed bump by the simulated height, and the camera falls slightly behind a braking
-  truck. These four are visual only and are driven by the acceleration profile.
+- **Motion of the trip** (`lib/scene/motion.ts`). The truck drives on a road rebuilt from the run: the
+  speed of every keyframe along the road; the sideways acceleration as a lane change (`d'' = a_y`, one
+  lane for the simulated manoeuvre) or, anywhere else, as a curve of the road (curvature `a_y / v^2`);
+  the grade of a descent as a road going down; the pothole or speed bump placed where the rear axle meets
+  it at the moment of the simulated shock. The bed's vertical motion is rebuilt from the event's markers
+  and the backend's own constants (`lib/scene/sim-constants.json`, written by
+  `backend/scripts/export_scene_motion.py`; a test checks it reproduces every keyframe's vertical
+  acceleration) without the drift of a double integral. Every wheel rests on the road under it (±1 cm,
+  tested for every event, surface and body), the contact shadow lies on the road under the truck, and
+  the camera trails the truck a little so turns and lane changes show. A read-out gives the speed in
+  km/h and the acceleration in g. The body dips at the nose under braking and leans in curves (2° and
+  4° per g): visual only, the simulated bed does not tilt.
+- **Road and weather** (realistic view, `lib/scene/look.ts`), only what the run's conditions say: dry
+  asphalt; wet asphalt (darker, glossy) with rain and tyre spray; heavy rain with more rain and puddles;
+  a gravel road (no markings, ragged edges, dust behind the wheels); a muddy road (dark ruts, clods);
+  dense fog. All textures are drawn on canvases in the browser (`components/scene/textures.ts`):
+  nothing is downloaded and there is no third-party image to credit. Rain, spray and dust follow the
+  replay clock (a paused replay stands still), use fewer particles on phones and are off with
+  `prefers-reduced-motion`. The engineering view keeps its flat checker ground and adds only the
+  truck's path.
 - **Forces.** Above each unit, two arrows to one scale (1 m = 10 kN, the same in every scenario): the
   inertia the motion of the truck asks of it (mass × acceleration, ink) and against it the most friction
   can give (friction factor × the floor force exported by the engine, green). When inertia is the longer
