@@ -39,6 +39,7 @@ import { paritySummary } from "@/lib/live/parity";
 import type { EventKind } from "@/lib/live/scenario";
 import { type LiveLab as LiveLabState, useLiveLab } from "@/lib/live/use-live-lab";
 import { buildSeries, criticalWindow, headboardImpacts, playbackRate, type Speed } from "@/lib/replay";
+import { sceneConditions } from "@/lib/scene/motion";
 import { unitDetails } from "@/lib/unit-details";
 import { REDUCED_MOTION, useMediaQuery } from "@/lib/use-media-query";
 import { useSceneVisibility } from "@/lib/use-scene-visibility";
@@ -200,6 +201,10 @@ const LabBody = memo(function LabBody({
     [doc],
   );
   const critical = derived?.critical ?? null;
+  // The road the truck drives on: its surface, fog and grade, as the run reports them.
+  const profile = run?.summary.profile;
+  const surface = run?.controls.surface;
+  const conditions = useMemo(() => sceneConditions(profile, { surface }), [profile, surface]);
   const duration = doc?.duration_s ?? 0;
 
   // The canvas is created once the frame is in or near the viewport; the clock and the engine
@@ -330,6 +335,7 @@ const LabBody = memo(function LabBody({
                       onSelectUnit={(index) => setSelectedUnit((current) => (current === index ? null : index))}
                       sampler={clock.sampler}
                       push={canPush ? push : undefined}
+                      conditions={conditions}
                     />
                   </div>
                   <div ref={overlay} className="pointer-events-none absolute inset-0 overflow-hidden" />

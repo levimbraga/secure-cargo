@@ -22,8 +22,6 @@ export type Series = {
   slide: number[][];
   /** Tension of each lashing [N]: one array per lashing. */
   tension: number[][];
-  /** Height of the bed above its starting level [m], from the vertical acceleration. */
-  bedHeight: number[];
   /** Distance the truck has covered on the road [m]. */
   distance: number[];
 };
@@ -38,11 +36,8 @@ export function buildSeries(doc: KeyframesDoc): Series {
     vertical: [],
     slide: doc.units.map(() => []),
     tension: doc.straps.map(() => []),
-    bedHeight: [],
     distance: [],
   };
-  let verticalSpeed = 0;
-  let height = 0;
   let distance = 0;
   doc.frames.forEach((frame, index) => {
     const [ax, ay, az] = frame.bed_accel_mps2 ?? [0, 0, 0];
@@ -57,12 +52,9 @@ export function buildSeries(doc: KeyframesDoc): Series {
     frame.straps.forEach((strap, strapIndex) => series.tension[strapIndex]?.push(strap.tension_n));
     // Integrate the way the engine does: speed first, then position.
     if (index > 0) {
-      verticalSpeed += az * dt;
-      height += verticalSpeed * dt;
       const previous = doc.frames[index - 1]?.truck_speed_mps ?? 0;
       distance += ((previous + (frame.truck_speed_mps ?? 0)) / 2) * dt;
     }
-    series.bedHeight.push(height);
     series.distance.push(distance);
   });
   return series;

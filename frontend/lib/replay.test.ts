@@ -15,6 +15,7 @@ import {
   tensionColor,
   unitForces,
 } from "./replay";
+import { buildScenePath, sceneConditions, verticalHeave } from "./scene/motion";
 
 function load(name: string) {
   const run = JSON.parse(readFileSync(join(__dirname, "..", "public", "demo", name), "utf8")) as DemoRun;
@@ -52,10 +53,11 @@ describe("chart series", () => {
     expect(series.distance[0]).toBe(0);
   });
 
-  it("lift the bed by the height of the speed bump and bring it back", () => {
-    const heights = buildSeries(bump.doc).bedHeight;
-    expect(Math.max(...heights)).toBeCloseTo(0.1, 1);
-    expect(Math.abs(heights.at(-1) ?? 1)).toBeLessThan(0.03);
+  it("lift the bed by the height of the speed bump and bring it back (scene motion)", () => {
+    const path = buildScenePath(bump.doc, sceneConditions(bump.run.result.profile));
+    const heights = Array.from({ length: 400 }, (_, i) => verticalHeave(path.vertical, (i / 400) * bump.doc.duration_s));
+    expect(Math.max(...heights)).toBeCloseTo(0.1, 2);
+    expect(Math.abs(heights.at(-1) ?? 1)).toBeLessThan(1e-9);
   });
 
   it("interpolate between frames", () => {

@@ -27,6 +27,7 @@ import type { ExplorerRun } from "@/lib/explorer/use-explorer";
 import { sampleFrame } from "@/lib/keyframes";
 import type { LiveRun } from "@/lib/live/engine";
 import { buildSeries, criticalWindow, headboardImpacts, playbackRate, type Speed } from "@/lib/replay";
+import { sceneConditions } from "@/lib/scene/motion";
 import { REDUCED_MOTION, useMediaQuery } from "@/lib/use-media-query";
 import { useSceneVisibility } from "@/lib/use-scene-visibility";
 
@@ -63,6 +64,9 @@ export function ExplorerScene({
     [doc],
   );
   const critical = derived?.critical ?? null;
+  // The road the truck drives on: its surface, fog and grade, as the run reports them.
+  const profile = run?.summary.profile;
+  const conditions = useMemo(() => sceneConditions(profile), [profile]);
   const duration = doc?.duration_s ?? 0;
   const visibility = useSceneVisibility(frame);
   const clock = useLabClock({
@@ -107,6 +111,7 @@ export function ExplorerScene({
                 selectedUnit={null}
                 onSelectUnit={() => undefined}
                 sampler={clock.sampler}
+                conditions={conditions}
               />
             </div>
             <div ref={overlay} className="pointer-events-none absolute inset-0 overflow-hidden" />

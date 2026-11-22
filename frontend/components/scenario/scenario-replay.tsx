@@ -32,6 +32,7 @@ import { Link } from "@/i18n/navigation";
 import { type DemoId, fetchKeyframes, type RunSummary, type TripEvent, type Variant, VARIANTS } from "@/lib/demo";
 import { type KeyframesDoc, sampleFrame } from "@/lib/keyframes";
 import { buildSeries, criticalWindow, headboardImpacts, playbackRate, type Speed } from "@/lib/replay";
+import { sceneConditions } from "@/lib/scene/motion";
 import { unitDetails } from "@/lib/unit-details";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useSceneVisibility } from "@/lib/use-scene-visibility";
@@ -101,6 +102,11 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
     [doc],
   );
   const critical = derived?.critical ?? null;
+  // The road the truck drives on: the event's surface and fog, the grade the run reports.
+  const conditions = useMemo(
+    () => sceneConditions(run.profile, { surface: event.road_surface, fog: event.fog }),
+    [run.profile, event.road_surface, event.fog],
+  );
 
   // The replay starts by itself the first time it is both loaded and on screen, unless the
   // visitor asked for less motion.
@@ -275,6 +281,7 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
                   compactLabels={compact}
                   selectedUnit={openUnit}
                   onSelectUnit={(index) => setSelectedUnit((current) => (current === index ? null : index))}
+                  conditions={conditions}
                 />
               </div>
               <div ref={overlay} className="pointer-events-none absolute inset-0 overflow-hidden" />
