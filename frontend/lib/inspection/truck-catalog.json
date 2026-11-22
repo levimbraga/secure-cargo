@@ -1,0 +1,658 @@
+{
+  "vuc": {
+    "country": "BR",
+    "length_m": 6.2,
+    "axle_count": 2,
+    "axles": [
+      {
+        "x_m": 1.1,
+        "group": "steer"
+      },
+      {
+        "x_m": 4.7,
+        "group": "rear"
+      }
+    ],
+    "wheel_m": 0.8,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 1.7,
+      "height_m": 2.5
+    },
+    "deck": {
+      "front_x_m": 2.0,
+      "length_m": 4.2,
+      "width_m": 2.2,
+      "floor_m": 1.0,
+      "wall_m": 2.2,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": null,
+    "slider": false,
+    "payload_kg": 4000,
+    "gvw_kg": 7500,
+    "gvw_lb": null,
+    "catalog_length_m": null
+  },
+  "three_quarter": {
+    "country": "BR",
+    "length_m": 7.25,
+    "axle_count": 2,
+    "axles": [
+      {
+        "x_m": 1.15,
+        "group": "steer"
+      },
+      {
+        "x_m": 5.35,
+        "group": "rear"
+      }
+    ],
+    "wheel_m": 0.85,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 1.8,
+      "height_m": 2.6
+    },
+    "deck": {
+      "front_x_m": 2.05,
+      "length_m": 5.2,
+      "width_m": 2.3,
+      "floor_m": 1.1,
+      "wall_m": 2.3,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": null,
+    "slider": false,
+    "payload_kg": 5000,
+    "gvw_kg": 9200,
+    "gvw_lb": null,
+    "catalog_length_m": null
+  },
+  "toco": {
+    "country": "BR",
+    "length_m": 8.45,
+    "axle_count": 2,
+    "axles": [
+      {
+        "x_m": 1.35,
+        "group": "steer"
+      },
+      {
+        "x_m": 6.15,
+        "group": "rear"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 2.1,
+      "height_m": 2.9
+    },
+    "deck": {
+      "front_x_m": 2.25,
+      "length_m": 6.2,
+      "width_m": 2.4,
+      "floor_m": 1.25,
+      "wall_m": 2.4,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": null,
+    "slider": false,
+    "payload_kg": 8000,
+    "gvw_kg": 14000,
+    "gvw_lb": null,
+    "catalog_length_m": null
+  },
+  "truck": {
+    "country": "BR",
+    "length_m": 10.3,
+    "axle_count": 3,
+    "axles": [
+      {
+        "x_m": 1.3,
+        "group": "steer"
+      },
+      {
+        "x_m": 6.82,
+        "group": "rear"
+      },
+      {
+        "x_m": 8.18,
+        "group": "rear"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 2.1,
+      "height_m": 3.0
+    },
+    "deck": {
+      "front_x_m": 2.3,
+      "length_m": 8.0,
+      "width_m": 2.4,
+      "floor_m": 1.3,
+      "wall_m": 2.4,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": null,
+    "slider": false,
+    "payload_kg": 14000,
+    "gvw_kg": 22500,
+    "gvw_lb": null,
+    "catalog_length_m": null
+  },
+  "semi": {
+    "country": "BR",
+    "length_m": 15.95,
+    "axle_count": 6,
+    "axles": [
+      {
+        "x_m": 1.35,
+        "group": "steer"
+      },
+      {
+        "x_m": 3.97,
+        "group": "drive"
+      },
+      {
+        "x_m": 5.33,
+        "group": "drive"
+      },
+      {
+        "x_m": 13.1,
+        "group": "trailer"
+      },
+      {
+        "x_m": 14.35,
+        "group": "trailer"
+      },
+      {
+        "x_m": 15.6,
+        "group": "trailer"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 2.3,
+      "height_m": 3.3
+    },
+    "deck": {
+      "front_x_m": 3.55,
+      "length_m": 12.4,
+      "width_m": 2.4,
+      "floor_m": 1.4,
+      "wall_m": 2.6,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": {
+      "kingpin_x_m": 4.35,
+      "trailer_front_x_m": 3.55,
+      "frame_end_x_m": 5.55
+    },
+    "slider": false,
+    "payload_kg": 28000,
+    "gvw_kg": 45000,
+    "gvw_lb": null,
+    "catalog_length_m": null
+  },
+  "us_box": {
+    "country": "US",
+    "length_m": 10.17,
+    "axle_count": 2,
+    "axles": [
+      {
+        "x_m": 1.41,
+        "group": "steer"
+      },
+      {
+        "x_m": 8.01,
+        "group": "rear"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 2.1,
+      "height_m": 2.6
+    },
+    "deck": {
+      "front_x_m": 2.25,
+      "length_m": 7.92,
+      "width_m": 2.44,
+      "floor_m": 1.12,
+      "wall_m": 2.44,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": null,
+    "slider": false,
+    "payload_kg": 5398,
+    "gvw_kg": 11295,
+    "gvw_lb": 24900,
+    "catalog_length_m": null
+  },
+  "us_straight": {
+    "country": "US",
+    "length_m": 9.67,
+    "axle_count": 3,
+    "axles": [
+      {
+        "x_m": 1.41,
+        "group": "steer"
+      },
+      {
+        "x_m": 6.55,
+        "group": "rear"
+      },
+      {
+        "x_m": 7.87,
+        "group": "rear"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 2.2,
+      "height_m": 2.8
+    },
+    "deck": {
+      "front_x_m": 2.35,
+      "length_m": 7.32,
+      "width_m": 2.44,
+      "floor_m": 1.32,
+      "wall_m": 2.44,
+      "headboard_m": 1.22
+    },
+    "upper_deck": null,
+    "coupling": null,
+    "slider": false,
+    "payload_kg": 11000,
+    "gvw_kg": 19500,
+    "gvw_lb": 43000,
+    "catalog_length_m": null
+  },
+  "us_flatbed_48": {
+    "country": "US",
+    "length_m": 20.015,
+    "axle_count": 5,
+    "axles": [
+      {
+        "x_m": 1.0,
+        "group": "steer"
+      },
+      {
+        "x_m": 5.94,
+        "group": "drive"
+      },
+      {
+        "x_m": 7.26,
+        "group": "drive"
+      },
+      {
+        "x_m": 16.475,
+        "group": "trailer"
+      },
+      {
+        "x_m": 19.525,
+        "group": "trailer"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "conventional",
+      "length_m": 4.6,
+      "height_m": 3.7
+    },
+    "deck": {
+      "front_x_m": 5.385,
+      "length_m": 14.63,
+      "width_m": 2.59,
+      "floor_m": 1.52,
+      "wall_m": 2.59,
+      "headboard_m": 1.22
+    },
+    "upper_deck": null,
+    "coupling": {
+      "kingpin_x_m": 6.3,
+      "trailer_front_x_m": 5.385,
+      "frame_end_x_m": 7.5
+    },
+    "slider": false,
+    "payload_kg": 21772,
+    "gvw_kg": 34927,
+    "gvw_lb": 77000,
+    "catalog_length_m": null
+  },
+  "us_dry_van_53": {
+    "country": "US",
+    "length_m": 21.39,
+    "axle_count": 5,
+    "axles": [
+      {
+        "x_m": 1.0,
+        "group": "steer"
+      },
+      {
+        "x_m": 5.94,
+        "group": "drive"
+      },
+      {
+        "x_m": 7.26,
+        "group": "drive"
+      },
+      {
+        "x_m": 18.368,
+        "group": "trailer"
+      },
+      {
+        "x_m": 19.613,
+        "group": "trailer"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "conventional",
+      "length_m": 4.6,
+      "height_m": 3.7
+    },
+    "deck": {
+      "front_x_m": 5.39,
+      "length_m": 16.0,
+      "width_m": 2.54,
+      "floor_m": 1.22,
+      "wall_m": 2.79,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": {
+      "kingpin_x_m": 6.3,
+      "trailer_front_x_m": 5.39,
+      "frame_end_x_m": 7.5
+    },
+    "slider": true,
+    "payload_kg": 20412,
+    "gvw_kg": 35834,
+    "gvw_lb": 79000,
+    "catalog_length_m": null
+  },
+  "us_step_deck": {
+    "country": "US",
+    "length_m": 20.02,
+    "axle_count": 5,
+    "axles": [
+      {
+        "x_m": 1.0,
+        "group": "steer"
+      },
+      {
+        "x_m": 5.94,
+        "group": "drive"
+      },
+      {
+        "x_m": 7.26,
+        "group": "drive"
+      },
+      {
+        "x_m": 17.608,
+        "group": "trailer"
+      },
+      {
+        "x_m": 18.853,
+        "group": "trailer"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "conventional",
+      "length_m": 4.6,
+      "height_m": 3.7
+    },
+    "deck": {
+      "front_x_m": 8.44,
+      "length_m": 11.58,
+      "width_m": 2.59,
+      "floor_m": 1.02,
+      "wall_m": 2.59,
+      "headboard_m": 0.51
+    },
+    "upper_deck": {
+      "front_x_m": 5.39,
+      "length_m": 3.05,
+      "floor_m": 1.52
+    },
+    "coupling": {
+      "kingpin_x_m": 6.3,
+      "trailer_front_x_m": 5.39,
+      "frame_end_x_m": 7.5
+    },
+    "slider": false,
+    "payload_kg": 21319,
+    "gvw_kg": 34928,
+    "gvw_lb": 77000,
+    "catalog_length_m": null
+  },
+  "eu_7_5t": {
+    "country": "EU",
+    "length_m": 8.05,
+    "axle_count": 2,
+    "axles": [
+      {
+        "x_m": 1.65,
+        "group": "steer"
+      },
+      {
+        "x_m": 5.85,
+        "group": "rear"
+      }
+    ],
+    "wheel_m": 0.85,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 1.7,
+      "height_m": 2.7
+    },
+    "deck": {
+      "front_x_m": 1.85,
+      "length_m": 6.2,
+      "width_m": 2.45,
+      "floor_m": 1.0,
+      "wall_m": 2.3,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": null,
+    "slider": false,
+    "payload_kg": 3200,
+    "gvw_kg": 7500,
+    "gvw_lb": null,
+    "catalog_length_m": 8.5
+  },
+  "eu_18t": {
+    "country": "EU",
+    "length_m": 9.55,
+    "axle_count": 2,
+    "axles": [
+      {
+        "x_m": 2.0,
+        "group": "steer"
+      },
+      {
+        "x_m": 7.0,
+        "group": "rear"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 2.1,
+      "height_m": 3.1
+    },
+    "deck": {
+      "front_x_m": 2.25,
+      "length_m": 7.3,
+      "width_m": 2.48,
+      "floor_m": 1.25,
+      "wall_m": 2.5,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": null,
+    "slider": false,
+    "payload_kg": 10500,
+    "gvw_kg": 18000,
+    "gvw_lb": null,
+    "catalog_length_m": 10.0
+  },
+  "eu_26t": {
+    "country": "EU",
+    "length_m": 11.85,
+    "axle_count": 3,
+    "axles": [
+      {
+        "x_m": 2.5,
+        "group": "steer"
+      },
+      {
+        "x_m": 7.215,
+        "group": "rear"
+      },
+      {
+        "x_m": 8.585,
+        "group": "rear"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 2.2,
+      "height_m": 3.2
+    },
+    "deck": {
+      "front_x_m": 2.35,
+      "length_m": 9.5,
+      "width_m": 2.48,
+      "floor_m": 1.3,
+      "wall_m": 2.5,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": null,
+    "slider": false,
+    "payload_kg": 15500,
+    "gvw_kg": 26000,
+    "gvw_lb": null,
+    "catalog_length_m": 11.9
+  },
+  "eu_semi_136": {
+    "country": "EU",
+    "length_m": 16.55,
+    "axle_count": 5,
+    "axles": [
+      {
+        "x_m": 1.4,
+        "group": "steer"
+      },
+      {
+        "x_m": 5.1,
+        "group": "drive"
+      },
+      {
+        "x_m": 11.04,
+        "group": "trailer"
+      },
+      {
+        "x_m": 12.35,
+        "group": "trailer"
+      },
+      {
+        "x_m": 13.66,
+        "group": "trailer"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 2.3,
+      "height_m": 3.8
+    },
+    "deck": {
+      "front_x_m": 2.95,
+      "length_m": 13.6,
+      "width_m": 2.48,
+      "floor_m": 1.2,
+      "wall_m": 2.7,
+      "headboard_m": 1.2
+    },
+    "upper_deck": null,
+    "coupling": {
+      "kingpin_x_m": 4.55,
+      "trailer_front_x_m": 2.95,
+      "frame_end_x_m": 6.0
+    },
+    "slider": false,
+    "payload_kg": 25000,
+    "gvw_kg": 39200,
+    "gvw_lb": null,
+    "catalog_length_m": 16.5
+  },
+  "eu_flatbed_136": {
+    "country": "EU",
+    "length_m": 16.55,
+    "axle_count": 5,
+    "axles": [
+      {
+        "x_m": 1.4,
+        "group": "steer"
+      },
+      {
+        "x_m": 5.1,
+        "group": "drive"
+      },
+      {
+        "x_m": 11.04,
+        "group": "trailer"
+      },
+      {
+        "x_m": 12.35,
+        "group": "trailer"
+      },
+      {
+        "x_m": 13.66,
+        "group": "trailer"
+      }
+    ],
+    "wheel_m": 1.0,
+    "cab": {
+      "kind": "cab_over",
+      "length_m": 2.3,
+      "height_m": 3.8
+    },
+    "deck": {
+      "front_x_m": 2.95,
+      "length_m": 13.6,
+      "width_m": 2.48,
+      "floor_m": 1.3,
+      "wall_m": 2.7,
+      "headboard_m": 1.6
+    },
+    "upper_deck": null,
+    "coupling": {
+      "kingpin_x_m": 4.55,
+      "trailer_front_x_m": 2.95,
+      "frame_end_x_m": 6.0
+    },
+    "slider": false,
+    "payload_kg": 25000,
+    "gvw_kg": 38400,
+    "gvw_lb": null,
+    "catalog_length_m": 16.5
+  }
+}

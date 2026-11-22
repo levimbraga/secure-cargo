@@ -1,103 +1,255 @@
 /**
- * Our own side-view line drawing of a truck: the size sets the length, the cab and the axle
- * count; the body style sets what stands on the deck. Plain geometry in the ink color: no
+ * Our own side-view line drawing of a truck, to scale: every drawing shares one scale (1 unit =
+ * 1 cm), taken from the truck catalog the simulation uses (`lib/inspection/truck-catalog.ts`),
+ * so a VUC is visibly smaller than a semi-trailer and each axle stands where the simulation puts
+ * it. The size sets the cab, the chassis and the axles; the body style sets what stands on the
+ * deck (none: a neutral dashed outline of the load space). Plain geometry in the ink color: no
  * manufacturer's shapes or logos. The same drawing is used on the truck cards, in the result
  * summary, in the lists and on the shared summary page.
  */
 
 import { cn } from "cn";
 
-import { type BodyStyle, SIZE_INFO, type TruckSize } from "@/lib/inspection/trucks";
+import { type CatalogTruck, LONGEST_M, TRUCK_CATALOG } from "@/lib/inspection/truck-catalog";
+import type { BodyStyle, TruckSize } from "@/lib/inspection/trucks";
 
-const H = 64;
-const GROUND = 56;
-const WHEEL = 5.5;
-const DECK = 38;
+/** Height of every drawing [cm]: ground at GROUND, the tallest body (4.1 m) fits above it. */
+const VIEW_H = 440;
+const GROUND = 432;
+const MARGIN = 12;
+const STROKE = 9;
+const THIN = 5;
 
-type Geometry = {
-  width: number;
-  cab: [number, number];
-  bed: [number, number];
-  axles: number[];
-  tractor?: boolean;
-  /** A US conventional cab: the engine under a hood in front of the cab. */
-  hood?: boolean;
-  /** A step deck: the upper deck ends at this x, the lower deck runs from here to the rear. */
-  step?: number;
-};
+const X = (m: number) => MARGIN + m * 100;
+const Y = (m: number) => GROUND - m * 100;
+/** Width of a truck's drawing [cm], margins included. */
+export const viewWidth = (truck: CatalogTruck) => truck.length_m * 100 + 2 * MARGIN;
+const LONGEST_VIEW = LONGEST_M * 100 + 2 * MARGIN;
 
-/** X positions in a box that is as long as the truck (cab on the left, facing left). */
-function geometry(size: TruckSize): Geometry {
-  switch (size) {
-    case "vuc":
-      return { width: 120, cab: [6, 34], bed: [36, 114], axles: [22, 92] };
-    case "three_quarter":
-      return { width: 136, cab: [6, 36], bed: [38, 130], axles: [22, 104] };
-    case "toco":
-      return { width: 160, cab: [6, 40], bed: [42, 154], axles: [24, 124] };
-    case "truck":
-      return { width: 184, cab: [6, 40], bed: [42, 178], axles: [24, 132, 146] };
-    case "semi":
-      return { width: 232, cab: [6, 40], bed: [48, 226], axles: [22, 46, 60, 182, 196, 210], tractor: true };
-    // US presets: conventional cabs (hood), drawn to the same scale as the others.
-    case "us_box":
-      return { width: 176, cab: [6, 46], bed: [48, 170], axles: [20, 134], hood: true };
-    case "us_straight":
-      return { width: 184, cab: [6, 46], bed: [48, 178], axles: [20, 136, 150], hood: true };
-    case "us_flatbed_48":
-      return { width: 288, cab: [6, 48], bed: [56, 282], axles: [20, 54, 68, 246, 260], tractor: true, hood: true };
-    case "us_dry_van_53":
-      return { width: 304, cab: [6, 48], bed: [56, 298], axles: [20, 54, 68, 262, 276], tractor: true, hood: true };
-    case "us_step_deck":
-      return { width: 288, cab: [6, 48], bed: [56, 282], axles: [20, 54, 68, 246, 260], tractor: true, hood: true, step: 96 };
-    // EU presets: flat-fronted cabs over the engine; a 4x2 tractor and a tri-axle semi-trailer.
-    case "eu_7_5t":
-      return { width: 140, cab: [6, 36], bed: [38, 134], axles: [22, 104] };
-    case "eu_18t":
-      return { width: 164, cab: [6, 40], bed: [42, 158], axles: [24, 126] };
-    case "eu_26t":
-      return { width: 196, cab: [6, 40], bed: [42, 190], axles: [24, 140, 154] };
-    case "eu_semi_136":
-    case "eu_flatbed_136":
-      return { width: 276, cab: [6, 40], bed: [48, 270], axles: [22, 54, 214, 228, 242], tractor: true };
+function CabOver({ truck }: { truck: CatalogTruck }) {
+  const { length_m: l, height_m: h } = truck.cab;
+  const front = 0.08;
+  const bottom = 0.55;
+  const shoulder = h * 0.62;
+  const glass = (
+    <path
+      d={`M${X(front + 0.14)} ${Y(shoulder + 0.06)}L${X(front + 0.42)} ${Y(h - 0.2)}H${X(l * 0.62)}V${Y(shoulder + 0.06)}Z`}
+      strokeWidth={THIN}
+    />
+  );
+  return (
+    <g data-part="cab">
+      <path
+        d={`M${X(front)} ${Y(bottom)}V${Y(shoulder)}L${X(front + 0.34)} ${Y(h - 0.06)}Q${X(front + 0.38)} ${Y(h)} ${X(front + 0.5)} ${Y(h)}H${X(l)}V${Y(bottom)}Z`}
+      />
+      {glass}
+      {/* Door and step. */}
+      <path d={`M${X(l * 0.66)} ${Y(shoulder + 0.06)}V${Y(bottom + 0.25)}`} strokeWidth={THIN} />
+      <path d={`M${X(0)} ${Y(bottom)}H${X(front + 0.5)}`} />
+    </g>
+  );
+}
+
+function Conventional({ truck }: { truck: CatalogTruck }) {
+  const { length_m: l, height_m: h } = truck.cab;
+  const bottom = 0.6;
+  const hood = 1.75;
+  const cab0 = 2.0;
+  const cabRoof = h - 0.75;
+  const sleeper = l - 1.5;
+  return (
+    <g data-part="cab">
+      {/* Hood with the grille in front, the cab behind it and a raised sleeper roof. */}
+      <path
+        d={`M${X(0.04)} ${Y(bottom)}V${Y(hood - 0.1)}Q${X(0.06)} ${Y(hood)} ${X(0.3)} ${Y(hood)}L${X(cab0)} ${Y(hood + 0.2)}L${X(cab0 + 0.5)} ${Y(cabRoof)}H${X(sleeper)}L${X(sleeper + 0.3)} ${Y(h)}H${X(l)}V${Y(bottom)}Z`}
+      />
+      <path d={`M${X(cab0 + 0.12)} ${Y(hood + 0.32)}L${X(cab0 + 0.52)} ${Y(cabRoof - 0.12)}H${X(cab0 + 0.95)}V${Y(hood + 0.32)}Z`} strokeWidth={THIN} />
+      <path d={`M${X(0.04)} ${Y(bottom + 0.35)}H${X(0.3)}`} strokeWidth={THIN} />
+      <path d={`M${X(cab0 + 1.05)} ${Y(hood + 0.32)}V${Y(bottom + 0.25)}`} strokeWidth={THIN} />
+    </g>
+  );
+}
+
+function Headboard({ x, floor, height }: { x: number; floor: number; height: number }) {
+  return (
+    <g data-part="headboard">
+      <rect x={X(x)} y={Y(floor + height)} width={9} height={height * 100} />
+      <path d={`M${X(x)} ${Y(floor + height * 0.5)}h9`} strokeWidth={THIN} />
+    </g>
+  );
+}
+
+/** Evenly spaced positions between two ends, `count` gaps. */
+function stations(x0: number, x1: number, count: number): number[] {
+  return Array.from({ length: count + 1 }, (_, n) => x0 + ((x1 - x0) * n) / count);
+}
+
+function Body({ truck, style, code }: { truck: CatalogTruck; style: BodyStyle | null; code: "L" | "XL" | null }) {
+  const { front_x_m: x0, length_m: len, floor_m: floor, wall_m: wall, headboard_m: headboard } = truck.deck;
+  const x1 = x0 + len;
+  const deckTop = floor;
+  // A step deck's upper deck ahead of the lower one: the step is its front stop.
+  const front = truck.upper_deck ? truck.upper_deck.front_x_m : x0;
+  switch (style) {
+    case null:
+      return (
+        <rect
+          data-part="load-space"
+          x={X(front)}
+          y={Y(deckTop + wall)}
+          width={(x1 - front) * 100}
+          height={wall * 100}
+          strokeDasharray="22 18"
+          strokeWidth={THIN}
+          stroke="var(--control-border)"
+        />
+      );
+    case "platform":
+      return truck.upper_deck ? null : <Headboard x={x0} floor={deckTop} height={headboard} />;
+    case "open_low_sides": {
+      const side = 0.55;
+      const panels = Math.max(2, Math.round(len / 2.1));
+      return (
+        <g data-part="drop-sides">
+          <Headboard x={x0} floor={deckTop} height={Math.max(headboard, side + 0.4)} />
+          <rect x={X(x0)} y={Y(deckTop + side)} width={len * 100} height={side * 100} />
+          {stations(x0, x1, panels)
+            .slice(1, -1)
+            .map((x) => (
+              <path key={x} d={`M${X(x)} ${Y(deckTop + side)}V${Y(deckTop)}`} strokeWidth={THIN} />
+            ))}
+          {/* Hinges along the bottom edge: the boards fold down. */}
+          {stations(x0, x1, panels * 2)
+            .filter((_, n) => n % 2 === 1)
+            .map((x) => (
+              <path key={`h${x}`} d={`M${X(x) - 12} ${Y(deckTop + 0.06)}h24`} strokeWidth={THIN} />
+            ))}
+        </g>
+      );
+    }
+    case "open_tall_rack": {
+      // A grain body ("graneleiro"): tall plank sides held by posts that stand above them.
+      const top = 1.45;
+      const posts = Math.max(3, Math.round(len / 1.25));
+      return (
+        <g data-part="tall-rack">
+          <Headboard x={x0} floor={deckTop} height={top + 0.1} />
+          <rect x={X(x0)} y={Y(deckTop + top)} width={len * 100} height={top * 100} />
+          {[0.36, 0.72, 1.08].map((h) => (
+            <path key={h} d={`M${X(x0)} ${Y(deckTop + h)}H${X(x1)}`} strokeWidth={THIN} />
+          ))}
+          {stations(x0, x1, posts)
+            .slice(1)
+            .map((x) => (
+              <path key={x} data-part="post" d={`M${X(x) - 6} ${Y(deckTop)}V${Y(deckTop + top + 0.12)}`} />
+            ))}
+        </g>
+      );
+    }
+    case "box": {
+      const roof = deckTop + wall + 0.12;
+      return (
+        <g data-part="box">
+          <rect x={X(x0)} y={Y(roof)} width={len * 100} height={(roof - deckTop) * 100} />
+          <path d={`M${X(x0)} ${Y(roof - 0.12)}H${X(x1)}`} strokeWidth={THIN} />
+          {/* Rear doors and their hinges. */}
+          <path d={`M${X(x1 - 0.12)} ${Y(roof - 0.12)}V${Y(deckTop)}`} strokeWidth={THIN} />
+          {[0.25, 0.5, 0.75].map((share) => (
+            <path key={share} d={`M${X(x1 - 0.12)} ${Y(deckTop + wall * share)}h-14`} strokeWidth={THIN} />
+          ))}
+          {code && <CodeMark code={code} x={x1 - 0.3} y={roof - 0.4} />}
+        </g>
+      );
+    }
+    case "curtain_sider": {
+      const roof = deckTop + wall + 0.12;
+      const rail = 0.16;
+      const bays = Math.max(2, Math.round(len / 3));
+      const posts = stations(x0, x1, bays);
+      const folds: number[] = [];
+      for (let bay = 0; bay < bays; bay++) {
+        const a = posts[bay] ?? x0;
+        const b = posts[bay + 1] ?? x1;
+        const count = Math.max(2, Math.round((b - a) / 0.42));
+        folds.push(...stations(a, b, count).slice(1, -1));
+      }
+      const top = roof - rail;
+      const bottom = deckTop + rail;
+      const sag = (top - bottom) * 100;
+      return (
+        <g data-part="curtain">
+          <rect x={X(x0)} y={Y(roof)} width={len * 100} height={(roof - deckTop) * 100} />
+          <path d={`M${X(x0)} ${Y(top)}H${X(x1)}M${X(x0)} ${Y(bottom)}H${X(x1)}`} strokeWidth={THIN} />
+          {posts.slice(1, -1).map((x) => (
+            <rect key={x} data-part="post" x={X(x) - 6} y={Y(top)} width={12} height={sag} strokeWidth={THIN} />
+          ))}
+          {folds.map((x) => (
+            <path key={x} data-part="fold" d={`M${X(x)} ${Y(top)}q10 ${sag / 2} 0 ${sag}`} strokeWidth={THIN} opacity={0.75} />
+          ))}
+          {code && <CodeMark code={code} x={x1 - 0.3} y={roof - 0.4} />}
+        </g>
+      );
+    }
   }
 }
 
-function Body({ style, x0, x1 }: { style: BodyStyle; x0: number; x1: number }) {
-  const top = 12;
-  switch (style) {
-    case "platform":
-      return null;
-    case "open_low_sides":
-      return <rect x={x0} y={DECK - 8} width={x1 - x0} height={8} />;
-    case "open_tall_rack": {
-      const posts = Math.max(3, Math.round((x1 - x0) / 18));
-      return (
-        <g>
-          <rect x={x0} y={DECK - 8} width={x1 - x0} height={8} />
-          <path d={`M${x0} ${DECK - 26}H${x1}`} />
-          {Array.from({ length: posts + 1 }, (_, n) => {
-            const x = x0 + ((x1 - x0) * n) / posts;
-            return <path key={n} d={`M${x} ${DECK - 8}V${DECK - 26}`} />;
-          })}
-        </g>
-      );
-    }
-    case "box":
-      return <rect x={x0} y={top} width={x1 - x0} height={DECK - top} />;
-    case "curtain_sider": {
-      const folds = Math.max(4, Math.round((x1 - x0) / 10));
-      return (
-        <g>
-          <rect x={x0} y={top} width={x1 - x0} height={DECK - top} />
-          {Array.from({ length: folds - 1 }, (_, n) => {
-            const x = x0 + ((x1 - x0) * (n + 1)) / folds;
-            return <path key={n} d={`M${x} ${top + 3}q2 ${(DECK - top - 6) / 2} 0 ${DECK - top - 6}`} strokeWidth={0.9} />;
-          })}
-        </g>
-      );
-    }
+function CodeMark({ code, x, y }: { code: "L" | "XL"; x: number; y: number }) {
+  return (
+    <text x={X(x)} y={Y(y)} textAnchor="end" fontSize={60} fill="currentColor" stroke="none" fontFamily="inherit" data-part="code">
+      {code}
+    </text>
+  );
+}
+
+function Chassis({ truck }: { truck: CatalogTruck }) {
+  const { deck, coupling, upper_deck: upper } = truck;
+  const deckEnd = deck.front_x_m + deck.length_m;
+  const beam = 0.14;
+  const parts = [];
+  if (coupling) {
+    // Tractor frame, fifth wheel, and the semi-trailer's deck with its landing gear.
+    const trailerFloor = upper ? upper.floor_m : deck.floor_m;
+    const frame = 1.0;
+    parts.push(
+      <path key="frame" d={`M${X(truck.cab.length_m)} ${Y(frame)}H${X(coupling.frame_end_x_m)}`} />,
+      <path
+        key="fifth"
+        data-part="fifth-wheel"
+        d={`M${X(coupling.kingpin_x_m - 0.45)} ${Y(frame)}L${X(coupling.kingpin_x_m - 0.3)} ${Y(trailerFloor - beam)}H${X(coupling.kingpin_x_m + 0.3)}L${X(coupling.kingpin_x_m + 0.45)} ${Y(frame)}`}
+      />,
+    );
+    const legs = Math.max(coupling.frame_end_x_m + 0.5, coupling.kingpin_x_m + 2.2);
+    const legFloor = upper && legs < upper.front_x_m + upper.length_m ? upper.floor_m : deck.floor_m;
+    parts.push(
+      <path key="legs" data-part="landing-gear" d={`M${X(legs)} ${Y(legFloor - beam)}V${Y(0.32)}M${X(legs) - 14} ${Y(0.32)}h28`} />,
+    );
+  } else {
+    parts.push(<path key="frame" d={`M${X(truck.cab.length_m)} ${Y(deck.floor_m - beam - 0.12)}H${X(deckEnd - 0.2)}`} />);
+    // Rear underrun bar.
+    parts.push(<path key="bar" d={`M${X(deckEnd - 0.15)} ${Y(deck.floor_m - beam)}V${Y(0.5)}h-22`} strokeWidth={THIN} />);
   }
+  if (upper) {
+    const step = upper.front_x_m + upper.length_m;
+    parts.push(
+      <rect key="upper" data-part="upper-deck" x={X(upper.front_x_m)} y={Y(upper.floor_m)} width={upper.length_m * 100} height={beam * 100} />,
+      <path key="step" data-part="step" d={`M${X(step)} ${Y(upper.floor_m - beam)}V${Y(deck.floor_m)}`} />,
+    );
+  }
+  parts.push(<rect key="deck" data-part="deck" x={X(deck.front_x_m)} y={Y(deck.floor_m)} width={deck.length_m * 100} height={beam * 100} />);
+  if (truck.slider) {
+    const trailer = truck.axles.filter((axle) => axle.group === "trailer").map((axle) => axle.x_m);
+    const a = Math.min(...trailer) - 1.4;
+    const b = Math.max(...trailer) + 0.9;
+    parts.push(
+      <g key="slider" data-part="slider">
+        <path d={`M${X(a)} ${Y(deck.floor_m - beam - 0.12)}H${X(b)}`} strokeWidth={THIN} />
+        {stations(a, b, Math.round((b - a) / 0.35)).map((x) => (
+          <circle key={x} cx={X(x)} cy={Y(deck.floor_m - beam - 0.06)} r={3} fill="currentColor" stroke="none" />
+        ))}
+      </g>,
+    );
+  }
+  return <g data-part="chassis">{parts}</g>;
 }
 
 export function TruckArt({
@@ -106,76 +258,54 @@ export function TruckArt({
   className,
   title,
   code = null,
+  scaled = false,
 }: {
   size: TruckSize;
-  style: BodyStyle;
-  /** EN 12642 code (EU mode): an XL body is drawn with its rated side walls marked. */
+  /** The body; null draws the chassis with a neutral outline of the load space. */
+  style: BodyStyle | null;
+  /** EN 12642 code (EU mode): marked on a closed body. */
   code?: "L" | "XL" | null;
   className?: string;
   /** Accessible name; without it the drawing is decorative. */
   title?: string;
+  /**
+   * Width as a share of the container against the longest truck, so a grid of cards shows every
+   * truck at one scale. Without it, give the drawing a height: the scale is then shared too.
+   */
+  scaled?: boolean;
 }) {
-  const g = geometry(size);
-  const [c0, c1] = g.cab;
-  const [b0, b1] = g.bed;
-  const cabTop = size === "vuc" || size === "three_quarter" ? 18 : 12;
-  // A step deck's lower deck (what is loaded) starts at the step; its upper deck is higher.
-  const lower = g.step ?? b0;
+  const truck = TRUCK_CATALOG[size];
+  const width = viewWidth(truck);
+  const r = truck.wheel_m * 50;
   return (
     <svg
-      viewBox={`0 0 ${g.width} ${H}`}
-      className={cn("h-auto w-full text-ink", className)}
+      viewBox={`0 0 ${width} ${VIEW_H}`}
+      className={cn("text-ink", scaled ? "block h-auto" : "h-auto w-full", className)}
+      style={scaled ? { width: `${(width / LONGEST_VIEW) * 100}%` } : undefined}
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.5}
+      strokeWidth={STROKE}
       strokeLinejoin="round"
       strokeLinecap="round"
       role={title ? "img" : undefined}
       aria-hidden={title ? undefined : true}
       data-truck-size={size}
-      data-truck-style={style}
-      data-axles={SIZE_INFO[size].axles}
+      data-truck-style={style ?? "neutral"}
+      data-axles={truck.axle_count}
+      data-length-m={truck.length_m}
       data-body-code={code ?? undefined}
     >
       {title && <title>{title}</title>}
-      {g.hood ? (
-        <>
-          {/* Conventional cab: a hood in front, then the cab with its window. */}
-          <path d={`M${c1} ${DECK + 6}V${cabTop}H${c0 + 20}L${c0 + 16} ${cabTop + 12}H${c0 + 2}L${c0} ${cabTop + 16}V${DECK + 6}Z`} />
-          <path d={`M${c0 + 21} ${cabTop + 3}H${c1 - 4}V${cabTop + 11}H${c0 + 18}Z`} strokeWidth={1} />
-        </>
-      ) : (
-        <>
-          {/* Cab: a box with a sloped windscreen and a window. */}
-          <path d={`M${c1} ${DECK + 6}V${cabTop}H${c0 + 10}L${c0} ${cabTop + 12}V${DECK + 6}Z`} />
-          <path d={`M${c0 + 11} ${cabTop + 3}H${c1 - 4}V${cabTop + 12}H${c0 + 5}Z`} strokeWidth={1} />
-        </>
-      )}
-      {/* Chassis and deck. */}
-      <path d={`M${c1} ${DECK + 6}H${b1}`} />
-      {g.step ? (
-        <>
-          <rect x={b0} y={DECK - 7} width={lower - b0} height={4} />
-          <path d={`M${lower} ${DECK - 3}V${DECK}`} />
-          <rect x={lower} y={DECK} width={b1 - lower} height={4} />
-        </>
-      ) : (
-        <rect x={b0} y={DECK} width={b1 - b0} height={4} />
-      )}
-      {g.tractor && <path d={`M${c1} ${DECK + 2}H${b0 + 20}`} strokeDasharray="2 2" strokeWidth={1} />}
-      {/* Headboard, except on a closed body whose front wall is the box itself. */}
-      {style !== "box" && style !== "curtain_sider" && !g.step && <path d={`M${b0} ${DECK}V${DECK - 16}`} strokeWidth={2} />}
-      <Body style={style} x0={lower} x1={b1} />
-      {code && style !== "platform" && style !== "open_low_sides" && style !== "open_tall_rack" && (
-        <text x={b1 - 4} y={DECK - 4} textAnchor="end" fontSize={9} fill="currentColor" stroke="none" fontFamily="inherit">
-          {code}
-        </text>
-      )}
-      {/* Wheels: one per axle. */}
-      {g.axles.map((x) => (
-        <circle key={x} cx={x} cy={GROUND - WHEEL} r={WHEEL} fill="var(--paper)" />
+      <Chassis truck={truck} />
+      {truck.cab.kind === "conventional" ? <Conventional truck={truck} /> : <CabOver truck={truck} />}
+      <Body truck={truck} style={style} code={code} />
+      {truck.axles.map((axle) => (
+        <g key={axle.x_m} data-part="wheel" data-group={axle.group}>
+          <circle cx={X(axle.x_m)} cy={GROUND - r} r={r} fill="var(--paper)" />
+          <circle cx={X(axle.x_m)} cy={GROUND - r} r={r * 0.38} strokeWidth={THIN} />
+        </g>
       ))}
-      <path d={`M0 ${GROUND + 0.5}H${g.width}`} strokeWidth={0.75} className="text-hairline" stroke="var(--control-border)" />
+      <path d={`M0 ${GROUND + 2}H${width}`} strokeWidth={THIN} stroke="var(--control-border)" />
     </svg>
   );
 }
