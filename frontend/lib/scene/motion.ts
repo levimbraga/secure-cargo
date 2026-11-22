@@ -22,7 +22,7 @@
 import type { KeyframesDoc } from "@/lib/keyframes";
 
 import SIM from "./sim-constants.json";
-import { axlePositions, WHEEL_RADIUS, type WheelSpec, wheelLayout } from "./truck-geometry";
+import { axlePositions, truckLayout, WHEEL_RADIUS, type WheelSpec, wheelLayout } from "./truck-geometry";
 
 export const G = SIM.gravity_mps2;
 
@@ -304,7 +304,31 @@ export type ScenePath = {
   vertical: Vertical;
   wheels: ReturnType<typeof wheelLayout>;
   axles: { front: number; rear: number };
+  /**
+   * Semis: the kingpin along the bed [m] and the tractor-trailer angle [rad] (tractor turned
+   * left of the trailer +). Visual only: the physics runs on the trailer bed.
+   */
+  kingpin: number | null;
+  articulation: Float64Array;
 };
+
+/** The articulation angle is kept below this [rad], the jack-knife side of any real coupling. */
+const MAX_ARTICULATION = 0.9;
+/** Below this speed the trailer's yaw rate says nothing about the angle [m/s]. */
+const ARTICULATION_MIN_SPEED = 1;
+const ARTICULATION_S = 0.08;
+
+/**
+ * Kingpin kinematics: the trailer's axle group rolls without sliding sideways, so the trailer
+ * turns at `ω = v sin Γ / L` about it, where `v` is the kingpin's speed, `L` the distance from
+ * the kingpin to the trailer's axle group and `Γ` the angle between tractor and trailer.
+ * The replay knows the trailer's yaw rate from the road it drives; this gives back `Γ`.
+ */
+export function articulationAngle(yawRate: number, speed: number, kingpinToAxles: number): number {
+  if (speed < ARTICULATION_MIN_SPEED || kingpinToAxles <= 0) return 0;
+  const sine = (yawRate * kingpinToAxles) / speed;
+  return Math.asin(Math.min(Math.max(sine, -Math.sin(MAX_ARTICULATION)), Math.sin(MAX_ARTICULATION)));
+}
 
 function lowpass(values: Float64Array, dt: number, tau: number): Float64Array {
   const out = new Float64Array(values.length);
@@ -466,7 +490,23 @@ export function buildScenePath(doc: KeyframesDoc, conditions: Conditions = DRY, 
     vertical: verticalOf(doc, conditions),
     wheels: wheelLayout(doc.bed),
     axles: axlePositions(doc.bed),
+    kingpin: null,
+    articulation: new Float64Array(n),
   };
+  const tractor = truckLayout(doc.bed).tractor;
+  if (tractor) {
+    const reach = tractor.kingpin - path.axles.rear;
+    const raw = new Float64Array(n);
+    for (let k = 0; k < n; k++) {
+      const a = Math.max(k - 1, 0);
+      const b = Math.min(k + 1, n - 1);
+      const span = (t[b] as number) - (t[a] as number);
+      const rate = span > 0 ? ((yaw[b] as number) - (yaw[a] as number)) / span : 0;
+      raw[k] = articulationAngle(rate, v[k] as number, reach);
+    }
+    path.kingpin = tractor.kingpin;
+    path.articulation = lowpass(raw, dt, ARTICULATION_S);
+  }
   if (!flat) path.features = roadFeatures(path);
   return path;
 }
@@ -670,6 +710,8 @@ export type Pose = {
   roll: number;
   /** Vertical displacement of the bed from the simulation [m]. */
   heave: number;
+  /** Tractor-trailer angle of a semi [rad], 0 for a rigid truck (visual only). */
+  articulation: number;
   cam: { x: number; y: number; yaw: number; z: number };
 };
 
@@ -709,6 +751,7 @@ export function poseAt(path: ScenePath, time: number): Pose {
     pitch: inside ? value(path.pitch) : 0,
     roll: inside ? value(path.roll) : 0,
     heave: inside ? verticalHeave(path.vertical, time) : 0,
+    articulation: inside ? value(path.articulation) : 0,
     cam: { x: cx, y: cy, yaw: inside ? value(path.camYaw) : yaw, z: path.flat ? 0 : roadFrame(path.road, camS).z },
   };
 }
@@ -724,14 +767,24 @@ export type TruckPose = Pose & {
   groundZ: number;
 };
 
+/** A point of the tractor, in the bed's frame, once the tractor has turned `angle` about the kingpin. */
+export function turnAbout(x: number, y: number, kingpin: number, angle: number): [number, number] {
+  const c = Math.cos(angle);
+  const s = Math.sin(angle);
+  return [kingpin + (x - kingpin) * c - y * s, (x - kingpin) * s + y * c];
+}
+
 /** The truck's wheels on the road and its body on the wheels, at time `t`. */
 export function truckPose(path: ScenePath, time: number, floorHeight: number): TruckPose {
   const pose = poseAt(path, time);
   const cos = Math.cos(pose.yaw);
   const sin = Math.sin(pose.yaw);
+  const turn = pose.articulation;
   const wheels = path.wheels.map((wheel) => {
-    const x = pose.x + wheel.x * cos - wheel.y * sin;
-    const y = pose.y + wheel.x * sin + wheel.y * cos;
+    // A semi's tractor wheels turn with the tractor about the kingpin.
+    const [wx, wy] = path.kingpin !== null && wheel.axle !== "rear" ? turnAbout(wheel.x, wheel.y, path.kingpin, turn) : [wheel.x, wheel.y];
+    const x = pose.x + wx * cos - wy * sin;
+    const y = pose.y + wx * sin + wy * cos;
     const place = project(path.road, x, y, pose.s + wheel.x);
     return { x, y, s: place.s, d: place.d, centre: wheelCentre(path, place.s, place.d, wheel.width, wheel.radius), width: wheel.width, radius: wheel.radius, axle: wheel.axle };
   });

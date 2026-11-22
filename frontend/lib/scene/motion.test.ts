@@ -9,6 +9,7 @@ import type { KeyframesDoc } from "@/lib/keyframes";
 
 import PROFILES from "./__fixtures__/profiles.json";
 import {
+  articulationAngle,
   buildScenePath,
   frameStepTime,
   inPothole,
@@ -23,7 +24,7 @@ import {
   verticalHeave,
 } from "./motion";
 import SIM from "./sim-constants.json";
-import { WHEEL_RADIUS } from "./truck-geometry";
+import { truckLayout, WHEEL_RADIUS } from "./truck-geometry";
 
 type Fixture = {
   name: string;
@@ -268,5 +269,69 @@ describe("events", () => {
     const path = buildScenePath(toDoc(fixture, bed), conditionsOf(fixture), true);
     expect(path.features).toHaveLength(0);
     expect(truckPose(path, 1, bed.floor_height_m).wheels.every((w) => Math.abs(w.centre - WHEEL_RADIUS) < 1e-9)).toBe(true);
+  });
+});
+
+describe("semi articulation (visual: the physics runs on the trailer bed)", () => {
+  const find = (name: string) => FIXTURES.find((f) => f.name === name) as Fixture;
+  const semi: KeyframesDoc["bed"] = { body: "flatbed", length_m: 12.4, width_m: 2.4, floor_height_m: 1.4, headboard_height_m: 1.2, truck_size: "semi" };
+  const rigid = BEDS[0] as KeyframesDoc["bed"];
+
+  it("follows kingpin kinematics: sin Γ = L / R on a steady curve", () => {
+    const speed = 15;
+    const radius = 60;
+    const reach = 8;
+    expect(articulationAngle(speed / radius, speed, reach)).toBeCloseTo(Math.asin(reach / radius), 12);
+    expect(articulationAngle(-speed / radius, speed, reach)).toBeCloseTo(-Math.asin(reach / radius), 12);
+    expect(articulationAngle(0, speed, reach)).toBe(0);
+    // Standing still, or no coupling: no angle.
+    expect(articulationAngle(0.3, 0.2, reach)).toBe(0);
+    expect(articulationAngle(0.3, speed, 0)).toBe(0);
+    // Never past the jack-knife limit.
+    expect(Math.abs(articulationAngle(10, speed, reach))).toBeLessThanOrEqual(0.9 + 1e-12);
+  });
+
+  it("a semi in a sharp curve turns its tractor into the curve; a rigid truck never articulates", () => {
+    const fixture = find("sharp_curve/dry/40/r30");
+    const path = buildScenePath(toDoc(fixture, semi), conditionsOf(fixture));
+    const layout = truckLayout(semi);
+    expect(path.kingpin).toBeCloseTo(layout.tractor?.kingpin ?? NaN, 12);
+    const pose = poseAt(path, 2.0);
+    const reach = (layout.tractor?.kingpin ?? 0) - path.axles.rear;
+    // Left curve (a_y > 0): the tractor is turned left of the trailer by about asin(L / R).
+    expect(pose.ay).toBeGreaterThan(0);
+    expect(pose.articulation).toBeGreaterThan(0);
+    expect(pose.articulation).toBeCloseTo(Math.asin(reach / (pose.v ** 2 / pose.ay)), 1);
+    const straight = buildScenePath(toDoc(fixture, rigid), conditionsOf(fixture));
+    expect(straight.kingpin).toBeNull();
+    expect(Math.max(...straight.articulation.map(Math.abs))).toBe(0);
+    expect(poseAt(straight, 2.0).articulation).toBe(0);
+  });
+
+  it("the tractor's wheels turn about the kingpin; the trailer's stay on the bed", () => {
+    const fixture = find("sharp_curve/dry/40/r30");
+    const path = buildScenePath(toDoc(fixture, semi), conditionsOf(fixture));
+    const pose = truckPose(path, 2.0, semi.floor_height_m);
+    const kingpin = path.kingpin as number;
+    const c = Math.cos(pose.yaw);
+    const s = Math.sin(pose.yaw);
+    // World position of the kingpin, on the trailer.
+    const kx = pose.x + kingpin * c;
+    const ky = pose.y + kingpin * s;
+    pose.wheels.forEach((wheel, index) => {
+      const spec = path.wheels[index];
+      if (!spec) throw new Error("wheel");
+      const local = [(wheel.x - pose.x) * c + (wheel.y - pose.y) * s, -(wheel.x - pose.x) * s + (wheel.y - pose.y) * c];
+      if (spec.axle === "rear") {
+        expect(local[0]).toBeCloseTo(spec.x, 9);
+        expect(local[1]).toBeCloseTo(spec.y, 9);
+      } else {
+        // Same distance to the kingpin, turned by the articulation angle.
+        expect(Math.hypot(wheel.x - kx, wheel.y - ky)).toBeCloseTo(Math.hypot(spec.x - kingpin, spec.y), 9);
+        const drawn = Math.atan2(wheel.y - ky, wheel.x - kx) - pose.yaw;
+        const bed = Math.atan2(spec.y, spec.x - kingpin);
+        expect(Math.atan2(Math.sin(drawn - bed), Math.cos(drawn - bed))).toBeCloseTo(pose.articulation, 9);
+      }
+    });
   });
 });

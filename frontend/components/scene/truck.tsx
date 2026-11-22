@@ -1,6 +1,6 @@
 "use client";
 
-import { type RefObject, useEffect, useMemo } from "react";
+import { type ReactNode, type RefObject, useEffect, useMemo } from "react";
 import {
   BoxGeometry,
   CanvasTexture,
@@ -19,6 +19,37 @@ import { COLOR, type ViewMode } from "./shared";
 
 type Bed = KeyframesDoc["bed"];
 
+/** Receives the groups that turn with a semi's tractor about the kingpin (the scene sets their yaw). */
+export type TractorRegister = (slot: number, group: Group | null) => void;
+
+/**
+ * Everything of a semi's tractor: drawn in the bed's frame, turned about the kingpin by the
+ * articulation angle the scene computes from the road (`articulationAngle` in `motion.ts`).
+ * The physics runs on the trailer bed only; the angle is visual. A rigid truck draws its
+ * children as they are.
+ */
+function Tractor({
+  kingpin,
+  slot,
+  register,
+  children,
+}: {
+  kingpin: number | null;
+  slot: number;
+  register?: TractorRegister;
+  children: ReactNode;
+}) {
+  if (kingpin === null) return <>{children}</>;
+  return (
+    <group
+      position={[kingpin, 0, 0]}
+      ref={(node) => register?.(slot, node)}
+    >
+      <group position={[-kingpin, 0, 0]}>{children}</group>
+    </group>
+  );
+}
+
 /**
  * Wheels and axles, in the truck's frame, for the truck the run was on (`truckLayout`: its
  * axles, wheel size and twin tyres from the truck catalog). They are drawn apart from the body
@@ -31,19 +62,26 @@ export function Wheels({
   mode,
   wheelRefs,
   axleRefs,
+  registerTractor,
 }: {
   bed: Bed;
   mode: ViewMode;
   wheelRefs?: RefObject<(Group | null)[]>;
   axleRefs?: RefObject<(Group | null)[]>;
+  registerTractor?: TractorRegister;
 }) {
   const layout = truckLayout(bed);
   const wheels = wheelLayout(bed);
   const realistic = mode === "realistic";
+  const kingpin = layout.tractor?.kingpin ?? null;
+  const onTractor = (group: string) => kingpin !== null && group !== "rear" && group !== "trailer";
+  const wheelSets = (tractor: boolean) =>
+    wheels.map((wheel, index) => ({ wheel, index })).filter(({ wheel }) => onTractor(layout.axles[wheel.axleIndex]?.group ?? "") === tractor);
+  const axleSets = (tractor: boolean) => layout.axles.map((axle, index) => ({ axle, index })).filter(({ axle }) => onTractor(axle.group) === tractor);
 
-  return (
-    <group>
-      {wheels.map((wheel, index) => (
+  const draw = (tractor: boolean) => (
+    <>
+      {wheelSets(tractor).map(({ wheel, index }) => (
         <group
           key={`${wheel.x}:${wheel.y}`}
           ref={(node) => {
@@ -70,7 +108,7 @@ export function Wheels({
         </group>
       ))}
       {realistic &&
-        layout.axles.map((axle, index) => (
+        axleSets(tractor).map(({ axle, index }) => (
           <group
             key={`${axle.group}:${axle.x}`}
             ref={(node) => {
@@ -84,6 +122,17 @@ export function Wheels({
             </mesh>
           </group>
         ))}
+    </>
+  );
+
+  return (
+    <group>
+      {draw(false)}
+      {kingpin !== null && (
+        <Tractor kingpin={kingpin} slot={0} register={registerTractor}>
+          {draw(true)}
+        </Tractor>
+      )}
     </group>
   );
 }
@@ -116,10 +165,10 @@ function deckTexture(): CanvasTexture {
  * dimensions the simulation used; the rest is there to make it a truck. The origin is the
  * middle of the bed floor.
  */
-export function TruckBody({ bed, mode }: { bed: Bed; mode: ViewMode }) {
+export function TruckBody({ bed, mode, registerTractor }: { bed: Bed; mode: ViewMode; registerTractor?: TractorRegister }) {
   return (
     <>
-      {mode === "realistic" ? <RealisticBody bed={bed} /> : <EngineeringBody bed={bed} />}
+      {mode === "realistic" ? <RealisticBody bed={bed} registerTractor={registerTractor} /> : <EngineeringBody bed={bed} registerTractor={registerTractor} />}
       <Walls bed={bed} mode={mode} />
       <Blocks bed={bed} mode={mode} />
     </>
@@ -198,7 +247,7 @@ function Blocks({ bed, mode }: { bed: Bed; mode: ViewMode }) {
 const CAB_BOTTOM_M = 0.55;
 const TRACTOR_FRAME_M = 1.0;
 
-function EngineeringBody({ bed }: { bed: Bed }) {
+function EngineeringBody({ bed, registerTractor }: { bed: Bed; registerTractor?: TractorRegister }) {
   const { length_m: length, width_m: width, headboard_height_m: headboard, floor_height_m: floor } = bed;
   const layout = truckLayout(bed);
   const { cab, upperDeck } = layout;
@@ -212,7 +261,9 @@ function EngineeringBody({ bed }: { bed: Bed }) {
       {upperDeck && (
         <Slab size={[upperDeck.length, 0.14, width]} position={[upperDeck.front - upperDeck.length / 2, upperDeck.rise - 0.07, 0]} color="#aeb2b6" opacity={0.9} />
       )}
-      <Slab size={[cab.length, cabHeight, width]} position={[cab.front - cab.length / 2, -floor + CAB_BOTTOM_M + cabHeight / 2, 0]} color="#d9d9d3" opacity={0.35} />
+      <Tractor kingpin={layout.tractor?.kingpin ?? null} slot={1} register={registerTractor}>
+        <Slab size={[cab.length, cabHeight, width]} position={[cab.front - cab.length / 2, -floor + CAB_BOTTOM_M + cabHeight / 2, 0]} color="#d9d9d3" opacity={0.35} />
+      </Tractor>
     </group>
   );
 }
@@ -242,7 +293,7 @@ function Slab({
   );
 }
 
-function RealisticBody({ bed }: { bed: Bed }) {
+function RealisticBody({ bed, registerTractor }: { bed: Bed; registerTractor?: TractorRegister }) {
   const { length_m: length, width_m: width, headboard_height_m: headboard, floor_height_m: floor } = bed;
   const front = length / 2;
   const layout = truckLayout(bed);
@@ -314,26 +365,17 @@ function RealisticBody({ bed }: { bed: Bed }) {
           </mesh>
         </group>
       )}
-      {/* Chassis rails: the truck's, or the tractor's. */}
-      {[-0.42, 0.42].map((z) => (
-        <mesh key={z} position={[(cab.front - 0.1 + railEnd) / 2, railTop - 0.14, z]} castShadow>
-          <boxGeometry args={[cab.front - 0.1 - railEnd, 0.28, 0.1]} />
-          {dark}
-        </mesh>
-      ))}
+      {/* Chassis rails of a rigid truck (a tractor's turn with its cab, below). */}
+      {!tractor && <ChassisRails from={cab.front - 0.1} to={railEnd} top={railTop} dark={dark} />}
       {tractor && (
         <group>
-          {/* The trailer's own rails, its fifth-wheel plate under the kingpin, and its landing gear. */}
+          {/* The trailer's own rails and its landing gear. */}
           {[-0.42, 0.42].map((z) => (
             <mesh key={z} position={[(trailerFront - front) / 2, -0.32, z]} castShadow>
               <boxGeometry args={[trailerFront + front, 0.28, 0.1]} />
               {dark}
             </mesh>
           ))}
-          <mesh position={[tractor.kingpin, (railTop + (upperDeck ? upperDeck.rise - 0.18 : -0.46)) / 2, 0]} castShadow>
-            <cylinderGeometry args={[0.55, 0.55, Math.max((upperDeck ? upperDeck.rise - 0.18 : -0.46) - railTop, 0.06), 24]} />
-            <meshStandardMaterial color="#2c2f31" metalness={0.6} roughness={0.5} />
-          </mesh>
           {[-1, 1].map((side) => (
             <mesh key={side} position={[tractor.frameEnd - 0.6, (ground + 0.2 - 0.46) / 2, side * (width / 2 - 0.35)]}>
               <boxGeometry args={[0.12, -0.46 - ground - 0.2, 0.12]} />
@@ -342,10 +384,6 @@ function RealisticBody({ bed }: { bed: Bed }) {
           ))}
         </group>
       )}
-      <mesh position={[cabBack - 0.6, ground + 0.75, width / 2 - 0.42]} rotation={[0, 0, Math.PI / 2]} castShadow>
-        <cylinderGeometry args={[0.26, 0.26, 1.1, 20]} />
-        <meshStandardMaterial color="#b4b7b9" metalness={0.9} roughness={0.3} />
-      </mesh>
       <mesh position={[-front - 0.02, -0.42, 0]}>
         <boxGeometry args={[0.08, 0.14, width]} />
         {dark}
@@ -356,8 +394,37 @@ function RealisticBody({ bed }: { bed: Bed }) {
           <meshStandardMaterial color="#8c1f15" roughness={0.4} />
         </mesh>
       ))}
-      {cab.kind === "conventional" ? <ConventionalCab layout={layout} width={width} ground={ground} /> : <CabOver layout={layout} width={width} ground={ground} />}
+      {/* The cab and what turns with it: a tractor's rails and fifth wheel, the fuel tank. */}
+      <Tractor kingpin={tractor?.kingpin ?? null} slot={2} register={registerTractor}>
+        {tractor && (
+          <>
+            <ChassisRails from={cab.front - 0.1} to={railEnd} top={railTop} dark={dark} />
+            <mesh position={[tractor.kingpin, (railTop + (upperDeck ? upperDeck.rise - 0.18 : -0.46)) / 2, 0]} castShadow>
+              <cylinderGeometry args={[0.55, 0.55, Math.max((upperDeck ? upperDeck.rise - 0.18 : -0.46) - railTop, 0.06), 24]} />
+              <meshStandardMaterial color="#2c2f31" metalness={0.6} roughness={0.5} />
+            </mesh>
+          </>
+        )}
+        <mesh position={[cabBack - 0.6, ground + 0.75, width / 2 - 0.42]} rotation={[0, 0, Math.PI / 2]} castShadow>
+          <cylinderGeometry args={[0.26, 0.26, 1.1, 20]} />
+          <meshStandardMaterial color="#b4b7b9" metalness={0.9} roughness={0.3} />
+        </mesh>
+        {cab.kind === "conventional" ? <ConventionalCab layout={layout} width={width} ground={ground} /> : <CabOver layout={layout} width={width} ground={ground} />}
+      </Tractor>
     </group>
+  );
+}
+
+function ChassisRails({ from, to, top, dark }: { from: number; to: number; top: number; dark: ReactNode }) {
+  return (
+    <>
+      {[-0.42, 0.42].map((z) => (
+        <mesh key={z} position={[(from + to) / 2, top - 0.14, z]} castShadow>
+          <boxGeometry args={[from - to, 0.28, 0.1]} />
+          {dark}
+        </mesh>
+      ))}
+    </>
   );
 }
 

@@ -322,6 +322,8 @@
       "loading": "Carregando o replay…",
       "error": "Não foi possível carregar o replay. Os resultados abaixo continuam válidos.",
       "unsupported": "Este navegador não consegue desenhar o replay 3D. O vídeo, os gráficos e os resultados abaixo continuam funcionando.",
+      "wholeTruck": "Caminhão inteiro",
+      "articulationVisual": "A articulação é só visual: a física roda na carroceria do semirreboque.",
       "play": "Reproduzir",
       "pause": "Pausar",
       "again": "Reproduzir de novo",

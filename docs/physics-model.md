@@ -165,6 +165,9 @@ wait for it. A test keeps the demo runs under one second of CPU (`tests/test_api
 - The truck does not roll, pitch or yaw; its suspension is not modelled. The 3D replay draws a road,
   a path, body pitch and roll from the same accelerations (`docs/design.md`, section 10); none of that
   feeds back into the result.
+- A semi-trailer is simulated as its trailer bed alone. The 3D replay turns the tractor about the kingpin
+  by the angle kingpin kinematics gives for the road it draws (`sin Γ = ω L / v`, `L` from the kingpin to
+  the trailer's axle group): the articulation is visual and does not feed back into the result.
 - The pothole and speed-bump shocks are timed with the event's starting speed, although the driver has
   been braking for about 0.75 s when the wheels reach them (at 30 km/h the truck is down to about
   23 km/h): the simulated shock is shorter and stronger than at the real crossing speed, which is

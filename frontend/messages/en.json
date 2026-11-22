@@ -322,6 +322,8 @@
       "loading": "Loading the replay…",
       "error": "The replay could not be loaded. The results below are still valid.",
       "unsupported": "This browser cannot draw the 3D replay. The video, the charts and the results below still work.",
+      "wholeTruck": "Whole truck",
+      "articulationVisual": "Articulation is visual: the physics runs on the trailer bed.",
       "play": "Play",
       "pause": "Pause",
       "again": "Play again",

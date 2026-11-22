@@ -243,6 +243,16 @@ MuJoCo's own render; three charts; the result rows; the findings.
   the camera trails the truck a little so turns and lane changes show. A read-out gives the speed in
   km/h and the acceleration in g. The body dips at the nose under braking and leans in curves (2° and
   4° per g): visual only, the simulated bed does not tilt.
+- **Semis articulate, visually** (`articulationAngle` in `lib/scene/motion.ts`). The tractor (cab,
+  its axles and wheels, frame, fifth wheel and fuel tank) turns about the kingpin by the angle kingpin
+  kinematics gives from the trailer's yaw rate on the rebuilt road: `sin Γ = ω L / v`, with `L` from the
+  kingpin to the trailer's axle group (catalog), at most 0.9 rad. The physics runs on the trailer bed
+  only; the engineering view says "Articulation is visual" on semis.
+- **Camera.** Each replay opens on the whole truck, bumper to tail, for 1 s, then moves in on the bed
+  over 0.8 s (smoothstep), driven by the replay clock so a paused or scrubbed replay always draws the
+  same frame. "Whole truck" (top right of the scene, `aria-pressed`) holds the wide framing; pressing it
+  again, or changing the view, frames the truck again. Dragging the scene hands the camera to the
+  visitor until then.
 - **Road and weather** (realistic view, `lib/scene/look.ts`), only what the run's conditions say: dry
   asphalt; wet asphalt (darker, glossy) with rain and tyre spray; heavy rain with more rain and puddles;
   a gravel road (no markings, ragged edges, dust behind the wheels); a muddy road (dark ruts, clods);

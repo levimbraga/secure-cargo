@@ -1,7 +1,9 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { type RefObject, useEffect, useMemo, useRef } from "react";
+import { useTranslations } from "next-intl";
+import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { type Group, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
@@ -10,6 +12,7 @@ import { type Quality, QUALITY_SETTINGS } from "@/lib/quality";
 import type { Impact, Series } from "@/lib/replay";
 import { lookOf } from "@/lib/scene/look";
 import { buildScenePath, type Conditions, DRY, truckPose } from "@/lib/scene/motion";
+import { truckLayout } from "@/lib/scene/truck-geometry";
 import { REDUCED_MOTION, useMediaQuery } from "@/lib/use-media-query";
 import { useQuality } from "@/lib/use-quality";
 import { usePageVisible } from "@/lib/use-scene-visibility";
@@ -43,6 +46,18 @@ const VIEW_DIRECTION: Record<CameraView, Vec3> = {
 const TARGET: Vec3 = [0.7, 1.35, 0];
 /** Camera distance per view at a 16:10 frame, chosen so the truck fills most of it. */
 const VIEW_DISTANCE: Record<CameraView, number> = { hero: 11.4, side: 12.4, rear: 12, top: 13.5 };
+/** Bumper to tail of the truck the distances above were chosen for (the generic rigid) [m]. */
+const FRAMED_RIG_M = 9.4;
+/** Each replay opens on the whole truck for this long, then moves in on the bed [s]. */
+const WIDE_SHOT_S = 1;
+const WIDE_SHOT_BLEND_S = 0.8;
+
+/** How much of the whole-truck framing to use at replay time `t`: 1, then eased to 0. */
+export function wideShotWeight(t: number): number {
+  if (t <= WIDE_SHOT_S) return 1;
+  const u = Math.min((t - WIDE_SHOT_S) / WIDE_SHOT_BLEND_S, 1);
+  return 1 - u * u * (3 - 2 * u);
+}
 
 export type KeyframePlayerProps = {
   doc: KeyframesDoc;
@@ -118,8 +133,23 @@ export default function KeyframePlayer({
   // A hidden tab draws nothing, whatever the page asks for.
   const pageVisible = usePageVisible();
   const awake = active && pageVisible;
+  const t = useTranslations("Scenario");
+  const layout = useMemo(() => truckLayout(doc.bed), [doc.bed]);
+  // The whole truck held in view (the button), instead of the bed after the opening shot.
+  const [whole, setWhole] = useState(false);
+  const [controls, setControls] = useState<HTMLDivElement | null>(null);
+  // The button and the note go over the canvas, in the page's overlay (outside the drawing's role="img").
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setControls(overlay.current));
+    return () => cancelAnimationFrame(frame);
+  }, [overlay]);
+  const rig = useMemo(() => {
+    const tail = -doc.bed.length_m / 2;
+    return { centre: (layout.cab.front + tail) / 2, length: layout.cab.front - tail };
+  }, [doc.bed.length_m, layout]);
 
   return (
+    <>
     <Canvas
       // The views and the quality levels use different renderer settings: a fresh canvas for each.
       key={`${mode}:${level}`}
@@ -141,7 +171,7 @@ export default function KeyframePlayer({
       data-quality={level}
     >
       <Lighting mode={mode} quality={level} look={look} />
-      <CameraRig view={view} controlsRef={orbit} />
+      <CameraRig view={view} controlsRef={orbit} time={time} rig={rig} whole={whole} />
       <Stage
         doc={doc}
         series={series}
@@ -163,6 +193,31 @@ export default function KeyframePlayer({
         animateWeather={!reducedMotion}
       />
     </Canvas>
+    {controls &&
+      createPortal(
+        <>
+          <button
+            type="button"
+            aria-pressed={whole}
+            onClick={() => setWhole((held) => !held)}
+            data-scene-control=""
+            className="pointer-events-auto absolute top-1 right-1 flex min-h-11 items-center px-1 sm:min-h-8"
+          >
+            <span
+              className={`rounded-full px-2.5 py-1 text-[0.8125rem] font-medium ${whole ? "bg-ink text-paper" : "bg-paper/85 text-ink"}`}
+            >
+              {t("replay.wholeTruck")}
+            </span>
+          </button>
+          {mode === "engineering" && layout.tractor && (
+            <p data-scene-control="" className="type-label absolute bottom-2 left-2 rounded bg-paper/85 px-2 py-1 text-gray">
+              {t("replay.articulationVisual")}
+            </p>
+          )}
+        </>,
+        controls,
+      )}
+    </>
   );
 }
 
@@ -227,6 +282,11 @@ function Stage({
   const body = useRef<Group>(null);
   const wheelRefs = useRef<(Group | null)[]>([]);
   const axleRefs = useRef<(Group | null)[]>([]);
+  // A semi's tractor parts (wheels, body, engineering body), turned about the kingpin.
+  const tractorRefs = useRef<(Group | null)[]>([]);
+  const registerTractor = useCallback((slot: number, group: Group | null) => {
+    tractorRefs.current[slot] = group;
+  }, []);
   const floorHeight = doc.bed.floor_height_m;
   const unitHandlers = useUnitPush({ doc, live, body, orbit, push });
 
@@ -270,6 +330,7 @@ function Stage({
       const set = pose.wheels.filter((_, wheel) => path.wheels[wheel]?.axleIndex === index);
       axle?.position.setY(set.reduce((sum, wheel) => sum + wheel.centre, 0) / Math.max(set.length, 1));
     });
+    tractorRefs.current.forEach((group) => group?.rotation.set(0, pose.articulation, 0));
     body.current?.position.setY(pose.bodyZ);
     // three.js: +x rotation leans the top to the right, +z raises the nose.
     body.current?.rotation.set(pose.bodyRoll, 0, pose.bodyPitch);
@@ -295,9 +356,9 @@ function Stage({
         )}
         <group ref={truck}>
           {contactShadow && <ContactShadow path={path} live={live} bed={doc.bed} />}
-          <Wheels bed={doc.bed} mode={mode} wheelRefs={wheelRefs} axleRefs={axleRefs} />
+          <Wheels bed={doc.bed} mode={mode} wheelRefs={wheelRefs} axleRefs={axleRefs} registerTractor={registerTractor} />
           <group ref={body} position={[0, floorHeight, 0]}>
-            <TruckBody bed={doc.bed} mode={mode} />
+            <TruckBody bed={doc.bed} mode={mode} registerTractor={registerTractor} />
             <Units {...scene} unitHandlers={unitHandlers} />
             <Lashings {...scene} />
             <ForceArrows doc={doc} live={live} />
@@ -330,31 +391,54 @@ function Stage({
 function CameraRig({
   view,
   controlsRef,
+  time,
+  rig,
+  whole,
 }: {
   view: CameraView;
   /** Receives the camera controls, so a drag on a unit can hold the camera still. */
   controlsRef: RefObject<OrbitControls | null>;
+  /** Replay time [s]: each replay opens on the whole truck, then moves in on the bed. */
+  time: RefObject<number>;
+  /** Middle (along the bed) and length of the whole truck, bumper to tail [m]. */
+  rig: { centre: number; length: number };
+  /** Hold the whole truck in view. */
+  whole: boolean;
 }) {
   const camera = useThree((state) => state.camera);
   const canvas = useThree((state) => state.gl.domElement);
   const aspect = useThree((state) => state.size.width / state.size.height);
   const invalidate = useThree((state) => state.invalidate);
   const touched = useRef(false);
+  const weight = useRef(-1);
 
-  // Frame the whole truck: narrower viewports need the camera further away.
+  // A new view, frame shape or "Whole truck" press frames the truck again from the view's side.
   useEffect(() => {
-    if (touched.current) return;
-    const distance = VIEW_DISTANCE[view] * Math.max(1, 1.6 / aspect);
-    const direction = new Vector3(...VIEW_DIRECTION[view]).normalize();
-    camera.position.set(
-      TARGET[0] + direction.x * distance,
-      TARGET[1] + direction.y * distance,
-      TARGET[2] + direction.z * distance,
-    );
-    camera.lookAt(...TARGET);
-    controlsRef.current?.update();
+    touched.current = false;
+    weight.current = -1;
     invalidate();
-  }, [aspect, camera, view, invalidate, controlsRef]);
+  }, [aspect, view, whole, invalidate]);
+
+  // Frame the bed, or the whole truck: narrower viewports need the camera further away.
+  useFrame(() => {
+    if (touched.current) return;
+    const w = whole ? 1 : wideShotWeight(time.current ?? 0);
+    if (w === weight.current) return;
+    weight.current = w;
+    const fit = Math.max(1, 1.6 / aspect);
+    const bedDistance = VIEW_DISTANCE[view] * fit;
+    const wholeDistance = Math.max(bedDistance, VIEW_DISTANCE[view] * (rig.length / FRAMED_RIG_M) * fit);
+    const distance = bedDistance + (wholeDistance - bedDistance) * w;
+    const target = new Vector3(TARGET[0] + (rig.centre - TARGET[0]) * w, TARGET[1], TARGET[2]);
+    const direction = new Vector3(...VIEW_DIRECTION[view]).normalize();
+    camera.position.copy(target).addScaledVector(direction, distance);
+    camera.lookAt(target);
+    const orbit = controlsRef.current;
+    if (orbit) {
+      orbit.target.copy(target);
+      orbit.update();
+    }
+  }, -0.5);
 
   useEffect(() => {
     const orbit = new OrbitControls(camera, canvas);
