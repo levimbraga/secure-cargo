@@ -92,7 +92,7 @@ const PLAN: { example?: string; sample?: string; author: DemoPerson["key"]; outc
 	{ sample: "crates-ropes", author: "driver", outcome: "failed", daysAgo: 9 },
 	{ example: "box-truck", author: "driver", outcome: "passed", daysAgo: 15 },
 	{ example: "steel-coil", author: "driver", outcome: "proven", daysAgo: 22 },
-	{ sample: "concrete-pipes", author: "driver", outcome: "passed", daysAgo: 30 },
+	{ sample: "concrete-pipes", author: "driver", outcome: "failed", daysAgo: 30 },
 	{ example: "dirt-road", author: "driver", outcome: "fixed", daysAgo: 38 },
 	{ example: "sharp-curve", author: "driver2", outcome: "proven", daysAgo: 0.5 },
 	{ example: "steel-coil", author: "driver2", outcome: "failed", daysAgo: 2 },
