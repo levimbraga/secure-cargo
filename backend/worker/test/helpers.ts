@@ -69,6 +69,12 @@ export class FakeIdentity implements IdentityProvider {
 		return org;
 	}
 	created: { id: string; name: string; type: string; createdBy: string }[] = [];
+	deleted: string[] = [];
+	failDelete = false;
+	async deleteUser(userId: string) {
+		if (this.failDelete) throw new Error("Clerk is down");
+		this.deleted.push(userId);
+	}
 }
 
 export const ADMIN_EMAIL = "owner@example.com";

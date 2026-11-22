@@ -2,6 +2,7 @@
  * The application API served by the Worker itself (no container involved):
  *
  *   GET    /me                     who am I, my organization and role, my analysis allowance
+ *   DELETE /me                     delete my account (account.ts): personal data deleted, org records anonymized
  *   GET    /inspections?scope=     mine | org (org_admin) | all (platform admin)
  *   POST   /inspections            create an inspection in my active organization
  *   GET    /inspections/:id        one inspection with its photos, scenarios, results, fixes
@@ -38,6 +39,7 @@ import {
 } from "./authz";
 import { type Db, newId, now, periodStarts } from "./db";
 import { logEvent } from "./events";
+import { registerAccount } from "./account";
 import { type ContactDeps, registerContact } from "./contact";
 import { type FlowDeps, registerFlow } from "./flow";
 import { filterClauses, parseFilters } from "./listing";
@@ -47,6 +49,7 @@ import { ApiError, fail, field, forbidden, jsonBody, notFound } from "./http";
 import type { IdentityProvider } from "./identity";
 import { clearDemoCookie, DEMO_COOKIE, DEMO_ROLES, demoCookie, newDemoSession, readCookie, signDemoToken, verifyDemoToken } from "./demo";
 import { demoPrincipal, resolvePrincipal } from "./principal";
+import type { PurgeBucket } from "./purge";
 import { registerTrucks } from "./trucks";
 import { analysisAllowance, monthSpendUsd, readSettings } from "./quota";
 
@@ -63,6 +66,8 @@ export interface AppDeps extends FlowDeps {
 	fetchStatic?: (path: string) => Promise<unknown | null>;
 	/** Secret that signs demo sessions (HMAC-SHA256); without it the demo buttons answer 503. */
 	demoSecret: string;
+	/** The private bucket's list and delete, for account deletion (account.ts). */
+	purgeBucket?: PurgeBucket | null;
 	/** The contact form (contact.ts); without it `POST /contact` answers 503. */
 	contact?: Omit<ContactDeps, "db" | "limitAnonymous">;
 }
@@ -220,6 +225,9 @@ export function createApp(deps: AppDeps): Hono<Env> {
 	}
 
 	app.get("/me", authenticated, async (c) => c.json(await meOf(c.get("principal"))));
+
+	// Self-service account deletion (account.ts).
+	registerAccount(app, { db, bucket: deps.purgeBucket ?? null, deleteIdentity: (id) => identity.deleteUser(id) }, authenticated);
 
 	// ---- inspections ------------------------------------------------------------------------
 

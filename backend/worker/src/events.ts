@@ -4,7 +4,8 @@
  *
  * Event kinds: created, photo_added, photo_removed, analyzed, invoice_read, load_confirmed,
  * simulated, fix_simulated, shared, unshared, reinspected (on the first inspection, pointing to the
- * new one), certificate_issued, country_changed (Brazilian, US or EU rules). Each carries its facts in `detail`, never free text, so that the
+ * new one), certificate_issued, country_changed (Brazilian, US or EU rules), author_deleted (the author deleted their account; the
+ * inspection stays with the organization, anonymized). Each carries its facts in `detail`, never free text, so that the
  * page translates it.
  */
 import { type Db, newId, now } from "./db";

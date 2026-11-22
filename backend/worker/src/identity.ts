@@ -60,6 +60,8 @@ export interface IdentityProvider {
 	}): Promise<OrgInvitation>;
 	/** A new organization, with its creator as its first admin (`org:admin`). */
 	createOrganization(params: { name: string; type: "insurer" | "carrier"; createdBy: string }): Promise<IdentityOrg>;
+	/** Deletes the user (and ends their sessions); succeeds when the user is already gone. */
+	deleteUser(userId: string): Promise<void>;
 }
 
 /** Clerk org roles are `org:admin` / `org:member` (session tokens v2 drop the prefix). */
@@ -198,6 +200,16 @@ export function createClerkIdentity(options: {
 		async createOrganization({ name, type, createdBy }) {
 			const org = await clerk.organizations.createOrganization({ name, createdBy, publicMetadata: { type } });
 			return { id: org.id, name: org.name, type };
+		},
+
+		async deleteUser(userId) {
+			try {
+				await clerk.users.deleteUser(userId);
+			} catch (error) {
+				// Already deleted (a retry after a failed answer): nothing left to do.
+				if ((error as { status?: number }).status === 404) return;
+				throw error;
+			}
 		},
 	};
 }

@@ -58,33 +58,65 @@ export async function purgeDemoInspections(db: Db, bucket: PurgeBucket | null, n
 	const ids = rows.map((r) => r.id);
 	if (ids.length === 0) return { inspections: [], objects: 0 };
 
+	return { inspections: ids, objects: await deleteInspections(db, bucket, ids) };
+}
+
+/**
+ * Deletes inspections with everything that hangs off them: their rows (children first: D1
+ * enforces the foreign keys) and their R2 objects (stored battery results, and photos and invoice
+ * photos no remaining inspection uses: objects are stored once per content hash). Used by the
+ * demo reset and by account deletion. Returns the number of R2 objects deleted.
+ */
+export async function deleteInspections(db: Db, bucket: PurgeBucket | null, ids: string[]): Promise<number> {
+	let total = 0;
+	// D1 allows 100 bound parameters per query.
+	for (let start = 0; start < ids.length; start += BATCH) total += await deleteBatch(db, bucket, ids.slice(start, start + BATCH));
+	return total;
+}
+
+async function deleteBatch(db: Db, bucket: PurgeBucket | null, ids: string[]): Promise<number> {
+	if (ids.length === 0) return 0;
 	const marks = placeholders(ids.length);
 	const { results: photoRows } = await db
 		.prepare(`SELECT DISTINCT r2_key FROM photos WHERE inspection_id IN (${marks})`)
 		.bind(...ids)
 		.all<{ r2_key: string }>();
+	const { results: invoiceRows } = await db
+		.prepare(`SELECT json_extract(invoice_json, '$.photo_key') AS key FROM inspections WHERE id IN (${marks}) AND invoice_json IS NOT NULL`)
+		.bind(...ids)
+		.all<{ key: string | null }>();
 
-	// Children first: D1 enforces the foreign keys, and this does not rely on the cascades.
 	await db.batch(
 		["inspection_events", "certificates", "fixes", "results", "scenarios", "photos"]
 			.map((table) => db.prepare(`DELETE FROM ${table} WHERE inspection_id IN (${marks})`).bind(...ids))
-			.concat(db.prepare(`DELETE FROM inspections WHERE id IN (${marks})`).bind(...ids)),
+			.concat(
+				db.prepare(`UPDATE inspections SET reinspection_of = NULL WHERE reinspection_of IN (${marks})`).bind(...ids),
+				db.prepare(`DELETE FROM inspections WHERE id IN (${marks})`).bind(...ids),
+			),
 	);
 
-	if (!bucket) return { inspections: ids, objects: 0 };
-	const candidates = photoRows.map((r) => r.r2_key).filter((key) => key.startsWith("photos/"));
+	if (!bucket) return 0;
+	const photoKeys = photoRows.map((r) => r.r2_key).filter((key) => key.startsWith("photos/"));
 	let unused: string[] = [];
-	if (candidates.length) {
+	if (photoKeys.length) {
 		const { results: still } = await db
-			.prepare(`SELECT DISTINCT r2_key FROM photos WHERE r2_key IN (${placeholders(candidates.length)})`)
-			.bind(...candidates)
+			.prepare(`SELECT DISTINCT r2_key FROM photos WHERE r2_key IN (${placeholders(photoKeys.length)})`)
+			.bind(...photoKeys)
 			.all<{ r2_key: string }>();
 		const kept = new Set(still.map((r) => r.r2_key));
-		unused = candidates.filter((key) => !kept.has(key));
+		unused = photoKeys.filter((key) => !kept.has(key));
+	}
+	const invoiceKeys = [...new Set(invoiceRows.map((r) => r.key).filter((k): k is string => typeof k === "string" && k.startsWith("invoices/")))];
+	for (const key of invoiceKeys) {
+		const other = await db
+			.prepare("SELECT 1 FROM inspections WHERE json_extract(invoice_json, '$.photo_key') = ? LIMIT 1")
+			.bind(key)
+			.first();
+		if (!other) unused.push(key);
 	}
 	const stored = (await Promise.all(ids.map((id) => keysWithPrefix(bucket, `results/${id}/`)))).flat();
 	const objects = [...unused, ...stored];
 	// R2 deletes up to 1,000 keys per call.
 	for (let i = 0; i < objects.length; i += 1000) await bucket.delete(objects.slice(i, i + 1000));
-	return { inspections: ids, objects: objects.length };
+	return objects.length;
 }
