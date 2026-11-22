@@ -2199,12 +2199,12 @@
     },
     "country": {
       "label": "Rules",
-      "BR": "🇧🇷 Brasil",
-      "US": "🇺🇸 United States",
+      "BR": "Brasil",
+      "US": "United States",
       "hint": "Same simulation; only the rules and units change.",
       "rechecking": "Checking the rules again…",
       "unavailable": "The other country's rules need the API, which is not reachable right now.",
-      "EU": "🇪🇺 European Union",
+      "EU": "European Union",
       "code": "Body code (EN 12642)",
       "codeHint": {
         "L": "Code L: the headboard holds 40 % of the payload (at most 5,000 daN); curtains hold nothing.",
@@ -2212,9 +2212,9 @@
       },
       "codeAssumed": "No code given: L is assumed.",
       "short": {
-        "BR": "🇧🇷 Brasil",
-        "US": "🇺🇸 US",
-        "EU": "🇪🇺 EU"
+        "BR": "Brasil",
+        "US": "US",
+        "EU": "EU"
       }
     },
     "roadside": {

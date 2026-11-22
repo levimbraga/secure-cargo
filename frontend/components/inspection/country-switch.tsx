@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * 🇧🇷 Brasil / 🇺🇸 United States / 🇪🇺 European Union: whose rules the load is checked against.
+ * Brasil / United States / European Union: whose rules the load is checked against.
  * Independent of the page's language. Switching runs only the rules again: the simulation stays
  * the same.
  */

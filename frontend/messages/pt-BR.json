@@ -2199,12 +2199,12 @@
     },
     "country": {
       "label": "Regras",
-      "BR": "🇧🇷 Brasil",
-      "US": "🇺🇸 Estados Unidos",
+      "BR": "Brasil",
+      "US": "Estados Unidos",
       "hint": "A mesma simulação; só mudam as regras e as unidades.",
       "rechecking": "Conferindo as regras de novo…",
       "unavailable": "As regras do outro país precisam da API, que não está respondendo agora.",
-      "EU": "🇪🇺 União Europeia",
+      "EU": "União Europeia",
       "code": "Código da carroceria (EN 12642)",
       "codeHint": {
         "L": "Código L: a parede frontal segura 40 % da carga útil (no máximo 5.000 daN); as lonas não seguram nada.",
@@ -2212,9 +2212,9 @@
       },
       "codeAssumed": "Código não informado: consideramos L.",
       "short": {
-        "BR": "🇧🇷 Brasil",
-        "US": "🇺🇸 EUA",
-        "EU": "🇪🇺 UE"
+        "BR": "Brasil",
+        "US": "EUA",
+        "EU": "UE"
       }
     },
     "roadside": {
