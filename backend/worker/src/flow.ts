@@ -522,8 +522,11 @@ export function registerFlow(
 			if (!scenario.battery_ref || !deps.photos) continue;
 			const object = await deps.photos.get(scenario.battery_ref);
 			if (!object) continue;
-			const battery = JSON.parse(new TextDecoder().decode(object.bytes)) as BatteryJson;
-			if (!battery.rules?.[country]) {
+			let battery = JSON.parse(new TextDecoder().decode(object.bytes)) as BatteryJson;
+			if (physicsChangesWithCountry(battery.draft, battery.country ?? "BR", country)) {
+				// An EN 12642 XL curtain is a wall only under EU rules: the physics runs again.
+				battery = await physics().battery(draft);
+			} else if (!battery.rules?.[country]) {
 				// Stored before this country's rules existed: only the rules run (no simulation).
 				const checks = await physics().checks?.(draft);
 				if (!checks?.rules) fail(503, "api_unavailable", "The rules engine is not reachable.");
@@ -665,4 +668,15 @@ export function checkWeightSource(
 		fail(422, "estimate_not_upper_bound", "An estimated weight is simulated at the upper end of its range.");
 	}
 	return { source, range: { low_kg: low, high_kg: high } };
+}
+
+/**
+ * Whether a load simulates differently under another country's rules: an EN 12642 XL
+ * curtain-sider's curtains are side walls in EU mode only (CONTRAN 945/2022 art. 9; rules audit
+ * item 7, `build.py`). Everything else only re-runs the rules.
+ */
+export function physicsChangesWithCountry(draft: unknown, from: string, to: string): boolean {
+	const truck = (draft as { truck?: { body?: string; body_code?: string | null } } | null)?.truck;
+	if (truck?.body !== "curtain_sider" || truck.body_code !== "XL") return false;
+	return (from === "EU") !== (to === "EU");
 }

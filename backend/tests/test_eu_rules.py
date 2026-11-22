@@ -130,6 +130,21 @@ def test_body_code_changes_the_walls_of_the_model() -> None:
     assert xl.bed.headboard.rated_capacity_n == pytest.approx(0.5 * 25_000 * G, rel=1e-4)
 
 
+def test_xl_curtains_are_walls_only_in_eu_mode() -> None:
+    # CONTRAN 945/2022 art. 9: a curtain-sider's curtains are never a containment structure in
+    # Brazil; no US rule rates them. Only EU mode credits an EN 12642 XL curtain (rules audit
+    # item 7), in the physics (side walls of the model) as in the rules.
+    xl = _eu(*_pallets(rows=2), body_code="XL")
+    eu, _ = build_draft(xl)
+    assert eu.bed.side_rail_height_m == pytest.approx(2.7)
+    for country in (Country.BR, Country.US):
+        other, _ = build_draft(xl.model_copy(update={"country": country}))
+        assert other.bed.side_rail_height_m == 0, country
+        # The front wall keeps its XL rating: only the curtains change.
+        assert other.bed.headboard is not None and eu.bed.headboard is not None
+        assert other.bed.headboard.rated_capacity_n == eu.bed.headboard.rated_capacity_n
+
+
 def test_unlashed_pallets_in_an_l_curtain_sider_are_a_dangerous_deficiency() -> None:
     checks = _checks(_eu(*_pallets()))
     assert checks["eu_sideways"].status == "fail"

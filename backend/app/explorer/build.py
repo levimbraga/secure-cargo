@@ -13,6 +13,7 @@ from pydantic import ValidationError
 from app.explorer.config import (
     BodyCode,
     Cargo,
+    Country,
     ExplorerConfig,
     Position,
     Restraint,
@@ -697,6 +698,7 @@ def build_draft(
         headboard_m=draft.truck.headboard_height_m,
         anchors_per_side=draft.truck.anchors_per_side,
         code=draft.truck.body_code,
+        country=draft.country,
     )
     restraint = draft.restraint
 
@@ -807,6 +809,7 @@ def _bed(
     headboard_m: float | None = None,
     anchors_per_side: int | None = None,
     code: BodyCode | None = None,
+    country: Country = Country.BR,
 ) -> TruckBed:
     anchors = _anchors(truck, anchors_per_side)
     if body is BodyType.FLATBED:
@@ -826,7 +829,9 @@ def _bed(
         )
     rated = wall_strength_n(code, truck.payload_kg)
     walls = truck.wall_height_m
-    sides = body is BodyType.BOX or code is BodyCode.XL
+    # CONTRAN 945/2022 art. 9: a curtain is never a containment in Brazil, and no US rule rates
+    # one; only EU rules credit an EN 12642 XL curtain (rules audit item 7).
+    sides = body is BodyType.BOX or (code is BodyCode.XL and country is Country.EU)
     return TruckBed(
         length_m=truck.length_m,
         width_m=truck.width_m,
@@ -835,7 +840,7 @@ def _bed(
         headboard=Headboard(height_m=walls, rated_capacity_n=round(rated, 1)),
         body=body,
         # A code L curtain does not restrain cargo: that curtain-sider has no side walls in the
-        # model. An XL curtain is rated for 0.4 P: modelled as a wall.
+        # model. An XL curtain is rated for 0.4 P: modelled as a wall, in EU mode only.
         side_rail_height_m=walls if sides else 0.0,
         rear_wall_height_m=walls,
         anchor_points=anchors,

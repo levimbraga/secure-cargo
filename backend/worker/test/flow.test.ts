@@ -293,6 +293,27 @@ describe("country (US mode)", () => {
 		expect(physics.calls).toEqual(["/battery"]); // no second simulation, no AI call
 	});
 
+	it("simulates again when an EN 12642 XL curtain-sider leaves or enters EU rules (CONTRAN 945 art. 9)", async () => {
+		const physics = countryPhysics();
+		const drafts: unknown[] = [];
+		physics.battery = async (draft) => {
+			physics.calls.push("/battery");
+			drafts.push(draft);
+			const country = (draft as { country?: string }).country ?? "BR";
+			return { ...BATTERY, draft, passed: 7, status: "pass", situations: held, country, rules: { ...rules, EU: rules.BR } } as unknown as BatteryJson;
+		};
+		const ctx = setup({ flow: { photos: memoryStore(), analyzer: fakeAnalyzer(), physics, samples: { pallets: SAMPLE } } });
+		const id = ((await (await ctx.call("POST", "/inspections", as.alice, {})).json()) as { id: string }).id;
+		const xl = { ...draftFor([900, 900]), country: "EU", truck: { body: "curtain_sider", size: "eu_40t", body_code: "XL" } };
+		await ctx.call("PUT", `/inspections/${id}/draft`, as.alice, { draft: xl, cargo_weight_kg: 1800 });
+		await ctx.call("POST", `/inspections/${id}/simulate`, as.alice);
+		await ctx.call("PUT", `/inspections/${id}/country`, as.alice, { country: "BR" });
+		expect(physics.calls).toEqual(["/battery", "/battery"]);
+		expect((drafts[1] as { country: string }).country).toBe("BR");
+		await ctx.call("PUT", `/inspections/${id}/country`, as.alice, { country: "US" }); // still not EU: rules only
+		expect(physics.calls).toEqual(["/battery", "/battery"]);
+	});
+
 	it("fetches only the EU rule set for a battery stored before EU mode, and simulates nothing", async () => {
 		const physics = countryPhysics();
 		const eu = { securing: [{ code: "eu_sideways", status: "fail", deficiency: "dangerous" }], checklist: { weight: [], protection: [], dimensions: [] } };
