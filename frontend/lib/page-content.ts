@@ -25,8 +25,8 @@ export type PageKey = "privacy" | "terms" | "cookies" | "methodology" | "rules";
 
 /** The date shown as "Last updated" on each page (YYYY-MM-DD, Brasília). */
 export const PAGE_UPDATED: Record<PageKey, string> = {
-  privacy: "2026-11-21",
-  terms: "2026-11-21",
+  privacy: "2026-11-22",
+  terms: "2026-11-22",
   cookies: "2026-11-21",
   methodology: "2026-11-21",
   rules: "2026-11-21",

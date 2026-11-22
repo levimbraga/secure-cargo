@@ -11,8 +11,8 @@
         "id": "who",
         "heading": "Who we are",
         "body": [
-          "SecureCargo is a cargo-securement checking tool built by an individual developer in Jundiaí, São Paulo, Brazil, as a project for the Hack Brasil 2026 hackathon. For the personal data described here, SecureCargo is the controller (in the LGPD's words, the *controlador*).",
-          "To reach us about privacy, use the [contact form](/contact) and pick the subject **Privacy or data request**. We do not publish an email address."
+          "SecureCargo is run by Levi Braga, individual developer, Jundiaí, SP, Brazil, as a project for the Hack Brasil 2026 hackathon. For the personal data described here, Levi Braga is the controller (in the LGPD's words, the *controlador*).",
+          "To reach us about privacy, use the [contact form](/contact) and pick the subject **Privacy or data request**. The form is the only contact channel; we do not publish an email address."
         ]
       },
       {
@@ -87,7 +87,7 @@
           {
             "list": [
               "**Demo sessions:** everything a demo visitor creates is deleted automatically 24 hours after it was created. The demo session cookie also expires after 24 hours. The pre-made demo inspections use sample photos and fictitious names and are kept.",
-              "**Accounts:** until you ask us to delete the account. Inspections, photos, invoice photos, results, certificates, trucks, the audit trail and usage records are kept while the account exists, and deleted with it. A certificate's public verification page stops working when its inspection is deleted.",
+              "**Accounts:** until you delete the account. Inspections, photos, invoice photos, results, certificates, trucks, the audit trail and usage records are kept while the account exists. When you delete it (see \"Your rights\"), inspections you made outside an organization are deleted with their photos, invoice photos and stored results; inspections you made for an organization stay with it, for its records, with your name and email removed and an entry \"author deleted their account\" in their history; the cost records of your photo analyses stay without any link to you, for the monthly budget; your saved trucks, your membership and your sign-in at Clerk are deleted. A certificate's public verification page stops working when its inspection is deleted.",
               "**Photo analysis cache:** the AI's reading of a photo is kept, keyed by the photo's fingerprint (SHA-256), so the same photo is never paid for twice. It describes cargo, not people.",
               "**Contact form messages:** we do not store them in our database. They are only emailed to us, and we delete them from our mailbox within 90 days after the conversation ends, unless we need them to handle a legal claim.",
               "**Contact form counter:** to limit each address to 5 messages an hour we keep a keyed hash (HMAC) of your IP address, never the address itself, for at most 2 hours.",
@@ -102,7 +102,7 @@
         "heading": "Your rights",
         "body": [
           "You can ask us to confirm whether we process your data; to access it; to correct it; to delete it; to receive a copy in a portable format (JSON); to know who we share it with; to object to processing based on legitimate interest; and to withdraw any consent you gave. You can also complain to Brazil's data protection authority, the [ANPD](https://www.gov.br/anpd), or, in the EU, to your local supervisory authority.",
-          "**How:** send the request through the [contact form](/contact) with the subject **Privacy or data request**, writing from the email address of your account so we can confirm it is you. We answer within 15 days. To delete your account, ask the same way: we delete the account and everything in it, and confirm when it is done. You can correct your name and inspections yourself in the app."
+          "**How:** to delete your account, open the account menu (your picture at the top of the app), choose **Delete my account** and type the confirmation word; it takes effect at once. For anything else, send the request through the [contact form](/contact) with the subject **Privacy or data request**, writing from the email address of your account so we can confirm it is you. We answer within 15 days. You can correct your name and your inspections yourself in the app."
         ]
       },
       {
@@ -140,6 +140,7 @@
         "id": "what",
         "heading": "What SecureCargo is",
         "body": [
+          "SecureCargo is operated by Levi Braga, individual developer, Jundiaí, SP, Brazil.",
           "SecureCargo checks whether a truck's cargo is well distributed and properly secured, using a photo or the data you enter, a physics simulation and a set of road-transport rules (Brazil, the United States or the European Union). [How we calculate](/methodology) explains the model and its limits.",
           "**SecureCargo is a decision-support tool.** It is not an engineering certification, an inspection by an authority, an insurance assessment or legal advice. A SecureCargo certificate records what the tool computed; it does not certify that a load complies with the law."
         ]
@@ -206,7 +207,7 @@
         "id": "contact",
         "heading": "Contact",
         "body": [
-          "Questions about these terms: use the [contact form](/contact)."
+          "Questions about these terms: use the [contact form](/contact), the only contact channel."
         ]
       }
     ]
