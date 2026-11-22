@@ -872,7 +872,7 @@
         "biggerTruck": "On a bigger truck: {truck}",
         "fewerUnits": "Carry {kept} of {total} units; {units} on a second trip",
         "proven": "Proven: holds in every situation and meets the rules.",
-        "holdsOnly": "Arrives intact, but still breaks a rule (see the checklist once applied).",
+        "holdsOnly": "Arrives intact, but still breaks a rule.",
         "notEnough": "Not enough: holds in {passed} of {total} situations.",
         "apply": "Use this",
         "trying": "This truck is not enough: trying a bigger truck and fewer units, each through the 7 situations…"

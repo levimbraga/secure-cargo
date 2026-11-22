@@ -872,7 +872,7 @@
         "biggerTruck": "Num caminhão maior: {truck}",
         "fewerUnits": "Levar {kept} de {total} volumes; {units} numa segunda viagem",
         "proven": "Provado: segura em todas as situações e cumpre as regras.",
-        "holdsOnly": "Chega inteira, mas ainda descumpre uma regra (veja o checklist depois de aplicar).",
+        "holdsOnly": "Chega inteira, mas ainda descumpre uma regra.",
         "notEnough": "Não basta: segura em {passed} de {total} situações.",
         "apply": "Usar este",
         "trying": "Este caminhão não basta: testando um caminhão maior e menos volumes, cada um nas 7 situações…"
