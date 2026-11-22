@@ -99,9 +99,22 @@ are ink. Section labels ("Problem", "Our solution") are mono, not uppercase, one
 - **Mark.** A taut strap folding over the corner of a load: one solid shape in ink (paper on dark), no
   text inside. Path in `components/site/mark.tsx`; favicon set, home-screen icons, manifest and the link-preview
   image (`public/og.png`, 1200×630) are made from it. Sources and Canva links: the workspace's `pitch/brand/`.
-- **Nav.** 68px tall, sticky, paper background, no border. Wordmark (mark + "SecureCargo" in the serif) on
-  the left, four small links in the center, two pills on the right (the other language, and the primary
-  action). On phones: wordmark and a menu button; the menu holds the links, both languages and the action.
+- **Headers** (two, since 2026-11-22; `components/site/site-header.tsx`, `components/app/app-nav.tsx`).
+  Both 68px tall, sticky, paper background.
+  - *Site header*, for visitors (landing, examples, legal pages, contact, sign-in and sign-up): wordmark
+    (to `/`) on the left; How it works · For insurers · Examples · Contact in the center; the other
+    language, "Sign in" as a text link and "Try the demo" as the primary pill on the right. No border, no
+    GitHub (footer only), no app pages.
+  - *App header*, once signed in or in a demo: a hairline under it; the mark (to the user's home,
+    `/app` or `/app/org`) with a mono chip naming the organization and role ("Demo Insurer · Manager");
+    the role's sections in the center (driver: Inspections · My trucks · Explorer; manager: Overview ·
+    Inspections · Alerts with its badge · Members · Explorer; platform admin: + Admin); the other
+    language and the account menu or the "Demo · Exit" pill on the right.
+  - Below 1024px both show a menu button with the sections, both languages and the actions; the app
+    header keeps its chip.
+  - Both slide up out of view (200 ms transform, none with reduced motion) when the page scrolls down
+    past 80px, and come back when it scrolls up, at the top, when keyboard focus enters them or while
+    their menu is open. They keep their place in the flow, so nothing moves.
 - **Section label.** `type-label`, plain text.
 - **Photograph.** 4px radius, fixed aspect ratio, blurred placeholder while loading.
 - **Step item** (2×2 grid). 44px surface tile with a 20px line icon, title in ink at weight 500, two or
@@ -170,7 +183,7 @@ without JavaScript, and the full subtitle is always in the DOM for screen reader
 └──────────────────────────────────────────────────────┘   └────────────────────┘
 ```
 
-1. **Nav.** Links: Problem, How it works, Scenarios, GitHub. Pills: the other language, "Try the demo".
+1. **Nav.** The site header (section 5).
 2. **Hero.** Headline "Physics-tested cargo securement.", typed subtitle, two pills.
 3. **Hero photograph.**
 4. **Problem.** Label, heading, three short paragraphs.
