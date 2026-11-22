@@ -14,6 +14,7 @@ from app.explorer import Cargo, ExplorerConfig, Position, Restraint, Road, Size,
 from app.explorer.config import EU_SIZES, US_SIZES, Country
 from app.scenario import BodyType, EventKind
 from physics.results import SimulationResult
+from scripts.rule_limitations import RULE_LIMITATIONS
 
 SPEED_BANDS = (("20_40", 20, 40), ("50_70", 50, 70), ("80_100", 80, 100))
 OUTCOMES = (
@@ -148,4 +149,18 @@ def coverage_markdown(matrix: dict[str, Any]) -> str:
             shown = ", ".join(examples) if examples else "**not covered yet**"
             lines.append(f"| {option['id']} | {shown} |")
         lines.append("")
+    lines += [
+        "## Rules: known limitations and assumptions",
+        "",
+        "What the rules audit of 2026-11-21 found and the checks do not do (known limitation), or",
+        "do by a reading of ours (assumption). None changes the verdict of a gallery example or a",
+        "sample photo. Row ids are those of the workspace's rules audit.",
+        "",
+        "| Row | Kind | In plain words | Source |",
+        "|---|---|---|---|",
+    ]
+    lines += [
+        f"| {row} | {kind} | {text} | {source} |" for row, kind, text, source in RULE_LIMITATIONS
+    ]
+    lines.append("")
     return "\n".join(lines)

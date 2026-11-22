@@ -149,10 +149,19 @@ box truck full of cartons; wall time on the production container is in the Phase
 |---|---|---|
 | `devices_allowed` | Art. 4 §3 | No ropes used as lashing. |
 | `safety_factor` | Art. 4 | The lashing capacities (LC) over a unit or stack add up to at least twice its weight. Units held longitudinally by blocking, a cradle or a box body's front wall are not assessed. |
-| `four_terminals` | Art. 5 | Split cargo on an open body: every unit has at least 4 lashing terminals (a top-over strap has 2, a direct lashing 1). |
+| `four_terminals` | Art. 5 | On an open body or a platform, every unit (a single machine or coil too) has at least 4 lashing terminals (a top-over strap has 2, a direct lashing 1); blocking is no exemption. |
 | `anchoring` | Art. 6 | Lashings are hooked to the metal frame; fails when the photo shows them tied to the wooden floor. |
 | `diagonals_for_gaps` | Art. 7 | A load with room to travel along the truck (a gap of more than 15 cm to the headboard or to the unit in front) needs diagonal lashings or blocking. |
-| `above_headboard` | Art. 8 | On a flatbed, a unit taller than the headboard must not be able to slide forward (diagonals or blocking). |
+| `diagonals_open_body` | Art. 7 sole paragraph | On a body without containment panels (every open body of the model: low sides, tall rack, platform) every unit needs diagonal lashings or blocking, gap or no gap. A rule: missing diagonals make the load "holds, but out of compliance". |
+| `headboard_strength` | Art. 8 | Cargo leaning on a flatbed's headboard: the headboard's strength is "to confirm" (the law gives no figure); with an EN 12642 code its rating is compared with the EN 12195-1 forward push. |
+| `above_headboard` | Art. 8 sole paragraph | On a flatbed, a unit taller than the headboard must not be able to slide forward (diagonals or blocking). |
+
+Weights and dimensions (`rules/checklist.py`, CONTRAN 882/2021): on a semi the kingpin load is
+shared between the tractor's steer axle (6 t, art. 6 II) and its drive tandem (17 t), with an
+assumed 6x2 tractor geometry; the gross weight is checked against 29 t (rigid, art. 6 I a) or the
+PBTC of 45 t (below 16 m) or 54.5 t (triple tandem above 16 m, art. 6 I c-d); an axle over its limit
+on a vehicle whose regulatory total is 50 t or less is marked "weighed on the total only" (art. 50
+§1), still a failing rule; cargo past the deck's sides, front or rear cites art. 60 XI (CTB art. 235).
 
 The text gives no numbers for "does not fill the body length" (art. 7) or how the safety factor is
 summed (art. 4); the readings above are ours and are tested in `tests/test_contran945.py`.
@@ -245,7 +254,15 @@ presets and the units do. Sources, worked examples and what is not covered: the 
 - **Switching** country on a result page re-runs only the rules: a stored battery already has both
   rule sets; an older one gets them from `POST /battery/checks`, which simulates nothing. A saved
   inspection's author stores the switch with `PUT /inspections/:id/country` (verdict, failure codes
-  and certificates follow; the stored battery is rewritten, never re-simulated).
+  and certificates follow; the stored battery is rewritten, not re-simulated, except for an EN 12642
+  XL curtain-sider moving into or out of EU rules: its curtains are walls under EU rules only).
+- **Per-country findings** (rules audit items 3 and 4, `battery.py`): a lashing's simulated load is
+  compared with its LC under EN 12195-1 (Brazil, EU) and with its breaking strength in the US
+  (393.102(a)(1): a 2 in strap breaks at 10,000 lb, a chain at 4 x its WLL); a van's front wall with
+  its EN 12642 rating (Brazil, EU) or 393.114(c)'s 0.5 / 0.4 x the cargo's weight (US). Such a
+  finding lists the `countries` it belongs to; the verdict of each country counts only its own.
+  The WLL criterion of 393.102(a)(2) (0.435 g / 0.5 g / 0.25 g) is a static rule check,
+  `wll_criterion`. A US strap is rated WLL 3,335 lb (393.108(b), a 2 in ratchet strap).
 - **US checklist themes:** how it is secured (`rules/fmcsa393.py`: aggregate WLL 393.106(d),
   minimum tiedowns 393.110, front end structure 393.114, van containment 393.102(c)(2), rolling
   articles 393.106(c)(1), metal coils 393.120, machinery 393.130, anchor points 393.104(c), ropes
