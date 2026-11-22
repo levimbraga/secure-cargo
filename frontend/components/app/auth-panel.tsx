@@ -44,6 +44,8 @@ export function AuthPanel({ initial = "sign-in" }: { initial?: AuthTab }) {
       <h1 className="type-hero mt-5 text-balance">{t("title")}</h1>
       <p className="type-body mt-5">{t("sentence")}</p>
 
+      {/* The form's height is kept while Clerk loads, so the demo buttons below do not jump. */}
+      {!isLoaded && <div aria-hidden className="mt-10 h-[341px]" data-testid="auth-form-placeholder" />}
       {isLoaded && !isSignedIn && (
         <div className="mt-10">
           {invite ? (
