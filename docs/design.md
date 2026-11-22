@@ -35,7 +35,7 @@ Principles:
 | `--surface`        | `#E9E9E4` | Secondary pill, icon tiles                                  |
 | `--hairline`       | `#DEDED8` | Lines between data rows in the app (never between sections) |
 | `--control-border` | `#8A8A86` | Borders that identify a form control                        |
-| `--amber`          | `#F2A100` | Reserved accent: the browser icon today, straps in the future 3D section |
+| `--amber`          | `#F2A100` | Reserved accent: straps in the future 3D section                |
 | `--fail`           | `#B42318` | Fail verdicts, on `--fail-tint` `#FBE9E7`                    |
 | `--pass`           | `#136F33` | Pass verdicts, on `--pass-tint` `#E2F0E4`                    |
 | `--warn`           | `#8A5A00` | "Holds, but out of compliance", on `--warn-tint` `#FBF0D9` (5.2:1) |
@@ -96,6 +96,9 @@ are ink. Section labels ("Problem", "Our solution") are mono, not uppercase, one
 
 - **Pill.** 32px tall, 12px side padding, 14px text at weight 450. Primary: ink with paper text.
   Secondary: `#E9E9E4` with ink text. Hover changes the fill only. One primary pill per view.
+- **Mark.** A taut strap folding over the corner of a load: one solid shape in ink (paper on dark), no
+  text inside. Path in `components/site/mark.tsx`; favicon set, home-screen icons, manifest and the link-preview
+  image (`public/og.png`, 1200×630) are made from it. Sources and Canva links: the workspace's `pitch/brand/`.
 - **Nav.** 68px tall, sticky, paper background, no border. Wordmark (mark + "SecureCargo" in the serif) on
   the left, four small links in the center, two pills on the right (the other language, and the primary
   action). On phones: wordmark and a menu button; the menu holds the links, both languages and the action.

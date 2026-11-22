@@ -6,6 +6,8 @@
 import { PDFDocument, type PDFFont, type PDFPage, rgb, StandardFonts } from "pdf-lib";
 import QRCode from "qrcode";
 
+import { MARK_PATH, MARK_VIEWBOX } from "@/components/site/mark";
+
 export interface CertificatePdfInput {
   id: string;
   verifyUrl: string;
@@ -79,8 +81,16 @@ export async function certificatePdf(input: CertificatePdfInput): Promise<Uint8A
   const text = (p: PDFPage, value: string, x: number, at: number, size: number, font = regular, color = INK) =>
     p.drawText(pdfSafe(value), { x, y: at, size, font, color });
 
-  // Header
-  text(page, "SecureCargo", left, y, 11, bold);
+  // Header: the mark (12 pt square, top at the cap height) and the wordmark
+  const markSize = 12;
+  const markScale = markSize / MARK_VIEWBOX.size;
+  page.drawSvgPath(MARK_PATH, {
+    x: left - MARK_VIEWBOX.x * markScale,
+    y: y + 9.5 + MARK_VIEWBOX.y * markScale,
+    scale: markScale,
+    color: INK,
+  });
+  text(page, "SecureCargo", left + markSize + 5, y, 11, bold);
   text(page, input.label.toUpperCase(), right - regular.widthOfTextAtSize(pdfSafe(input.label.toUpperCase()), 8), y + 1, 8, regular, GRAY);
   y -= 34;
   text(page, input.title, left, y, 20, bold);
