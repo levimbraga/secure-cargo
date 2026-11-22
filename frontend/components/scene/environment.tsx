@@ -9,9 +9,13 @@ import {
   type InstancedMesh,
   type LineSegments,
   type Mesh,
+  BackSide,
   Object3D,
   PMREMGenerator,
+  PointsMaterial,
   type Points,
+  ShaderMaterial,
+  Vector2,
 } from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
@@ -30,7 +34,7 @@ import {
 import { wheelLayout } from "@/lib/scene/truck-geometry";
 
 import { COLOR, type Live, type ViewMode } from "./shared";
-import { checkerTexture, puffTexture, ROAD_TILING, roadTexture, shadowTexture } from "./textures";
+import { checkerTexture, groundTexture, puffTexture, ROAD_TILING, roadTexture, shadowTexture, treeTexture } from "./textures";
 
 /**
  * Light and sky of each view. At high quality the realistic view is lit by an image of a studio
@@ -60,8 +64,8 @@ export function Lighting({ mode, quality = "high", look }: { mode: ViewMode; qua
   const fog = realistic ? look.fog : ([38, 95] as const);
   return (
     <>
-      {/* A grey sky behind a wet or foggy road; the page's own colour otherwise. */}
-      {realistic && look.sky && <color attach="background" args={[look.sky]} />}
+      {/* The sky: blue overhead, hazy at the horizon, grey in rain and fog. */}
+      {realistic && <Sky top={look.skyTop} horizon={look.sky} />}
       {/* The far end of the road fades into the sky (or the colour of the page). */}
       <fog attach="fog" args={[realistic ? look.fogColor : COLOR.surface, fog[0], fog[1]]} />
       {environment ? (
@@ -70,6 +74,7 @@ export function Lighting({ mode, quality = "high", look }: { mode: ViewMode; qua
           <hemisphereLight args={[look.hemisphere[0], look.hemisphere[1], 0.55 * Math.max(sun, 0.6)]} />
           <directionalLight
             position={[-7, 13, 8]}
+            color="#fff6e8"
             intensity={2.4 * sun}
             castShadow={settings.shadows}
             shadow-mapSize={[1024, 1024]}
@@ -87,7 +92,7 @@ export function Lighting({ mode, quality = "high", look }: { mode: ViewMode; qua
         <>
           {/* No image to light from: a brighter sky, the same sun and a fill from the camera side. */}
           <hemisphereLight args={[look.hemisphere[0], look.hemisphere[1], 2.5 * Math.max(sun, 0.6)]} />
-          <directionalLight position={[-7, 13, 8]} intensity={2.2 * sun} />
+          <directionalLight position={[-7, 13, 8]} color="#fff6e8" intensity={2.2 * sun} />
           <directionalLight position={[6, 4, 10]} intensity={0.6} />
         </>
       ) : (
@@ -139,9 +144,10 @@ function RealisticRoad({ path, look }: { path: ScenePath; look: Look }) {
     const bump = bumpPaintMesh(path, halfWidth);
     return { surface, shoulders, markings, bump: bump ? toGeometry(bump) : null };
   }, [path, halfWidth, look.road.texture, look.verge, look.shoulder, look.markings]);
+  const grass = useMemo(() => groundTexture(), []);
   const all = useMemo(
-    () => [geometries.surface, ...geometries.shoulders, ...(geometries.markings ? [geometries.markings] : []), ...(geometries.bump ? [geometries.bump] : []), texture],
-    [geometries, texture],
+    () => [geometries.surface, ...geometries.shoulders, ...(geometries.markings ? [geometries.markings] : []), ...(geometries.bump ? [geometries.bump] : []), texture, grass],
+    [geometries, texture, grass],
   );
   useDisposed(all);
   const wet = look.road.roughness < 0.5;
@@ -160,7 +166,7 @@ function RealisticRoad({ path, look }: { path: ScenePath; look: Look }) {
       </mesh>
       {geometries.shoulders.map((geometry, index) => (
         <mesh key={index} geometry={geometry} receiveShadow>
-          <meshStandardMaterial vertexColors roughness={1} />
+          <meshStandardMaterial map={grass} vertexColors roughness={1} />
         </mesh>
       ))}
       {geometries.markings && (
@@ -175,7 +181,119 @@ function RealisticRoad({ path, look }: { path: ScenePath; look: Look }) {
       )}
       {look.puddles && <Puddles path={path} halfWidth={halfWidth} />}
       <Posts path={path} halfWidth={halfWidth} />
+      {look.trees > 0 && <Trees path={path} halfWidth={halfWidth} density={look.trees} />}
     </group>
+  );
+}
+
+/**
+ * The sky: a dome around the camera, blue overhead and fading into the horizon's haze, which
+ * is also the colour of the fog, so the far road and fields melt into it.
+ */
+function Sky({ top, horizon }: { top: string; horizon: string }) {
+  const mesh = useRef<Mesh>(null);
+  const material = useMemo(
+    () =>
+      new ShaderMaterial({
+        uniforms: { top: { value: new Color(top) }, horizon: { value: new Color(horizon) } },
+        vertexShader: `varying vec3 vDirection;
+void main() {
+  vDirection = normalize(position);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}`,
+        fragmentShader: `uniform vec3 top;
+uniform vec3 horizon;
+varying vec3 vDirection;
+void main() {
+  float k = smoothstep(0.0, 0.5, vDirection.y);
+  gl_FragColor = vec4(mix(horizon, top, k), 1.0);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}`,
+        side: BackSide,
+        depthWrite: false,
+        fog: false,
+      }),
+    [top, horizon],
+  );
+  useDisposed(useMemo(() => [material], [material]));
+  useFrame(({ camera }) => mesh.current?.position.copy(camera.position));
+  return (
+    <mesh ref={mesh} material={material} renderOrder={-1} frustumCulled={false}>
+      <sphereGeometry args={[150, 24, 12]} />
+    </mesh>
+  );
+}
+
+/** Height of a roadside tree [m]. */
+const TREE_M = 8.5;
+/** Trees per metre of road on each side, at full density. */
+const TREES_PER_M = 1 / 9;
+
+/**
+ * Trees in the fields on both sides of the road: billboards (one draw call per kind) standing
+ * between 8 m and 60 m from the road's edge, so they show the speed and the bends from afar
+ * without hiding the truck.
+ */
+function Trees({ path, halfWidth, density }: { path: ScenePath; halfWidth: number; density: number }) {
+  const camera = useThree((state) => state.camera);
+  const textures = useMemo(() => [treeTexture(0), treeTexture(1)], []);
+  const geometries = useMemo(() => {
+    const end = path.s[path.s.length - 1] ?? 0;
+    const sets = [0, 1].map(() => ({ positions: [] as number[], colors: [] as number[] }));
+    const next = randomTuples(Math.ceil(((end + 300) * TREES_PER_M * density) * 2) + 4, 5, 17);
+    let index = 0;
+    for (let s = -110; s < end + 190; s += 1 / (TREES_PER_M * density)) {
+      for (const side of [-1, 1]) {
+        const [a = 0, b = 0, c = 0, d = 0, e = 0] = next[index++ % next.length] ?? [];
+        const along = s + (a - 0.5) * 6;
+        const away = halfWidth + 6 + b * b * 55;
+        const [x, y] = roadPoint(path.road, along, side * away);
+        const z = path.flat ? 0 : roadFrame(path.road, along).z;
+        const set = sets[c > 0.5 ? 1 : 0]!;
+        set.positions.push(x, z + TREE_M / 2, -y);
+        const tint = 0.75 + e * 0.3 + d * 0.1;
+        set.colors.push(tint * 0.95, tint, tint * 0.9);
+      }
+    }
+    return sets.map(({ positions, colors }) => {
+      const geometry = new BufferGeometry();
+      geometry.setAttribute("position", new BufferAttribute(new Float32Array(positions), 3));
+      geometry.setAttribute("color", new BufferAttribute(new Float32Array(colors), 3));
+      return geometry;
+    });
+  }, [path, halfWidth, density]);
+  useDisposed(useMemo(() => [...textures, ...geometries], [textures, geometries]));
+  // A point's size is in world units scaled by the camera's projection.
+  const fov = "fov" in camera ? (camera.fov as number) : 30;
+  const size = TREE_M / Math.tan((fov * Math.PI) / 360);
+  // Trees nearer to the camera than the truck are not drawn: they would stand in front of it.
+  const near = useMemo(() => ({ value: new Vector2(30, 0) }), []);
+  const materials = useMemo(
+    () =>
+      textures.map((map) => {
+        const material = new PointsMaterial({ map, size, sizeAttenuation: true, vertexColors: true, alphaTest: 0.5 });
+        material.onBeforeCompile = (shader) => {
+          shader.uniforms.uNear = near;
+          shader.vertexShader = `uniform vec2 uNear;\n${shader.vertexShader}`.replace(
+            "#include <fog_vertex>",
+            "#include <fog_vertex>\n  if (-mvPosition.z < uNear.x) gl_PointSize = 0.0;",
+          );
+        };
+        return material;
+      }),
+    [textures, size, near],
+  );
+  useDisposed(materials);
+  useFrame(({ camera: eye }) => {
+    near.value.set(eye.position.length() + 2, 0);
+  });
+  return (
+    <>
+      {geometries.map((geometry, index) => (
+        <points key={index} geometry={geometry} material={materials[index]} frustumCulled={false} />
+      ))}
+    </>
   );
 }
 

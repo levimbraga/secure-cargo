@@ -145,7 +145,7 @@ export function shoulderMeshes(path: ScenePath, halfWidth: number, verge: [numbe
   const stations = roadStations(path).filter((_, index, all) => index % 2 === 0 || index === all.length - 1);
   const height = (s: number) => (path.flat ? 0 : roadFrame(path.road, s).z) - 0.01;
   return [1, -1].map((side) => {
-    const offsets = [halfWidth - 0.05, halfWidth + 1.2, halfWidth + 3.5, halfWidth + 60].map((d) => side * d);
+    const offsets = [halfWidth - 0.05, halfWidth + 1.2, halfWidth + 3.5, halfWidth + 24, halfWidth + 110].map((d) => side * d);
     if (side < 0) offsets.reverse();
     return grid(
       path,

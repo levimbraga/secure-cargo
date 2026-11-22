@@ -151,3 +151,69 @@ export function shadowTexture(): CanvasTexture {
   }
   return new CanvasTexture(canvas);
 }
+
+/**
+ * Ground beyond the road: light grey mottling, tufts and bare patches that the ground's vertex
+ * colour tints (grass, dry grass, wet earth). One tile is 4 m by 4 m.
+ */
+export function groundTexture(): CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 256;
+  const context = canvas.getContext("2d");
+  if (context) {
+    context.fillStyle = "#d6d6d6";
+    context.fillRect(0, 0, 256, 256);
+    const next = random(61);
+    for (let i = 0; i < 90; i++) {
+      const shade = 185 + Math.floor(next() * 70);
+      context.fillStyle = `rgba(${shade},${shade},${shade},0.35)`;
+      context.beginPath();
+      context.ellipse(next() * 256, next() * 256, 8 + next() * 26, 6 + next() * 18, next() * Math.PI, 0, Math.PI * 2);
+      context.fill();
+    }
+    for (let i = 0; i < 5200; i++) {
+      const shade = 120 + Math.floor(next() * 135);
+      context.fillStyle = `rgb(${shade},${shade},${shade})`;
+      const x = next() * 256;
+      const y = next() * 256;
+      context.fillRect(x, y, 1, 1 + next() * 3);
+    }
+  }
+  return finish(canvas);
+}
+
+/**
+ * A roadside tree seen from the side, drawn once: a trunk and a crown of overlapping leafy
+ * clumps, lit from the upper left. Used as a billboard (the base at the bottom centre).
+ */
+export function treeTexture(variant: number): CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 128;
+  const context = canvas.getContext("2d");
+  if (context) {
+    const next = random(71 + variant * 13);
+    context.fillStyle = "#5a4a38";
+    context.fillRect(60, 78, 8, 50);
+    const clumps = 140;
+    const wide = variant ? 26 : 36;
+    const tall = variant ? 44 : 32;
+    const middle = variant ? 52 : 58;
+    for (let i = 0; i < clumps; i++) {
+      const angle = next() * Math.PI * 2;
+      const reach = Math.sqrt(next());
+      const cx = 64 + Math.cos(angle) * reach * wide;
+      const cy = middle + Math.sin(angle) * reach * tall;
+      const r = 4 + next() * 7;
+      // Lit from the upper left, darker inside and underneath.
+      const light = Math.min(Math.max(0.45 + 0.5 * ((64 - cx) / 64 + (middle - cy) / 70) + (next() - 0.5) * 0.3, 0.25), 1.1);
+      const g = Math.round(70 + 70 * light);
+      context.fillStyle = `rgb(${Math.round(g * 0.6)},${g},${Math.round(g * 0.42)})`;
+      context.beginPath();
+      context.arc(cx, cy, r, 0, Math.PI * 2);
+      context.fill();
+    }
+  }
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
+  return texture;
+}
