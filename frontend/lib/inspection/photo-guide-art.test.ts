@@ -158,7 +158,8 @@ async function buildScene(): Promise<{ root: Object3D; occluders: Mesh[]; wires:
   };
   root.traverse((object) => {
     const mesh = object as Mesh;
-    if (!mesh.isMesh || !mesh.visible) return;
+    // Small parts (bolts, lamps, seams: `userData.fine`) would only clutter a line drawing.
+    if (!mesh.isMesh || !mesh.visible || mesh.userData.fine) return;
     const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     // Invisible hit areas and the clear stretch film are not drawn.
     const clear = materials.every((material) => material.transparent && material.opacity < 0.5);

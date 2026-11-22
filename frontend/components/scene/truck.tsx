@@ -3,18 +3,19 @@
 import { type ReactNode, type RefObject, useEffect, useMemo } from "react";
 import {
   BoxGeometry,
-  CanvasTexture,
+  CylinderGeometry,
+  DoubleSide,
   EdgesGeometry,
-  ExtrudeGeometry,
   type Group,
-  RepeatWrapping,
-  Shape,
-  SRGBColorSpace,
 } from "three";
 
 import type { KeyframesDoc } from "@/lib/keyframes";
-import { type TruckLayout, truckLayout, wheelLayout } from "@/lib/scene/truck-geometry";
+import { truckLayout, wheelLayout } from "@/lib/scene/truck-geometry";
 
+import { RealisticWalls } from "./bodies";
+import { mergeParts } from "./merge";
+import { bodyTexture, TILE_M } from "./body-textures";
+import { CAB_BOTTOM_M, CabOver, ConventionalCab, useTyre } from "./cabs";
 import { COLOR, type ViewMode } from "./shared";
 
 type Bed = KeyframesDoc["bed"];
@@ -90,18 +91,12 @@ export function Wheels({
           position={[wheel.x, wheel.radius, -wheel.y]}
         >
           <group rotation={[Math.PI / 2, 0, 0]}>
-            <mesh castShadow={realistic}>
-              <cylinderGeometry args={[wheel.radius, wheel.radius, wheel.width, 36]} />
-              {realistic ? (
-                <meshStandardMaterial color={COLOR.tire} roughness={0.92} />
-              ) : (
-                <meshLambertMaterial color="#55554f" transparent opacity={0.55} />
-              )}
-            </mesh>
-            {realistic && (
+            {realistic ? (
+              <Wheel radius={wheel.radius} width={wheel.width} dual={wheel.width > 0.4} outward={wheel.y > 0 ? -1 : 1} />
+            ) : (
               <mesh>
-                <cylinderGeometry args={[wheel.radius * 0.54, wheel.radius * 0.54, wheel.width + 0.02, 24]} />
-                <meshStandardMaterial color="#a9acad" metalness={0.85} roughness={0.35} />
+                <cylinderGeometry args={[wheel.radius, wheel.radius, wheel.width, 36]} />
+                <meshLambertMaterial color="#55554f" transparent opacity={0.55} />
               </mesh>
             )}
           </group>
@@ -137,27 +132,48 @@ export function Wheels({
   );
 }
 
-/** Planks running along the bed, with darker seams: the deck of a Brazilian wooden body. */
-function deckTexture(): CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 128;
-  const context = canvas.getContext("2d");
-  if (context) {
-    const planks = 8;
-    for (let plank = 0; plank < planks; plank++) {
-      const shade = [0xb9, 0x9a, 0x6c].map((c) => c - ((plank * 37) % 22));
-      context.fillStyle = `rgb(${shade.join(",")})`;
-      context.fillRect(0, (plank * 128) / planks, 256, 128 / planks);
-      context.fillStyle = "rgba(60,40,20,0.55)";
-      context.fillRect(0, (plank * 128) / planks, 256, 1.5);
-      context.fillRect((plank * 97) % 256, (plank * 128) / planks, 1.5, 128 / planks);
-    }
-  }
-  const texture = new CanvasTexture(canvas);
-  texture.wrapS = texture.wrapT = RepeatWrapping;
-  texture.colorSpace = SRGBColorSpace;
-  return texture;
+/**
+ * One wheel set, its axis on Y (the wheel group turns it onto the axle): a tyre, or twin tyres,
+ * with the steel rim, hub and nuts on the outer face. `outward` is the side of +Y that faces
+ * away from the truck.
+ */
+function Wheel({ radius, width, dual, outward }: { radius: number; width: number; dual: boolean; outward: 1 | -1 }) {
+  const tyreWidth = dual ? width / 2 - 0.02 : width;
+  const tyre = useTyre(radius, tyreWidth);
+  const { tyres, steel } = useMemo(() => {
+    const offsets = dual ? [-(tyreWidth / 2 + 0.02), tyreWidth / 2 + 0.02] : [0];
+    const face = outward * (width / 2 - 0.035);
+    const tyres = mergeParts(offsets.map((offset) => ({ geometry: tyre.clone(), at: [0, offset, 0], color: COLOR.tire })));
+    // Rim (inner barrel and the disc on the outer face), hub and the ring of wheel nuts.
+    const steel = mergeParts([
+      { geometry: new CylinderGeometry(radius * 0.6, radius * 0.6, width - 0.06, 20, 1, true), at: [0, 0, 0], color: "#2a2b2c" },
+      { geometry: new CylinderGeometry(radius * 0.6, radius * 0.6, 0.02, 24), at: [0, face, 0], color: "#d7d9d8" },
+      { geometry: new CylinderGeometry(radius * 0.2, radius * 0.24, 0.07, 16), at: [0, face + outward * 0.03, 0], color: "#9a9ea0" },
+      ...Array.from({ length: 8 }, (_, n) => (n * Math.PI) / 4).map((angle) => ({
+        geometry: new CylinderGeometry(0.022, 0.022, 0.04, 6),
+        at: [Math.cos(angle) * radius * 0.32, face + outward * 0.02, Math.sin(angle) * radius * 0.32] as [number, number, number],
+        color: "#6f7477",
+      })),
+    ]);
+    return { tyres, steel };
+  }, [tyre, radius, width, dual, outward, tyreWidth]);
+  useEffect(
+    () => () => {
+      tyres.dispose();
+      steel.dispose();
+    },
+    [tyres, steel],
+  );
+  return (
+    <group>
+      <mesh geometry={tyres} castShadow>
+        <meshStandardMaterial vertexColors roughness={0.9} />
+      </mesh>
+      <mesh geometry={steel}>
+        <meshStandardMaterial vertexColors metalness={0.3} roughness={0.4} side={DoubleSide} />
+      </mesh>
+    </group>
+  );
 }
 
 /**
@@ -169,7 +185,7 @@ export function TruckBody({ bed, mode, registerTractor }: { bed: Bed; mode: View
   return (
     <>
       {mode === "realistic" ? <RealisticBody bed={bed} registerTractor={registerTractor} /> : <EngineeringBody bed={bed} registerTractor={registerTractor} />}
-      <Walls bed={bed} mode={mode} />
+      {mode === "realistic" ? <RealisticWalls bed={bed} /> : <Walls bed={bed} mode={mode} />}
       <Blocks bed={bed} mode={mode} />
     </>
   );
@@ -243,8 +259,9 @@ function Blocks({ bed, mode }: { bed: Bed; mode: ViewMode }) {
   );
 }
 
-/** Height of the cab's floor and of a tractor's frame above the road [m]. */
-const CAB_BOTTOM_M = 0.55;
+const GALVANISED = { color: "#8f9598", metalness: 0.35, roughness: 0.45 } as const;
+
+/** Height of a tractor's frame above the road [m]. */
 const TRACTOR_FRAME_M = 1.0;
 
 function EngineeringBody({ bed, registerTractor }: { bed: Bed; registerTractor?: TractorRegister }) {
@@ -298,8 +315,8 @@ function RealisticBody({ bed, registerTractor }: { bed: Bed; registerTractor?: T
   const front = length / 2;
   const layout = truckLayout(bed);
   const deck = useMemo(() => {
-    const texture = deckTexture();
-    texture.repeat.set(length / 2.4, 1);
+    const texture = bodyTexture("planks");
+    texture.repeat.set(length / TILE_M.planks, 1);
     return texture;
   }, [length]);
   useEffect(() => () => deck.dispose(), [deck]);
@@ -314,6 +331,16 @@ function RealisticBody({ bed, registerTractor }: { bed: Bed; registerTractor?: T
   const railTop = tractor ? Math.min(ground + TRACTOR_FRAME_M, upperDeck ? upperDeck.rise - 0.25 : -0.5) : -0.2;
   const railEnd = tractor ? tractor.frameEnd : -front;
   const trailerFront = upperDeck ? upperDeck.front : front;
+  const closed = bed.body === "box" || bed.body === "curtain_sider";
+  // Underside of the trailer's beams over the fifth wheel.
+  const kingpinTop = upperDeck ? upperDeck.rise - 0.46 : -0.46;
+  const legX = tractor ? tractor.frameEnd - 0.6 : 0;
+  const legTop = upperDeck && legX > front ? kingpinTop : -0.46;
+  const lastAxle = Math.min(...layout.axles.map((axle) => axle.x));
+  const sheet = Math.min(headboard * 0.4, 0.6);
+  const barCount = Math.max(Math.floor((width - 0.2) / 0.14), 1);
+  const bars = Array.from({ length: barCount }, (_, n) => -width / 2 + 0.1 + ((n + 0.5) * (width - 0.2)) / barCount);
+  const wallTop = Math.max(bed.headboard_height_m, bed.rear_wall_height_m ?? 0) - 0.05;
 
   return (
     <group>
@@ -326,64 +353,114 @@ function RealisticBody({ bed, registerTractor }: { bed: Bed; registerTractor?: T
         <boxGeometry args={[length + 0.04, 0.12, width + 0.04]} />
         {steel}
       </mesh>
-      {/* Lashing rail along both sides of the deck. */}
+      {/* Side beams along both edges of the deck, with the lashing rail. */}
       {[-1, 1].map((side) => (
-        <mesh key={side} position={[0, -0.06, side * (width / 2 + 0.04)]}>
-          <boxGeometry args={[length, 0.05, 0.04]} />
+        <mesh key={side} position={[0, -0.1, side * (width / 2 + 0.035)]} castShadow>
+          <boxGeometry args={[length + 0.04, 0.2, 0.05]} />
           {dark}
         </mesh>
       ))}
-      {/* A step deck's upper level, over the fifth wheel. */}
+      {/* A step deck's upper level over the fifth wheel: its deck, side beams and the step. */}
       {upperDeck && (
         <group>
-          <mesh position={[upperDeck.front - upperDeck.length / 2, upperDeck.rise - 0.09, 0]} castShadow receiveShadow>
-            <boxGeometry args={[upperDeck.length, 0.18, width]} />
+          <mesh position={[upperDeck.front - upperDeck.length / 2, upperDeck.rise - 0.03, 0]} castShadow receiveShadow>
+            <boxGeometry args={[upperDeck.length, 0.06, width]} />
             <meshStandardMaterial map={deck} roughness={0.82} />
           </mesh>
-          <mesh position={[front + 0.02, (upperDeck.rise - 0.18) / 2, 0]}>
-            <boxGeometry args={[0.04, Math.max(upperDeck.rise - 0.18, 0.05), width]} />
-            {steel}
-          </mesh>
-        </group>
-      )}
-      {/* Headboard: a steel frame with a sheet. */}
-      {headboard > 0 && (
-        <group position={[front + 0.05, headboard / 2, 0]}>
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={[0.06, headboard, width]} />
-            <meshStandardMaterial color="#9da1a4" metalness={0.75} roughness={0.4} />
-          </mesh>
-          {[-width / 2 + 0.04, 0, width / 2 - 0.04].map((z) => (
-            <mesh key={z} position={[0.03, 0, z]}>
-              <boxGeometry args={[0.1, headboard, 0.08]} />
+          {[-1, 1].map((side) => (
+            <mesh key={side} position={[upperDeck.front - upperDeck.length / 2, upperDeck.rise - 0.1, side * (width / 2 + 0.035)]} castShadow>
+              <boxGeometry args={[upperDeck.length + 0.04, 0.2, 0.05]} />
               {dark}
             </mesh>
           ))}
-          <mesh position={[0.03, headboard / 2 - 0.04, 0]}>
-            <boxGeometry args={[0.1, 0.08, width]} />
+          <mesh position={[front + 0.03, upperDeck.rise / 2 - 0.1, 0]} castShadow>
+            <boxGeometry args={[0.06, upperDeck.rise + 0.2, width + 0.1]} />
             {dark}
           </mesh>
+          <mesh position={[upperDeck.front + 0.02, upperDeck.rise - 0.14, 0]} castShadow>
+            <boxGeometry args={[0.06, 0.28, width + 0.1]} />
+            {dark}
+          </mesh>
+        </group>
+      )}
+      {/* Headboard of a flatbed (a closed body's front wall is its own): a galvanised frame, a
+          solid sheet below and a grille of bars above, the way Brazilian bodies build it. */}
+      {headboard > 0 && !closed && (
+        <group position={[front + 0.05, 0, 0]}>
+          <mesh position={[0, sheet / 2, 0]} castShadow receiveShadow>
+            <boxGeometry args={[0.04, sheet, width]} />
+            <meshStandardMaterial color="#a7acaf" metalness={0.3} roughness={0.45} />
+          </mesh>
+          {bars.map((z) => (
+            <mesh key={z} position={[0, (sheet + headboard) / 2, z]} castShadow>
+              <boxGeometry args={[0.03, headboard - sheet, 0.035]} />
+              <meshStandardMaterial {...GALVANISED} />
+            </mesh>
+          ))}
+          {[-width / 2 + 0.04, width / 2 - 0.04].map((z) => (
+            <mesh key={z} position={[0.02, headboard / 2, z]} castShadow>
+              <boxGeometry args={[0.1, headboard, 0.08]} />
+              <meshStandardMaterial {...GALVANISED} />
+            </mesh>
+          ))}
+          {[headboard - 0.04, sheet].map((y) => (
+            <mesh key={y} position={[0.02, y, 0]} castShadow>
+              <boxGeometry args={[0.1, 0.08, width]} />
+              <meshStandardMaterial {...GALVANISED} />
+            </mesh>
+          ))}
         </group>
       )}
       {/* Chassis rails of a rigid truck (a tractor's turn with its cab, below). */}
       {!tractor && <ChassisRails from={cab.front - 0.1} to={railEnd} top={railTop} dark={dark} />}
       {tractor && (
         <group>
-          {/* The trailer's own rails and its landing gear. */}
+          {/* The trailer's main beams (up under a step deck's upper level) and its landing gear. */}
           {[-0.42, 0.42].map((z) => (
-            <mesh key={z} position={[(trailerFront - front) / 2, -0.32, z]} castShadow>
-              <boxGeometry args={[trailerFront + front, 0.28, 0.1]} />
-              {dark}
-            </mesh>
+            <group key={z}>
+              <mesh position={[0, -0.32, z]} castShadow>
+                <boxGeometry args={[length, 0.28, 0.1]} />
+                {dark}
+              </mesh>
+              {trailerFront > front && (
+                <>
+                  <mesh position={[(front + trailerFront) / 2, kingpinTop + 0.14, z]} castShadow>
+                    <boxGeometry args={[trailerFront - front, 0.28, 0.1]} />
+                    {dark}
+                  </mesh>
+                  <mesh position={[front, (kingpinTop + 0.28 - 0.46) / 2, z]} castShadow>
+                    <boxGeometry args={[0.3, kingpinTop + 0.28 + 0.46, 0.1]} />
+                    {dark}
+                  </mesh>
+                </>
+              )}
+            </group>
           ))}
           {[-1, 1].map((side) => (
-            <mesh key={side} position={[tractor.frameEnd - 0.6, (ground + 0.2 - 0.46) / 2, side * (width / 2 - 0.35)]}>
-              <boxGeometry args={[0.12, -0.46 - ground - 0.2, 0.12]} />
-              {dark}
-            </mesh>
+            <group key={side} position={[legX, 0, side * (width / 2 - 0.35)]}>
+              <mesh position={[0, (ground + 0.12 + legTop) / 2, 0]}>
+                <boxGeometry args={[0.12, legTop - ground - 0.12, 0.12]} />
+                {dark}
+              </mesh>
+              <mesh position={[0, ground + 0.06, 0]}>
+                <boxGeometry args={[0.3, 0.05, 0.3]} />
+                {dark}
+              </mesh>
+            </group>
           ))}
+          <mesh position={[legX, legTop - 0.25, 0]}>
+            <boxGeometry args={[0.06, 0.06, width - 0.7]} />
+            {dark}
+          </mesh>
         </group>
       )}
+      {/* Mud flaps behind the last axle. */}
+      {[-1, 1].map((side) => (
+        <mesh key={side} position={[lastAxle - layout.wheelRadius - 0.2, ground + 0.5, side * (width / 2 - 0.3)]} userData={{ fine: true }}>
+          <boxGeometry args={[0.02, 0.6, 0.55]} />
+          <meshStandardMaterial color="#1c1c1b" roughness={0.9} />
+        </mesh>
+      ))}
       <mesh position={[-front - 0.02, -0.42, 0]}>
         <boxGeometry args={[0.08, 0.14, width]} />
         {dark}
@@ -399,17 +476,23 @@ function RealisticBody({ bed, registerTractor }: { bed: Bed; registerTractor?: T
         {tractor && (
           <>
             <ChassisRails from={cab.front - 0.1} to={railEnd} top={railTop} dark={dark} />
-            <mesh position={[tractor.kingpin, (railTop + (upperDeck ? upperDeck.rise - 0.18 : -0.46)) / 2, 0]} castShadow>
-              <cylinderGeometry args={[0.55, 0.55, Math.max((upperDeck ? upperDeck.rise - 0.18 : -0.46) - railTop, 0.06), 24]} />
+            <mesh position={[tractor.kingpin, (railTop + kingpinTop) / 2, 0]} castShadow>
+              <cylinderGeometry args={[0.55, 0.55, Math.max(kingpinTop - railTop, 0.06), 24]} />
               <meshStandardMaterial color="#2c2f31" metalness={0.6} roughness={0.5} />
             </mesh>
           </>
         )}
+        {cab.kind === "cab_over" && (
         <mesh position={[cabBack - 0.6, ground + 0.75, width / 2 - 0.42]} rotation={[0, 0, Math.PI / 2]} castShadow>
           <cylinderGeometry args={[0.26, 0.26, 1.1, 20]} />
-          <meshStandardMaterial color="#b4b7b9" metalness={0.9} roughness={0.3} />
+          <meshStandardMaterial color="#c4c7c9" metalness={0.5} roughness={0.3} />
         </mesh>
-        {cab.kind === "conventional" ? <ConventionalCab layout={layout} width={width} ground={ground} /> : <CabOver layout={layout} width={width} ground={ground} />}
+        )}
+        {cab.kind === "conventional" ? (
+          <ConventionalCab layout={layout} width={width} ground={ground} />
+        ) : (
+          <CabOver layout={layout} width={width} ground={ground} deflectorTop={tractor && closed ? wallTop : null} />
+        )}
       </Tractor>
     </group>
   );
@@ -425,143 +508,5 @@ function ChassisRails({ from, to, top, dark }: { from: number; to: number; top: 
         </mesh>
       ))}
     </>
-  );
-}
-
-const PAINT = { color: "#eeeeea", metalness: 0.15, roughness: 0.32 } as const;
-const GLASS = { color: "#1c2226", metalness: 0.9, roughness: 0.08 } as const;
-
-/** A cab-over cab (Brazilian and European trucks): flat front, raked windscreen, rounded roof. */
-function CabOver({ layout, width, ground }: { layout: TruckLayout; width: number; ground: number }) {
-  const { cab } = layout;
-  // The profile is drawn 1.95 m long and 2.3 m tall, then scaled to the catalog's cab (the
-  // windscreen and the windows scale with it, so they stay on the rake of the profile).
-  const profile = useMemo(() => {
-    const shape = new Shape();
-    shape.moveTo(0, 0);
-    shape.lineTo(1.82, 0);
-    shape.lineTo(1.9, 0.25);
-    shape.lineTo(1.9, 1.15);
-    shape.lineTo(1.62, 2.12);
-    shape.quadraticCurveTo(1.56, 2.3, 1.36, 2.3);
-    shape.lineTo(0.12, 2.3);
-    shape.quadraticCurveTo(0, 2.3, 0, 2.18);
-    shape.closePath();
-    const geometry = new ExtrudeGeometry(shape, {
-      depth: width - 0.16,
-      bevelEnabled: true,
-      bevelSize: 0.05,
-      bevelThickness: 0.05,
-      bevelSegments: 3,
-    });
-    geometry.translate(0, 0, -(width - 0.16) / 2);
-    return geometry;
-  }, [width]);
-  useEffect(() => () => profile.dispose(), [profile]);
-  const sx = cab.length / 1.95;
-  const sy = (cab.height - CAB_BOTTOM_M) / 2.3;
-  const dark = <meshStandardMaterial color={COLOR.chassis} metalness={0.5} roughness={0.55} />;
-  return (
-    <group position={[cab.front - cab.length, ground + CAB_BOTTOM_M, 0]} scale={[sx, sy, 1]}>
-      <mesh geometry={profile} castShadow receiveShadow>
-        <meshStandardMaterial {...PAINT} />
-      </mesh>
-      {/* Windscreen, following the rake of the profile. */}
-      <mesh position={[1.795, 1.63, 0]} rotation={[0, 0, 0.281]}>
-        <boxGeometry args={[0.03, 0.86, width - 0.5]} />
-        <meshStandardMaterial {...GLASS} />
-      </mesh>
-      {[-1, 1].map((side) => (
-        <mesh key={side} position={[1.05, 1.66, side * (width / 2 - 0.02)]}>
-          <boxGeometry args={[1.0, 0.72, 0.03]} />
-          <meshStandardMaterial {...GLASS} />
-        </mesh>
-      ))}
-      {/* Grille, bumper and headlights. */}
-      <mesh position={[1.955, 0.78, 0]}>
-        <boxGeometry args={[0.03, 0.46, width - 1.0]} />
-        {dark}
-      </mesh>
-      <mesh position={[1.9, 0.14, 0]} castShadow>
-        <boxGeometry args={[0.2, 0.3, width - 0.04]} />
-        {dark}
-      </mesh>
-      {[-1, 1].map((side) => (
-        <mesh key={side} position={[1.96, 0.72, side * (width / 2 - 0.36)]}>
-          <boxGeometry args={[0.03, 0.2, 0.34]} />
-          <meshStandardMaterial color="#f4f1e6" emissive="#f4f1e6" emissiveIntensity={0.25} roughness={0.2} />
-        </mesh>
-      ))}
-      {/* Mirrors. */}
-      {[-1, 1].map((side) => (
-        <mesh key={side} position={[1.7, 1.72, side * (width / 2 + 0.12)]}>
-          <boxGeometry args={[0.05, 0.42, 0.2]} />
-          {dark}
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
-/** A conventional US tractor: a long hood ahead of the cab, then a sleeper. */
-function ConventionalCab({ layout, width, ground }: { layout: TruckLayout; width: number; ground: number }) {
-  const { cab } = layout;
-  const hood = Math.min(1.9, cab.length * 0.42);
-  const cabin = Math.min(1.4, cab.length - hood);
-  const sleeper = Math.max(cab.length - hood - cabin, 0);
-  const bottom = ground + CAB_BOTTOM_M;
-  const hoodTop = ground + 1.75;
-  const x0 = cab.front;
-  const dark = <meshStandardMaterial color={COLOR.chassis} metalness={0.5} roughness={0.55} />;
-  return (
-    <group>
-      {/* Hood with its grille. */}
-      <mesh position={[x0 - hood / 2, (bottom + hoodTop) / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[hood, hoodTop - bottom, width - 0.6]} />
-        <meshStandardMaterial {...PAINT} />
-      </mesh>
-      <mesh position={[x0 + 0.01, (bottom + hoodTop) / 2 + 0.05, 0]}>
-        <boxGeometry args={[0.03, (hoodTop - bottom) * 0.7, width - 1.0]} />
-        <meshStandardMaterial color="#b9bcbe" metalness={0.9} roughness={0.25} />
-      </mesh>
-      <mesh position={[x0 + 0.05, bottom + 0.1, 0]} castShadow>
-        <boxGeometry args={[0.2, 0.3, width - 0.04]} />
-        {dark}
-      </mesh>
-      {[-1, 1].map((side) => (
-        <mesh key={side} position={[x0 + 0.02, hoodTop - 0.35, side * (width / 2 - 0.5)]}>
-          <boxGeometry args={[0.03, 0.18, 0.3]} />
-          <meshStandardMaterial color="#f4f1e6" emissive="#f4f1e6" emissiveIntensity={0.25} roughness={0.2} />
-        </mesh>
-      ))}
-      {/* Cab, with its windscreen. */}
-      <mesh position={[x0 - hood - cabin / 2, (bottom + ground + 3.0) / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[cabin, ground + 3.0 - bottom, width - 0.16]} />
-        <meshStandardMaterial {...PAINT} />
-      </mesh>
-      <mesh position={[x0 - hood + 0.01, ground + 2.45, 0]}>
-        <boxGeometry args={[0.03, 0.7, width - 0.5]} />
-        <meshStandardMaterial {...GLASS} />
-      </mesh>
-      {[-1, 1].map((side) => (
-        <mesh key={side} position={[x0 - hood - cabin / 2, ground + 2.4, side * (width / 2 - 0.07)]}>
-          <boxGeometry args={[cabin * 0.7, 0.62, 0.03]} />
-          <meshStandardMaterial {...GLASS} />
-        </mesh>
-      ))}
-      {/* Sleeper, as tall as the catalog's cab. */}
-      {sleeper > 0 && (
-        <mesh position={[x0 - hood - cabin - sleeper / 2, (bottom + ground + cab.height) / 2, 0]} castShadow receiveShadow>
-          <boxGeometry args={[sleeper, ground + cab.height - bottom, width - 0.16]} />
-          <meshStandardMaterial {...PAINT} />
-        </mesh>
-      )}
-      {[-1, 1].map((side) => (
-        <mesh key={side} position={[x0 - hood - 0.1, ground + 2.3, side * (width / 2 + 0.12)]}>
-          <boxGeometry args={[0.05, 0.5, 0.2]} />
-          {dark}
-        </mesh>
-      ))}
-    </group>
   );
 }
