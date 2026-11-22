@@ -27,7 +27,8 @@
 	},
 	// Secrets (never in the repo; `wrangler secret put`, locally in .dev.vars):
 	//   CLERK_SECRET_KEY, CLERK_PUBLISHABLE_KEY, PLATFORM_ADMIN_EMAILS (comma-separated),
-	//   ANTHROPIC_API_KEY (photo analysis; without it the analysis answers "demo mode").
+	//   ANTHROPIC_API_KEY (photo analysis; without it the analysis answers "demo mode"),
+	//   CONTACT_TO (contact form destination, a verified Email Routing address), TURNSTILE_SECRET.
 	// Records: organizations, users, inspections, results, usage (migrations/).
 	"d1_databases": [
 		{
@@ -42,6 +43,15 @@
 		{
 			"binding": "PHOTOS",
 			"bucket_name": "securecargo-photos"
+		}
+	],
+	// Contact form (src/contact.ts): Cloudflare Email Service binding. Email Sending is not onboarded,
+	// so the binding can only send to verified destination addresses of the account (free), from an
+	// address on the Email Routing domain. The destination comes from the CONTACT_TO secret.
+	"send_email": [
+		{
+			"name": "EMAIL",
+			"allowed_sender_addresses": ["no-reply@securecargo.app"]
 		}
 	],
 	// Per-IP limits for anonymous endpoints (Workers rate limiting; period must be 10 or 60 s).

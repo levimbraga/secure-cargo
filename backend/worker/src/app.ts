@@ -17,6 +17,7 @@
  *   PATCH  /admin/settings         kill switch, monthly cap, default quotas (platform admin)
  *   POST   /demo/session           a demo session (cookie) as the demo driver or insurer, no account
  *   POST   /demo/logout            end the demo session
+ *   POST   /contact                the contact form: emails the owner (contact.ts, no sign-in)
  *   ...    /org/overview, /org/alerts, /org/policies, /inspections/export.csv, audit, certificates,
  *          /verify/:id, /orgs (manager.ts)
  *
@@ -37,6 +38,7 @@ import {
 } from "./authz";
 import { type Db, newId, now, periodStarts } from "./db";
 import { logEvent } from "./events";
+import { type ContactDeps, registerContact } from "./contact";
 import { type FlowDeps, registerFlow } from "./flow";
 import { filterClauses, parseFilters } from "./listing";
 import { alertCount, orgPolicies, registerManager } from "./manager";
@@ -61,6 +63,8 @@ export interface AppDeps extends FlowDeps {
 	fetchStatic?: (path: string) => Promise<unknown | null>;
 	/** Secret that signs demo sessions (HMAC-SHA256); without it the demo buttons answer 503. */
 	demoSecret: string;
+	/** The contact form (contact.ts); without it `POST /contact` answers 503. */
+	contact?: Omit<ContactDeps, "db" | "limitAnonymous">;
 }
 
 type Env = { Variables: { principal: Principal } };
@@ -76,6 +80,7 @@ export const APP_ROUTE_PREFIXES = [
 	"/share",
 	"/certificates",
 	"/verify",
+	"/contact",
 ] as const;
 
 export function isAppRoute(pathname: string): boolean {
@@ -301,6 +306,18 @@ export function createApp(deps: AppDeps): Hono<Env> {
 			);
 		}
 		return c.json(await loadInspection(db, id), 201);
+	});
+
+	registerContact(app, {
+		db,
+		limitAnonymous: deps.limitAnonymous,
+		...(deps.contact ?? {
+			to: "",
+			hashKey: "",
+			siteOrigins: [],
+			verifyTurnstile: async () => false,
+			send: async () => fail(503, "contact_unavailable", "The contact form is not available right now."),
+		}),
 	});
 
 	// Before `/inspections/:id`, so that `/inspections/export.csv` is not read as an id.

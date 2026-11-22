@@ -10,4 +10,8 @@ interface Env {
 	ANTHROPIC_API_KEY?: string;
 	/** Optional override of the analysis model (default in src/perception/claude.ts). */
 	ANALYSIS_MODEL?: string;
+	/** Contact form: the owner's address (a verified Email Routing destination). Never in the repo. */
+	CONTACT_TO?: string;
+	/** Contact form: the Turnstile widget's secret (server-side check). */
+	TURNSTILE_SECRET?: string;
 }
