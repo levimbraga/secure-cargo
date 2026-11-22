@@ -159,8 +159,26 @@ def profiles() -> list[dict[str, object]]:
     return documents
 
 
+# Significant digits written for the constants. numpy's geomspace and the trigonometry behind it
+# differ in the last bit or two between machines (a laptop and a GitHub Actions runner wrote
+# 7.356906069803281 and 7.356906069803285), so the file keeps 12 digits: far below anything the
+# scene can show, and the same on every machine.
+SIGNIFICANT_DIGITS = 12
+
+
+def _stable(value: object) -> object:
+    """``value`` with every float rounded to ``SIGNIFICANT_DIGITS`` significant digits."""
+    if isinstance(value, float):
+        return float(f"{value:.{SIGNIFICANT_DIGITS}g}")
+    if isinstance(value, dict):
+        return {key: _stable(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_stable(item) for item in value]
+    return value
+
+
 def render_constants() -> str:
-    return json.dumps(constants(), indent=2) + "\n"
+    return json.dumps(_stable(constants()), indent=2) + "\n"
 
 
 def render_profiles() -> str:
