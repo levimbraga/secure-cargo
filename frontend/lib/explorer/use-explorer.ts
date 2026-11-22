@@ -239,9 +239,12 @@ export function useExplorer(initial: Source): ExplorerState {
   const chooseValue = useCallback(
     <K extends Dimension | "speed_kmh" | "count" | "mass_kg" | "body_code">(dimension: K, value: ExplorerConfig[K]) => {
       setSource((current) => {
-        // A draft from outside keeps its units: the truck, the trip and the securing change.
-        if (current.kind === "draft") {
-          const { draft: outside } = current;
+        // A draft from outside, or a load edited beyond what the configuration can say (units
+        // added, a weight, the planner's fix), keeps its units: the truck, the trip and the
+        // securing change on the edited draft.
+        const beyond = current.kind === "config" && base && draft && !editsToConfig(current.config, base, draft);
+        const outside = draft ?? (current.kind === "draft" ? current.draft : null);
+        if ((current.kind === "draft" || beyond) && outside) {
           const trip = ["speed_kmh", "road", "weather", "event"].includes(dimension);
           if (trip) return { kind: "draft", draft: { ...outside, trip: { ...outside.trip, [dimension]: value } } };
           if (dimension === "body" || dimension === "size" || dimension === "body_code") {
@@ -270,9 +273,28 @@ export function useExplorer(initial: Source): ExplorerState {
   }, [base]);
 
   const edited = useMemo(() => Boolean(draft && base && !same(draft, base)), [draft, base]);
+  // The selectors show the load as it is: a draft's truck, trip and securing (a photo's load, or
+  // the planner's fix) over the configuration's.
+  const shownConfig = useMemo<ExplorerConfig>(
+    () =>
+      draft
+        ? {
+            ...config,
+            body: draft.truck.body,
+            size: draft.truck.size,
+            body_code: draft.truck.body_code ?? config.body_code,
+            restraint: draft.restraint,
+            speed_kmh: draft.trip.speed_kmh,
+            road: draft.trip.road,
+            weather: draft.trip.weather,
+            event: draft.trip.event,
+          }
+        : config,
+    [config, draft],
+  );
 
   return {
-    config,
+    config: shownConfig,
     origin: source.kind,
     load: loaded?.load ?? null,
     draft,

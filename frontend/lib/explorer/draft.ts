@@ -307,6 +307,11 @@ export function centreOfMass(units: Footprint[]): { x: number; y: number } | nul
  */
 export function editsToConfig(config: ExplorerConfig, base: LoadDraft, draft: LoadDraft): ExplorerConfig | null {
   if (base.units.length !== draft.units.length) return null;
+  // Anything but moves and strap counts (a unit's cargo, size or weight, the securing, the truck)
+  // has no place in the configuration: the address then carries the whole draft.
+  const rest = (value: LoadDraft) =>
+    JSON.stringify({ ...value, units: value.units.map((unit) => ({ ...unit, x_m: 0, y_m: 0, straps: 0 })) });
+  if (rest(base) !== rest(draft)) return null;
   const floor = base.units.filter((unit) => !unit.on).length;
   const moves: UnitMove[] = [];
   for (let index = 0; index < floor; index++) {

@@ -772,7 +772,8 @@
       "quantity": "Quantos",
       "add": "Adicionar",
       "full": "Não sobra espaço na carroceria para isso.",
-      "partly": "Só {added} de {asked} cabem na carroceria: {added} adicionados."
+      "partly": "Só {added} de {asked} cabem na carroceria: {added} adicionados.",
+      "legendTrouble": "falha no teste da viagem inteira"
     },
     "errors": {
       "api_unreachable": "Esta carga precisa do servidor de simulação, e ele não está respondendo. O que você vê é a simulação anterior.",
@@ -788,7 +789,33 @@
       "invalid_config": "Este link descreve uma carga que o explorador não conhece.",
       "straps_mismatch": "As cintas deste link não batem com os volumes."
     },
-    "open": "Abrir no explorador"
+    "open": "Abrir no explorador",
+    "trip": {
+      "title": "A viagem inteira",
+      "sentence": "A simulação ao vivo acima é uma situação só. Teste esta carga nas sete, no servidor (frenagem, troca de faixa, curva, buraco, lombada, descida, vibração) e contra as regras; depois deixe o planejador torná-la o mais segura possível.",
+      "test": "Testar a viagem inteira",
+      "retest": "Testar a carga alterada",
+      "makeSafe": "Deixar o mais seguro possível",
+      "undo": "Desfazer a correção",
+      "stale": "A carga mudou desde o último teste: teste de novo para ver onde ela falha agora.",
+      "applied": "Pronto: o editor agora tem a menor mudança que segura em todas as situações e cumpre as regras, provada no servidor.",
+      "bestHolds": "O editor agora tem a melhor carga que o planejador encontrou: ela chega inteira, mas ainda descumpre uma regra (veja o checklist).",
+      "best": "O editor agora tem a melhor carga que o planejador encontrou: ela segura em {passed} de {total} situações. Precisa de mais do que o planejador sabe tentar.",
+      "where": "Onde falha",
+      "marked": "A vista de cima marca esses volumes e amarrações em vermelho.",
+      "lashings": "{count, plural, one {# amarração sobrecarregada} other {# amarrações sobrecarregadas}}",
+      "failure": {
+        "unit_slid": "{unit} escorrega",
+        "unit_tilted": "{unit} tomba",
+        "unit_rolled": "{unit} rola",
+        "unit_left_bed": "{unit} cai da carroceria",
+        "unit_hit_headboard": "{unit} bate no painel frontal",
+        "headboard_overloaded": "{unit} sobrecarrega o painel frontal",
+        "lashing_overloaded": "uma amarração de {unit} fica sobrecarregada",
+        "lashing_broke": "uma amarração de {unit} arrebenta",
+        "load": "a carga se mexe"
+      }
+    }
   },
   "Gallery": {
     "label": "Exemplos",

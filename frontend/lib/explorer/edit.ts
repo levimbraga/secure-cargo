@@ -8,9 +8,11 @@
  * its neighbours instead of standing loose.
  */
 
+import { CARGO_SIZE, freeSpot, nextUnitId, ROUND_CARGO, sizeOf } from "@/lib/inspection/review";
+import type { Scenario } from "@/lib/live/scenario";
+
 import type { Cargo } from "./config";
-import type { DraftUnit, LoadDraft } from "./draft";
-import { CARGO_SIZE, freeSpot, nextUnitId, sizeOf } from "@/lib/inspection/review";
+import { type DraftUnit, type Footprint, type LoadDraft, strapRoom } from "./draft";
 
 type Bed = {
   length_m: number;
@@ -46,13 +48,11 @@ export const MAX_ADD = 20;
 export const MAX_UNITS = 40;
 
 /** Anchor pairs facing each other along a footprint: how many top-over straps fit over it. */
-export function strapRoomAt(bed: Bed, x: number, length: number, y: number): number {
-  // As `strapRoom` in `draft.ts` (and `_anchor_pairs` on the server).
-  const left = new Set(bed.anchor_points.filter((a) => (a.position_m[1] ?? 0) > y).map((a) => a.position_m[0] ?? 0));
-  return bed.anchor_points.filter((a) => {
-    const ax = a.position_m[0] ?? 0;
-    return (a.position_m[1] ?? 0) < y && left.has(ax) && x - length / 2 < ax && ax < x + length / 2;
-  }).length;
+export function strapRoomAt(bed: Bed, x: number, length: number, y: number, cargo: Cargo = "crate"): number {
+  // The editor's own rule (`strapRoom`, the mirror of `_anchor_pairs` on the server), for a unit
+  // that is not built yet.
+  const unit = { x, y, length, width: 0, height: 0, cargo, round: ROUND_CARGO.has(cargo) } as unknown as Footprint;
+  return strapRoom({ bed } as unknown as Scenario, unit);
 }
 
 /** The straps a new unit gets: as many as the first floor unit has, where they fit. */
@@ -60,7 +60,7 @@ function defaultStraps(draft: LoadDraft, bed: Bed, unit: DraftUnit): number {
   const first = draft.units.find((item) => !item.on);
   const wanted = first ? (draft.units.find((item) => item.on === first.id)?.straps ?? first.straps) : 2;
   const [l] = sizeOf(unit);
-  return Math.min(wanted, strapRoomAt(bed, unit.x_m, l, unit.y_m));
+  return Math.min(wanted, strapRoomAt(bed, unit.x_m, l, unit.y_m, unit.cargo));
 }
 
 /**
@@ -90,6 +90,6 @@ export function duplicateUnit(draft: LoadDraft, bed: Bed, id: string): { draft: 
   const spot = freeSpot(draft, bed, l, w);
   if (!spot) return null;
   const copy: DraftUnit = { ...unit, id: nextUnitId(draft, CARGO_UNIT[unit.cargo].prefix), size_m: sizeOf(unit), on: null, x_m: spot.x, y_m: spot.y };
-  copy.straps = Math.min(unit.straps, strapRoomAt(bed, spot.x, l, spot.y));
+  copy.straps = Math.min(unit.straps, strapRoomAt(bed, spot.x, l, spot.y, unit.cargo));
   return { draft: { ...draft, units: [...draft.units, copy] }, id: copy.id };
 }

@@ -16,6 +16,8 @@ import { type KeyboardEvent, type PointerEvent, useMemo, useRef, useState } from
 import { useShownCountry, useShownUnits } from "@/components/units-context";
 import { useReplayText } from "@/components/scenario/replay-shared";
 
+import { type Trouble, topOverId } from "@/lib/explorer/trouble";
+
 import { UnitPanel } from "./unit-panel";
 import {
   axleLoads,
@@ -67,6 +69,7 @@ export function LoadEditor({
   onSelect,
   numberOf,
   hideUnitList = false,
+  trouble = null,
 }: {
   load: EditorLoad;
   draft: LoadDraft;
@@ -77,6 +80,8 @@ export function LoadEditor({
   /** The number shown on a unit (the photo's numbering); its position in the list by default. */
   numberOf?: (unit: Footprint) => number;
   hideUnitList?: boolean;
+  /** Where the whole-trip test found this load failing: those units and lashings are red. */
+  trouble?: Trouble | null;
 }) {
   const t = useTranslations("Explorer.editor");
   const { nameOf } = useReplayText();
@@ -256,6 +261,12 @@ export function LoadEditor({
         {floor.map((unit) => {
           const dragging = drag?.id === unit.id;
           const invalid = (dragging && !drag.valid) || refused === unit.id;
+          // A stack fails as one: any unit in it marks the footprint.
+          let failing = false;
+          for (let id: string | null = unit.id; id; id = shown.find((item) => item.id === id)?.carries ?? null) {
+            if (trouble?.units.has(id)) failing = true;
+          }
+          const lashedId = lashedUnit(shown, unit.id)?.id ?? unit.id;
           const highlighted = dragging || (selected ?? open) === unit.id;
           const straps = strapsOf(unit);
           const name = nameOf(unit.id);
@@ -270,6 +281,7 @@ export function LoadEditor({
               tabIndex={0}
               aria-label={t("unit", { unit: name, straps, stack })}
               data-unit={unit.id}
+              data-failing={failing || undefined}
               className="cursor-grab outline-none focus-visible:[&>.unit-body]:stroke-[#191918]"
               onPointerDown={(event) => onPointerDown(event, unit)}
               onPointerMove={onPointerMove}
@@ -283,8 +295,8 @@ export function LoadEditor({
                   cx={unit.x}
                   cy={-unit.y}
                   r={unit.length / 2}
-                  fill={invalid ? "#fbe9e7" : "#e2d2b4"}
-                  stroke={invalid ? "#b42318" : highlighted ? "#191918" : "#8a6a43"}
+                  fill={invalid || failing ? "#fbe9e7" : "#e2d2b4"}
+                  stroke={invalid || failing ? "#b42318" : highlighted ? "#191918" : "#8a6a43"}
                   strokeWidth={highlighted ? 2.5 : 1}
                   vectorEffect="non-scaling-stroke"
                 />
@@ -296,20 +308,21 @@ export function LoadEditor({
                   width={unit.length}
                   height={unit.width}
                   rx={unit.round ? Math.min(unit.length, unit.width) / 2 : 0.02}
-                  fill={invalid ? "#fbe9e7" : stack > 1 ? "#d9c49a" : "#e2d2b4"}
-                  stroke={invalid ? "#b42318" : highlighted ? "#191918" : "#8a6a43"}
+                  fill={invalid || failing ? "#fbe9e7" : stack > 1 ? "#d9c49a" : "#e2d2b4"}
+                  stroke={invalid || failing ? "#b42318" : highlighted ? "#191918" : "#8a6a43"}
                   strokeWidth={highlighted ? 2.5 : 1}
                   vectorEffect="non-scaling-stroke"
                 />
               )}
-              {strapLines(load, { ...unit }, straps).map((x) => (
+              {strapLines(load, { ...unit }, straps).map((x, n) => (
                 <line
                   key={x}
+                  data-lashing={topOverId(lashedId, n + 1)}
                   x1={x}
                   x2={x}
                   y1={-halfW}
                   y2={halfW}
-                  stroke="#f2a100"
+                  stroke={trouble?.lashings.has(topOverId(lashedId, n + 1)) ? "#b42318" : "#f2a100"}
                   strokeWidth={3}
                   vectorEffect="non-scaling-stroke"
                   pointerEvents="none"
@@ -345,7 +358,8 @@ export function LoadEditor({
               y1={-anchor[1]}
               x2={unit.x + point[0]}
               y2={-(unit.y + point[1])}
-              stroke={lashing.kind === "chain" ? "#636361" : "#f2a100"}
+              data-lashing={lashing.id}
+              stroke={trouble?.lashings.has(lashing.id) ? "#b42318" : lashing.kind === "chain" ? "#636361" : "#f2a100"}
               strokeWidth={2}
               vectorEffect="non-scaling-stroke"
               pointerEvents="none"
@@ -367,6 +381,12 @@ export function LoadEditor({
           {t("legendStrap")}
         </span>
         <span>{t("legendCentre")}</span>
+        {trouble && (trouble.units.size > 0 || trouble.lashings.size > 0) && (
+          <span>
+            <span className="mr-1 inline-block h-[3px] w-4 bg-fail align-middle" />
+            {t("legendTrouble")}
+          </span>
+        )}
       </p>
       {refused && (
         <p role="status" className="type-small mt-2 text-fail">

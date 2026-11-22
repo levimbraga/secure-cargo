@@ -9,6 +9,8 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useState, useSyncExternalStore } from "react";
 
+import type { Trouble } from "@/lib/explorer/trouble";
+
 import { UnitsProvider, useShownUnits } from "@/components/units-context";
 import { BodyCodeSwitch, CountrySwitch } from "@/components/inspection/country-switch";
 import { useReasonSentence } from "@/components/lab/lab-result";
@@ -19,6 +21,7 @@ import { Link } from "@/i18n/navigation";
 import { sourceFromLocation, useExplorer } from "@/lib/explorer/use-explorer";
 
 import { ExplorerScene } from "./explorer-scene";
+import { ExplorerTrip } from "./explorer-trip";
 import { LoadEditor } from "./load-editor";
 import { Selectors } from "./selectors";
 
@@ -107,6 +110,8 @@ function ExplorerContent({ explorer }: { explorer: ReturnType<typeof useExplorer
   const { t: scenario, standardValue } = useReplayText();
   const sentence = useReasonSentence();
   const { run, load, draft } = explorer;
+  // Where the whole-trip test found the load failing, while the editor shows that load.
+  const [trouble, setTrouble] = useState<Trouble | null>(null);
   const status = run?.summary.verdict.status;
   const state = explorer.error && !explorer.busy ? "error" : !run ? "loading" : explorer.busy ? "running" : "ready";
   const floorUnits = draft ? draft.units.filter((unit) => !unit.on) : [];
@@ -127,7 +132,7 @@ function ExplorerContent({ explorer }: { explorer: ReturnType<typeof useExplorer
       <div className="mt-8 flex flex-col gap-y-10 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-x-10">
         <div className="order-2 min-w-0 lg:col-start-1 lg:row-start-1">
           {load && draft ? (
-            <LoadEditor load={load} draft={draft} onEdit={explorer.edit} />
+            <LoadEditor load={load} draft={draft} onEdit={explorer.edit} trouble={trouble} />
           ) : (
             <div className="aspect-[3/1] w-full rounded bg-surface" aria-hidden />
           )}
@@ -161,6 +166,8 @@ function ExplorerContent({ explorer }: { explorer: ReturnType<typeof useExplorer
               <Findings run={run.summary} />
             </div>
           )}
+
+          <ExplorerTrip draft={draft} country={explorer.country} onApply={explorer.edit} onTrouble={setTrouble} />
         </div>
 
         <aside className="contents lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:block">

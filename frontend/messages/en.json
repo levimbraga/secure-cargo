@@ -772,7 +772,8 @@
       "quantity": "How many",
       "add": "Add",
       "full": "No room left on the bed for that.",
-      "partly": "Only {added} of {asked} fit on the bed: added {added}."
+      "partly": "Only {added} of {asked} fit on the bed: added {added}.",
+      "legendTrouble": "fails in the whole-trip test"
     },
     "errors": {
       "api_unreachable": "This load needs the simulation server, and it is not answering. What you see is the previous run.",
@@ -788,7 +789,33 @@
       "invalid_config": "This link describes a load the explorer does not know.",
       "straps_mismatch": "The straps in this link do not match its units."
     },
-    "open": "Open in the explorer"
+    "open": "Open in the explorer",
+    "trip": {
+      "title": "The whole trip",
+      "sentence": "The live run above is one situation. Test this load in all seven on the server (braking, lane change, curve, pothole, speed bump, descent, vibration) and against the rules, then let the planner make it as safe as it can.",
+      "test": "Test the whole trip",
+      "retest": "Test the changed load",
+      "makeSafe": "Make it as safe as possible",
+      "undo": "Undo the fix",
+      "stale": "The load changed since the last test: test it again to see where it fails now.",
+      "applied": "Done: the editor now has the smallest change that holds in every situation and meets the rules, proven on the server.",
+      "bestHolds": "The editor now has the best load the planner found: it arrives intact, but still breaks a rule (see the checklist).",
+      "best": "The editor now has the best load the planner found: it holds in {passed} of {total} situations. It needs more than the planner can try.",
+      "where": "Where it fails",
+      "marked": "The top view marks these units and lashings in red.",
+      "lashings": "{count, plural, one {# lashing overloaded} other {# lashings overloaded}}",
+      "failure": {
+        "unit_slid": "{unit} slides",
+        "unit_tilted": "{unit} tips over",
+        "unit_rolled": "{unit} rolls",
+        "unit_left_bed": "{unit} falls off the bed",
+        "unit_hit_headboard": "{unit} hits the headboard",
+        "headboard_overloaded": "{unit} overloads the headboard",
+        "lashing_overloaded": "a lashing on {unit} is overloaded",
+        "lashing_broke": "a lashing on {unit} breaks",
+        "load": "the load moves"
+      }
+    }
   },
   "Gallery": {
     "label": "Examples",

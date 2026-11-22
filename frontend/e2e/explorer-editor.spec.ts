@@ -60,3 +60,31 @@ test("adds, edits, duplicates and removes units, and keeps the load in the addre
     await expect(page.locator("[data-explorer-state]")).toHaveAttribute("data-explorer-status", /pass|fail/);
   }
 });
+
+test("tests the whole trip, marks where it fails and makes the load as safe as possible", async ({ page, request }) => {
+  const api = await request.get(`${API_URL}/health`).catch(() => null);
+  test.skip(!api?.ok(), "no API running");
+  test.setTimeout(300_000);
+  // Pallets under one strap each: they slide under braking.
+  await page.goto(
+    "/app/explorer?body=flatbed&size=toco&cargo=wood_pallet&position=gap&restraint=top_over&speed=80&road=straight&weather=dry&event=emergency_braking&straps=1.1.1",
+  );
+  await ready(page);
+  await page.getByTestId("trip-test").click();
+  const result = page.getByTestId("trip-result");
+  await expect(result).toHaveAttribute("data-state", "fails", { timeout: 150_000 });
+  await expect(page.getByTestId("trip-where")).toContainText("Pallet 1");
+  await expect(page.locator("[data-unit][data-failing]")).not.toHaveCount(0);
+
+  await page.getByTestId("trip-make-safe").click();
+  await expect(page.getByTestId("trip-plan")).toBeVisible({ timeout: 150_000 });
+  await expect(result).toHaveAttribute("data-state", "approved");
+  await expect(page.locator("[data-unit][data-failing]")).toHaveCount(0);
+  // The fixed load is in the editor and in the address.
+  await expect(page).toHaveURL(/#draft=/);
+  await ready(page);
+  await expect(page.locator("[data-explorer-state]")).toHaveAttribute("data-explorer-status", "pass");
+
+  await page.getByTestId("trip-undo").click();
+  await expect(page.locator("[data-explorer-state]")).toHaveAttribute("data-explorer-status", "fail", { timeout: 60_000 });
+});

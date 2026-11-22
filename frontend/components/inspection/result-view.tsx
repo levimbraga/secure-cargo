@@ -97,7 +97,7 @@ export function RoadsideClass({ checks }: { checks: Battery["contran_945"] }) {
 }
 
 /** The main problem in one sentence; inside the page's unit places, so units read "Unit 1 (front)". */
-function ProblemSentence({ problem, battery }: { problem: MainProblem; battery: Battery }) {
+export function ProblemSentence({ problem, battery }: { problem: MainProblem; battery: Battery }) {
   const sentence = useMainProblem();
   const situation = problem.kind === "physics" ? battery.situations.find((s) => s.id === problem.situation) : null;
   return <>{sentence(problem, situation?.event.speed_kmh)}</>;
@@ -533,7 +533,7 @@ export function useStepSentence() {
   };
 }
 
-function ChangeList({ changes, before, after, title }: { changes: Change[]; before: LoadDraft | null; after: LoadDraft | null; title: string }) {
+export function ChangeList({ changes, before, after, title }: { changes: Change[]; before: LoadDraft | null; after: LoadDraft | null; title: string }) {
   const sentence = useStepSentence();
   const t = useTranslations("Driver.fix");
   const steps = fixSteps(changes, before, after);

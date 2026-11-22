@@ -121,6 +121,13 @@ describe("load editor", () => {
     );
   });
 
+  it("leaves to the draft what the URL's configuration cannot say", () => {
+    const config = fromSearch(`?${base.query}`);
+    const heavier = { ...base.draft, units: base.draft.units.map((unit, n) => (n ? unit : { ...unit, mass_kg: 1400 })) };
+    expect(editsToConfig(config, base.draft, heavier)).toBeNull();
+    expect(editsToConfig(config, base.draft, { ...base.draft, restraint: "direct" })).toBeNull();
+  });
+
   it("takes a draft from outside, as JSON or as link text", () => {
     const text = encodeDraft(base.draft);
     expect(text).toMatch(/^[A-Za-z0-9_-]+$/);
