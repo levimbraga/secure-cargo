@@ -15,6 +15,8 @@ export type VerdictState = "approved" | "holds_noncompliant" | "fails";
 interface FindingLike {
 	code?: string;
 	severity?: string;
+	/** Whose rules the finding belongs to (`battery.py`); absent: every country's. */
+	countries?: string[] | null;
 }
 interface SituationLike {
 	findings?: unknown[];
@@ -55,10 +57,11 @@ export function activeView<T extends BatteryLike>(battery: T, country?: string |
 
 const RULE_FINDINGS = new Set(["axle_overloaded"]);
 
-export function physicalFailure(situation: SituationLike): boolean {
+export function physicalFailure(situation: SituationLike, country = "BR"): boolean {
 	return (situation.findings ?? []).some((f) => {
 		const finding = f as FindingLike;
-		return finding.severity === "fail" && !RULE_FINDINGS.has(finding.code ?? "");
+		const mine = !finding.countries || finding.countries.includes(country);
+		return mine && finding.severity === "fail" && !RULE_FINDINGS.has(finding.code ?? "");
 	});
 }
 
@@ -77,7 +80,8 @@ export function rulesFail(input: BatteryLike): boolean {
 }
 
 export function verdictState(battery: BatteryLike): VerdictState {
-	if ((battery.situations ?? []).some(physicalFailure)) return "fails";
+	const country = battery.country ?? "BR";
+	if ((battery.situations ?? []).some((s) => physicalFailure(s, country))) return "fails";
 	return rulesFail(battery) ? "holds_noncompliant" : "approved";
 }
 

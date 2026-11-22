@@ -15,7 +15,7 @@ import { pill } from "@/components/ui/pill";
 import { useShownCountry, useShownUnits } from "@/components/units-context";
 import type { Finding } from "@/lib/demo";
 import { type Battery, SITUATION_IDS, type SituationResult } from "@/lib/inspection/types";
-import { holds, physicalFindings } from "@/lib/inspection/verdict";
+import { physicalFindings, situationMark } from "@/lib/inspection/verdict";
 
 /** The battery's situations' speeds (`backend/app/inspection/battery.py`), for their names. */
 export const SITUATION_SPEED_KMH: Record<SituationResult["id"], number> = {
@@ -155,8 +155,8 @@ function itemMark(item: { status: string; kind: string }): Mark {
 }
 
 /** What a situation did, in one word: holds, slides, tips, rolls, falls off, hits the cab. */
-export function outcomeOf(situation: Pick<SituationResult, "findings">): string {
-  const findings = physicalFindings(situation.findings as Finding[]).filter((f) => f.severity === "fail");
+export function outcomeOf(situation: Pick<SituationResult, "findings">, country = "BR"): string {
+  const findings = physicalFindings(situation.findings as Finding[], country).filter((f) => f.severity === "fail");
   const codes = new Set(findings.map((f) => f.code));
   if (codes.has("unit_left_bed")) return "falls";
   if (codes.has("unit_tilted")) return "tips";
@@ -414,7 +414,12 @@ export function Checklist({
                   testId={`axle-${item.unit_ids[0] ?? index}`}
                   mark={itemMark(item)}
                   title={t("weight.axle", { axle: item.unit_ids[0] ?? "rear", load: tonnes(v.load_kg ?? 0), limit: tonnes(v.limit_kg ?? 0) })}
-                  detail={t("weight.axleExplain", { tolerance: tonnes(v.tolerance_kg ?? 0) })}
+                  detail={
+                    <>
+                      {t("weight.axleExplain", { tolerance: tonnes(v.tolerance_kg ?? 0) })}
+                      {v.weighed_on_gross_only ? ` ${t("weight.axleGrossOnly", { regulatory: tonnes(v.regulatory_gross_kg ?? 0) })}` : null}
+                    </>
+                  }
                   article={item.article}
                   fix={t("weight.axleFix")}
                 >
@@ -447,14 +452,14 @@ export function Checklist({
           {!weightItems.length && <Item mark="na" title={t("weight.none")} />}
         </Theme>
 
-        <Theme id="physics" title={t("themes.physics")} marks={situations.map((s) => (holds(s) ? (s.status === "warning" ? "warn" : "pass") : "fail"))}>
+        <Theme id="physics" title={t("themes.physics")} marks={situations.map((s) => situationMark(s, country))}>
           {situations.map((situation) => {
-            const outcome = outcomeOf(situation);
+            const outcome = outcomeOf(situation, country);
             return (
               <Item
                 key={situation.id}
                 testId={situation.id}
-                mark={holds(situation) ? (situation.status === "warning" ? "warn" : "pass") : "fail"}
+                mark={situationMark(situation, country)}
                 title={t(`outcome.${outcome}` as never, { situation: situationName(situation.id) } as never)}
                 detail={t("physicsExplain", {
                   speed: measure.speed(situation.event.speed_kmh),

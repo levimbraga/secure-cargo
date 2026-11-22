@@ -56,6 +56,8 @@ export type Finding = {
   value: number;
   limit: number;
   message: string;
+  /** A battery's situation only: whose rules the finding belongs to; absent: every country's. */
+  countries?: string[] | null;
 };
 
 export type UnitResult = {

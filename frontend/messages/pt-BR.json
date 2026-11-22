@@ -830,6 +830,11 @@
         "strap_overload": "Cinta sobrecarregada",
         "axle_overload": "Excesso de peso no eixo",
         "pretension_loss": "Perda de tensão"
+      },
+      "country": {
+        "BR": "Brasil (CONTRAN)",
+        "US": "Estados Unidos (FMCSA)",
+        "EU": "União Europeia (Diretiva 2014/47/UE)"
       }
     }
   },
@@ -1324,6 +1329,14 @@
       "above_headboard": {
         "pass": "Nada acima da cabeceira pode deslizar por cima dela",
         "fail": "Carga acima da cabeceira pode deslizar por cima dela"
+      },
+      "diagonals_open_body": {
+        "pass": "Diagonais ou calços seguram cada volume para frente e para trás",
+        "fail": "Carroceria aberta sem amarração diagonal"
+      },
+      "headboard_strength": {
+        "pass": "A cabeceira aguenta a carga encostada nela",
+        "fail": "A cabeceira é fraca demais para a carga encostada"
       }
     },
     "changes": {
@@ -1669,12 +1682,12 @@
         "anchoring": "As cintas estão presas no assoalho de madeira, não na estrutura metálica.",
         "diagonals_for_gaps": "Há espaço para {unit} correr ao longo do caminhão.",
         "above_headboard": "{unit} está acima da cabeceira e pode passar por cima dela.",
-        "axle": "Os {axle} levam mais que o limite legal.",
+        "axle": "Os {axle} levam mais que o limite legal. A balança multa um veículo deste porte só pelo peso total, mas carregar acima do limite por eixo continua proibido.",
         "payload": "A carga pesa mais do que este caminhão pode levar.",
         "gross": "Caminhão e carga pesam mais que o limite legal.",
         "height": "A carga está alta demais: acima de 4,40 m do chão.",
         "width": "A carga é mais larga que 2,60 m.",
-        "overhang": "A carga passa da traseira do caminhão.",
+        "overhang": "A carga passa da borda do caminhão.",
         "aggregate_wll": "As amarrações de {unit} somam menos que metade do peso.",
         "min_tiedowns": "{unit} tem menos amarrações do que o comprimento e o peso pedem.",
         "front_end_structure": "A cabeceira é baixa ou fraca demais para a carga encostada nela.",
@@ -1700,7 +1713,10 @@
         "eu_driving_share": "Pouco peso no eixo de tração: menos de 25 % do total.",
         "eu_height": "A carga está alta demais: acima de 4,00 m do chão.",
         "eu_width": "A carga tem mais de 2,55 m de largura.",
-        "eu_length": "Caminhão e carga passam do comprimento europeu."
+        "eu_length": "Caminhão e carga passam do comprimento europeu.",
+        "diagonals_open_body": "{unit} precisa de amarração diagonal: carroceria aberta não tem painéis que a segurem.",
+        "headboard_strength": "A cabeceira é fraca demais para a carga encostada nela.",
+        "wll_criterion": "Uma amarração de {unit} passaria do seu limite de trabalho."
       }
     },
     "summary": {
@@ -1784,6 +1800,21 @@
           "confirm": "A carga pode estar acima da cabeceira: confirme a altura dela.",
           "explain": "Se a carga é mais alta que a cabeceira, nada impede que ela passe por cima da cabine.",
           "fix": "Segure com cintas diagonais ou calços, ou deixe a carga abaixo da cabeceira."
+        },
+        "diagonals_open_body": {
+          "pass": "Diagonais ou calços seguram cada volume para frente e para trás.",
+          "fail": "Carroceria aberta sem amarração diagonal.",
+          "na": "As paredes da frente e de trás seguram a carga.",
+          "explain": "Carroceria aberta ou prancha não tem painéis que contenham a carga: cada volume precisa de cintas ou correntes diagonais contra o movimento para frente e para trás, mesmo sem folga.",
+          "fix": "Coloque cintas ou correntes diagonais em cada volume, ou calce-o na frente e atrás."
+        },
+        "headboard_strength": {
+          "pass": "A cabeceira aguenta a carga encostada nela.",
+          "fail": "A cabeceira é fraca demais para a carga encostada nela.",
+          "na": "Nenhuma carga usa a cabeceira como batente.",
+          "confirm": "A carga encosta na cabeceira: confirme que ela é forte o bastante para segurá-la.",
+          "explain": "Cabeceira usada como batente precisa aguentar a carga encostada nela. A lei não dá um número; numa frenagem a carga pode empurrar com boa parte do próprio peso.",
+          "fix": "Use uma cabeceira certificada, ou segure a carga com cintas diagonais ou calços."
         }
       },
       "en": {
@@ -1795,14 +1826,14 @@
         "fix": "Acrescente cintas até cada volume ter as que a norma pede."
       },
       "weight": {
-        "axle": "{axle, select, front {Eixo dianteiro} tractor {Eixos do cavalo} trailer {Eixos da carreta} other {Eixo traseiro}}: {load} de {limit} permitidas",
+        "axle": "{axle, select, front {Eixo dianteiro} steer {Eixo direcional} tractor {Eixos de tração do cavalo} trailer {Eixos da carreta} other {Eixo traseiro}}: {load} de {limit} permitidas",
         "axleExplain": "A balança multa acima de {tolerance} (tolerância de 12,5 %), mas o carregamento deve respeitar o próprio limite.",
         "axleFix": "Mova a carga para frente ou para trás para dividir entre os eixos, ou tire uma parte.",
         "payload": "Carga de {cargo}; este caminhão leva cerca de {payload}",
         "payloadExplain": "Nenhum caminhão pode levar mais que o fabricante permite (a lotação na plaqueta).",
         "payloadFix": "Use um caminhão maior ou divida a carga.",
         "gross": "Caminhão e carga com {gross}; o limite é {limit}",
-        "grossExplain": "O peso bruto de um caminhão sem reboque é limitado a 29 t.",
+        "grossExplain": "Um caminhão sem reboque pode pesar 29 t com a carga; um cavalo com semirreboque 45 t, ou 54,5 t com eixo triplo e mais de 16 m.",
         "grossFix": "Tire parte da carga.",
         "lateralOk": "O peso está centralizado de um lado ao outro.",
         "lateral": "O peso está {offset} fora do centro, para um lado.",
@@ -1833,7 +1864,8 @@
         "eu_driving_share": "Peso no eixo de tração: {share} do total",
         "eu_driving_shareExplain": "No tráfego internacional, o eixo de tração carrega pelo menos 25 % do peso total, para ter aderência.",
         "eu_driving_shareFix": "Leve a carga para a frente, sobre o eixo de tração.",
-        "payloadEuExplain": "Respeite os pesos da plaqueta do fabricante."
+        "payloadEuExplain": "Respeite os pesos da plaqueta do fabricante.",
+        "axleGrossOnly": "Um veículo deste porte ({regulatory} de total legal) é pesado só pelo total; os eixos só são multados quando o total passa da tolerância de 5 %. O limite por eixo continua sendo lei."
       },
       "outcome": {
         "holds": "{situation}: aguenta",
@@ -1877,9 +1909,9 @@
         "width": "Largura da carga: {value} (limite {limit})",
         "widthExplain": "Caminhão e carga juntos não podem passar de 2,60 m de largura.",
         "widthFix": "Mantenha a carga dentro do assoalho.",
-        "overhang": "Carga além da traseira: {value}",
-        "overhangExplain": "Carga para fora da traseira aumenta o comprimento e exige sinalização.",
-        "overhangFix": "Mantenha a carga no assoalho, ou sinalize e confira o limite de comprimento.",
+        "overhang": "Carga além da borda do caminhão: {value}",
+        "overhangExplain": "A carga não pode passar das laterais, da frente nem da traseira do caminhão, mesmo dentro dos limites de comprimento e largura.",
+        "overhangFix": "Mantenha toda a carga sobre o assoalho, ou use um caminhão mais longo.",
         "widthUsExplain": "Na rede nacional, veículo e carga podem ter até 102 polegadas de largura.",
         "us_height": "Altura do chão: {value} (a maioria dos estados permite {limit})",
         "us_heightExplain": "Não há limite federal de altura; os estados permitem de 13 pés e 6 pol a 14 pés e 6 pol.",
@@ -1970,6 +2002,13 @@
           "confirm": "Cordas são permitidas: confirme que não têm nós e podem ser reapertadas.",
           "explain": "Uma amarração não pode ter nós, e o motorista precisa poder apertá-la na estrada. Corda sem marcação conta com uma carga de trabalho baixa.",
           "fix": "Use cintas com catraca, ou cordas sem nós num tensor."
+        },
+        "wll_criterion": {
+          "pass": "Numa frenagem forte normal, nenhuma amarração passa do seu limite de trabalho.",
+          "fail": "Numa frenagem forte normal, uma amarração passaria do seu limite de trabalho.",
+          "na": "As paredes do baú seguram a carga.",
+          "explain": "Frenagem de 0,435 g, 0,5 g para trás ou 0,25 g de lado não pode levar nenhuma amarração além do seu WLL (na etiqueta). O caso mais duro, 0,8 g, só precisa ficar abaixo da resistência à ruptura.",
+          "fix": "Acrescente amarrações, use outras de WLL maior, ou calce a carga."
         }
       },
       "themesEu": {
@@ -2341,7 +2380,7 @@
       "gross": "Acima do peso bruto",
       "height": "Alta demais",
       "width": "Larga demais",
-      "overhang": "Passa da traseira",
+      "overhang": "Passa da borda",
       "aggregate_wll": "Amarrações abaixo de metade do peso",
       "min_tiedowns": "Poucas amarrações",
       "front_end_structure": "Cabeceira baixa ou fraca",
@@ -2366,7 +2405,10 @@
       "eu_driving_share": "Pouco peso no eixo de tração",
       "eu_height": "Acima de 4,00 m",
       "eu_width": "Mais de 2,55 m de largura",
-      "eu_length": "Acima do comprimento europeu"
+      "eu_length": "Acima do comprimento europeu",
+      "diagonals_open_body": "Carroceria aberta sem diagonais",
+      "headboard_strength": "Cabeceira fraca",
+      "wll_criterion": "Amarração além do WLL"
     }
   },
   "Audit": {
@@ -2491,8 +2533,11 @@
       "gross": "Peso bruto total",
       "height": "Altura, 4,40 m",
       "width": "Largura, 2,60 m",
-      "overhang": "Balanço traseiro",
-      "headboard_height": "Altura da guarda frontal"
+      "overhang": "Carga dentro do assoalho",
+      "headboard_height": "Altura da guarda frontal",
+      "diagonals_open_body": "Diagonais em carroceria aberta",
+      "headboard_strength": "Resistência da cabeceira",
+      "wll_criterion": "Amarrações dentro do WLL"
     },
     "issuedLabel": "Emitido em",
     "inspectedLabel": "Inspecionada em",

@@ -54,17 +54,33 @@ const FINDING_ORDER = [
   "lashing_overloaded",
 ];
 
-/** A situation's findings that are movement of the load (not the axle-load rule). */
-export function physicalFindings<T extends { code?: string; severity?: string }>(findings: T[] | undefined): T[] {
-  return (findings ?? []).filter((f) => !RULE_FINDINGS.has(f.code ?? ""));
+/**
+ * A situation's findings that are movement of the load (not the axle-load rule), under one
+ * country's ratings: a finding with `countries` belongs only to those (a lashing against its
+ * breaking strength in the US, its LC elsewhere; `backend/app/inspection/battery.py`).
+ */
+export function physicalFindings<T extends { code?: string; severity?: string; countries?: string[] | null }>(
+  findings: T[] | undefined,
+  country = "BR",
+): T[] {
+  return (findings ?? []).filter((f) => !RULE_FINDINGS.has(f.code ?? "") && (!f.countries || f.countries.includes(country)));
 }
 
-export function holds(situation: SituationLike): boolean {
-  return !physicalFindings(situation.findings as { code?: string; severity?: string }[]).some((f) => f.severity === "fail");
+export function holds(situation: SituationLike, country = "BR"): boolean {
+  return !physicalFindings(situation.findings as { code?: string; severity?: string; countries?: string[] | null }[], country).some(
+    (f) => f.severity === "fail",
+  );
+}
+
+/** pass / warn / fail of one situation under one country's ratings. */
+export function situationMark(situation: SituationLike, country = "BR"): "pass" | "warn" | "fail" {
+  const findings = physicalFindings(situation.findings as { code?: string; severity?: string; countries?: string[] | null }[], country);
+  if (findings.some((f) => f.severity === "fail")) return "fail";
+  return findings.length ? "warn" : "pass";
 }
 
 export function physicsPassed(battery: BatteryLike): number {
-  return battery.situations.filter(holds).length;
+  return battery.situations.filter((s) => holds(s, battery.country ?? "BR")).length;
 }
 
 function firstRuleFailure(input: BatteryLike): MainProblem | null {
@@ -98,10 +114,14 @@ function firstRuleFailure(input: BatteryLike): MainProblem | null {
 }
 
 export function verdictOf(battery: BatteryLike): { state: VerdictState; problem: MainProblem | null } {
-  const failing = battery.situations.filter((s) => !holds(s));
+  const country = battery.country ?? "BR";
+  const failing = battery.situations.filter((s) => !holds(s, country));
   if (failing.length) {
     const worst = failing.reduce((a, b) => ((b.severity ?? 0) > (a.severity ?? 0) ? b : a));
-    const findings = physicalFindings(worst.findings as { code?: string; severity?: string; unit_id?: string | null }[]).filter(
+    const findings = physicalFindings(
+      worst.findings as { code?: string; severity?: string; unit_id?: string | null; countries?: string[] | null }[],
+      country,
+    ).filter(
       (f) => f.severity === "fail",
     );
     const rank = (code?: string) => {

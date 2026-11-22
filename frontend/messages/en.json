@@ -830,6 +830,11 @@
         "strap_overload": "Strap overload",
         "axle_overload": "Axle overload",
         "pretension_loss": "Pretension loss"
+      },
+      "country": {
+        "BR": "Brazil (CONTRAN)",
+        "US": "United States (FMCSA)",
+        "EU": "European Union (Directive 2014/47/EU)"
       }
     }
   },
@@ -1324,6 +1329,14 @@
       "above_headboard": {
         "pass": "Nothing above the headboard can slide forward over it",
         "fail": "Cargo above the headboard could slide forward over it"
+      },
+      "diagonals_open_body": {
+        "pass": "Diagonals or blocking hold every unit forward and back",
+        "fail": "An open body without diagonal lashings"
+      },
+      "headboard_strength": {
+        "pass": "The headboard is strong enough for the cargo against it",
+        "fail": "The headboard is too weak for the cargo against it"
       }
     },
     "changes": {
@@ -1669,12 +1682,12 @@
         "anchoring": "The straps are hooked to the wooden floor, not the metal frame.",
         "diagonals_for_gaps": "There is room for {unit} to slide along the truck.",
         "above_headboard": "{unit} stands above the headboard and could slide over it.",
-        "axle": "The {axle} carry more than the legal limit.",
+        "axle": "The {axle} carry more than the legal limit. A scale fines a truck of this size on its total weight only, but loading past an axle limit is still illegal.",
         "payload": "The cargo is heavier than this truck may carry.",
         "gross": "The truck and cargo weigh more than the legal limit.",
         "height": "The load is too tall: above 4.40 m from the road.",
         "width": "The load is wider than 2.60 m.",
-        "overhang": "The load sticks out past the back of the truck.",
+        "overhang": "The load sticks out past the edge of the truck.",
         "aggregate_wll": "The tiedowns on {unit} add up to less than half its weight.",
         "min_tiedowns": "{unit} has fewer tiedowns than its length and weight call for.",
         "front_end_structure": "The headboard is too low or too weak for the cargo against it.",
@@ -1700,7 +1713,10 @@
         "eu_driving_share": "Too little weight on the driving axle: less than 25 % of the total.",
         "eu_height": "The load is too tall: above 4.00 m from the road.",
         "eu_width": "The load is wider than 2.55 m.",
-        "eu_length": "Truck and load are longer than the EU limit."
+        "eu_length": "Truck and load are longer than the EU limit.",
+        "diagonals_open_body": "{unit} needs diagonal lashings: an open body has no panels to hold it.",
+        "headboard_strength": "The headboard is too weak for the cargo against it.",
+        "wll_criterion": "A tiedown on {unit} would go past its working load limit."
       }
     },
     "summary": {
@@ -1784,6 +1800,21 @@
           "confirm": "The load may stand above the headboard: confirm its height.",
           "explain": "If cargo stands taller than the headboard, nothing stops it going over the cab.",
           "fix": "Hold it with diagonal straps or blocking, or lower it below the headboard."
+        },
+        "diagonals_open_body": {
+          "pass": "Diagonals or blocking hold every unit forward and back.",
+          "fail": "No diagonal lashings on an open body.",
+          "na": "The body's front and rear walls hold the load.",
+          "explain": "An open body or a platform has no panels that hold cargo, so every unit needs diagonal straps or chains against moving forward and back, even with no gap.",
+          "fix": "Add diagonal straps or chains to each unit, or block it front and back."
+        },
+        "headboard_strength": {
+          "pass": "The headboard is strong enough for the cargo against it.",
+          "fail": "The headboard is too weak for the cargo against it.",
+          "na": "No cargo uses the headboard as a stop.",
+          "confirm": "The cargo leans on the headboard: confirm it is strong enough to stop it.",
+          "explain": "A headboard used as a stop must be strong enough for the cargo against it. The law gives no number; braking can push with most of the cargo's weight.",
+          "fix": "Use a rated headboard, or hold the cargo with diagonal straps or blocking."
         }
       },
       "en": {
@@ -1795,14 +1826,14 @@
         "fix": "Add straps until each unit has as many as the standard asks for."
       },
       "weight": {
-        "axle": "{axle, select, front {Front axle} tractor {Tractor axles} trailer {Trailer axles} other {Rear axle}}: {load} of {limit} allowed",
+        "axle": "{axle, select, front {Front axle} steer {Steer axle} tractor {Tractor drive axles} trailer {Trailer axles} other {Rear axle}}: {load} of {limit} allowed",
         "axleExplain": "Scales fine above {tolerance} (the 12.5 % tolerance), but loading must respect the limit itself.",
         "axleFix": "Move the load forward or back to share it between the axles, or take some off.",
         "payload": "Cargo {cargo}; this truck carries about {payload}",
         "payloadExplain": "No truck may carry more than its maker allows (the payload on the door sticker).",
         "payloadFix": "Use a bigger truck or split the load.",
         "gross": "Truck and cargo {gross}; the limit is {limit}",
-        "grossExplain": "The gross weight of a rigid truck is limited to 29 t.",
+        "grossExplain": "A rigid truck may weigh 29 t with its cargo; a tractor and semi-trailer 45 t, or 54.5 t with a triple axle and more than 16 m.",
         "grossFix": "Take some of the load off.",
         "lateralOk": "The weight is centred side to side.",
         "lateral": "The weight sits {offset} off centre, to one side.",
@@ -1833,7 +1864,8 @@
         "eu_driving_share": "Weight on the driving axle: {share} of the total",
         "eu_driving_shareExplain": "In international traffic the driving axle carries at least 25 % of the total weight, for grip.",
         "eu_driving_shareFix": "Move the load forward, over the driving axle.",
-        "payloadEuExplain": "Stay within the weights on the manufacturer's plate."
+        "payloadEuExplain": "Stay within the weights on the manufacturer's plate.",
+        "axleGrossOnly": "A vehicle of this size ({regulatory} legal total) is weighed on its total only; the axles are fined only when the total is over its 5 % tolerance. The axle limit is still the law."
       },
       "outcome": {
         "holds": "{situation}: holds",
@@ -1877,9 +1909,9 @@
         "width": "Load width: {value} (limit {limit})",
         "widthExplain": "Truck and load together may not be wider than 2.60 m.",
         "widthFix": "Keep the load within the deck.",
-        "overhang": "Load past the back of the truck: {value}",
-        "overhangExplain": "Cargo sticking out the back adds to the truck's length and needs a warning sign.",
-        "overhangFix": "Keep the load on the deck, or signal it and check the length limit.",
+        "overhang": "Load past the edge of the truck: {value}",
+        "overhangExplain": "Cargo may not stick out past the truck's sides, front or back, even within the length and width limits.",
+        "overhangFix": "Keep the whole load on the deck, or use a longer truck.",
         "widthUsExplain": "On the National Network a vehicle and its load may be 102 in wide.",
         "us_height": "Height from the road: {value} (most states allow {limit})",
         "us_heightExplain": "There is no federal height limit; states allow 13 ft 6 in to 14 ft 6 in.",
@@ -1970,6 +2002,13 @@
           "confirm": "Ropes are allowed: confirm they have no knots and can be re-tightened.",
           "explain": "A tiedown may not contain knots, and the driver must be able to tighten it on the road. Unmarked rope counts with a low working load limit.",
           "fix": "Use ratchet straps, or ropes without knots on a tensioner."
+        },
+        "wll_criterion": {
+          "pass": "At normal hard braking, no tiedown goes past its working load limit.",
+          "fail": "At normal hard braking a tiedown would go past its working load limit.",
+          "na": "The van's walls hold the load.",
+          "explain": "Braking at 0.435 g, 0.5 g backwards or 0.25 g sideways must not load any tiedown past its WLL (on the label). The harder 0.8 g case only has to stay below the breaking strength.",
+          "fix": "Add tiedowns, use ones with a higher WLL, or block the cargo."
         }
       },
       "themesEu": {
@@ -2341,7 +2380,7 @@
       "gross": "Over the gross weight",
       "height": "Too tall",
       "width": "Too wide",
-      "overhang": "Sticks out at the rear",
+      "overhang": "Sticks out past the deck",
       "aggregate_wll": "Tiedowns under half the weight",
       "min_tiedowns": "Too few tiedowns",
       "front_end_structure": "Headboard too low or weak",
@@ -2366,7 +2405,10 @@
       "eu_driving_share": "Too little on the driving axle",
       "eu_height": "Above 4.00 m",
       "eu_width": "Wider than 2.55 m",
-      "eu_length": "Over the EU length"
+      "eu_length": "Over the EU length",
+      "diagonals_open_body": "Open body without diagonals",
+      "headboard_strength": "Headboard too weak",
+      "wll_criterion": "Tiedown past its WLL"
     }
   },
   "Audit": {
@@ -2491,8 +2533,11 @@
       "gross": "Gross weight",
       "height": "Height, 4.40 m",
       "width": "Width, 2.60 m",
-      "overhang": "Rear overhang",
-      "headboard_height": "Headboard height"
+      "overhang": "Cargo within the deck",
+      "headboard_height": "Headboard height",
+      "diagonals_open_body": "Diagonals on an open body",
+      "headboard_strength": "Headboard strength",
+      "wll_criterion": "Tiedowns within their WLL"
     },
     "issuedLabel": "Issued",
     "inspectedLabel": "Inspected",

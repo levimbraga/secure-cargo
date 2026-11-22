@@ -101,10 +101,19 @@ export type SituationResult = {
 };
 
 export type ContranCheck = {
-  code: "devices_allowed" | "safety_factor" | "four_terminals" | "anchoring" | "diagonals_for_gaps" | "above_headboard";
+  code:
+    | "devices_allowed"
+    | "safety_factor"
+    | "four_terminals"
+    | "anchoring"
+    | "diagonals_for_gaps"
+    | "diagonals_open_body"
+    | "headboard_strength"
+    | "above_headboard";
   article: string;
   status: "pass" | "fail" | "not_applicable" | "to_confirm";
   unit_ids: string[];
+  values?: Record<string, number>;
   message: string;
 };
 

@@ -106,6 +106,15 @@ describe("the three-state verdict", () => {
 		expect(verdictState({ ...battery("approved"), checklist: { protection: [{ kind: "advice", status: "advice" }] } })).toBe("approved");
 	});
 
+	it("counts a finding only under the countries it names (49 CFR 393.102(a)(1))", () => {
+		// A strap over its LC: a failure under EN 12195-1 (BR, EU), not against the US breaking strength.
+		const overLc = { code: "lashing_overloaded", severity: "fail", countries: ["BR", "EU"] };
+		const base = battery("approved");
+		const over = { ...base, situations: base.situations.map((s, i) => (i === 0 ? { ...s, findings: [overLc] } : s)) };
+		expect(verdictState({ ...over, country: "BR" })).toBe("fails");
+		expect(verdictState({ ...over, country: "US" })).toBe("approved");
+	});
+
 	it("is stored as pass, warning or fail", async () => {
 		const { create, call } = ctx({ kinds: ["holds_noncompliant"] });
 		const { id } = await create(as.alice);

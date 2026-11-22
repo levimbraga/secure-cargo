@@ -33,6 +33,8 @@ const FAILURES = [
   "four_terminals",
   "anchoring",
   "diagonals_for_gaps",
+  "diagonals_open_body",
+  "headboard_strength",
   "above_headboard",
   "axle",
   "payload",

@@ -19,6 +19,14 @@ describe("the three-state verdict", () => {
     expect(verdict.problem).toMatchObject({ kind: "rule", code: "devices_allowed", unitId: "c-1", theme: "securing" });
   });
 
+  it("counts a finding only under the countries it names (49 CFR 393.102(a)(1))", () => {
+    const overLc = { code: "lashing_overloaded", severity: "fail", unit_id: null, countries: ["BR", "EU"] };
+    const battery = { situations: [situation("emergency_braking", overLc)], contran_945: [pass] };
+    expect(verdictOf({ ...battery, country: "BR" }).state).toBe("fails");
+    expect(verdictOf({ ...battery, country: "US" }).state).toBe("approved");
+    expect(physicsPassed({ ...battery, country: "US" })).toBe(1);
+  });
+
   it("treats an axle overload as a rule, not as physics", () => {
     const battery = {
       situations: [situation("emergency_braking", axle), situation("lane_change", axle)],
