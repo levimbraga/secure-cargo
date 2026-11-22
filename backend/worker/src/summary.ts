@@ -29,6 +29,8 @@ export const RULE_FAILURES = [
 	"four_terminals",
 	"anchoring",
 	"diagonals_for_gaps",
+	"diagonals_open_body",
+	"headboard_strength",
 	"above_headboard",
 	"axle",
 	"payload",
@@ -37,6 +39,7 @@ export const RULE_FAILURES = [
 	"width",
 	"overhang",
 	// US mode (49 CFR 393, 23 CFR 658)
+	"wll_criterion",
 	"aggregate_wll",
 	"min_tiedowns",
 	"front_end_structure",
@@ -54,7 +57,8 @@ export const FAILURE_CODES: readonly string[] = [...PHYSICAL_FAILURES, ...RULE_F
 
 
 interface BatteryShape {
-	situations?: { findings?: { code?: string; severity?: string }[] }[];
+	situations?: { findings?: { code?: string; severity?: string; countries?: string[] | null }[] }[];
+	country?: string | null;
 	contran_945?: { code?: string; status?: string }[];
 	checklist?: Record<string, { code?: string; kind?: string; status?: string }[]> | null;
 	axle_loads?: { load_kg?: number; limit_kg?: number }[];
@@ -67,6 +71,7 @@ export function failureCodes(battery: unknown): string[] {
 	for (const situation of b.situations ?? []) {
 		for (const finding of situation.findings ?? []) {
 			if (finding.severity !== "fail" || !finding.code) continue;
+			if (finding.countries && !finding.countries.includes(b.country ?? "BR")) continue;
 			found.add(finding.code === "axle_overloaded" ? "axle" : finding.code);
 		}
 	}
