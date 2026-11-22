@@ -33,6 +33,18 @@ for (const id of ["steel-coil", "box-truck"]) {
   });
 }
 
+test("a clip on the examples page opens its own load in the explorer, not the default one", async ({ page }) => {
+  const fixed = index.scenarios.find((item) => item.id === "sharp-curve")?.variants.fixed;
+  if (!fixed) throw new Error("no sharp-curve in the index");
+  await page.route(`${API_URL}/**`, (route) => route.abort());
+  await page.goto("/app/examples");
+  // A client-side navigation: the router changes the address only after the explorer renders.
+  await page.locator("#sharp-curve").getByRole("link", { name: /fixed: open live in the explorer/i }).click();
+  await ready(page);
+  expect(new URL(page.url()).search).toBe(`?${fixed.explorer}`);
+  await expect(page.locator("[data-explorer-state]")).toHaveAttribute("data-explorer-status", fixed.status);
+});
+
 test("tapping a unit adds a strap, writes it in the URL and simulates again", async ({ page, request }) => {
   const api = await request.get(`${API_URL}/health`).catch(() => null);
   test.skip(!api?.ok(), "no API running");

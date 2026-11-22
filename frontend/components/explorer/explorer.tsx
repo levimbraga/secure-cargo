@@ -7,7 +7,7 @@
  */
 
 import { useFormatter, useTranslations } from "next-intl";
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { UnitsProvider, useShownUnits } from "@/components/units-context";
 import { BodyCodeSwitch, CountrySwitch } from "@/components/inspection/country-switch";
@@ -27,15 +27,34 @@ function subscribe(onChange: () => void): () => void {
   return () => window.removeEventListener("popstate", onChange);
 }
 
-/** The address is only known in the browser: the explorer renders a placeholder until then. */
+/** The explorer's own path, with or without the locale prefix. */
+const EXPLORER_PATH = /\/app\/explorer\/?$/;
+
+/**
+ * The address is only known in the browser: the explorer renders a placeholder until then.
+ * After a client-side navigation (a link from the examples) the router updates the address
+ * only once the new page has rendered, so the explorer waits until the address is its own
+ * before it reads the configuration; otherwise it would read the previous page's address and
+ * open the default load.
+ */
 export function Explorer() {
   const location = useSyncExternalStore(
     subscribe,
     () => `${window.location.search}${window.location.hash}`,
     () => null,
   );
+  const [onOwnPath, setOnOwnPath] = useState(false);
+  useEffect(() => {
+    let frame = 0;
+    const check = () => {
+      if (EXPLORER_PATH.test(window.location.pathname)) setOnOwnPath(true);
+      else frame = requestAnimationFrame(check);
+    };
+    frame = requestAnimationFrame(check);
+    return () => cancelAnimationFrame(frame);
+  }, []);
   const t = useTranslations("Explorer");
-  if (location === null) {
+  if (location === null || !onOwnPath) {
     return (
       <section data-explorer-state="loading">
         <ExplorerHeader />
