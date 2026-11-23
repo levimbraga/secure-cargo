@@ -19,6 +19,7 @@ import {
   PlayButton,
   Scrubber,
   SpeedChoice,
+  StartOverlay,
   useReplayText,
   ViewChoice,
 } from "@/components/scenario/replay-shared";
@@ -28,7 +29,8 @@ import { sampleFrame } from "@/lib/keyframes";
 import type { LiveRun } from "@/lib/live/engine";
 import { buildSeries, criticalWindow, headboardImpacts, playbackRate, type Speed } from "@/lib/replay";
 import { sceneConditions } from "@/lib/scene/motion";
-import { REDUCED_MOTION, useMediaQuery } from "@/lib/use-media-query";
+import { useAutostart } from "@/lib/autostart";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { useSceneVisibility } from "@/lib/use-scene-visibility";
 
 const KeyframePlayer = dynamic(() => import("@/components/scene/keyframe-player"), { ssr: false });
@@ -53,7 +55,9 @@ export function ExplorerScene({
   const [speed, setSpeed] = useState<Speed>("auto");
   const [webgl] = useState(supportsWebGL);
   const compact = useMediaQuery(COMPACT);
-  const reducedMotion = useMediaQuery(REDUCED_MOTION);
+  const autostart = useAutostart();
+  // The visitor started the scene with Play (on a phone, the first run waits for it).
+  const [engaged, setEngaged] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
@@ -75,7 +79,8 @@ export function ExplorerScene({
     speed,
     critical,
     active: visibility.active && !busy,
-    autoplay: !reducedMotion,
+    // A computer starts each run by itself; a phone waits for Play, then plays later runs.
+    autoplay: autostart || engaged,
     videoRef: video,
   });
   const { shownTime, playing } = clock;
@@ -122,6 +127,15 @@ export function ExplorerScene({
           </p>
         )}
         {sample && mountScene && <Hud speedMps={sample.truckSpeed} bedAccel={sample.bedAccel} slow={slowNow} />}
+        {/* On a phone the first run waits, paused, for Play. */}
+        {mountScene && doc && !playing && !engaged && !autostart && shownTime === 0 && (
+          <StartOverlay
+            onStart={() => {
+              setEngaged(true);
+              clock.togglePlay();
+            }}
+          />
+        )}
       </div>
       {run && (
         <figcaption className="type-label mt-2">
@@ -133,7 +147,10 @@ export function ExplorerScene({
           playing={playing}
           ended={shownTime >= duration}
           disabled={!doc}
-          onToggle={clock.togglePlay}
+          onToggle={() => {
+            setEngaged(true);
+            clock.togglePlay();
+          }}
           className="min-w-24 max-sm:h-11"
         />
         <div className="flex min-w-[14rem] flex-1 items-center gap-3">

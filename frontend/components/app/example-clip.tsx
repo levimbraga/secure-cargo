@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { Link } from "@/i18n/navigation";
+import { HOVER_POINTER } from "@/lib/autostart";
 import { REDUCED_MOTION } from "@/lib/use-media-query";
 
 /**
@@ -11,8 +12,10 @@ import { REDUCED_MOTION } from "@/lib/use-media-query";
  * (`frontend/scripts/record-example-clips.mjs`). Nothing is downloaded until the clip is near
  * the viewport: the poster is a lazy image and the video element only mounts then, and never
  * before the page has finished loading. It plays
- * muted and looped while on screen and the tab is visible, never by itself when the visitor
- * asked for less motion, and has a small play/pause instead of the browser's controls.
+ * muted and looped while on screen and the tab is visible. It plays by itself only on a
+ * computer: on a phone or a tablet it waits, paused, for a tap on Play (`canAutostart`), and
+ * never by itself when the visitor asked for less motion. A small play/pause replaces the
+ * browser's controls.
  * The clip itself is a link to the same load, live in the explorer.
  */
 export function ExampleClip({
@@ -41,6 +44,8 @@ export function ExampleClip({
   // null: follow the visitor's motion setting; true/false: what they chose with the button.
   const [choice, setChoice] = useState<boolean | null>(null);
   const [reduced, setReduced] = useState(false);
+  // A computer (a pointer that can hover); false on a phone or a tablet.
+  const [computer, setComputer] = useState(false);
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
@@ -57,6 +62,10 @@ export function ExampleClip({
     onScreen.observe(element);
     const motion = window.matchMedia(REDUCED_MOTION);
     const onMotion = () => setReduced(motion.matches);
+    const pointer = window.matchMedia(HOVER_POINTER);
+    const onPointer = () => setComputer(pointer.matches);
+    onPointer();
+    pointer.addEventListener("change", onPointer);
     const onPage = () => setPageVisible(document.visibilityState === "visible");
     onMotion();
     onPage();
@@ -72,13 +81,14 @@ export function ExampleClip({
       nearby.disconnect();
       onScreen.disconnect();
       motion.removeEventListener("change", onMotion);
+      pointer.removeEventListener("change", onPointer);
       document.removeEventListener("visibilitychange", onPage);
       window.removeEventListener("load", settle);
       window.clearTimeout(idle);
     };
   }, []);
 
-  const wanted = choice ?? !reduced;
+  const wanted = choice ?? (computer && !reduced);
   const mounted = near && settled;
   const shouldPlay = mounted && visible && pageVisible && wanted;
 
@@ -124,6 +134,19 @@ export function ExampleClip({
           {t("clip.open")}
         </span>
       </Link>
+      {/* On a phone the clip waits, paused, for this. */}
+      {!wanted && !playing && (
+        <button
+          type="button"
+          onClick={() => setChoice(true)}
+          aria-label={t("clip.play")}
+          className="absolute top-1/2 left-1/2 flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-ink/80 text-paper shadow-lg hover:bg-ink"
+        >
+          <svg width="22" height="22" viewBox="0 0 10 10" aria-hidden fill="currentColor">
+            <path d="M2.5 1.2v7.6a.4.4 0 0 0 .6.35l6.2-3.8a.4.4 0 0 0 0-.7L3.1.85a.4.4 0 0 0-.6.35z" />
+          </svg>
+        </button>
+      )}
       <button
         type="button"
         onClick={() => setChoice(!playing)}

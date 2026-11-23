@@ -19,6 +19,7 @@ import {
   ResultRows,
   Scrubber,
   SpeedChoice,
+  StartOverlay,
   useReplayText,
   VariantToggle,
   ViewChoice,
@@ -34,6 +35,7 @@ import { type KeyframesDoc, sampleFrame } from "@/lib/keyframes";
 import { buildSeries, criticalWindow, headboardImpacts, playbackRate, type Speed } from "@/lib/replay";
 import { sceneConditions } from "@/lib/scene/motion";
 import { unitDetails } from "@/lib/unit-details";
+import { canAutostart, useAutostart } from "@/lib/autostart";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useSceneVisibility } from "@/lib/use-scene-visibility";
 
@@ -82,6 +84,9 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
   // Unknown until the page runs in a browser; then whether it can draw 3D at all.
   const [webgl, setWebgl] = useState<boolean | null>(null);
   const [playing, setPlaying] = useState(false);
+  // The visitor pressed Play or Pause (on a phone the replay waits for it).
+  const [engaged, setEngaged] = useState(false);
+  const autostart = useAutostart();
   // The unit whose numbers are open in the panel under the scene (phone layout only).
   const [selectedUnit, setSelectedUnit] = useState<number | null>(null);
   const compact = useMediaQuery(COMPACT);
@@ -108,12 +113,12 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
     [run.profile, event.road_surface, event.fog],
   );
 
-  // The replay starts by itself the first time it is both loaded and on screen, unless the
-  // visitor asked for less motion.
+  // On a computer the replay starts by itself the first time it is both loaded and on screen;
+  // on a phone, or with reduced motion, it waits for Play (`canAutostart`).
   const startOnce = () => {
     if (started.current || !loaded.current || !onScreen.current) return;
     started.current = true;
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) setPlaying(true);
+    if (canAutostart()) setPlaying(true);
   };
   const start = useRef(startOnce);
   useEffect(() => {
@@ -199,6 +204,7 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
   }
 
   function togglePlay() {
+    setEngaged(true);
     if (!playing && shownTime >= duration) seek(0);
     setPlaying(!playing);
   }
@@ -293,6 +299,8 @@ export function ScenarioReplay({ id, event, runs }: ScenarioReplayProps) {
           )}
           {/* Speed of the truck and what it is doing, read from the keyframes. */}
           {sample && <Hud speedMps={sample.truckSpeed} bedAccel={sample.bedAccel} slow={slowNow} />}
+          {/* On a phone the replay waits, paused, for Play. */}
+          {mountScene && !playing && !engaged && !autostart && shownTime === 0 && <StartOverlay onStart={togglePlay} />}
         </div>
         {openUnit !== null && openDetails && panelLabels && (
           <UnitPanel number={openUnit + 1} details={openDetails} labels={panelLabels} onClose={closePanel} />

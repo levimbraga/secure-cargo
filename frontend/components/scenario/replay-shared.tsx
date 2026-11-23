@@ -346,6 +346,27 @@ export function PlayButton({
   );
 }
 
+/**
+ * A large Play button in the middle of a scene that has not started yet: phones and tablets
+ * wait for it (a computer starts the scene when the mouse comes over it).
+ */
+export function StartOverlay({ onStart }: { onStart: () => void }) {
+  const t = useTranslations("Scenario");
+  return (
+    <button
+      type="button"
+      onClick={onStart}
+      data-scene-control=""
+      className="absolute top-1/2 left-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full bg-ink/85 py-3 pr-5 pl-4 text-paper shadow-lg hover:bg-ink"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="size-6 fill-current">
+        <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" />
+      </svg>
+      <span className="text-[0.9375rem] font-medium">{t("replay.play")}</span>
+    </button>
+  );
+}
+
 /** The time of the replay as a range input, and the clock beside it. */
 export function Scrubber({
   time,

@@ -23,6 +23,7 @@ import {
   ResultRows,
   Scrubber,
   SpeedChoice,
+  StartOverlay,
   Swatch,
   useReplayText,
   VariantToggle,
@@ -41,7 +42,8 @@ import { type LiveLab as LiveLabState, useLiveLab } from "@/lib/live/use-live-la
 import { buildSeries, criticalWindow, headboardImpacts, playbackRate, type Speed } from "@/lib/replay";
 import { sceneConditions } from "@/lib/scene/motion";
 import { unitDetails } from "@/lib/unit-details";
-import { REDUCED_MOTION, useMediaQuery } from "@/lib/use-media-query";
+import { useAutostart } from "@/lib/autostart";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { useSceneVisibility } from "@/lib/use-scene-visibility";
 
 // three.js is only needed once the scene is on screen, and never on the server.
@@ -191,7 +193,9 @@ const LabBody = memo(function LabBody({
   // Whether this browser can draw 3D at all; this component only ever renders in a browser.
   const [webgl] = useState(supportsWebGL);
   const compact = useMediaQuery(COMPACT);
-  const reducedMotion = useMediaQuery(REDUCED_MOTION);
+  const autostart = useAutostart();
+  // The visitor started the scene with Play (on a phone, the first run waits for it).
+  const [engaged, setEngaged] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
   const overlay = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
@@ -217,7 +221,8 @@ const LabBody = memo(function LabBody({
     critical,
     // While the next run is simulated the engine belongs to it: the clock waits.
     active: visibility.active && !lab.busy,
-    autoplay: !reducedMotion,
+    // A computer starts each run by itself; a phone waits for Play, then plays later runs.
+    autoplay: autostart || engaged,
     videoRef: video,
   });
   const { shownTime, playing } = clock;
@@ -343,6 +348,15 @@ const LabBody = memo(function LabBody({
               ) : (
                 noScene
               )}
+              {/* On a phone the first run waits, paused, for Play. */}
+              {showScene && doc && !playing && !engaged && !autostart && shownTime === 0 && (
+                <StartOverlay
+                  onStart={() => {
+                    setEngaged(true);
+                    clock.togglePlay();
+                  }}
+                />
+              )}
               {/* Speed of the truck and what it is doing, and the push of the visitor. */}
               {sample && showScene && (
                 <Hud speedMps={sample.truckSpeed} bedAccel={sample.bedAccel} slow={slowNow}>
@@ -380,7 +394,10 @@ const LabBody = memo(function LabBody({
                 playing={playing}
                 ended={shownTime >= duration}
                 disabled={!doc}
-                onToggle={clock.togglePlay}
+                onToggle={() => {
+            setEngaged(true);
+            clock.togglePlay();
+          }}
                 className={`min-w-24 ${TALL}`}
               />
               <button
