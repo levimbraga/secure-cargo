@@ -1962,7 +1962,7 @@
           "pass": "The straps are strong enough for the weight.",
           "fail": "The straps are too weak for the weight.",
           "na": "Held by blocking or the body's walls: not assessed.",
-          "explain": "Together, the straps' rated capacity must be at least twice the cargo's weight.",
+          "explain": "Together, the straps' rated capacity must be at least twice the cargo's weight. Straps made to ABNT NBR 15883-2 show their rated capacity (LC) on the label.",
           "fix": "Add straps, or use stronger ones (check the LC on the label)."
         },
         "four_terminals": {
@@ -2012,10 +2012,11 @@
       },
       "en": {
         "straps": "{unit}: {installed, plural, =0 {no straps} one {# strap} other {# straps}}; the standard asks for {required}.",
-        "meets": "{unit}: meets EN 12195-1.",
-        "fails": "{unit}: does not meet EN 12195-1.",
-        "notAssessed": "{unit}: not assessed by EN 12195-1 here.",
-        "explain": "The European standard Brazil's rule is based on: how many straps hold a unit by friction.",
+        "meets": "{unit}: meets the NBR 15883-1 / EN 12195-1 calculation.",
+        "fails": "{unit}: does not meet the NBR 15883-1 / EN 12195-1 calculation.",
+        "notAssessed": "{unit}: not assessed by the NBR 15883-1 / EN 12195-1 calculation here.",
+        "explain": "How many straps hold a unit by friction, by the calculation of ABNT NBR 15883-1, Brazil's lashing standard. It is based on the European EN 12195-1, whose method and numbers we use. A technical standard, not law: CONTRAN 945 is what is enforced.",
+        "article": "ABNT NBR 15883-1 · EN 12195-1 method",
         "fix": "Add straps until each unit has as many as the standard asks for."
       },
       "weight": {

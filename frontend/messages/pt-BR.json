@@ -1962,7 +1962,7 @@
           "pass": "As cintas aguentam o peso.",
           "fail": "As cintas são fracas demais para o peso.",
           "na": "Segura por calços ou pelas paredes da carroceria: não avaliado.",
-          "explain": "Somadas, as capacidades das cintas precisam ser pelo menos o dobro do peso da carga.",
+          "explain": "Somadas, as capacidades das cintas precisam ser pelo menos o dobro do peso da carga. Cintas feitas pela ABNT NBR 15883-2 trazem a capacidade (CT) na etiqueta.",
           "fix": "Acrescente cintas, ou use cintas mais fortes (veja a CT na etiqueta)."
         },
         "four_terminals": {
@@ -2012,10 +2012,11 @@
       },
       "en": {
         "straps": "{unit}: {installed, plural, =0 {sem cintas} one {# cinta} other {# cintas}}; a norma pede {required}.",
-        "meets": "{unit}: atende à EN 12195-1.",
-        "fails": "{unit}: não atende à EN 12195-1.",
-        "notAssessed": "{unit}: não avaliado pela EN 12195-1 aqui.",
-        "explain": "A norma europeia em que a regra brasileira se baseia: quantas cintas seguram um volume pelo atrito.",
+        "meets": "{unit}: atende ao cálculo da NBR 15883-1 / EN 12195-1.",
+        "fails": "{unit}: não atende ao cálculo da NBR 15883-1 / EN 12195-1.",
+        "notAssessed": "{unit}: não avaliado pelo cálculo da NBR 15883-1 / EN 12195-1 aqui.",
+        "explain": "Quantas cintas seguram um volume pelo atrito, pelo cálculo da ABNT NBR 15883-1, a norma brasileira de amarração. Ela é baseada na europeia EN 12195-1, cujo método e números usamos. É norma técnica, não lei: o que é fiscalizado é a CONTRAN 945.",
+        "article": "ABNT NBR 15883-1 · método da EN 12195-1",
         "fix": "Acrescente cintas até cada volume ter as que a norma pede."
       },
       "weight": {

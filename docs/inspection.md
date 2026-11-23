@@ -132,7 +132,8 @@ Stored in `inspections.verdict` as pass / warning / fail. The main problem is na
 the worst physical failure ("In hard braking at 80 km/h, pallet 2 slides into the cab.") or the first
 failing rule.
 
-**Checklist themes**: how it is secured (CONTRAN 945 + EN 12195-1), weight and axles (each axle group
+**Checklist themes**: how it is secured (CONTRAN 945 + the EN 12195-1 strap count, cited in Brazil as
+ABNT NBR 15883-1:2022, a voluntary standard based on EN 12195-1: same method, our EN numbers), weight and axles (each axle group
 against its legal limit with the 12.5 % weighing tolerance shown as context, payload, gross weight
 29 t, and two pieces of advice: the centre of mass within 10 % of the deck width of the centre line,
 at least 20 % of the modelled weight on the front group, both our thresholds, ASSUMPTION), trip physics

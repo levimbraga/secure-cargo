@@ -541,7 +541,7 @@
     "title": "Rule sources.",
     "description": "The Brazilian, US and EU cargo-securement, weight and dimension rules SecureCargo checks, with links to the official texts.",
     "intro": [
-      "SecureCargo checks each load against one of three rule sets. Every rule in the app shows its article; these are the texts they come from, read in their official versions on November 21, 2026. Paywalled standards are used through official guidelines that reproduce them, and say so."
+      "SecureCargo checks each load against one of three rule sets. Every rule in the app shows its article; these are the texts they come from, read in their official versions on November 21 and 22, 2026. Paywalled standards are used through official guidelines that reproduce them, and say so."
     ],
     "sections": [
       {
@@ -560,6 +560,11 @@
                   "[CONTRAN Resolution 945/2022](https://www.in.gov.br/web/dou/-/resolucao-contran-n-945-de-28-de-marco-de-2022-390343667) and its [annex](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao9452022ANEXO.pdf)",
                   "Cargo lashing: safety factor of 2, no ropes as lashings, 4 terminals per unit on open bodies, straps inside the side rails, diagonals when the load does not fill the body, no cargo above the headboard that could slide forward",
                   "In force"
+                ],
+                [
+                  "[CONTRAN Resolution 935/2022](https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-contran/resolucoes/Resolucao9352022.pdf)",
+                  "Not checked: ornamental stone blocks and slabs, a cargo SecureCargo does not model. It is the resolution that makes NBR 15883-2 straps mandatory (art. 13, III, sawn slabs); Resolution 945 cites no ABNT standard",
+                  "Published 2022-04-01"
                 ],
                 [
                   "[CONTRAN Resolution 882/2021](https://www.in.gov.br/en/web/dou/-/resolucao-contran-n-882-de-13-de-dezembro-de-2021-370017699)",
@@ -686,6 +691,21 @@
                   "[EN 12195-1:2010, public preview](https://cdn.standards.iteh.ai/samples/32961/4592590bcf194f1a8ffa917a5db7d258/SIST-EN-12195-1-2011.pdf)",
                   "Securing forces, friction factors, safety factors, the road accelerations",
                   "Standard (paywalled; preview read)"
+                ],
+                [
+                  "[ABNT NBR 15883-1:2022](https://www.normas.com.br/visualizar/abnt-nbr-nm/30033/abnt-nbr15883-1-cintas-texteis-para-amarracao-de-cargas-parte-1-calculo-de-tensoes), lashing straps, part 1: calculation of lashing forces",
+                  "Brazil's lashing-force calculation, cited in Brazil mode as advice next to the strap count. Its foreword says it is based on EN 12195-1 (2003 and 2010), so we use the EN 12195-1 method and numbers",
+                  "Brazilian standard, not law (paywalled; catalogue entry read)"
+                ],
+                [
+                  "[ABNT NBR 15883-2:2022](https://www.normas.com.br/visualizar/abnt-nbr-nm/30032/abnt-nbr15883-2-cintas-texteis-para-amarracao-de-cargas-parte-2-cintas-planas-manufaturadas-com-fitas-tecidas-com-fios-sinteticos-de-alta-tenacidade-formados-por-multifilamentos), part 2: flat woven straps",
+                  "The strap's label with its rated capacity (LC), which the safety-factor check uses. Based on EN 12195-2, with a 2:1 safety factor for the strap",
+                  "Brazilian standard, not law (paywalled; catalogue entry read)"
+                ],
+                [
+                  "[ABNT NBR 15516-3:2023](https://www.normas.com.br/visualizar/abnt-nbr-nm/13043/abnt-nbr15516-3-corrente-de-elos-curtos-para-elevacao-e-amarracao-de-cargas-lingas-de-correntes-parte-3-correntes-para-amarracao-de-cargas), lashing chains",
+                  "Not used in a calculation: the Brazilian standard for lashing chains, listed for reference",
+                  "Brazilian standard (paywalled)"
                 ],
                 [
                   "[European Commission, Cargo securing for road transport, 2014 best practices guidelines](https://op.europa.eu/en/publication-detail/-/publication/30c7c1dc-f26e-44af-bd4c-2434b43edd7e)",

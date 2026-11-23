@@ -9,6 +9,11 @@ Sources (see docs/validation.md): the factors are in the standard's public previ
 item d, 3.2.19, 3.2.20, Table 2); the direction of each safety factor and the equations are in
 the European Commission's 2014 best-practice guidelines (6.1.2, 6.1.3, 6.1.5, 6.2.6).
 
+In Brazil the result is cited as ABNT NBR 15883-1:2022 (Cálculo de tensões), a voluntary
+technical standard whose foreword says it is based on EN 12195-1:2003 and :2010. Its own
+coefficients are paywalled and were not read, so these EN 12195-1 values are used (sources:
+the workspace's notes/rules-sources.md).
+
 Scope: units standing on the floor, secured either by top-over lashings or by direct
 lashings. A unit on top of another, with both kinds of lashing, held by blocking alone, or a
 cylinder lying on its side (it rolls rather than slides) is not assessed.

@@ -138,6 +138,8 @@ for a passing and a failing case. Switching country re-runs only the rules; the 
   EN 12640), with the roadside deficiency class (minor, major, dangerous) of every failing check, and
   Directive 96/53/EC Annex I weights and dimensions; five EU presets, lashings in daN.
 - **EN 12195-1** is shown on every result as advice: the number of lashings the standard's formula asks for.
+  In Brazil mode it is labelled with ABNT NBR 15883-1:2022 (Brazil's lashing-force standard, voluntary, not
+  law), whose foreword says it is based on EN 12195-1; the EN 12195-1 method and numbers are used.
 
 Where a legal text gives no number (for example how far a gap must be to need diagonals), the reading is
 ours, documented and tested; the remaining assumptions are listed at the end of

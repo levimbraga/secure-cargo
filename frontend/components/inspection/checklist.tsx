@@ -367,8 +367,9 @@ export function Checklist({
   const weightItems = checklist?.weight ?? [];
   const protectionItems = checklist?.protection ?? [];
   const dimensionItems = checklist?.dimensions ?? [];
-  // EN 12195-1 is the standard behind Brazil's rule; in US mode the CFR checks stand alone, and in
-  // EU mode the EN 12195-1 calculation is the direction checks themselves.
+  // Brazil: the strap count of ABNT NBR 15883-1, a technical standard (not law) based on EN 12195-1,
+  // whose method we run. In US mode the CFR checks stand alone, and in EU mode the EN 12195-1
+  // calculation is the direction checks themselves.
   const en = us || eu ? [] : battery.en_12195_1;
   const themes = eu ? "themesEu" : us ? "themesUs" : "themes";
 
@@ -442,7 +443,7 @@ export function Checklist({
             <Item
               key={ids.join("-")}
               testId={`en-${ids[0]}`}
-              // EN 12195-1 is the standard behind the rule, not the rule: the simulation decides.
+              // A technical standard, not the rule: the simulation decides.
               mark={check.meets_standard === null ? "na" : check.meets_standard ? "pass" : "advice"}
               title={
                 check.meets_standard === null
@@ -452,7 +453,7 @@ export function Checklist({
                     : t(check.meets_standard ? "en.meets" : "en.fails", { unit: units(ids) })
               }
               detail={t("en.explain")}
-              article={`EN 12195-1 · ${t("advice")}`}
+              article={`${t("en.article")} · ${t("advice")}`}
               fix={t("en.fix")}
             />
           ))}

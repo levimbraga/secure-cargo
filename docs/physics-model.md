@@ -111,7 +111,9 @@ source.
   1.1 sideways and rearward for top-over lashing; `f_mu = 0.75` for direct lashing) against what is
   installed, per direction, for sliding and tipping. It is informative and does not change the verdict:
   the verdict says whether the load survived the simulated event, this says whether the lashing meets
-  the standard. Computed in `backend/rules/en12195.py`.
+  the standard. Computed in `backend/rules/en12195.py`. In Brazil mode the same check is cited as
+  ABNT NBR 15883-1:2022 [15], whose foreword says it is based on EN 12195-1 (2003 and 2010); its own
+  coefficients were not read (paywalled), so the EN 12195-1 values are used.
 - `axle_loads`: load per axle group against the legal limit, when the vehicle is described.
 - `keyframes`: poses at 30 fps, plus what a replay needs to show the forces: the tension of every
   lashing, the solver's contact points with their normal forces, and the force of the floor on each
@@ -205,3 +207,6 @@ wait for it. A test keeps the demo runs under one second of CPU (`tests/test_api
     (<https://www.in.gov.br/web/dou/-/resolucao-contran-n-945-de-28-de-marco-de-2022-390343667>).
 14. CONTRAN Resolution 882/2021 (Brazilian limits for vehicle weights and dimensions), Diário Oficial
     da União, 2021-12-24.
+15. ABNT NBR 15883-1:2022, *Cintas têxteis para amarração de cargas – Parte 1: Cálculo de tensões*
+    (Brazilian standard, paywalled; catalogue entry:
+    <https://www.normas.com.br/visualizar/abnt-nbr-nm/30033/abnt-nbr15883-1-cintas-texteis-para-amarracao-de-cargas-parte-1-calculo-de-tensoes>).
