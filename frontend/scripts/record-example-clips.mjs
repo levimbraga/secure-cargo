@@ -41,7 +41,8 @@ async function settle(page) {
 
 async function record(page, id, variant) {
   const url = `${BASE}/app/scenarios/${id}`;
-  await page.goto(url, { waitUntil: "networkidle" });
+  // Not "networkidle": Clerk's bot protection keeps requests open on the live site.
+  await page.goto(url, { waitUntil: "load" });
   const versions = page.getByRole("group", { name: "Version of the load" });
   await versions.getByRole("button", { name: variant === "fixed" ? "Fixed" : "As loaded", exact: true }).click();
   // Real time: the clip has its own timing, so the HUD must not say "slow motion".
