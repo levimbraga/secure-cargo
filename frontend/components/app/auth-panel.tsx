@@ -96,12 +96,25 @@ function useMinLength(): number {
 const fieldClass =
   "mt-1 h-12 w-full rounded-[4px] border border-control-border bg-white px-3 text-base text-ink outline-none focus-visible:border-ink aria-[invalid=true]:border-fail";
 
-function EmailField({ value, onChange, invalid }: { value: string; onChange: (v: string) => void; invalid?: boolean }) {
+/*
+ * Password managers (1Password, iCloud Keychain, Chrome) tell a sign-up form from a sign-in form by the
+ * fields' autocomplete, name and id, the label text and the form's id. So each form has its own stable
+ * ids and names ("sign-up-new-password", "sign-in-current-password"), every label is tied to its input
+ * with htmlFor and holds only the label text (the Show button sits outside it), and a new password
+ * carries the instance's rule in `passwordrules`, so a generated password is accepted.
+ * See developer.1password.com/docs/web/compatible-website-design.
+ */
+
+function EmailField({ form, value, onChange, invalid }: { form: string; value: string; onChange: (v: string) => void; invalid?: boolean }) {
   const t = useTranslations("Auth.form");
+  const id = `${form}-email`;
   return (
-    <label className="type-small block text-gray">
-      {t("email")}
+    <div>
+      <label htmlFor={id} className="type-small block text-gray">
+        {t("email")}
+      </label>
       <input
+        id={id}
         type="email"
         name="email"
         inputMode="email"
@@ -114,11 +127,17 @@ function EmailField({ value, onChange, invalid }: { value: string; onChange: (v:
         aria-invalid={invalid || undefined}
         className={fieldClass}
       />
-    </label>
+    </div>
   );
 }
 
+/** A hidden copy of the account's email, so a password manager knows whose password the form saves. */
+function HiddenUsername({ form, email }: { form: string; email: string }) {
+  return <input id={`${form}-username`} type="text" name="username" autoComplete="username" value={email} readOnly hidden aria-hidden tabIndex={-1} />;
+}
+
 function PasswordField({
+  form,
   value,
   onChange,
   label,
@@ -126,6 +145,7 @@ function PasswordField({
   invalid,
   hint,
 }: {
+  form: string;
   value: string;
   onChange: (v: string) => void;
   label: string;
@@ -137,33 +157,40 @@ function PasswordField({
   const min = useMinLength();
   const [shown, setShown] = useState(false);
   const hintId = useId();
+  const id = `${form}-${autoComplete}`;
+  const isNew = autoComplete === "new-password";
+  // `passwordrules` (Apple's syntax, read by 1Password and Safari) is not in React's input types.
+  const rules: Record<string, string> = isNew ? { passwordrules: `minlength: ${min};` } : {};
   return (
     <div>
-      <label className="type-small block text-gray">
+      <label htmlFor={id} className="type-small block text-gray">
         {label}
-        <span className="relative block">
-          <input
-            type={shown ? "text" : "password"}
-            name="password"
-            autoComplete={autoComplete}
-            required
-            minLength={autoComplete === "new-password" ? min : undefined}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            aria-invalid={invalid || undefined}
-            aria-describedby={hint ? hintId : undefined}
-            className={cn(fieldClass, "pr-20")}
-          />
-          <button
-            type="button"
-            onClick={() => setShown((s) => !s)}
-            aria-pressed={shown}
-            className="absolute top-1 right-1 h-10 rounded-[4px] px-3 text-sm text-gray hover:text-ink"
-          >
-            {shown ? t("hide") : t("show")}
-          </button>
-        </span>
       </label>
+      <span className="relative block">
+        <input
+          id={id}
+          type={shown ? "text" : "password"}
+          name={autoComplete}
+          autoComplete={autoComplete}
+          required
+          minLength={isNew ? min : undefined}
+          {...rules}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          aria-invalid={invalid || undefined}
+          aria-describedby={hint ? hintId : undefined}
+          className={cn(fieldClass, "pr-20")}
+        />
+        <button
+          type="button"
+          onClick={() => setShown((s) => !s)}
+          aria-pressed={shown}
+          aria-controls={id}
+          className="absolute top-1 right-1 h-10 rounded-[4px] px-3 text-sm text-gray hover:text-ink"
+        >
+          {shown ? t("hide") : t("show")}
+        </button>
+      </span>
       {hint && (
         <p id={hintId} className="type-small mt-1 text-gray">
           {hint}
@@ -173,12 +200,16 @@ function PasswordField({
   );
 }
 
-function CodeField({ value, onChange, invalid }: { value: string; onChange: (v: string) => void; invalid?: boolean }) {
+function CodeField({ form, value, onChange, invalid }: { form: string; value: string; onChange: (v: string) => void; invalid?: boolean }) {
   const t = useTranslations("Auth.form");
+  const id = `${form}-code`;
   return (
-    <label className="type-small block text-gray">
-      {t("code")}
+    <div>
+      <label htmlFor={id} className="type-small block text-gray">
+        {t("code")}
+      </label>
       <input
+        id={id}
         type="text"
         name="code"
         inputMode="numeric"
@@ -191,7 +222,7 @@ function CodeField({ value, onChange, invalid }: { value: string; onChange: (v: 
         aria-invalid={invalid || undefined}
         className={cn(fieldClass, "font-mono tracking-[0.3em]")}
       />
-    </label>
+    </div>
   );
 }
 
@@ -270,9 +301,10 @@ function SignInForm() {
   }
 
   return (
-    <form onSubmit={submit} noValidate className="grid gap-5">
-      <EmailField value={email} onChange={setEmail} invalid={error === "invalid_email" || error === "no_account"} />
+    <form id="sign-in" name="sign-in" method="post" onSubmit={submit} noValidate className="grid gap-5">
+      <EmailField form="sign-in" value={email} onChange={setEmail} invalid={error === "invalid_email" || error === "no_account"} />
       <PasswordField
+        form="sign-in"
         value={password}
         onChange={setPassword}
         label={t("password")}
@@ -329,12 +361,12 @@ function ResetForm({ initialEmail, onDone, onBack }: { initialEmail: string; onD
   }
 
   return step === "email" ? (
-    <form onSubmit={sendCode} noValidate className="grid gap-5">
+    <form id="reset-request" name="reset-request" method="post" onSubmit={sendCode} noValidate className="grid gap-5">
       <div>
         <h2 className="text-[1.0625rem] font-[450] text-ink">{t("resetTitle")}</h2>
         <p className="type-small mt-1 text-gray">{t("resetSentence")}</p>
       </div>
-      <EmailField value={email} onChange={setEmail} invalid={error === "invalid_email" || error === "no_account"} />
+      <EmailField form="reset-request" value={email} onChange={setEmail} invalid={error === "invalid_email" || error === "no_account"} />
       <FormError error={error} />
       <Submit busy={busy} label={t("sendCode")} busyLabel={t("sending")} />
       <button type="button" onClick={onBack} className="type-small justify-self-start text-ink underline underline-offset-4">
@@ -342,13 +374,15 @@ function ResetForm({ initialEmail, onDone, onBack }: { initialEmail: string; onD
       </button>
     </form>
   ) : (
-    <form onSubmit={reset} noValidate className="grid gap-5">
+    <form id="reset-password" name="reset-password" method="post" onSubmit={reset} noValidate className="grid gap-5">
       <div>
         <h2 className="text-[1.0625rem] font-[450] text-ink">{t("resetTitle")}</h2>
         <p className="type-small mt-1 text-gray">{t("codeSent", { email: email.trim() })}</p>
       </div>
-      <CodeField value={code} onChange={setCode} invalid={error === "wrong_code" || error === "code_expired"} />
+      <HiddenUsername form="reset-password" email={email.trim()} />
+      <CodeField form="reset-password" value={code} onChange={setCode} invalid={error === "wrong_code" || error === "code_expired"} />
       <PasswordField
+        form="reset-password"
         value={password}
         onChange={setPassword}
         label={t("newPassword")}
@@ -411,12 +445,13 @@ function SignUpForm({ onHaveAccount }: { onHaveAccount: () => void }) {
   }
 
   return step === "details" ? (
-    <form onSubmit={create} noValidate className="grid gap-5">
-      <EmailField value={email} onChange={setEmail} invalid={error === "invalid_email" || error === "account_exists"} />
+    <form id="sign-up" name="sign-up" method="post" onSubmit={create} noValidate className="grid gap-5">
+      <EmailField form="sign-up" value={email} onChange={setEmail} invalid={error === "invalid_email" || error === "account_exists"} />
       <PasswordField
+        form="sign-up"
         value={password}
         onChange={setPassword}
-        label={t("password")}
+        label={t("choosePassword")}
         autoComplete="new-password"
         invalid={error === "weak_password" || error === "short_password"}
         hint={t("passwordHint", { min })}
@@ -433,12 +468,13 @@ function SignUpForm({ onHaveAccount }: { onHaveAccount: () => void }) {
       <Consent />
     </form>
   ) : (
-    <form onSubmit={verify} noValidate className="grid gap-5">
+    <form id="sign-up-verify" name="sign-up-verify" method="post" onSubmit={verify} noValidate className="grid gap-5">
       <div>
         <h2 className="text-[1.0625rem] font-[450] text-ink">{t("verifyTitle")}</h2>
         <p className="type-small mt-1 text-gray">{t("codeSent", { email: email.trim() })}</p>
       </div>
-      <CodeField value={code} onChange={setCode} invalid={error === "wrong_code" || error === "code_expired"} />
+      <HiddenUsername form="sign-up-verify" email={email.trim()} />
+      <CodeField form="sign-up-verify" value={code} onChange={setCode} invalid={error === "wrong_code" || error === "code_expired"} />
       <FormError error={error} />
       <Submit busy={busy} label={t("verify")} busyLabel={t("verifying")} />
       <button type="button" onClick={resend} className="type-small justify-self-start text-ink underline underline-offset-4">
@@ -499,12 +535,13 @@ function InvitedForm({ invite }: { invite: Invite }) {
     return error ? <FormError error={error} /> : <p className="type-body" role="status">{t("inviteSigningIn")}</p>;
   }
   return (
-    <form onSubmit={accept} noValidate className="grid gap-5">
+    <form id="invite" name="invite" method="post" onSubmit={accept} noValidate className="grid gap-5">
       <div>
         <h2 className="text-[1.0625rem] font-[450] text-ink">{t("inviteTitle")}</h2>
         <p className="type-small mt-1 text-gray">{t("inviteSentence")}</p>
       </div>
       <PasswordField
+        form="invite"
         value={password}
         onChange={setPassword}
         label={t("choosePassword")}
